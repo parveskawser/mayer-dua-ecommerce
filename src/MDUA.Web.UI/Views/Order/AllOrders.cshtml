@@ -1,0 +1,90 @@
+﻿@model List<MDUA.Entities.SalesOrderHeader>
+@{
+    ViewData["Title"] = "All Sales Orders";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="fw-bold mb-3">Order List</h2>
+<div class="text-muted small mb-4">Total Orders: @(Model?.Count() ?? 0)</div>
+
+@if (ViewData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewData["ErrorMessage"]
+    </div>
+}
+
+<div class="glass-card h-100 d-flex flex-column">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle products-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Order Type</th>
+                    <th>Order Date</th>
+                    <th>Net Amount</th>
+                    <th>Status</th>
+                    <th>Confirmed</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                    {
+                        string orderIdDisplay = order.OnlineOrderId ?? order.DirectOrderId ?? order.SalesOrderId ?? order.Id.ToString();
+                        string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
+
+                        <tr>
+                            <td>@orderIdDisplay</td>
+                            <td>@orderType</td>
+
+                            <!-- 🛑 FIX 1: Pass potentially nullable date to updated helper -->
+                            <td class="small">@FormatDate(order.OrderDate)</td>
+
+                            <!-- 🛑 FIX 2: Pass potentially nullable decimal to updated helper -->
+                            <td>Tk. @FormatAmount(order.NetAmount)</td>
+
+                            <td><span class="badge bg-secondary-subtle text-dark">@order.Status</span></td>
+                            <td><span class="badge @(order.Confirmed ? "bg-success" : "bg-warning text-dark")">@(order.Confirmed ? "Yes" : "No")</span></td>
+                            <td class="text-end">
+                                <a href="@Url.Action("Details", "Order", new { id = order.Id })" class="btn btn-sm btn-outline-info" title="View Order">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center p-4 text-muted">No sales orders found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@functions {
+    // 🛑 FIX 3: Updated signature to accept nullable DateTime?
+    public string FormatDate(DateTime? date)
+    {
+        // Check for null or MinValue
+        if (!date.HasValue || date.Value == DateTime.MinValue)
+        {
+            return "N/A";
+        }
+        return date.Value.ToString("MMM dd, yyyy");
+    }
+
+    // 🛑 FIX 4: Updated signature to accept nullable decimal?
+    public string FormatAmount(decimal? amount)
+    {
+        // Check for null or zero
+        if (!amount.HasValue || amount.Value == 0M)
+        {
+            return "0.00";
+        }
+        return amount.Value.ToString("N2");
+    }
+}
