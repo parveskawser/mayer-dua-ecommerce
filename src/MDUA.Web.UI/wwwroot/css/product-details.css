@@ -1,0 +1,132 @@
+﻿/* Compact Product Details - Split View */
+
+.product-details-container {
+    max-width: 700px;
+    margin: 0 auto;
+    /* ADD THESE LINES TO FIX THE GAP */
+    min-height: auto !important; /* Stops it from forcing full screen height */
+    height: auto !important; /* Ensures it fits the content */
+    background: transparent; /* Removes the blue-gray background */
+    padding: 0; /* Removes extra spacing around the card */
+}
+
+.product-details-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+/* Header */
+.details-header {
+    background: white;
+    color: #1e293b;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.details-header-icon {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Content Styling */
+.price-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10b981; /* Emerald Green */
+}
+
+    .price-value::before {
+        content: 'Tk. ';
+        font-size: 0.8em;
+        opacity: 0.7;
+    }
+
+.category-tag {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.slug-badge {
+    font-family: 'Courier New', monospace;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Audit Section specifics */
+.audit-date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .product-details-container {
+        max-width: 100%;
+    }
+
+    .col-md-5.border-start {
+        border-left: none !important;
+        border-top: 1px solid #e2e8f0;
+    }
+}
+.detail-group {
+    padding: 0.5rem; /* Give it some breathing room */
+    border-radius: 8px; /* Rounded corners */
+    transition: all 0.2s ease; /* Smooth animation */
+    border: 1px solid transparent; /* Prevent layout shift on hover */
+}
+
+    .detail-group:hover {
+        background-color: #f1f5f9; /* Light grey background on hover */
+        transform: translateX(6px); /* Move slightly right */
+        border-color: #e2e8f0; /* Subtle border on hover */
+    }
+
+/* Override hover for the right column (optional, if you want it different) */
+.bg-light .detail-group:hover {
+    background-color: #ffffff; /* White background on hover for right column */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}

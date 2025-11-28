@@ -1,0 +1,364 @@
+﻿@model IEnumerable<MDUA.Entities.Product>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Product List";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <strong>Success!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <strong>Error!</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="fw-bold mb-0">Products</h2>
+        <div class="text-muted small">Manage catalog, prices & inventory</div>
+    </div>
+</div>
+
+<div class="glass-card h-100 d-flex flex-column">
+    <div class="p-3 border-bottom border-light d-flex justify-content-between align-items-center">
+        <div class="fw-bold">Catalog Inventory</div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Refresh</button>
+    </div>
+
+    <div class="table-wrapper flex-grow-1">
+        <div class="table-responsive">
+            @Html.AntiForgeryToken()
+            <table class="table table-hover mb-0 align-middle products-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Level</th>
+                        <th>Slug</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var p in Model)
+                        {
+                            <tr data-product-row-id="@p.Id">
+                                <td class="fw-semibold" data-product-name="@p.ProductName">@p.ProductName</td>
+                                <td><span class="pill-tag">@p.CategoryName</span></td>
+                                <td>@p.ReorderLevel</td>
+                                <td class="small text-muted">@p.Slug</td>
+                                <td class="price-cell">
+                                    @if (p.ActiveDiscount != null)
+                                    {
+                                        <div class="text-decoration-line-through text-muted small">Tk. @p.BasePrice?.ToString("0.00")</div>
+                                        <div class="text-danger fw-bold">Tk. @p.SellingPrice.ToString("0.00")</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-bold">Tk. @p.BasePrice?.ToString("0.00")</div>
+                                    }
+                                </td>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm rounded-pill fw-bold border-0 px-3 js-toggle-status @(p.IsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")"
+                                            data-product-id="@p.Id"
+                                            title="Toggle Status">
+                                        @(p.IsActive ? "Active" : "Inactive")
+                                    </button>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-light border js-manage-images" data-product-id="@p.Id" title="Images">
+                                            🖼️
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light border js-manage-discounts"
+                                                data-bs-toggle="modal" data-bs-target="#productDiscountsModal"
+                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Discounts">
+                                            🏷️
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light border btn-view-variants"
+                                                data-bs-toggle="modal" data-bs-target="#productVariantsModal"
+                                                data-product-id="@p.Id" title="Variants">
+                                            🔢
+                                        </button>
+                                        <!-- ADDED BACK: Details Button -->
+                                        <button type="button" class="btn btn-sm btn-light border js-view-details"
+                                                data-bs-toggle="modal" data-bs-target="#productDetailsModal"
+                                                data-product-id="@p.Id" title="Details">
+                                            📄
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light border js-edit-product"
+                                                data-bs-toggle="modal" data-bs-target="#editProductModal"
+                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Edit">
+                                            ✏️
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger-subtle border border-danger-subtle text-danger js-delete-product"
+                                                data-bs-toggle="modal" data-bs-target="#deleteProductModal"
+                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Delete">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center p-5 text-muted">No products found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Modals {
+    <div class="modal fade" id="productVariantsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Variants: <span id="modal-product-name" class="text-warning"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-variants-content">
+                    <div class="loading-spinner text-center py-4"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="productVariantsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Variants: <span id="modal-product-name" class="text-warning"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-variants-content">
+                    <div class="loading-spinner text-center py-4"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Delete Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="display-1 text-danger mb-3">⚠️</div>
+                    <h4 id="modal-delete-product-name" class="fw-bold"></h4>
+                    <p class="text-muted">This action cannot be undone. All variants will be lost.</p>
+                    <div class="form-check d-inline-block text-start bg-light p-2 rounded border">
+                        <input type="checkbox" id="confirm-delete-checkbox" class="form-check-input" />
+                        <label for="confirm-delete-checkbox" class="form-check-label">I understand this is permanent</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-button" disabled>Delete Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Edit Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-edit-content">
+                    <div class="loading-spinner text-center py-4"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="productImagesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Manage Images</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-images-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="productDiscountsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Discounts: <span id="modal-discount-product-name"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-discounts-content">
+                    <div class="loading-spinner text-center py-4"><div class="spinner-border text-success"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteVariantModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Delete Variant</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p>Delete <strong id="modal-delete-variant-name"></strong>?</p>
+                    <button type="button" class="btn btn-danger w-100" id="confirm-delete-variant-button">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteProductImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-custom">
+                <div class="modal-body text-center p-4">
+                    <p class="fw-bold text-danger">Delete Image?</p>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-confirm-del-prod-img">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteDiscountModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-body p-4 text-center">
+                    <p>Delete Discount: <strong id="modal-delete-discount-info"></strong>?</p>
+                    <button class="btn btn-danger" id="confirm-delete-discount-button">Confirm Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addVariantAttributeModal" tabindex="-1" aria-hidden="true" style="z-index: 10000 !important;">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-header bg-light py-2">
+                    <h6 class="modal-title fw-bold">Add Attribute</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-add-attr-to-variant">
+                        <input type="hidden" id="target-variant-id" name="variantId" />
+                        <div class="mb-2">
+                            <label class="small text-muted">Attribute</label>
+                            <select class="form-select form-select-sm" id="missing-attr-select"><option>Loading...</option></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted">Value</label>
+                            <select class="form-select form-select-sm" id="missing-value-select" name="attributeValueId" disabled></select>
+                        </div>
+                        <button type="button" id="btn-confirm-add-attr" class="btn btn-sm btn-primary w-100">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="variantImagesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Variant Images</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-var-images-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteVariantImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-custom">
+                <div class="modal-body text-center p-3">
+                    <p>Delete variant image?</p>
+                    <button class="btn btn-sm btn-danger" id="btn-confirm-del-var-img">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="duplicateVariantModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom border-warning">
+                <div class="modal-body text-center p-4">
+                    <h5 class="text-warning">Duplicate Variant</h5>
+                    <p>The variant <strong id="duplicate-variant-name"></strong> already exists.</p>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-details-content">
+                    <div class="loading-spinner text-center"><div class="spinner-border text-primary"></div></div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Keep your configuration exactly as is
+        window.productConfig = {
+            urls: {
+                getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
+                addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
+                toggleStatus: '@Url.Action("ToggleStatus", "Product")',
+                getProductDetailsPartial: '@Url.Action("GetProductDetailsPartial", "Product")',
+                deleteConfirmed: '@Url.Action("DeleteConfirmed", "Product")',
+                getEditPartial: '@Url.Action("GetEditPartial", "Product")',
+                deleteVariant: '@Url.Action("DeleteVariant", "Product")',
+                updateVariantPrice: '@Url.Action("UpdateVariantPrice", "Product")',
+                getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
+                addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")',
+                getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
+                getDiscounts: '@Url.Action("GetDiscountsPartial", "Product")',
+                addDiscount: '@Url.Action("AddDiscount", "Product")',
+                updateDiscount: '@Url.Action("UpdateDiscount", "Product")',
+                deleteDiscount: '@Url.Action("DeleteDiscount", "Product")',
+                getUpdatedPrice: '@Url.Action("GetUpdatedPrice", "Product")',
+                getImages: '@Url.Action("GetImagesPartial", "Product")',
+                uploadImage: '@Url.Action("UploadImage", "Product")',
+                deleteImage: '@Url.Action("DeleteImage", "Product")',
+                getVariantImages: '@Url.Action("GetVariantImagesPartial", "Product")',
+                uploadVariantImage: '@Url.Action("UploadVariantImage", "Product")',
+                deleteVariantImage: '@Url.Action("DeleteVariantImage", "Product")',
+                updateVariantImageOrder: '@Url.Action("UpdateVariantImageOrder", "Product")',
+            }
+        };
+    </script>
+    <script src="~/js/products-index.js"></script>
+}

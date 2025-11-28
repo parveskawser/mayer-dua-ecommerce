@@ -1,0 +1,51 @@
+﻿@model MDUA.Entities.List.SalesOrderHeaderList
+@{
+    // Assuming the CustomerId is passed via ViewBag
+    var customerId = ViewBag.CustomerId;
+}
+
+<h5 class="fw-bold mb-3">Recent Orders (@(Model?.Count() ?? 0))</h5>
+<div class="small text-muted mb-3">Customer ID: @customerId</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Discount</th>
+                <th>Net Amount</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var order in Model)
+                {
+                    // Calculate Net Amount (since it's computed in DB, show the final result)
+                    // ✅ FIX: Use '0M' (decimal literal) for safety
+                    // ✅ FIX 1: Remove '?? 0M' because DiscountAmount is not nullable in C# Entity
+                    decimal netAmount = order.TotalAmount - order.DiscountAmount;
+                    string statusClass = order.Status == "Confirmed" ? "bg-success" : (order.Status == "Draft" ? "bg-info" : "bg-warning");
+
+                    <tr>
+                        <td>@(order.SalesOrderId ?? order.OnlineOrderId)</td>
+                        <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                        <td>Tk. @order.TotalAmount.ToString("N2")</td>
+                        <td>Tk. @order.DiscountAmount.ToString("N2")</td>
+                        <td class="fw-bold">Tk. @netAmount.ToString("N2")</td>
+                        <td><span class="badge @statusClass">@order.Status</span></td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="6" class="text-center text-muted p-3">No orders found for this customer.</td></tr>
+            }
+        </tbody>
+    </table>
+
+
+</div>

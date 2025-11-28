@@ -1,0 +1,56 @@
+﻿@model MDUA.Entities.Customer
+@{
+    // Helper function for safe date formatting
+    string FormatDate(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy") : "N/A";
+
+    // Determine the badge class for status
+    string statusBadge = Model.IsActive ? "bg-success text-success" : "bg-danger text-danger";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/customer.css" />
+</head>
+
+<div class="customer-details-container p-3">
+
+    <h4 class="mb-4">Details for @Model.CustomerName</h4>
+
+    <div class="row">
+
+        <div class="col-md-6 mb-4">
+            <h5 class="text-primary border-bottom pb-1">Primary Information</h5>
+            <table class="table table-sm table-borderless details-table">
+                <tr><th>ID:</th><td>@Model.Id</td></tr>
+                <tr><th>Email:</th><td>@Model.Email</td></tr>
+                <tr><th>Phone:</th><td>@Model.Phone</td></tr>
+                <tr>
+                    <th>Status:</th>
+                    <td>
+                        <span class="badge @statusBadge bg-opacity-10">
+                            @(Model.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h5 class="text-primary border-bottom pb-1">Demographics & Audit</h5>
+            <table class="table table-sm table-borderless details-table">
+                <tr><th>Date of Birth:</th><td>@FormatDate(Model.DateOfBirth)</td></tr>
+                <tr><th>Gender:</th><td>@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</td></tr>
+                <tr><th>Created At:</th><td>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td></tr>
+                <tr><th>Created By:</th><td>@Model.CreatedBy</td></tr>
+                <tr><th>Last Updated:</th><td>@FormatDate(Model.UpdatedAt)</td></tr>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="mt-2">
+        <h5 class="text-primary border-bottom pb-1">Notes</h5>
+        <div class="notes-box p-3 border rounded bg-light">
+            @(string.IsNullOrEmpty(Model.Notes) ? "No administrative notes available for this customer." : Model.Notes)
+        </div>
+    </div>
+</div>
