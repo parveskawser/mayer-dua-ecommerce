@@ -6,6 +6,8 @@
     // Check if we are in any Product related page to keep menu open
     bool isProductPage = currentController == "Product";
     bool isCustomerPage = currentController == "Customer";
+    bool isOrderPage = currentController == "Order";
+
 }
 
 <div class="sidebar glass-panel d-flex flex-column h-100">
@@ -67,6 +69,39 @@
                 <span>👥</span> Customers
             </a>
         </li>
+
+        <!-- Orders Dropdown (The primary focus block) -->
+        <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center @(isOrderPage ? "active-parent" : "collapsed")"
+               data-bs-toggle="collapse"
+               href="#OrdersMenu"
+               role="button"
+               aria-expanded="@(isOrderPage ? "true" : "false")"
+               aria-controls="OrdersMenu">
+                <span>
+                    <span>🛒</span> Orders <!-- CONFIRMED ICON -->
+                </span>
+                <span class="dropdown-arrow">▾</span>
+            </a>
+            <div class="collapse @(isOrderPage ? "show" : "")" id="OrdersMenu">
+                <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "AllOrders" ? "active" : "")"
+                           href="@Url.Action("AllOrders", "Order")">
+                            Order List
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")"
+                           href="@Url.Action("Add", "Order")">
+                            Add Order
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Settings Link -->
         <li class="nav-item">
             <a class="nav-link" href="#">
                 <span>⚙️</span> Settings

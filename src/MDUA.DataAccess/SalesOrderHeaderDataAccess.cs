@@ -282,5 +282,121 @@ namespace MDUA.DataAccess
             }
         }
 
-    }	
+
+        //new
+        public void UpdateStatusSafe(int orderId, string status, bool confirmed)
+        {
+            string SQLQuery = @"
+                UPDATE [dbo].[SalesOrderHeader]
+                SET 
+                    [Status] = @Status,
+                    [Confirmed] = @Confirmed,
+                    [UpdatedAt] = GETDATE()
+                WHERE [Id] = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+                AddParameter(cmd, pNVarChar("Status", 30, status));
+                AddParameter(cmd, pBool("Confirmed", confirmed));
+
+                // ✅ FIX: ExecuteNonQuery requires an open connection.
+                // GetSQLCommand returns a command with a closed connection by default.
+                if (cmd.Connection.State != ConnectionState.Open)
+                {
+                    cmd.Connection.Open();
+                }
+
+                cmd.ExecuteNonQuery();
+
+                // Close the connection explicitly after work is done
+                cmd.Connection.Close();
+            }
+        }
+
+        public List<Dictionary<string, object>> GetVariantsForDropdown()
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            // Note: vps.StockQty is now joined correctly
+            string SQLQuery = @"
+                SELECT 
+                    p.Id as ProductId,
+                    ISNULL(p.ProductName, 'Unknown Product') as ProductName,
+                    v.Id as VariantId, 
+                    ISNULL(v.VariantName, 'Standard') as VariantName,
+                    ISNULL(vps.StockQty, 0) as StockQty,
+                    ISNULL(vps.Price, ISNULL(p.BasePrice, 0.00)) as Price
+                FROM ProductVariant v
+                JOIN Product p ON v.ProductId = p.Id
+                LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
+                WHERE v.IsActive = 1 AND p.IsActive = 1
+                ORDER BY p.ProductName, v.VariantName";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    int ordPid = reader.GetOrdinal("ProductId");
+                    int ordPName = reader.GetOrdinal("ProductName");
+                    int ordVid = reader.GetOrdinal("VariantId");
+                    int ordVName = reader.GetOrdinal("VariantName");
+                    int ordStock = reader.GetOrdinal("StockQty");
+                    int ordPrice = reader.GetOrdinal("Price");
+
+                    while (reader.Read())
+                    {
+                        var item = new Dictionary<string, object>
+                        {
+                            { "ProductId", reader.GetInt32(ordPid) },
+                            { "ProductName", reader.GetString(ordPName) },
+                            { "VariantId", reader.GetInt32(ordVid) },
+                            { "VariantName", reader.GetString(ordVName) },
+                            { "Stock", reader.GetInt32(ordStock) },
+                            { "Price", Convert.ToDecimal(reader.GetValue(ordPrice)) }
+                        };
+                        list.Add(item);
+                    }
+                    reader.Close();
+                }
+                cmd.Connection.Close();
+            }
+            return list;
+        }
+
+        // ✅ FIXED: Return Tuple (int, decimal)? for safe access in Facade
+        public (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId)
+        {
+            string SQLQuery = @"
+                SELECT 
+                    ISNULL(StockQty, 0) as StockQty, 
+                    ISNULL(Price, 0.00) as Price 
+                FROM VariantPriceStock 
+                WHERE Id = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", variantId));
+
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int stock = reader.GetInt32(0);
+                        decimal price = Convert.ToDecimal(reader.GetValue(1));
+
+                        // Return Tuple
+                        return (stock, price);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return null;
+        }
+    }
 }

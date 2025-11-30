@@ -1,4 +1,75 @@
-﻿$(document).ready(function () {
+﻿//******************new*************************
+
+// wwwroot/js/combo.js
+
+window.OrderAPI = {
+    // Check Customer Phone
+    checkCustomer: async function (phone) {
+        try {
+            const response = await fetch(`/order/check-customer?phone=${phone}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            console.error("API Error:", e);
+            return { found: false };
+        }
+    },
+
+    // Check Postal Code
+    checkPostalCode: async function (code) {
+        try {
+            const response = await fetch(`/order/check-postal-code?code=${code}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            return { found: false };
+        }
+    },
+
+    // Location Cascading
+    getDivisions: async function () {
+        try {
+            const response = await fetch('/order/get-divisions');
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getDistricts: async function (div) {
+        try {
+            const response = await fetch(`/order/get-districts?division=${div}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getThanas: async function (dist) {
+        try {
+            const response = await fetch(`/order/get-thanas?district=${dist}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getSubOffices: async function (thana) {
+        try {
+            const response = await fetch(`/order/get-suboffices?thana=${thana}`);
+            return await response.json();
+        } catch (e) { return []; }
+    }
+};
+//******************newEND*************************
+
+
+
+
+$(document).ready(function () {
+    //******************new*************************
+
+    // SAFETY CHECK: If we are on the Admin page (which doesn't have #order-form),
+    // stop here so we don't cause errors.
+    if ($('#order-form').length === 0) {
+        return;
+    }
+
+    //******************newEND*************************
 
     // ==================================================
     // 0. GLOBAL VARIABLES & STATE
@@ -7,7 +78,7 @@
     const baseInfo = window.baseProductInfo || { price: 0, image: "/images/default-product.jpg" };
 
     let currentVariantPrice = baseInfo.price;
-    let maxAvailableStock = 0;
+    let maxAvailableStock = 0; // Will be set when variant is selected
     let selectedAttributes = {};
 
     let isCheckingEmail = false;
@@ -19,6 +90,32 @@
 
     $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
     $('#summary-subtotal').text('Tk. ' + currentVariantPrice.toLocaleString());
+
+    // Helper: Debounce Function for Performance (Anti-Spam)
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    // ==================================================
+    // AUTO-SELECT FIRST VARIANT IF ONLY ONE EXISTS
+    // ==================================================
+    const variants = window.productVariants || [];
+
+    if (variants.length === 1) {
+        const singleVariant = variants[0];
+        applyVariantData(singleVariant);
+        $('.variant-chip').addClass('selected');
+
+        // Populate selectedAttributes for the single variant
+        if (singleVariant.attributes) {
+            selectedAttributes = { ...singleVariant.attributes };
+        }
+    }
 
     // ==================================================
     // 1. DYNAMIC ATTRIBUTE SELECTION LOGIC (WITH TOGGLE)
@@ -40,19 +137,19 @@
 
         findAndApplyVariant();
     });
-
     function findAndApplyVariant() {
         $('#selected-variant-id').val('');
-        const variants = window.productVariants || [];
 
         const matchedVariant = variants.find(v => {
             for (let key in selectedAttributes) {
-                if (!v.attributes[key] || v.attributes[key] != selectedAttributes[key]) {
+                // Use strict equality check logic or robust string comparison
+                if (!v.attributes[key] || String(v.attributes[key]) !== String(selectedAttributes[key])) {
                     return false;
                 }
             }
             return true;
         });
+
 
         if (matchedVariant) {
             if (Object.keys(selectedAttributes).length > 0) {
@@ -70,6 +167,7 @@
         currentVariantPrice = variant.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
 
+        // ✅ CRITICAL FIX: Handle stock properly
         maxAvailableStock = variant.stock;
 
         let currentQty = parseInt($('#quantity').val()) || 1;
@@ -90,17 +188,17 @@
             $('.submit-btn').prop('disabled', false);
         }
     }
-
     function resetToDefault() {
         currentVariantPrice = baseInfo.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
         $('#order-variant-image').attr('src', baseProductImageUrl);
         $('#selected-variant-id').val('');
         maxAvailableStock = 0;
-        updateStockMessage(0);
+        // ✅ ADD THIS: Hide the stock info on reset
+        $('#variant-info').hide();
+        updateStockMessage(0); // This calls the function above, but the hide() line above ensures it stays hidden
         updateTotals();
     }
-
     function handleNoMatch() {
         $('#stock-message').text("This combination is currently unavailable.").addClass('text-danger show');
         $('#order-variant-image').attr('src', baseProductImageUrl);
@@ -110,60 +208,82 @@
 
     function updateStockMessage(stock) {
         const el = $('#stock-message');
-        el.removeClass('stock-high stock-medium stock-low text-danger show');
+        const parent = $('#variant-info'); // Get the parent container
 
-        if (Object.keys(selectedAttributes).length === 0) return;
+        el.removeClass('stock-high stock-medium stock-low text-danger show text-success');
+
+        // If no attributes selected yet, keep hidden
+        if (Object.keys(selectedAttributes).length === 0 && variants.length > 1) {
+            parent.hide();
+            return;
+        }
+
+        parent.show(); // Reveal the container
 
         if (stock <= 0) {
             el.text('Out of Stock').addClass('text-danger show');
-        } else if (stock >= 10) {
-            el.text(`In stock: ${stock} items`).addClass('stock-high show');
-        } else if (stock >= 3) {
-            el.text(`Hurry! Only ${stock} left`).addClass('stock-medium show');
+            // Optional: Disable submit button if out of stock
+            $('.submit-btn').prop('disabled', true).text('Out of Stock');
         } else {
-            el.text(`Last few! Just ${stock} left`).addClass('stock-low show');
+            // ✅ CHANGED: Always show specific stock count
+            el.text(`Current Stock: ${stock} items available`).addClass('text-success show').css({
+                'font-weight': 'bold',
+                'color': '#10b981', // Green color
+                'font-size': '0.95rem'
+            });
+
+            // Re-enable button if it was disabled by out-of-stock
+            if (!isCheckingEmail) {
+                $('.submit-btn').prop('disabled', false).text('Confirm Order');
+            }
         }
+    }
+    function showStockError(msg) {
+        const el = $('#stock-error-message');
+        el.text(msg).addClass('show');
+        setTimeout(() => { el.removeClass('show'); }, 3000);
+    }
+
+    function clearStockError() {
+        $('#stock-error-message').text('').removeClass('show');
     }
 
     // ==================================================
     // 2. EMAIL & PHONE CHECK (INLINE REAL-TIME VALIDATION)
     // ==================================================
 
-    // ✅ When user starts typing in email field
     $('#customerEmail').on('input', function () {
         isEmailAutofilled = false;
         $('#email-status').hide();
         $('.submit-btn').prop('disabled', false).text('Confirm Order');
     });
 
-    // ✅ Real-time validation on blur (when user leaves the field)
     $('#customerEmail').on('blur', function () {
         const email = $(this).val().trim();
         const $msg = $('#email-status');
 
-        // Clear previous messages
         $msg.hide().removeClass('text-danger').removeClass('text-success');
 
+        // 1. If empty, reset button and exit
         if (!email) {
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
-        // ✅ CRITICAL: If this email was autofilled AND matches current customer, allow it
+        // 2. If it matches the autofilled email exactly, it's valid
         if (isEmailAutofilled && email === currentCustomerEmail) {
             $msg.text("✓ Using your registered email").css('color', 'green').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
-        // ✅ Validate email format
+        // 3. Basic validation
         if (!email.includes('@')) {
             $msg.text("⚠ Please enter a valid email address").css('color', 'orange').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
-        // ✅ Check if email exists (AJAX call)
         isCheckingEmail = true;
         $msg.text("⏳ Checking email...").css('color', 'blue').show();
         $('.submit-btn').prop('disabled', true).text('Verifying...');
@@ -172,79 +292,72 @@
             isCheckingEmail = false;
 
             if (res.exists) {
-                // ✅ Double-check: Is this the same customer's email?
+                // --- CHANGED LOGIC HERE ---
+                // Previous logic: Blocked the user (Red text, Disabled button)
+                // New logic: Welcomes the user (Green/Blue text, ENABLED button)
+
                 if (email === currentCustomerEmail) {
                     $msg.text("✓ Using your registered email").css('color', 'green').show();
-                    $('.submit-btn').prop('disabled', false).text('Confirm Order');
                 } else {
-                    // ❌ SHOW ERROR INLINE (like phone status)
-                    $msg.text("✗ Email already exists! Please use another.").css('color', 'red').show();
-                    $('.submit-btn').prop('disabled', true).text('Confirm Order');
+                    // Determine if this is a "Welcome Back" scenario
+                    $msg.text("✓ Account found! We will link this order to you.").css('color', 'blue').show();
                 }
+
+                // ALWAYS enable the button if the email is valid, even if it exists
+                $('.submit-btn').prop('disabled', false).text('Confirm Order');
             } else {
-                // ✅ Email is available
+                // Email is new - also valid
                 $msg.text("✓ Email available").css('color', 'green').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
         })
             .fail(function () {
                 isCheckingEmail = false;
-                $msg.text("⚠ Could not verify email. Please try again.").css('color', 'orange').show();
+                // In case of server error, usually safer to let them try to submit
+                $msg.text("⚠ Could not verify email, but you can proceed.").css('color', 'orange').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             });
     });
 
-    // ✅ PHONE CHECK - WITH PROPER EMAIL AUTOFILL HANDLING
-    $('#customerPhone').on('input blur', function () {
+    // ✅ FIXED: Using Debounce (500ms) to prevent server spam on typing
+    $('#customerPhone').on('input', debounce(function () {
         let phone = $(this).val();
 
         if (phone.length >= 11) {
             $('#phone-status').text("⏳ Checking...").css('color', 'blue');
 
-            $.get('/order/check-customer', { phone: phone }, function (data) {
+
+            //******************************new*************** */
+
+            window.OrderAPI.checkCustomer(phone).then(function (data) {
+                //******************************newEND*************** */
+
                 if (data.found) {
                     $('#phone-status').text("✓ Welcome back! Info loaded.").css('color', 'green');
 
-                    // Autofill name
+                    // 1. FILL NAME
                     if (data.name) $('#customerName').val(data.name);
 
-                    // ✅ Autofill email with proper flagging
+                    // 2. FILL EMAIL (With logic for @guest.local)
                     if (data.email) {
                         const $emailField = $('#customerEmail');
                         const currentEmailValue = $emailField.val().trim();
 
-                        // Only autofill if email field is empty OR has the old guest email
                         if (!currentEmailValue || currentEmailValue.includes('@guest.local')) {
-                            // Set flags BEFORE setting value
                             isEmailAutofilled = true;
                             currentCustomerEmail = data.email;
-
                             $emailField.val(data.email);
-
-                            // Show success message inline
                             $('#email-status').text("✓ Using your registered email").css('color', 'green').show();
                             $('.submit-btn').prop('disabled', false).text('Confirm Order');
                         } else {
-                            // Email field has a value - just update tracking
                             currentCustomerEmail = data.email;
                         }
                     }
 
-                    // Autofill address
-                    if (data.addressData) {
-                        const addr = data.addressData;
-                        $('textarea[name="Street"]').val(addr.street);
-                        $('input[name="PostalCode"]').val(addr.postalCode);
-                        $('input[name="ZipCode"]').val(addr.zipCode);
-                        $('#division-select').val(addr.divison).trigger('change');
+                    // ❌ REMOVED: Address Autofill Logic
+                    // The block that filled Street, PostalCode, Division, etc. is deleted.
 
-                        // Wait for Districts to load via AJAX (Increased timeout slightly for safety)
-                        setTimeout(() => {
-                            $('#district-select').val(addr.city).trigger('change');
-                        }, 500);
-                    }
                 } else {
-                    // New customer
                     $('#phone-status').text("New Customer").css('color', '#666');
                     isEmailAutofilled = false;
                     currentCustomerEmail = null;
@@ -258,96 +371,72 @@
             isEmailAutofilled = false;
             currentCustomerEmail = null;
         }
-    });
-
-    // ==================================================
-    // 3. LOCATION & TOTALS (DYNAMIC CASCADING)
-    // ==================================================
-
-    // Helper to reset and disable a dropdown
+    }, 500)); // 500ms delay
     // ==================================================
     // 3. LOCATION & TOTALS (ROBUST CASCADING)
     // ==================================================
 
-    // Helper: Reset, Disable, and Show Loading Text
     function resetSelect(selector, defaultText) {
         $(selector).empty()
             .append(`<option value="">${defaultText}</option>`)
             .prop('disabled', true);
     }
 
-    // Helper: Unlock and Populate
     function enableSelect(selector, data, defaultText) {
         let $el = $(selector);
         $el.empty().append(`<option value="">${defaultText}</option>`);
 
         if (!data || data.length === 0) {
             $el.append('<option value="" disabled>No options available</option>');
-            // We unlock it anyway so the user sees "No options" instead of a blocked field
             $el.prop('disabled', false);
             return;
         }
 
         data.forEach(item => {
-            // Handle both simple strings and objects
             let val = item.name || item.Name || item;
             let text = item.name || item.Name || item;
-            let code = item.code || item.Code || ""; // For SubOffice
-
+            let code = item.code || item.Code || "";
             $el.append(`<option value="${val}" data-code="${code}">${text}</option>`);
         });
 
         $el.prop('disabled', false);
     }
 
-    // 1. Load Divisions
     function populateDivisions() {
-        console.log("Fetching Divisions...");
         $.get('/order/get-divisions', function (data) {
-            console.log("Divisions loaded:", data);
             enableSelect('#division-select', data, 'Select Division');
         }).fail(function () {
-            console.error("Failed to load Divisions");
             $('#division-select').append('<option>Error loading data</option>');
         });
     }
 
     populateDivisions();
 
-    // 2. Division Change -> Load Districts
     $('#division-select').change(function () {
         let division = $(this).val();
-        console.log("Selected Division:", division);
 
-        // Reset downstream
         resetSelect('#district-select', 'Loading...');
         resetSelect('#thana-select', 'Select District first');
         resetSelect('#suboffice-select', 'Select Thana first');
 
         if (division) {
             $.get('/order/get-districts', { division: division }, function (data) {
-                console.log("Districts loaded:", data);
                 enableSelect('#district-select', data, 'Select District');
-            })
-                .fail(function () {
-                    console.error("API Error: /order/get-districts");
-                    resetSelect('#district-select', 'Error loading districts');
-                    $('#district-select').prop('disabled', false); // Unlock to show error
-                });
+            }).fail(function () {
+                resetSelect('#district-select', 'Error loading districts');
+                $('#district-select').prop('disabled', false);
+            });
         } else {
             resetSelect('#district-select', 'Select Division first');
         }
     });
 
-    // 3. District Change -> Load Thanas
     $('#district-select').change(function () {
         let district = $(this).val();
-        console.log("Selected District:", district);
 
         resetSelect('#thana-select', 'Loading...');
         resetSelect('#suboffice-select', 'Select Thana first');
 
-        // Delivery Charge Logic
         let charge = delivery.outside;
         if (district && (district.toLowerCase().includes('dhaka') || district.trim() === 'Dhaka')) {
             charge = delivery.dhaka;
@@ -357,123 +446,259 @@
 
         if (district) {
             $.get('/order/get-thanas', { district: district }, function (data) {
-                console.log("Thanas loaded:", data);
                 enableSelect('#thana-select', data, 'Select Thana');
-            })
-                .fail(function () {
-                    console.error("API Error: /order/get-thanas");
-                    resetSelect('#thana-select', 'Error loading thanas');
-                    $('#thana-select').prop('disabled', false);
-                });
+            }).fail(function () {
+                resetSelect('#thana-select', 'Error loading thanas');
+                $('#thana-select').prop('disabled', false);
+            });
         } else {
             resetSelect('#thana-select', 'Select District first');
         }
     });
 
-    // 4. Thana Change -> Load Sub-Offices
     $('#thana-select').change(function () {
         let thana = $(this).val();
-        console.log("Selected Thana:", thana);
 
         resetSelect('#suboffice-select', 'Loading...');
 
         if (thana) {
             $.get('/order/get-suboffices', { thana: thana }, function (data) {
-                console.log("SubOffices loaded:", data);
                 enableSelect('#suboffice-select', data, 'Select Sub-Office');
-            })
-                .fail(function () {
-                    console.error("API Error: /order/get-suboffices");
-                    resetSelect('#suboffice-select', 'Error loading sub-offices');
-                    $('#suboffice-select').prop('disabled', false);
-                });
+            }).fail(function () {
+                resetSelect('#suboffice-select', 'Error loading sub-offices');
+                $('#suboffice-select').prop('disabled', false);
+            });
         } else {
             resetSelect('#suboffice-select', 'Select Thana first');
         }
     });
 
-    // 5. Sub-Office Change -> Autofill Postal Code
     $('#suboffice-select').change(function () {
         let code = $(this).find(':selected').data('code');
         if (code && $('input[name="PostalCode"]').val() != code) {
             $('input[name="PostalCode"]').val(code).css('border-color', '#2ecc71');
         }
     });
-    // Totals Calculation
+
     function updateTotals() {
         let qty = parseInt($('#quantity').val()) || 1;
         let subtotal = currentVariantPrice * qty;
         let deliveryCost = parseFloat($('#receipt-delivery').data('cost')) || 0;
         let total = subtotal + deliveryCost;
 
+        $('#summary-qty').text(qty);
         $('#summary-subtotal').text('Tk. ' + subtotal.toLocaleString());
         $('#receipt-grand-total').text('Tk. ' + total.toLocaleString());
     }
 
-    $('#increase').click(function () {
-        clearStockError();
-        let qty = parseInt($('#quantity').val());
+    // ==================================================
+    // ✅ FIXED QUANTITY CONTROLS
+    // ==================================================
 
-        if (maxAvailableStock > 0 && qty < maxAvailableStock) {
-            $('#quantity').val(qty + 1);
-        } else if (maxAvailableStock > 0 && qty >= maxAvailableStock) {
-            showStockError(`Maximum available quantity reached: ${maxAvailableStock}`);
-            $('#quantity').val(maxAvailableStock);
+    $('#increase').click(function (e) {
+        e.preventDefault();
+        clearStockError();
+
+        let qty = parseInt($('#quantity').val()) || 1;
+        let variantId = $('#selected-variant-id').val();
+
+        // Case 1: No variants exist (simple product)
+        if (variants.length === 0) {
+            if (qty < 99) {
+                $('#quantity').val(qty + 1);
+                $('#summary-qty').text(qty + 1);
+                updateTotals();
+            } else {
+                showStockError('Maximum quantity: 99 items');
+            }
+            return;
         }
+
+        // Case 2: Variants exist but none selected
+        if (!variantId) {
+            showStockError('⚠️ Please select product options first');
+            $('.variant-chips-container').css({
+                'border': '2px solid #ff6b6b',
+                'padding': '10px',
+                'border-radius': '8px'
+            });
+            setTimeout(() => {
+                $('.variant-chips-container').css('border', 'none');
+            }, 2000);
+            return;
+        }
+
+        // Case 3: Variant selected - check stock
+        if (maxAvailableStock > 0) {
+            // Stock limit exists
+            if (qty < maxAvailableStock) {
+                $('#quantity').val(qty + 1);
+                $('#summary-qty').text(qty + 1);
+                updateTotals();
+            } else {
+                showStockError(`Maximum available: ${maxAvailableStock} items`);
+                $('#quantity').val(maxAvailableStock);
+            }
+        } else {
+            // Stock is 0 or undefined - treat as out of stock
+            showStockError('This item is currently out of stock');
+        }
+    });
+
+    $('#decrease').click(function (e) {
+        e.preventDefault();
+        clearStockError();
+
+        let qty = parseInt($('#quantity').val()) || 1;
+
+        if (qty > 1) {
+            $('#quantity').val(qty - 1);
+            $('#summary-qty').text(qty - 1);
+            updateTotals();
+        } else {
+            showStockError('Minimum quantity is 1');
+        }
+    });
+
+    // Manual input validation
+    $('#quantity').on('input change', function () {
+        let qty = parseInt($(this).val()) || 1;
+
+        $(this).val(qty);
+
+        if (qty < 1) {
+            $(this).val(1);
+            showStockError('Minimum quantity is 1');
+            return;
+        }
+
+        if (maxAvailableStock > 0 && qty > maxAvailableStock) {
+            $(this).val(maxAvailableStock);
+            showStockError(`Maximum available: ${maxAvailableStock} items`);
+            return;
+        }
+
+        if (qty > 99) {
+            $(this).val(99);
+            showStockError('Maximum quantity: 99 items');
+            return;
+        }
+
+        $('#summary-qty').text(qty);
         updateTotals();
     });
 
-    $('#decrease').click(function () {
-        clearStockError();
-        let qty = parseInt($('#quantity').val());
-        if (qty > 1) {
-            $('#quantity').val(qty - 1);
-            updateTotals();
+    $('#quantity').on('keypress', function (e) {
+        if (e.which < 48 || e.which > 57) {
+            e.preventDefault();
         }
     });
 
     // ==================================================
-    // 4. SUBMIT ORDER - WITH INLINE ERROR CHECK
+    // 4. SUBMIT ORDER
     // ==================================================
+
     $('#order-form').submit(function (e) {
         e.preventDefault();
 
-        // ✅ CHECK 0: Is Email check pending?
+        // 1. Reset previous error styles
+        $('.input-error').removeClass('input-error');
+        $('.variant-chips-container').css({ 'border': 'none', 'padding': '0' });
+
+        // 2. CHECK: Is Email check pending?
         if (isCheckingEmail) {
-            alert("⏳ Please wait, checking email...");
+            // Replaced alert with SweetAlert
+            Swal.fire({
+                title: 'Please wait',
+                text: 'Validating email address...',
+                icon: 'info',
+                timer: 1500,
+                showConfirmButton: false
+            });
             return;
         }
 
-        // ✅ CHECK 1: Variant Selected
+        let isValid = true;
+        let firstErrorField = null;
+
+        // 3. CHECK: Variant Selected (Check this FIRST as it is visually at the top)
         if (!$('#selected-variant-id').val()) {
-            alert("⚠️ Warning: The selected combination is not available.\nPlease choose a different variation.");
-            $('.variant-chips-container').css({ 'border': '2px solid red', 'padding': '5px', 'border-radius': '5px' });
-            $('html, body').animate({ scrollTop: $(".variant-selection-area").offset().top - 100 }, 500);
-            return;
+            isValid = false;
+
+            // Highlight the container
+            const $variantContainer = $('.variant-chips-container');
+            $variantContainer.css({
+                'border': '2px solid #dc3545',
+                'padding': '5px',
+                'border-radius': '5px'
+            });
+
+            // Set as first error
+            firstErrorField = $(".variant-selection-area");
         }
 
-        // ✅ CHECK 2: Stock
+        // 4. CHECK: General Required Fields (Name, Phone, Address)
+        $(this).find('input[required], select[required], textarea[required]')
+            .filter(':visible')
+            .each(function () {
+
+                // Skip disabled fields
+                if ($(this).prop('disabled')) return;
+
+                if (!$(this).val() || $(this).val().trim() === "") {
+                    isValid = false;
+                    $(this).addClass('input-error');
+
+                    // Only set firstErrorField if we haven't found one yet (e.g., Variant)
+                    if (!firstErrorField) {
+                        firstErrorField = $(this);
+                    }
+                }
+            });
+
+        // 5. IF INVALID: Scroll to the first problem
+        if (!isValid || firstErrorField) {
+            if (firstErrorField && firstErrorField.length) {
+
+                const elementTop = firstErrorField[0].getBoundingClientRect().top + window.scrollY;
+
+                $('html, body').animate({
+                    scrollTop: elementTop - 120
+                }, 600);
+
+                // focus if it's a typing field
+                if (firstErrorField.is('input, select, textarea')) {
+                    firstErrorField.focus();
+                }
+            }
+            return; // Stop execution
+        }
+
+        // 6. CHECK: Stock Limits
         let requestedQty = parseInt($('#quantity').val());
         if (maxAvailableStock > 0 && requestedQty > maxAvailableStock) {
             $('#stock-error-message').text(`ERROR: Requested quantity (${requestedQty}) exceeds stock limit (${maxAvailableStock}).`);
+            $('html, body').animate({ scrollTop: $('#quantity').offset().top - 150 }, 400);
             return;
         }
 
-        // ✅ CHECK 3: Email Error Visible (Inline check - NOT alert)
+        // 7. CHECK: Email Error Visible
         const $emailStatus = $('#email-status');
         if ($emailStatus.is(':visible') && $emailStatus.text().includes('✗')) {
-            // Scroll to email field and focus
-            $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 100 }, 300);
+            $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
             $('#customerEmail').focus();
-            return; // Block submission silently
+            return;
         }
 
-        // ✅ All checks passed - proceed with submission
+        // ==========================
+        // PROCEED WITH AJAX SUBMIT
+        // ==========================
         let formData = {};
         $(this).serializeArray().forEach(function (item) {
             formData[item.name] = item.value;
         });
 
+        // Ensure numeric types
         formData.TargetCompanyId = 1;
         formData.ProductVariantId = parseInt(formData.ProductVariantId);
         formData.OrderQuantity = parseInt(formData.OrderQuantity);
@@ -488,10 +713,24 @@
             data: JSON.stringify(formData),
             success: function (res) {
                 if (res.success) {
-                    alert("✅ Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'));
-                    location.reload();
+                    // ✅ Fixed: Using SweetAlert2 for Success
+                    Swal.fire({
+                        title: 'Success!',
+                        text: "Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'),
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#2563eb'
+                    }).then((result) => {
+                        location.reload();
+                    });
                 } else {
-                    alert("❌ Error: " + (res.message || "Failed to place order."));
+                    // ✅ Fixed: Using SweetAlert2 for Error
+                    Swal.fire({
+                        title: 'Order Failed',
+                        text: res.message || "Failed to place order.",
+                        icon: 'error',
+                        confirmButtonText: 'Try Again'
+                    });
                     $btn.prop('disabled', false).text('Confirm Order');
                 }
             },
@@ -502,7 +741,14 @@
                 } else if (xhr.responseText) {
                     errorMessage = xhr.responseText.substring(0, 200);
                 }
-                alert("❌ Server Error: " + errorMessage);
+
+                // ✅ Fixed: Using SweetAlert2 for Server Error
+                Swal.fire({
+                    title: 'Server Error',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'Close'
+                });
                 $btn.prop('disabled', false).text('Confirm Order');
             }
         });
@@ -532,30 +778,22 @@
 $('input[name="PostalCode"]').on('input keyup blur', function () {
     let code = $(this).val().trim();
 
-    // ✅ AUTOMATIC TRIGGER: Run as soon as we have 4 digits
     if (code.length === 4) {
-
         let $input = $(this);
-        // Optional: visual cue that we are checking
         $input.css('border-color', '#3498db');
 
         $.get('/order/check-postal-code', { code: code }, function (data) {
             if (data.found) {
-                $input.css('border-color', '#2ecc71'); // Green border on success
+                $input.css('border-color', '#2ecc71');
 
-                // 1. Set Division & Trigger Change (loads districts via AJAX)
                 let $divSelect = $('#division-select');
                 $divSelect.val(data.division).trigger('change');
 
-                // 2. Set District (Wait 500ms for Division AJAX change to finish loading districts)
-                // Note: Increased timeout to 500ms to allow server response time
                 setTimeout(() => {
                     let $distSelect = $('#district-select');
                     $distSelect.val(data.district).trigger('change');
                 }, 500);
 
-                // 3. Set Thana & SubOffice
-                // We manually insert these options so they work even if cascading is slow
                 setTimeout(() => {
                     if (data.thana) {
                         let $thanaSelect = $('#thana-select');
@@ -567,17 +805,15 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
                     if (data.subOffice) {
                         let $subSelect = $('#suboffice-select');
                         $subSelect.empty()
-                            .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`)
-                            // Important: store the code so reverse lookup doesn't break
-                            .find(':selected').data('code', code);
+                            .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
 
+                        $subSelect.find(':selected').data('code', code);
                         $subSelect.prop('disabled', false);
                     }
-                }, 800); // Wait slightly longer for Thana to ensure it doesn't conflict
+                }, 800);
 
             } else {
-                // Not found - revert border
-                $input.css('border-color', '#e74c3c'); // Red border
+                $input.css('border-color', '#e74c3c');
             }
         });
     }

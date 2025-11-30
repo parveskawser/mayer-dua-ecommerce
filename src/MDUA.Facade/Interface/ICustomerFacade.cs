@@ -22,7 +22,7 @@ namespace MDUA.Facade.Interface
         // 4. Get Orders (Required for Orders button)
         SalesOrderHeaderList GetCustomerOrders(int customerId, int companyId);
 
-                Customer GetCustomerDetailsById(int id);
+        Customer GetCustomerDetailsById(int id);
 
     }
 }
