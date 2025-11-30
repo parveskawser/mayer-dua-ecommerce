@@ -31,6 +31,12 @@ namespace MDUA.DataAccess.Interface
 
 	public interface IPostalCodesDataAccess : ICommonDataAccess<PostalCodes, PostalCodesList, PostalCodesBase>
 	{
-        PostalCodes GetPostalCodeDetails(string code);
+		PostalCodes GetPostalCodeDetails(string code);
+
+            List<string> GetDivisions();
+        List<string> GetDistricts(string division);
+        List<string> GetThanas(string district);
+        List<dynamic> GetSubOffices(string thana);
+
     }	
 }

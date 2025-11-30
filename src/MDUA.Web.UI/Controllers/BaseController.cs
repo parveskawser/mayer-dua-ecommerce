@@ -41,6 +41,27 @@ namespace MDUA.Web.UI.Controllers
                 return 0;
             }
         }
+        public new IActionResult HandleAccessDenied()
+        {
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            if (isAjax)
+            {
+                // Returns JSON telling the JS Global Handler to redirect
+                return Json(new
+                {
+                    success = false,
+                    message = "Access Denied",
+                    redirectUrl = Url.Action("AccessDenied", "Account")
+                });
+            }
+
+            // Normal Redirect
+            return RedirectToAction("AccessDenied", "Account");
+        }
+       
+
+
         protected bool HasPermission(string permissionName)
         {
             return User.HasClaim(c => c.Type == "Permission" && c.Value.Equals(permissionName, StringComparison.OrdinalIgnoreCase));

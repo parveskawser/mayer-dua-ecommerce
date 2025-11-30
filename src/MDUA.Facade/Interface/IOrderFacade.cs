@@ -17,10 +17,14 @@ namespace MDUA.Facade.Interface
         PostalCodes GetPostalCodeDetails(string code);
         Customer GetCustomerByEmail(string email);
         (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone);
-
+        List<string> GetDivisions();
+        List<string> GetDistricts(string division);
+        List<string> GetThanas(string district);
+        List<dynamic> GetSubOffices(string thana);
         // Add this line
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         List<SalesOrderHeader> GetAllOrdersForAdmin();
+
 
     }
 }

@@ -35,22 +35,22 @@ namespace MDUA.DataAccess
 
 
 
-        //new
-        // Assuming this method signature is required by your ICustomerDataAccess interface:
-        public Customer GetById(int id)
-        {
-            // The existing public method 'Get' already implements the full logic
-            // of calling the GetCustomerById stored procedure and mapping the result.
-            return Get(id);
-        }
+             //new
+     // Assuming this method signature is required by your ICustomerDataAccess interface:
+     public Customer GetById(int id)
+     {
+         // The existing public method 'Get' already implements the full logic
+         // of calling the GetCustomerById stored procedure and mapping the result.
+         return Get(id);
+     }
 
-        // NOTE: If your interface requires a method called 'GetCustomerDetailsById',
-        // implement it as:
-        /*
-        public Customer GetCustomerDetailsById(int id)
-        {
-            return Get(id);
-        }
-        */
+     // NOTE: If your interface requires a method called 'GetCustomerDetailsById',
+     // implement it as:
+     /*
+     public Customer GetCustomerDetailsById(int id)
+     {
+         return Get(id);
+     }
+     */
     }
 }

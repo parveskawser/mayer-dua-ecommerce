@@ -1,13 +1,63 @@
 ﻿$(document).ready(function () {
 
-    // 1. Global Variables
+    // ============================================================
+    // 1. GLOBAL CONFIGURATION & VARIABLES
+    // ============================================================
+
     let token = $('input[name="__RequestVerificationToken"]').val();
     let modalBody = $('#modal-variants-content');
-    const urls = window.productConfig.urls;
+    const urls = window.productConfig ? window.productConfig.urls : {};
+
+    // [CORRECTION] AJAX INTERCEPTOR (The Fix)
+    // This wraps the core jQuery AJAX function. It runs BEFORE your specific success callbacks.
+    // If the server says "Access Denied", it redirects immediately and BLOCKS the specific 
+    // success callback (preventing the alert from showing).
+    (function ($) {
+        var originalAjax = $.ajax;
+        $.ajax = function (options) {
+            var originalSuccess = options.success;
+
+            // Wrap the success callback
+            options.success = function (data, textStatus, xhr) {
+                // 1. Check for Redirect Logic First
+                if (data && data.success === false && data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                    return; // <--- STOP HERE. Do not run the original success (No Alert!)
+                }
+
+                // 2. If no redirect, run the original logic (e.g., show success/error alerts)
+                if (originalSuccess) {
+                    originalSuccess(data, textStatus, xhr);
+                }
+            };
+            return originalAjax(options);
+        };
+    })(jQuery);
 
     // ============================================================
-    //  DYNAMIC ATTRIBUTE LOGIC (For "Add New Variant" section)
+    // 2. HELPER FUNCTIONS
     // ============================================================
+
+    // Helper: Update Main Grid Price without Reload
+    function updateMainGridPrice(productId) {
+        let $row = $(`tr[data-product-row-id="${productId}"]`);
+        let $cell = $row.find('.price-cell');
+
+        if ($row.length === 0) return;
+
+        $.get(urls.getUpdatedPrice, { productId: productId }, function (data) {
+            if (data.success) {
+                let html = '';
+                if (data.hasDiscount) {
+                    html = `<span class="original-price">${data.originalPrice}</span><br/>
+                            <span class="discounted-price">${data.sellingPrice}</span>`;
+                } else {
+                    html = `<span>${data.originalPrice}</span>`;
+                }
+                $cell.html(html);
+            }
+        });
+    }
 
     // Helper: Prevent selecting the same attribute twice across rows
     function updateDropdownAvailability() {
@@ -24,7 +74,6 @@
             let myVal = $(this).val();
             $(this).find('option').each(function () {
                 let optVal = $(this).val();
-                // If option is selected elsewhere (and not by me), disable it
                 if (optVal && selectedValues.includes(optVal) && optVal !== myVal) {
                     $(this).prop('disabled', true);
                 } else {
@@ -34,43 +83,11 @@
         });
     }
 
-    // Function to Add a New Attribute Row
-    // ============================================================
-    //  ADD NEW VARIANT LOGIC (Dynamic Rows)
-    // ============================================================
-    // ============================================================
-    //  HELPER: Update Main Grid Price without Reload
-    // ============================================================
-    function updateMainGridPrice(productId) {
-        // Find the specific row in the background table
-        let $row = $(`tr[data-product-row-id="${productId}"]`);
-        let $cell = $row.find('.price-cell'); // The td we added the class to
-
-        if ($row.length === 0) return;
-
-        // Fetch new calculated price
-        $.get(urls.getUpdatedPrice, { productId: productId }, function (data) {
-            if (data.success) {
-                let html = '';
-                if (data.hasDiscount) {
-                    html = `<span class="original-price">${data.originalPrice}</span><br/>
-                            <span class="discounted-price">${data.sellingPrice}</span>`;
-                } else {
-                    html = `<span>${data.originalPrice}</span>`;
-                }
-                // Update the HTML of the cell
-                $cell.html(html);
-            }
-        });
-    }
-    // 1. Function to Add a Row
+    // Helper: Add a New Attribute Row
     function addAttributeRow() {
         let index = $('#dynamic-attributes-container .dynamic-attr-row').length;
-
-        // Get options from the hidden template
         let optionsHtml = $('#attribute-template').html();
 
-        // DEBUG: Check if attributes are loaded
         if (!optionsHtml || optionsHtml.trim() === "") {
             console.error("Attribute Template is empty. Ensure Facade loads Attributes.");
             optionsHtml = '<option value="">Error: No Attributes Found</option>';
@@ -96,19 +113,18 @@
         updateDropdownAvailability();
     }
 
-    
+    // ============================================================
+    // 3. DYNAMIC ATTRIBUTE HANDLERS (Add/Remove Rows)
+    // ============================================================
 
-    // 3. HANDLER: Click "+ Add Attribute"
-    // ✅ Using $(document) ensures we catch the click even if modal reloads
+    // HANDLER: Click "+ Add Attribute"
     $(document).on('click', '#btn-add-dynamic-attr', function () {
-        console.log("Add Attribute Button Clicked"); // Check Console (F12) if this prints
         addAttributeRow();
     });
 
-    // 4. HANDLER: Remove Row
+    // HANDLER: Remove Row
     $(document).on('click', '.remove-attr-row', function () {
         $(this).closest('.dynamic-attr-row').remove();
-
         // Re-index inputs
         $('#dynamic-attributes-container .dynamic-attr-row').each(function (idx) {
             $(this).find('.final-value-id').attr('name', `AttributeValueIds[${idx}]`);
@@ -116,7 +132,7 @@
         updateDropdownAvailability();
     });
 
-    // 5. HANDLER: Attribute Name Changed -> Load Values
+    // HANDLER: Attribute Name Changed -> Load Values
     $(document).on('change', '.attr-name-select', function () {
         let $select = $(this);
         let $row = $select.closest('.dynamic-attr-row');
@@ -144,18 +160,19 @@
         }
     });
 
-    // 6. HANDLER: Attribute Value Changed -> Update Hidden Input
+    // HANDLER: Attribute Value Changed -> Update Hidden Input
     $(document).on('change', '.attr-value-select', function () {
         let val = $(this).val();
         $(this).siblings('.final-value-id').val(val);
     });
 
-    // 7. HANDLER: Save New Variant
-    // HANDLER: Save New Variant
+    // ============================================================
+    // 4. ADD NEW VARIANT LOGIC (Submit)
+    // ============================================================
+
     modalBody.on('click', '#btn-save-new-variant', function () {
         let $form = $('#form-add-single-variant');
         let productName = $('#modal-product-name').text().trim();
-
         let parts = [productName];
         let isValid = true;
 
@@ -184,27 +201,24 @@
         // 3. Construct the proposed name
         let proposedName = parts.join(' - ');
 
-        // 4. ✅ DUPLICATE CHECK: Loop through existing table rows
-        // 4. DUPLICATE CHECK: Loop through existing table rows
+        // 4. DUPLICATE CHECK
         let isDuplicate = false;
         $('.variants-table-modal tbody tr').each(function () {
             let existingName = $(this).find('td:first').text().trim();
             if (existingName === proposedName) {
                 isDuplicate = true;
-                return false; // Break loop
+                return false;
             }
         });
 
         if (isDuplicate) {
-            // ✅ FIX: Show Beautiful Modal instead of Alert
             $('#duplicate-variant-name').text(proposedName);
             $('#duplicateVariantModal').modal('show');
-            return; // STOP here.
+            return;
         }
 
         // 5. Set Name and Submit
         $('#new-variant-name').val(proposedName);
-
         let $btn = $(this);
         $btn.prop('disabled', true).text('Saving...');
 
@@ -215,7 +229,6 @@
             data: $form.serialize(),
             success: function (data) {
                 if (data.success) {
-                    // Reload Modal Content
                     let productId = $form.find('input[name="ProductId"]').val();
                     $.get(urls.getVariantsPartial, { productId: productId }, function (html) {
                         $('#modal-variants-content').html(html);
@@ -227,18 +240,16 @@
                 }
             },
             error: function () {
-                alert('Server Error');
                 $btn.prop('disabled', false).text('Save New Variant');
             }
         });
     });
 
-
     // ============================================================
-    //  MAIN PAGE HANDLERS
+    // 5. MAIN PAGE HANDLERS
     // ============================================================
 
-    // 1. View Variants Button (Opens the Modal)
+    // 1. View Variants Button
     $('.btn-view-variants').on('click', function () {
         var productId = $(this).data('product-id');
         var productName = $(this).closest('tr').find('td[data-product-name]').data('product-name');
@@ -248,10 +259,7 @@
 
         $.get(urls.getVariantsPartial, { productId: productId }, function (data) {
             $('#modal-variants-content').html(data);
-
-            // ✅ Auto-add one empty row so the form is ready to use
             addAttributeRow();
-
         }).fail(function () {
             $('#modal-variants-content').html('<div class="error-message">Failed to load variants.</div>');
         });
@@ -264,26 +272,18 @@
         $button.prop('disabled', true);
 
         $.ajax({
-            url: urls.toggleStatus, // Ensure 'urls' is defined in your scope
+            url: urls.toggleStatus,
             type: 'POST',
-            headers: { 'RequestVerificationToken': token }, // Ensure 'token' is defined
+            headers: { 'RequestVerificationToken': token },
             data: { productId: productId },
             success: function (data) {
                 if (data.success) {
-                    // 1. Update Text
                     $button.text(data.newIsActive ? "Active" : "Inactive");
-
-                    // 2. Remove BOTH sets of possible color classes
                     $button.removeClass("bg-success-subtle text-success bg-danger-subtle text-danger");
-
-                    // 3. Add the correct set based on the new state
                     $button.addClass(data.newIsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger");
                 } else {
                     alert(data.message);
                 }
-            },
-            error: function () {
-                alert('Error toggling status.');
             },
             complete: function () {
                 $button.prop('disabled', false);
@@ -322,7 +322,7 @@
         });
     });
 
-    // 5. Delete Product (Preparation)
+    // 5. Delete Product
     $('.js-delete-product').on('click', function () {
         let productId = $(this).data('product-id');
         let productName = $(this).data('product-name');
@@ -342,48 +342,29 @@
         document.getElementById('confirm-delete-button').disabled = true;
     });
 
+    // Execute Delete Product
     $('#confirm-delete-button').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
         $button.prop('disabled', true).text('Deleting...');
 
-        // FIX: Define and assign the token value here by looking up the hidden input
-        let antiforgeryToken = $('input[name="__RequestVerificationToken"]').val();
-
         $.ajax({
             url: urls.deleteConfirmed,
             type: 'POST',
-            data: {
-                productId: productId,
-                __RequestVerificationToken: antiforgeryToken // Now it's defined!
-            },
+            headers: { 'RequestVerificationToken': token },
+            data: { productId: productId },
             success: function (data) {
                 if (data.success) {
                     $('#deleteProductModal').modal('hide');
                     $('tr[data-product-row-id="' + productId + '"]').fadeOut(500, function () { $(this).remove(); });
                 } else { alert('Error: ' + data.message); }
             },
-            error: function (xhr, status, error) { // <-- Added parameters
-                // alert('Server error.');
-
-                // Now xhr is defined and you can check its status
-                if (xhr.status === 403) {
-                    // The old access denied logic (which uses the redirect)
-                    window.location.href = '/Account/AccessDenied?missingPermission=Product.Delete';
-                } else if (xhr.status === 400) {
-                    // Handle the specific Bad Request error more gracefully
-                    alert('Error: The request token was missing or invalid. Please refresh the page.');
-                } else {
-                    // Handle other errors (like 500 Internal Server Error)
-                    alert('An unexpected error occurred: ' + xhr.statusText);
-                }
-            },
+            complete: function () { $button.prop('disabled', false).text('Delete Product'); }
         });
     });
 
-
     // ============================================================
-    //  MANAGE VARIANTS LIST (Inline Edit & Delete)
+    // 6. MANAGE VARIANTS LIST (Inline Edit & Delete)
     // ============================================================
 
     // 1. Delete Variant (Opens Confirm Modal)
@@ -421,106 +402,86 @@
                     });
                 } else { alert('Error: ' + data.message); }
             },
-            error: function () { alert('Server error.'); },
             complete: function () { $button.prop('disabled', false).text('Delete Variant'); }
         });
     });
 
     // 3. Inline Edit Variant
-    // 3. Manage Variants: Edit/Save (Updated for SKU)
     modalBody.on('click', '.js-edit-variant', function () {
         let $button = $(this);
         let $row = $button.closest('tr');
         let variantId = $row.data('variant-id');
-
-        // Use .trim() to ensure correct comparison
         let isEditMode = $button.hasClass('text-warning');
+
         if (isEditMode) {
             // --- ENTER EDIT MODE ---
-
-            // 1. Toggle Price: Hide Text, Show Input
             $row.find('td[data-col="price"] .display-value').hide();
             $row.find('td[data-col="price"] .edit-input').show();
-
-            // 2. Toggle SKU: Hide Text, Show Input (NEW)
             $row.find('td[data-col="sku"] .display-value').hide();
             $row.find('td[data-col="sku"] .edit-input').show();
 
-            // 3. Show the [+ Add Attr] button in the name column
+            // Show [+ Add Attr] button
             let nameCell = $row.find('td:first');
             if (nameCell.find('.btn-add-attr-inline').length === 0) {
                 nameCell.append(`
                     <button type="button" class="btn btn-xs btn-outline-primary ms-2 btn-add-attr-inline" 
-                            title="Add missing attribute" style="padding: 0px 4px; font-size: 10px;">
+                        title="Add missing attribute" style="padding: 0px 4px; font-size: 10px;">
                         + Add Attr
                     </button>
                 `);
             }
             nameCell.find('.btn-add-attr-inline').show();
 
-            // 4. Change button to Save
             $button.removeClass('text-warning').addClass('text-success')
                 .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>');
         } else {
             // --- SAVE MODE ---
-
-            // Get values from inputs
             let newPrice = $row.find('td[data-col="price"] .edit-input').val();
-            let newSku = $row.find('td[data-col="sku"] .edit-input').val(); // (NEW)
+            let newSku = $row.find('td[data-col="sku"] .edit-input').val();
 
             $button.prop('disabled', true).text('Saving...');
 
             $.ajax({
-                url: urls.updateVariantPrice, // Ensure this URL maps to 'UpdateVariantData' in your View Config
+                url: urls.updateVariantPrice,
                 type: 'POST',
                 headers: { 'RequestVerificationToken': token },
                 data: {
                     variantId: variantId,
                     newPrice: newPrice,
-                    newSku: newSku // Send SKU
+                    newSku: newSku
                 },
                 success: function (data) {
                     if (data.success) {
-                        let priceHtml = `<span class="fw-bold text-dark">Tk. ${parseFloat(newPrice).toFixed(2)}</span>`;
-                        // 1. Update Price UI
                         $row.find('td[data-col="price"] .display-value').text('Tk. ' + parseFloat(newPrice).toFixed(2));
-
-                        // 2. Update SKU UI (NEW)
                         $row.find('td[data-col="sku"] .display-value').text(newSku ? newSku : "N/A");
 
-                        // 3. Switch inputs back to hidden
                         $row.find('.display-value').show();
                         $row.find('.edit-input').hide();
-                        $row.find('.btn-add-attr-inline').hide(); // Hide add attr button
+                        $row.find('.btn-add-attr-inline').hide();
 
-                        // 4. Change button back to Edit
                         $button.removeClass('text-success').addClass('text-warning')
                             .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
                     } else {
                         alert('Error: ' + data.message);
                     }
                 },
-                error: function () { alert('Server error.'); },
                 complete: function () { $button.prop('disabled', false); }
             });
         }
     });
 
-    // 4. HANDLER: Click "[+ Add Attr]" (Opens Small Modal)
+    // 4. HANDLER: Click "[+ Add Attr]"
     modalBody.on('click', '.btn-add-attr-inline', function (e) {
-        e.stopPropagation(); // Prevent row clicks
-
+        e.stopPropagation();
         let $row = $(this).closest('tr');
         let variantId = $row.data('variant-id');
-        let productId = $('input[name="ProductId"]').val(); // Get from hidden field in main modal
+        let productId = $('input[name="ProductId"]').val();
 
-        // Reset & Open Modal
         $('#target-variant-id').val(variantId);
         $('#missing-attr-select').html('<option>Loading...</option>');
         $('#missing-value-select').html('<option>Select Value</option>').prop('disabled', true);
         $('#addVariantAttributeModal').modal('show');
 
-        // Load Missing Attributes
         $.get(urls.getMissingAttributes, { productId: productId, variantId: variantId }, function (data) {
             let html = '<option value="">Select Attribute</option>';
             if (data && data.length > 0) {
@@ -532,7 +493,7 @@
         });
     });
 
-    // 5. HANDLER: Missing Attribute Selected -> Load Values
+    // 5. HANDLER: Missing Attribute Selected
     $('#missing-attr-select').on('change', function () {
         let attrId = $(this).val();
         let $valSelect = $('#missing-value-select');
@@ -564,12 +525,10 @@
             data: { variantId: variantId, attributeValueId: valId },
             success: function (data) {
                 if (data.success) {
-                    // Close small modal
                     $('#addVariantAttributeModal').modal('hide');
-                    // Reload the big list to show updated name
                     $.get(urls.getVariantsPartial, { productId: productId }, function (html) {
                         $('#modal-variants-content').html(html);
-                        addAttributeRow(); // Re-init dynamic rows
+                        addAttributeRow();
                     });
                 } else {
                     alert("Failed");
@@ -582,7 +541,7 @@
     });
 
     // ============================================================
-    //  DISCOUNT MODAL LOGIC
+    // 7. DISCOUNT MODAL LOGIC
     // ============================================================
 
     // 1. Open Modal
@@ -612,7 +571,6 @@
             data: $form.serialize(),
             success: function (data) {
                 if (data.success) {
-                    // Reload
                     $.get(urls.getDiscounts, { productId: productId }, function (html) {
                         $('#modal-discounts-content').html(html);
                     });
@@ -622,32 +580,26 @@
                     $btn.prop('disabled', false).text('Add Discount');
                 }
             },
-            error: function () { alert("Server Error"); $btn.prop('disabled', false).text('Add Discount'); }
+            error: function () {
+                $btn.prop('disabled', false).text('Add Discount');
+            }
         });
     });
 
     // 3. Delete Discount
-    // 3. Delete Discount (Opens Modal)
     $(document).on('click', '.js-delete-discount', function () {
         let $row = $(this).closest('tr');
         let id = $row.data('id');
-
-        // Get some info to show in the modal (e.g. "Flat - 50.00")
         let type = $row.find('td[data-col="type"] .display-value').text();
         let value = $row.find('td[data-col="value"] .display-value').text();
         let infoText = `${type} : ${value}`;
 
-        // Update Modal Text
         $('#modal-delete-discount-info').text(infoText);
-
-        // Attach ID to the confirm button
         $('#confirm-delete-discount-button').data('discount-id', id);
-
-        // Show Modal (Stacked on top)
         $('#deleteDiscountModal').modal('show');
     });
 
-    // 3b. Confirm Delete Discount (Executes AJAX)
+    // 3b. Confirm Delete Discount
     $(document).on('click', '#confirm-delete-discount-button', function () {
         let $btn = $(this);
         let discountId = $btn.data('discount-id');
@@ -661,14 +613,10 @@
             data: { id: discountId },
             success: function (data) {
                 if (data.success) {
-                    // Close the confirmation modal
                     $('#deleteDiscountModal').modal('hide');
-
-                    // Find the row inside the Discount Modal and remove it
                     let $row = $(`.discounts-table tr[data-id="${discountId}"]`);
                     $row.fadeOut(300, function () {
                         $(this).remove();
-                        // Show "No discounts" if table is empty
                         if ($('.discounts-table tbody tr').length === 0) {
                             $('.discounts-table tbody').html('<tr><td colspan="7" class="text-center text-muted">No discounts found.</td></tr>');
                         }
@@ -679,7 +627,6 @@
                     alert("Error: " + data.message);
                 }
             },
-            error: function () { alert("Server Error"); },
             complete: function () {
                 $btn.prop('disabled', false).text('Delete Discount');
             }
@@ -693,16 +640,13 @@
         let isEdit = $btn.text().trim() === 'Edit';
 
         if (isEdit) {
-            // Enter Edit Mode
             $row.find('.display-value').hide();
             $row.find('.edit-input').show();
             $btn.text('Save').removeClass('btn-warning').addClass('btn-success');
         } else {
-            // Save Mode
             let id = $row.data('id');
             let productId = $('#form-add-discount input[name="ProductId"]').val();
 
-            // Gather data manually
             let discount = {
                 Id: id,
                 ProductId: productId,
@@ -712,8 +656,6 @@
                 EffectiveFrom: $row.find('td[data-col="from"] input').val(),
                 EffectiveTo: $row.find('td[data-col="to"] input').val(),
                 IsActive: $row.find('td[data-col="active"] select').val(),
-
-                // Fake values required by model binder (dates/strings)
                 CreatedBy: "",
                 CreatedAt: new Date().toISOString()
             };
@@ -727,7 +669,6 @@
                 data: discount,
                 success: function (data) {
                     if (data.success) {
-                        // Reload to refresh display values (dates/badges) cleanly
                         $.get(urls.getDiscounts, { productId: productId }, function (html) {
                             $('#modal-discounts-content').html(html);
                         });
@@ -740,18 +681,16 @@
     });
 
     // ============================================================
-    //  PRODUCT IMAGE LOGIC (Cropper.js)
+    // 8. PRODUCT IMAGE LOGIC (Cropper.js)
     // ============================================================
 
-    let cropper; // Global cropper instance for Product
-    const imageElement = document.getElementById('image-to-crop');
+    let cropper;
 
     // 1. Open Image Modal
     $('.js-manage-images').on('click', function () {
         let productId = $(this).data('product-id');
         $('#modal-images-content').data('product-id', productId);
 
-        // Load List
         $.get(urls.getImages, { productId: productId }, function (html) {
             $('#modal-images-content').html(html);
         });
@@ -765,22 +704,17 @@
             let file = files[0];
             let url = URL.createObjectURL(file);
 
-            // Setup UI - Show cropper area
             $('#cropper-wrapper, #cropper-controls').show();
-            $('#upload-image-input').closest('.mb-3').hide(); // Hide the entire input container
+            $('#upload-image-input').closest('.mb-3').hide();
 
             let img = document.getElementById('image-to-crop');
             img.src = url;
 
-            // Destroy old cropper if exists
-            if (cropper) {
-                cropper.destroy();
-            }
+            if (cropper) cropper.destroy();
 
-            // Initialize Cropper after image loads
             img.onload = function () {
                 cropper = new Cropper(img, {
-                    aspectRatio: 1, // 1:1 Square
+                    aspectRatio: 1,
                     viewMode: 1,
                     autoCropArea: 1,
                 });
@@ -788,18 +722,12 @@
         }
     });
 
-    // 3. Close Cropper and Modal
+    // 3. Close Cropper
     $(document).on('click', '#btn-close-cropper', function () {
-        // Close the entire modal
-        $('#productImagesModal').modal('hide');
-
-        // Clean up cropper
         if (cropper) {
             cropper.destroy();
             cropper = null;
         }
-
-        // Reset UI
         $('#cropper-wrapper, #cropper-controls').hide();
         $('#upload-image-input').val('').closest('.mb-3').show();
     });
@@ -828,14 +756,7 @@
                     if (response.success) {
                         $.get(urls.getImages, { productId: productId }, function (html) {
                             $('#modal-images-content').html(html);
-
-                            // Clean up cropper
-                            if (cropper) {
-                                cropper.destroy();
-                                cropper = null;
-                            }
-
-                            // Reset UI
+                            if (cropper) { cropper.destroy(); cropper = null; }
                             $('#cropper-wrapper, #cropper-controls').hide();
                             $('#upload-image-input').val('').closest('.mb-3').show();
                         });
@@ -843,7 +764,6 @@
                         alert("Upload failed: " + response.message);
                     }
                 },
-                error: function () { alert("Server Error"); },
                 complete: function () {
                     $btn.prop('disabled', false).html('<i class="fas fa-check"></i> Save Image');
                 }
@@ -851,16 +771,14 @@
         });
     });
 
-    // 5. Delete Image (Show Confirmation Modal)
+    // 5. Delete Image
     $(document).on('click', '.js-delete-image', function () {
         let id = $(this).data('id');
-        // Store ID on the confirm button
         $('#btn-confirm-del-prod-img').data('id', id);
-        // Show Modal
         $('#deleteProductImageModal').modal('show');
     });
 
-    // 6. Confirm Delete (Executes AJAX)
+    // 6. Confirm Delete Image
     $(document).on('click', '#btn-confirm-del-prod-img', function () {
         let $btn = $(this);
         let id = $btn.data('id');
@@ -875,47 +793,25 @@
             data: { id: id },
             success: function (data) {
                 if (data.success) {
-                    $('#deleteProductImageModal').modal('hide'); // Close confirm modal
-                    // Refresh List
+                    $('#deleteProductImageModal').modal('hide');
                     $.get(urls.getImages, { productId: productId }, function (html) {
                         $('#modal-images-content').html(html);
                     });
                 } else { alert("Error deleting"); }
             },
-            error: function () { alert("Server Error"); },
             complete: function () { $btn.prop('disabled', false).text('Delete'); }
         });
     });
 
-    // 7. Product Zoom Handlers
-    $(document).on('click', '.js-prod-zoom-in', function () {
-        if (cropper) cropper.zoom(0.1);
-    });
-    $(document).on('click', '.js-prod-zoom-out', function () {
-        if (cropper) cropper.zoom(-0.1);
-    });
-
-    // Handler: Cancel Cropping (The 'X' button inside the cropper wrapper)
-    $(document).on('click', '#btn-close-cropper', function () {
-        // 1. Destroy Cropper
-        if (cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
-
-        // 2. Hide UI
-        $('#cropper-wrapper').hide();
-        $('#cropper-controls').hide();
-
-        // 3. Reset File Input so same file can be selected again
-        $('#upload-image-input').val('');
-    });
+    // 7. Zoom Handlers
+    $(document).on('click', '.js-prod-zoom-in', function () { if (cropper) cropper.zoom(0.1); });
+    $(document).on('click', '.js-prod-zoom-out', function () { if (cropper) cropper.zoom(-0.1); });
 
     // ============================================================
-    //  VARIANT IMAGE LOGIC (Cropper.js)
+    // 9. VARIANT IMAGE LOGIC (Cropper.js)
     // ============================================================
 
-    let varCropper; // Global cropper for Variant
+    let varCropper;
 
     // 1. Open Variant Image Modal
     $(document).on('click', '.js-manage-var-images', function () {
@@ -928,39 +824,28 @@
         $.get(urls.getVariantImages, { variantId: variantId }, function (html) {
             $('#modal-var-images-content').html(html);
         });
-
         $('#variantImagesModal').modal('show');
     });
 
-    // 2. Handle File Selection (Variant)
+    // 2. Handle File Selection
     $(document).on('change', '#upload-variant-image-input', function (e) {
         let file = e.target.files[0];
         if (file) {
             let url = URL.createObjectURL(file);
             $('#var-cropper-wrapper, #var-cropper-controls').show();
-
             let img = document.getElementById('var-image-to-crop');
             img.src = url;
-
             if (varCropper) varCropper.destroy();
-
-            varCropper = new Cropper(img, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 1
-            });
-
+            varCropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, autoCropArea: 1 });
             $(this).val('');
         }
     });
 
-    // 3. Upload Cropped Variant Image
+    // 3. Upload Variant Image
     $(document).on('click', '#btn-confirm-var-upload', function () {
         if (!varCropper) return;
-
         let $btn = $(this);
         $btn.prop('disabled', true).text('Uploading...');
-
         let variantId = $('#modal-var-images-content').data('variant-id');
 
         varCropper.getCroppedCanvas({ width: 600, height: 600 }).toBlob((blob) => {
@@ -982,27 +867,20 @@
                             if (varCropper) { varCropper.destroy(); varCropper = null; }
                             $('#var-cropper-wrapper').hide();
                         });
-                    } else {
-                        alert("Upload failed");
-                    }
+                    } else { alert("Upload failed"); }
                 },
-                error: function () { alert("Server Error"); },
                 complete: function () { $btn.prop('disabled', false).text('Save'); }
             });
         });
     });
 
     // 4. Delete Variant Image
-    // 4. Delete Variant Image (Opens Modal)
     $(document).on('click', '.js-del-var-img', function () {
         let id = $(this).data('id');
-        // Store ID on confirm button
         $('#btn-confirm-del-var-img').data('id', id);
-        // Show Modal
         $('#deleteVariantImageModal').modal('show');
     });
 
-    // 4b. Confirm Delete Variant Image (Executes AJAX)
     $(document).on('click', '#btn-confirm-del-var-img', function () {
         let $btn = $(this);
         let id = $btn.data('id');
@@ -1016,32 +894,20 @@
             headers: { 'RequestVerificationToken': token },
             data: { id: id },
             success: function () {
-                $('#deleteVariantImageModal').modal('hide'); // Close confirm modal
-                // Refresh List
+                $('#deleteVariantImageModal').modal('hide');
                 $.get(urls.getVariantImages, { variantId: variantId }, function (html) {
                     $('#modal-var-images-content').html(html);
                 });
             },
-            error: function () { alert("Server Error"); },
             complete: function () { $btn.prop('disabled', false).text('Delete'); }
         });
     });
 
-    // 5. Variant Zoom Handlers
-    $(document).on('click', '.js-var-zoom-in', function () {
-        if (varCropper) varCropper.zoom(0.1);
-    });
-
-    $(document).on('click', '.js-var-zoom-out', function () {
-        if (varCropper) varCropper.zoom(-0.1);
-    });
-
-    // Handler: Cancel Variant Cropping
+    // 5. Variant Zoom & Close
+    $(document).on('click', '.js-var-zoom-in', function () { if (varCropper) varCropper.zoom(0.1); });
+    $(document).on('click', '.js-var-zoom-out', function () { if (varCropper) varCropper.zoom(-0.1); });
     $(document).on('click', '#btn-close-var-cropper', function () {
-        if (varCropper) {
-            varCropper.destroy();
-            varCropper = null;
-        }
+        if (varCropper) { varCropper.destroy(); varCropper = null; }
         $('#var-cropper-wrapper').hide();
         $('#var-cropper-controls').hide();
         $('#upload-variant-image-input').val('');
@@ -1053,13 +919,12 @@
         let productId = $(this).data('product-id');
 
         $.ajax({
-            url: '/product/set-primary-image', // Or use urls.setPrimaryImage if added to config
+            url: '/product/set-primary-image',
             type: 'POST',
             headers: { 'RequestVerificationToken': token },
             data: { imageId: imageId, productId: productId },
             success: function (res) {
                 if (res.success) {
-                    // Reload list to update UI borders and badges
                     $.get(urls.getImages, { productId: productId }, function (html) {
                         $('#modal-images-content').html(html);
                     });
@@ -1068,20 +933,18 @@
         });
     });
 
-    // 7. Update Sort Order (on change/blur)
+    // 7. Update Sort Order (Product)
     $(document).on('change', '.js-update-order', function () {
         let imageId = $(this).data('id');
         let newOrder = $(this).val();
         let productId = $('#modal-images-content').data('product-id');
 
         $.ajax({
-            url: '/product/update-image-order', // Or use urls.updateImageOrder
+            url: '/product/update-image-order',
             type: 'POST',
             headers: { 'RequestVerificationToken': token },
             data: { imageId: imageId, sortOrder: newOrder },
             success: function (res) {
-                // Optional: Reload list to sort items immediately
-                // or just let it be until next open
                 if (res.success) {
                     $.get(urls.getImages, { productId: productId }, function (html) {
                         $('#modal-images-content').html(html);
@@ -1091,22 +954,19 @@
         });
     });
 
-    // ... inside VARIANT IMAGE LOGIC ...
-
-    // 5. Update Variant Image Sort Order
+    // 8. Update Sort Order (Variant)
     $(document).on('change', '.js-update-var-order', function () {
         let imageId = $(this).data('id');
         let newOrder = $(this).val();
-        let variantId = $(this).data('variant-id'); // Use data attribute or global var
+        let variantId = $(this).data('variant-id');
 
         $.ajax({
-            url: '/product/update-variant-image-order', // Or use config: urls.updateVariantImageOrder
+            url: '/product/update-variant-image-order',
             type: 'POST',
             headers: { 'RequestVerificationToken': token },
             data: { imageId: imageId, displayOrder: newOrder },
             success: function (res) {
                 if (res.success) {
-                    // Optional: Reload list to see them re-sorted immediately
                     $.get(urls.getVariantImages, { variantId: variantId }, function (html) {
                         $('#modal-var-images-content').html(html);
                     });
@@ -1114,4 +974,5 @@
             }
         });
     });
+
 }); // End of Document Ready

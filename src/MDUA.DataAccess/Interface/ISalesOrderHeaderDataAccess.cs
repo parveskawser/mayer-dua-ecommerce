@@ -38,5 +38,6 @@ namespace MDUA.DataAccess.Interface
         SalesOrderHeaderList GetOrdersByCustomerId(int customerId);
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         SalesOrderHeaderList GetAllSalesOrderHeaders();
+
     }
 }

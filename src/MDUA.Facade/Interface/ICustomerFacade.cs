@@ -23,5 +23,6 @@ namespace MDUA.Facade.Interface
         SalesOrderHeaderList GetCustomerOrders(int customerId, int companyId);
 
         Customer GetCustomerDetailsById(int id);
+
     }
 }

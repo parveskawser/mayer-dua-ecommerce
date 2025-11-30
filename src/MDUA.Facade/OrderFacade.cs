@@ -6,9 +6,9 @@ using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using MDUA.Framework;
 using System;
-using System.Collections.Generic; // Added for List<object>
-using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration; // ✅ 1. Required for appsettings.json
+using System.Collections.Generic;
+using System.Data.SqlClient;             // Required for SqlConnection
+using Microsoft.Extensions.Configuration; // ✅ Required for appsettings.json access
 
 namespace MDUA.Facade
 {
@@ -23,7 +23,7 @@ namespace MDUA.Facade
         private readonly IProductFacade _productFacade;
         private readonly IPostalCodesDataAccess _postalCodesDataAccess;
 
-        // ✅ 2. Declare the Configuration field
+        // ✅ 1. Declare Configuration to access appsettings.json
         private readonly IConfiguration _configuration;
 
         public OrderFacade(
@@ -35,7 +35,7 @@ namespace MDUA.Facade
             IProductVariantDataAccess productVariantDataAccess,
             IProductFacade productFacade,
             IPostalCodesDataAccess postalCodesDataAccess,
-            // ✅ 3. Inject IConfiguration
+            // ✅ 2. Inject Configuration
             IConfiguration configuration)
         {
             _salesOrderHeaderDataAccess = salesOrderHeaderDataAccess;
@@ -47,7 +47,7 @@ namespace MDUA.Facade
             _productFacade = productFacade;
             _postalCodesDataAccess = postalCodesDataAccess;
 
-            // ✅ 4. Assign it
+            // ✅ 3. Assign Configuration
             _configuration = configuration;
         }
 
@@ -65,7 +65,13 @@ namespace MDUA.Facade
         public Customer GetCustomerByPhone(string phone) => _customerDataAccess.GetByPhone(phone);
         public PostalCodes GetPostalCodeDetails(string code) => _postalCodesDataAccess.GetPostalCodeDetails(code);
         public Customer GetCustomerByEmail(string email) => _customerDataAccess.GetByEmail(email);
+        public List<string> GetDivisions() => _postalCodesDataAccess.GetDivisions();
 
+        public List<string> GetDistricts(string division) => _postalCodesDataAccess.GetDistricts(division);
+
+        public List<string> GetThanas(string district) => _postalCodesDataAccess.GetThanas(district);
+
+        public List<dynamic> GetSubOffices(string thana) => _postalCodesDataAccess.GetSubOffices(thana);
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
             // 1. PRE-CALCULATION (Read-Only, outside transaction)
@@ -253,6 +259,7 @@ namespace MDUA.Facade
                 }
             }
         }
+
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {
             var customer = _customerDataAccess.GetByPhone(phone);
@@ -273,14 +280,12 @@ namespace MDUA.Facade
             }
             return _salesOrderHeaderDataAccess.GetOrderReceiptByOnlineId(onlineOrderId);
         }
-
         public List<SalesOrderHeader> GetAllOrdersForAdmin()
         {
             // Assuming the existing _salesOrderHeaderDataAccess.GetAll() calls the 
             // [dbo].[GetAllSalesOrderHeader] stored procedure, or equivalent.
             return _salesOrderHeaderDataAccess.GetAllSalesOrderHeaders().ToList();
         }
-
         #endregion
     }
 }

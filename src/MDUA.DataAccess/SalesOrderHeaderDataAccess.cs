@@ -10,8 +10,8 @@ using MDUA.Entities.List;
 
 namespace MDUA.DataAccess
 {
-    public partial class SalesOrderHeaderDataAccess
-    {
+	public partial class SalesOrderHeaderDataAccess
+	{
         public long InsertSalesOrderHeaderSafe(SalesOrderHeader order)
         {
             // ✅ BULLETPROOF METHOD: Inline SQL
@@ -101,7 +101,7 @@ namespace MDUA.DataAccess
 
         public SalesOrderHeaderList GetOrdersByCustomerId(int customerId)
         {
-
+         
             string SQLQuery = @"
         SELECT 
             soh.Id, 
@@ -194,8 +194,6 @@ namespace MDUA.DataAccess
             return receiptData;
         }
 
-
-        //new
         public SalesOrderHeaderList GetAllSalesOrderHeaders()
         {
             // 1. Define the query explicitly. We select columns by name to be 100% sure of the data types.
@@ -283,5 +281,6 @@ namespace MDUA.DataAccess
                 return list;
             }
         }
+
     }	
 }

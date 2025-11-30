@@ -18,19 +18,8 @@ namespace MDUA.Web.UI.Controllers
             _userLoginFacade = userLoginFacade;
 
         }
-        [HttpGet]
-        [Route("order/check-email")]
-        public IActionResult CheckEmail(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return Json(new { exists = false });
 
-            var customer = _orderFacade.GetCustomerByEmail(email);
-            bool exists = customer != null;
-
-            return Json(new { exists = exists });
-        }
-
+        // The Route must match what the JavaScript is calling (e.g., /Order/GetOrderStatus?orderId=ON...)
         [HttpGet]
         public IActionResult GetOrderStatus([FromQuery] string orderId)
         {
@@ -167,6 +156,20 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
+
+
+        [HttpGet]
+        [Route("order/check-email")]
+        public IActionResult CheckEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Json(new { exists = false });
+
+            var customer = _orderFacade.GetCustomerByEmail(email);
+            bool exists = customer != null;
+
+            return Json(new { exists = exists });
+        }
         [HttpGet]
         [Route("order/check-customer")]
         // ✅ FIX: Remove [FromQuery] and rely on standard parameter binding for simple string
@@ -232,7 +235,60 @@ namespace MDUA.Web.UI.Controllers
             }
             return Json(new { found = false });
         }
+        // In OrderController.cs
 
+        [HttpGet]
+        [Route("order/get-divisions")]
+        public IActionResult GetDivisions()
+        {
+            // Ensure _orderFacade.GetDivisions() is implemented
+            var data = _orderFacade.GetDivisions();
+            return Json(data);
+        }
+
+        [HttpGet]
+        [Route("order/get-districts")]
+        public IActionResult GetDistricts(string division)
+        {
+            var data = _orderFacade.GetDistricts(division);
+            return Json(data);
+        }
+
+        [HttpGet]
+        [Route("order/get-thanas")]
+        public IActionResult GetThanas(string district)
+        {
+            var data = _orderFacade.GetThanas(district);
+            return Json(data);
+        }
+
+        [HttpGet]
+        [Route("order/get-suboffices")]
+        public IActionResult GetSubOffices(string thana)
+        {
+            var data = _orderFacade.GetSubOffices(thana);
+            return Json(data);
+        }
+         //new
+ [HttpGet]
+ public IActionResult AllOrders()
+ {
+     try
+     {
+         // 1. Fetch all orders from the Facade
+         List<SalesOrderHeader> orders = _orderFacade.GetAllOrdersForAdmin();
+
+         // 2. Pass the list to the view. 
+         // The view should be strongly typed to List<MDUA.Entities.SalesOrderHeader>.
+         return View(orders);
+     }
+     catch (Exception ex)
+     {
+         // Log the error and show an empty list or error view
+         ViewData["ErrorMessage"] = "Failed to load order list: " + ex.Message;
+         return View(new List<SalesOrderHeader>());
+     }
+ }
         [HttpPost]
         [Route("order/place")]
         public IActionResult PlaceOrder([FromBody] SalesOrderHeader model)
@@ -252,28 +308,6 @@ namespace MDUA.Web.UI.Controllers
 
                 return Json(new { success = false, message = realError });
             }
-        }
-
-
-        //new
-        [HttpGet]
-        public IActionResult AllOrders()
-        {
-            try
-            {
-                // 1. Fetch all orders from the Facade
-                List<SalesOrderHeader> orders = _orderFacade.GetAllOrdersForAdmin();
-
-                // 2. Pass the list to the view. 
-                // The view should be strongly typed to List<MDUA.Entities.SalesOrderHeader>.
-                return View(orders);
-            }
-            catch (Exception ex)
-            {
-                // Log the error and show an empty list or error view
-                ViewData["ErrorMessage"] = "Failed to load order list: " + ex.Message;
-                return View(new List<SalesOrderHeader>());
-            }
-        }
+        }      
     }
 }

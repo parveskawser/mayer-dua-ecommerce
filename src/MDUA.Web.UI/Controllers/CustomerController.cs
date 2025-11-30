@@ -94,9 +94,8 @@ public class CustomerController : BaseController
         if (customer == null) return NotFound();
         return View(customer);
     }
-
-
-    // Inside CustomerController.cs
+	
+	    // Inside CustomerController.cs
 
     [HttpGet]
     public IActionResult GetDetails(int id)
@@ -142,4 +141,4 @@ public class CustomerController : BaseController
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
-    }
+}

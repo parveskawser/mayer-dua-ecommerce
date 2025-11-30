@@ -3,7 +3,6 @@ using MDUA.Entities.Bases;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static MDUA.Entities.ProductVariant;
 
 namespace MDUA.Web.UI.Controllers
 {
@@ -19,9 +18,14 @@ namespace MDUA.Web.UI.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+        #region Products
+
         [Route("product/{slug}")]
         public IActionResult Index(string slug)
         {
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
+
             if (string.IsNullOrWhiteSpace(slug)) return BadRequest();
 
             Product model = _productFacade.GetProductDetailsForWebBySlug(slug);
@@ -35,11 +39,9 @@ namespace MDUA.Web.UI.Controllers
         [HttpGet]
         public IActionResult Add()
         {
-            // 3. Use HasPermission from BaseController (Checks Cookie, not DB)
-            if (!HasPermission("Product.Add"))
-                return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.Add")) return HandleAccessDenied();
 
-            // 4. Use CurrentUserId from BaseController
             var model = _productFacade.GetAddProductData(CurrentUserId);
 
             return View(model);
@@ -50,15 +52,14 @@ namespace MDUA.Web.UI.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult AddProduct(Product product)
         {
-            if (!HasPermission("Product.Add"))
-                return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.Add")) return HandleAccessDenied();
 
             if (string.IsNullOrWhiteSpace(product.Slug))
                 product.Slug = GenerateSlug(product.ProductName);
             else
                 product.Slug = GenerateSlug(product.Slug);
 
-            // 5. Pass CurrentUserName and CurrentCompanyId from Claims
             long newProductId = _productFacade.AddProduct(
                 product,
                 CurrentUserName,
@@ -74,8 +75,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/all")]
         public IActionResult AllProducts()
         {
-            if (!HasPermission("Product.View"))
-                return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             var products = _productFacade.GetAllProductsWithCategory();
             return View(products);
@@ -85,6 +86,9 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/get-attribute-values")]
         public IActionResult GetAttributeValues(int attributeId)
         {
+            // Permission Check 
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
+
             var values = _productFacade.GetAttributeValues(attributeId);
             var result = values.Select(v => new { id = v.Id, value = v.Value }).ToList();
             return new JsonResult(result);
@@ -95,8 +99,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/toggle-status")]
         public IActionResult ToggleStatus(int productId)
         {
-            if (!HasPermission("Product.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             bool? newStatus = _productFacade.ToggleProductStatus(productId);
 
@@ -110,8 +114,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/get-details-partial")]
         public IActionResult GetProductDetailsPartial(int productId)
         {
-            if (!HasPermission("Product.Details")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             Product model = _productFacade.GetProductDetails(productId);
             if (model == null) return NotFound();
@@ -124,19 +128,11 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-confirmed")]
         public IActionResult DeleteConfirmed(int productId)
         {
-            // *** MODIFIED BLOCK ***
-            if (!HasPermission("Product.Delete"))
-            {
-                // Return a JSON object indicating failure and a specific unauthorized status/message.
-                // You can use a standard HTTP 403 Forbidden status for better client-side handling.
-                Response.StatusCode = 403; // Set the HTTP status code
-                return Json(new { success = false, message = "Access Denied. You do not have permission to delete this product." });
-            }
-            // **********************
+            // Permission Check
+            if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             try
             {
-                // ... rest of the successful deletion logic ...
                 long result = _productFacade.Delete(productId);
                 if (result > 0)
                 {
@@ -147,17 +143,19 @@ namespace MDUA.Web.UI.Controllers
             }
             catch (Exception ex)
             {
-                Response.StatusCode = 500; // Set the HTTP status code for server error
                 return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
 
+        #endregion
+
+        #region parital edits and updates for product and its variants
         [HttpGet]
         [Route("product/get-edit-partial")]
         public IActionResult GetEditPartial(int productId)
         {
-            if (!HasPermission("Product.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             var model = _productFacade.GetProductForEdit(productId);
             if (model.Product == null) return NotFound();
@@ -170,8 +168,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/edit-product")]
         public IActionResult EditProduct(Product product)
         {
-            if (!HasPermission("Product.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             long result = _productFacade.UpdateProduct(product, CurrentUserName);
 
@@ -186,8 +184,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/update-variant-price")]
         public IActionResult UpdateVariantPrice(int variantId, decimal newPrice, string newSku)
         {
-            if (!HasPermission("Variant.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             long result = _productFacade.UpdateVariantPrice(variantId, newPrice, newSku);
             return Json(new { success = result > 0, message = result > 0 ? "" : "Update failed." });
@@ -198,8 +196,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-variant")]
         public IActionResult DeleteVariant(int variantId)
         {
-            if (!HasPermission("Variant.Delete")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             long result = _productFacade.DeleteVariant(variantId);
             return Json(new { success = result > 0, message = result > 0 ? "" : "Delete failed." });
@@ -209,9 +207,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/get-variants")]
         public IActionResult GetVariantsPartial(int productId)
         {
-            // Assuming View permission is enough to see variants
-            if (!HasPermission("Variant.View")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             ProductVariantResult model = _productFacade.GetVariantsWithAttributes(productId);
             return PartialView("_ProductVariantsPartial", model);
@@ -222,8 +219,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/add-single-variant")]
         public IActionResult AddSingleVariant(ProductVariant newVariant)
         {
-            if (!HasPermission("Variant.Add")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             newVariant.CreatedBy = CurrentUserName;
             newVariant.CreatedAt = DateTime.Now;
@@ -233,10 +230,16 @@ namespace MDUA.Web.UI.Controllers
             return Json(new { success = result > 0, message = result > 0 ? "" : "Failed to add variant." });
         }
 
+        #endregion
+
+        #region attributes
         [HttpGet]
         [Route("product/get-missing-attributes")]
         public IActionResult GetMissingAttributes(int productId, int variantId)
         {
+            // Permission Check 
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
             var list = _productFacade.GetMissingAttributesForVariant(productId, variantId);
             return Json(list);
         }
@@ -246,18 +249,21 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/add-attribute-to-variant")]
         public IActionResult AddAttributeToVariant(int variantId, int attributeValueId)
         {
-            if (!HasPermission("Variant.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             _productFacade.AddAttributeToVariant(variantId, attributeValueId);
             return Json(new { success = true });
         }
+        #endregion
 
+        #region discounts and pricing
         [HttpGet]
         [Route("product/get-discounts")]
         public IActionResult GetDiscountsPartial(int productId)
         {
-            /// if (!HasPermission("Discount.View")) return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             var discounts = _productFacade.GetDiscountsByProductId(productId);
             ViewBag.ProductId = productId;
@@ -269,8 +275,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/add-discount")]
         public IActionResult AddDiscount(ProductDiscount discount)
         {
-            if (!HasPermission("Discount.Add")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             discount.CreatedBy = CurrentUserName;
             discount.IsActive = true;
@@ -283,8 +289,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/update-discount")]
         public IActionResult UpdateDiscount(ProductDiscount discount)
         {
-            if (!HasPermission("Discount.Edit")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             discount.UpdatedBy = CurrentUserName;
             long result = _productFacade.UpdateDiscount(discount);
@@ -296,8 +302,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-discount")]
         public IActionResult DeleteDiscount(int id)
         {
-            if (!HasPermission("Discount.Delete")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             long result = _productFacade.DeleteDiscount(id);
             return Json(new { success = result > 0 });
@@ -307,6 +313,9 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/get-updated-price")]
         public IActionResult GetUpdatedPrice(int productId)
         {
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
+
             var p = _productFacade.GetProductWithPrice(productId);
             if (p == null) return NotFound();
 
@@ -319,11 +328,15 @@ namespace MDUA.Web.UI.Controllers
             });
         }
 
+        #endregion
+
+        #region product and variant images
         [HttpGet]
         [Route("product/get-images")]
         public IActionResult GetImagesPartial(int productId)
         {
-            if (!HasPermission("ProductImage.View")) return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             var images = _productFacade.GetProductImages(productId);
             ViewBag.ProductId = productId;
@@ -335,8 +348,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/upload-image")]
         public async Task<IActionResult> UploadImage(int productId, IFormFile file)
         {
-            if (!HasPermission("ProductImage.Add")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             if (file == null || file.Length == 0)
                 return Json(new { success = false, message = "No file received" });
@@ -364,8 +377,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/set-primary-image")]
         public IActionResult SetPrimaryImage(int imageId, int productId)
         {
-            if (!HasPermission("ProductImage.SetPrimary")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             _productFacade.SetProductImageAsPrimary(imageId, productId);
             return Json(new { success = true });
@@ -376,8 +389,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/update-image-order")]
         public IActionResult UpdateImageOrder(int imageId, int sortOrder)
         {
-            if (!HasPermission("ProductImage.SetOrder")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             _productFacade.UpdateProductImageSortOrder(imageId, sortOrder);
             return Json(new { success = true });
@@ -388,8 +401,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-image")]
         public IActionResult DeleteImage(int id)
         {
-            if (!HasPermission("ProductImage.Delete")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             var img = _productFacade.GetProductImage(id);
             if (img != null && !string.IsNullOrEmpty(img.ImageUrl))
@@ -414,7 +427,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/get-variant-images")]
         public IActionResult GetVariantImagesPartial(int variantId)
         {
-            if (!HasPermission("VariantImage.View")) return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             var images = _productFacade.GetVariantImages(variantId);
             ViewBag.VariantId = variantId;
@@ -426,7 +440,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/upload-variant-image")]
         public async Task<IActionResult> UploadVariantImage(int variantId, IFormFile file)
         {
-            if (!HasPermission("VariantImage.Add")) return RedirectToAction("AccessDenied", "Account");
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var folderPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "variants", variantId.ToString());
@@ -450,8 +465,8 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-variant-image")]
         public IActionResult DeleteVariantImage(int id)
         {
-            if (!HasPermission("VariantImage.Delete")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             var img = _productFacade.GetVariantImage(id);
             if (img != null && !string.IsNullOrEmpty(img.ImageUrl))
@@ -477,12 +492,15 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/update-variant-image-order")]
         public IActionResult UpdateVariantImageOrder(int imageId, int displayOrder)
         {
-            if (!HasPermission("VariantImage.SetOrder")) return RedirectToAction("AccessDenied", "Account");
-
+            // Permission Check
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
 
             _productFacade.UpdateVariantImageDisplayOrder(imageId, displayOrder);
             return Json(new { success = true });
         }
+        #endregion
+
+        #region Helpers & Slug
 
         // Helper (Internal logic, doesn't need auth check)
         private string GenerateSlug(string phrase)
@@ -494,5 +512,9 @@ namespace MDUA.Web.UI.Controllers
             str = System.Text.RegularExpressions.Regex.Replace(str, @"\s", "-");
             return str;
         }
+
+
+     
+        #endregion
     }
 }
