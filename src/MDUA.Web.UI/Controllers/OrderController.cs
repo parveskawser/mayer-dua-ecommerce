@@ -4,10 +4,13 @@ using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using System.Security.Claims;
+using MDUA.Web.UI.Controllers;
+
 
 namespace MDUA.Web.UI.Controllers
 {
-     public class OrderController : Controller
+     public class OrderController : BaseController
     {
         private readonly IOrderFacade _orderFacade; 
         private readonly IUserLoginFacade _userLoginFacade;
@@ -19,7 +22,6 @@ namespace MDUA.Web.UI.Controllers
 
         }
 
-        // The Route must match what the JavaScript is calling (e.g., /Order/GetOrderStatus?orderId=ON...)
         [HttpGet]
         public IActionResult GetOrderStatus([FromQuery] string orderId)
         {
@@ -170,6 +172,8 @@ namespace MDUA.Web.UI.Controllers
 
             return Json(new { exists = exists });
         }
+        
+        
         [HttpGet]
         [Route("order/check-customer")]
         // ✅ FIX: Remove [FromQuery] and rely on standard parameter binding for simple string
@@ -269,30 +273,35 @@ namespace MDUA.Web.UI.Controllers
             var data = _orderFacade.GetSubOffices(thana);
             return Json(data);
         }
-         //new
- [HttpGet]
- public IActionResult AllOrders()
- {
-     try
-     {
+         
+        [HttpGet]
+        public IActionResult AllOrders()
+        {
+            if (!HasPermission("Order.View")) return HandleAccessDenied();
+
+            try
+            {
          // 1. Fetch all orders from the Facade
          List<SalesOrderHeader> orders = _orderFacade.GetAllOrdersForAdmin();
 
          // 2. Pass the list to the view. 
          // The view should be strongly typed to List<MDUA.Entities.SalesOrderHeader>.
          return View(orders);
-     }
-     catch (Exception ex)
-     {
-         // Log the error and show an empty list or error view
-         ViewData["ErrorMessage"] = "Failed to load order list: " + ex.Message;
-         return View(new List<SalesOrderHeader>());
-     }
- }
+             }
+             catch (Exception ex)
+             {
+                 // Log the error and show an empty list or error view
+                 ViewData["ErrorMessage"] = "Failed to load order list: " + ex.Message;
+                 return View(new List<SalesOrderHeader>());
+             }
+         }
+        
         [HttpPost]
         [Route("order/place")]
         public IActionResult PlaceOrder([FromBody] SalesOrderHeader model)
         {
+
+
             try
             {
                 var orderId = _orderFacade.PlaceGuestOrder(model);
@@ -308,6 +317,85 @@ namespace MDUA.Web.UI.Controllers
 
                 return Json(new { success = false, message = realError });
             }
-        }      
+        }
+
+        //new
+        [HttpPost]
+        [Route("SalesOrder/ToggleConfirmation")]
+        public IActionResult ToggleConfirmation(int id, bool isConfirmed)
+        {
+            if (!HasPermission("Order.Place")) return HandleAccessDenied();
+
+            try
+            {
+                // Call the Facade logic we just created
+                string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed);
+
+                return Json(new { success = true, newStatus = newStatus });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Add()
+        {
+            if (!HasPermission("Order.Place")) return HandleAccessDenied();
+
+            try
+            {
+                // Fetch products for the dropdown
+                var products = _orderFacade.GetProductVariantsForAdmin();
+                ViewBag.ProductVariants = products;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewData["ErrorMessage"] = "Error loading products: " + ex.Message;
+                return View();
+            }
+        }
+
+        [HttpPost]
+        [Route("order/place-direct")]
+        public IActionResult PlaceDirectOrder([FromBody] SalesOrderHeader model)
+        {
+            if (!HasPermission("Order.Place")) return HandleAccessDenied();
+
+            try
+            {
+                // Default Target Company (Assuming 1 for now, or fetch from config/user)
+                if (model.TargetCompanyId == 0) model.TargetCompanyId = 1;
+
+                string directOrderId = _orderFacade.PlaceAdminOrder(model);
+
+                return Json(new { success = true, orderId = directOrderId, message = "Direct Order placed successfully!" });
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = msg });
+            }
+        }
+
+        [HttpGet]
+        [Route("order/get-products")]
+        public IActionResult GetProductsForAdmin()
+        {
+            if (!HasPermission("Order.Place")) return HandleAccessDenied();
+
+            try
+            {
+                var products = _orderFacade.GetProductVariantsForAdmin();
+                return Json(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

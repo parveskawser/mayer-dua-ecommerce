@@ -33,11 +33,15 @@ namespace MDUA.DataAccess.Interface
 	{
         long InsertSalesOrderHeaderSafe(SalesOrderHeader order);
         SalesOrderHeaderList GetOrdersByCompanyCustomer(int companyCustomerId);
-
-        // Add this new signature
         SalesOrderHeaderList GetOrdersByCustomerId(int customerId);
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         SalesOrderHeaderList GetAllSalesOrderHeaders();
+
+        //new
+        void UpdateStatusSafe(int orderId, string status, bool confirmed);
+        List<Dictionary<string, object>> GetVariantsForDropdown();
+        (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId);
+
 
     }
 }
