@@ -25,5 +25,11 @@ namespace MDUA.Entities
         [DataMember] public int ProductVariantId { get; set; }
         [DataMember] public int OrderQuantity { get; set; }
         [DataMember] public int TargetCompanyId { get; set; }
+
+        //new
+        [DataMember] public string Thana { get; set; }
+        [DataMember] public string SubOffice { get; set; }
+
+
     }
 }

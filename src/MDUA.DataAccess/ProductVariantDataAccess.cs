@@ -138,6 +138,66 @@ namespace MDUA.DataAccess
             }
         }
 
+
+        public ProductVariant GetWithStock(int id)
+        {
+            // We use inline SQL here to join the tables and get the stock
+            string SQLQuery = @"
+        SELECT 
+            v.Id,
+            v.ProductId,
+            v.VariantName,
+            v.SKU,
+            v.Barcode,
+            v.VariantPrice,
+            v.IsActive,
+            v.CreatedBy,
+            v.CreatedAt,
+            v.UpdatedBy,
+            v.UpdatedAt,
+            ISNULL(vps.StockQty, 0) AS StockQty,  -- Get Stock
+            ISNULL(vps.Price, 0) AS VPS_Price
+        FROM ProductVariant v
+        LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
+        WHERE v.Id = @Id";
+
+            using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            AddParameter(cmd, pInt32("Id", id));
+
+            SqlDataReader reader;
+            SelectRecords(cmd, out reader);
+
+            ProductVariant variant = null;
+
+            using (reader)
+            {
+                if (reader.Read())
+                {
+                    // Manual mapping is required because the default FillObject() 
+                    // doesn't know about the joined columns
+                    variant = new ProductVariant
+                    {
+                        Id = reader.GetInt32(0),
+                        ProductId = reader.GetInt32(1),
+                        VariantName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        SKU = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                        Barcode = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        VariantPrice = reader.IsDBNull(5) ? (decimal?)null : reader.GetDecimal(5),
+                        IsActive = reader.IsDBNull(6) ? true : reader.GetBoolean(6),
+                        CreatedBy = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                        CreatedAt = reader.IsDBNull(8) ? DateTime.Now : reader.GetDateTime(8),
+                        UpdatedBy = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                        UpdatedAt = reader.IsDBNull(10) ? (DateTime?)null : reader.GetDateTime(10),
+
+                        // ✅ THIS IS THE FIX: Read the stock column
+                        StockQty = reader.IsDBNull(11) ? 0 : reader.GetInt32(11)
+                    };
+                }
+                reader.Close();
+            }
+
+            return variant;
+        }
     }
 }
 

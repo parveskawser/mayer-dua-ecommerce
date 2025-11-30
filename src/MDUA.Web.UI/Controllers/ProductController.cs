@@ -24,7 +24,6 @@ namespace MDUA.Web.UI.Controllers
         public IActionResult Index(string slug)
         {
             // Permission Check
-            if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             if (string.IsNullOrWhiteSpace(slug)) return BadRequest();
 

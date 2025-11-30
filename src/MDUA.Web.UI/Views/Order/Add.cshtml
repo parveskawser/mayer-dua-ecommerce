@@ -8,6 +8,8 @@
 
 @Html.AntiForgeryToken()
 
+<input type="hidden" id="targetCompanyId" value="@ViewBag.TargetCompanyId" />
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">🛒 Create Direct Order</h2>
     <span class="badge bg-primary fs-6">Admin Console</span>
@@ -143,8 +145,10 @@
 
 @section Scripts {
     <script>
-        // Inject enriched variants (with discount info) into JS
         window.rawVariants = @Html.Raw(Json.Serialize(variants ?? new List<dynamic>()));
     </script>
+
+    <script src="~/js/combo.js"></script>
+
     <script src="~/js/admin-order.js"></script>
 }

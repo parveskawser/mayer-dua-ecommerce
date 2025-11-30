@@ -23,11 +23,18 @@
     const modeStore = document.getElementById('modeStore');
     const divisionSelect = document.getElementById('division-select');
 
+    // Location Dropdowns
+    const districtSelect = document.getElementById('district-select');
+    const thanaSelect = document.getElementById('thana-select');
+    const subOfficeSelect = document.getElementById('suboffice-select');
+    const postalInput = document.getElementById('postalCode');
+    const postalStatus = document.getElementById('postalStatus');
+
     // Validation State
-    let isPostalValid = false; // ✅ NEW: Tracks if postal code is valid
+    let isPostalValid = false;
 
     // ==========================================
-    // 1. LOAD DATA & POPULATE DROPDOWNS
+    // 1. LOAD DATA & POPULATE PRODUCTS
     // ==========================================
     const allVariants = (typeof window.rawVariants !== 'undefined' && Array.isArray(window.rawVariants))
         ? window.rawVariants
@@ -49,7 +56,7 @@
     });
 
     // ==========================================
-    // 2. CALCULATION LOGIC (With Delivery)
+    // 2. CALCULATION LOGIC
     // ==========================================
     function calcTotal() {
         const option = variantSelect.options[variantSelect.selectedIndex];
@@ -95,7 +102,7 @@
     }
 
     // ==========================================
-    // 3. EVENT LISTENERS
+    // 3. EVENT LISTENERS (Product & Variant)
     // ==========================================
 
     productSelect.addEventListener('change', function () {
@@ -159,103 +166,91 @@
 
 
     // ==========================================
-    // 4. LOCATION & VALIDATION LOGIC
+    // 4. SHARED LOGIC INTEGRATION (Refactored)
     // ==========================================
-    const districtSelect = document.getElementById('district-select');
-    const thanaSelect = document.getElementById('thana-select');
-    const subOfficeSelect = document.getElementById('suboffice-select');
-    const postalInput = document.getElementById('postalCode');
-    const postalStatus = document.getElementById('postalStatus');
 
-    fetch('/order/get-divisions').then(r => r.json()).then(data => {
-        if (Array.isArray(data)) data.forEach(d => { divisionSelect.add(new Option(d, d)); });
-    });
+    // Helper to use the OrderAPI promises from combo.js
+    function loadAdminDropdown(apiPromise, targetSelect, selectedVal = null) {
+        targetSelect.innerHTML = '<option value="">Loading...</option>';
+        targetSelect.disabled = true;
 
-    // ✅ UPDATED: loadDropdown now handles 'code' property for autofill
-    function loadDropdown(url, paramName, paramValue, targetSelect, selectedValueToSet = null) {
-        return new Promise((resolve, reject) => {
+        return apiPromise.then(data => {
             targetSelect.innerHTML = '<option value="">Select...</option>';
-            targetSelect.disabled = true;
-            if (!paramValue) { resolve(); return; }
 
-            fetch(`${url}?${paramName}=${encodeURIComponent(paramValue)}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        data.forEach(item => {
-                            let val = item.name || item;
-                            let opt = new Option(val, val);
-
-                            // Check for postal code in response items
-                            if (item.code || item.postalCode || item.PostalCode) {
-                                opt.setAttribute('data-code', item.code || item.postalCode || item.PostalCode);
-                            }
-
-                            targetSelect.add(opt);
-                        });
-                        targetSelect.disabled = false;
-                        if (selectedValueToSet) targetSelect.value = selectedValueToSet;
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    let val = item.name || item;
+                    let opt = new Option(val, val);
+                    // Handle code for autofill if present
+                    if (item.code || item.postalCode || item.PostalCode) {
+                        opt.setAttribute('data-code', item.code || item.postalCode || item.PostalCode);
                     }
-                    resolve();
-                }).catch(reject);
+                    targetSelect.add(opt);
+                });
+                targetSelect.disabled = false;
+                if (selectedVal) targetSelect.value = selectedVal;
+            }
+        }).catch(() => {
+            targetSelect.innerHTML = '<option value="">Error</option>';
         });
     }
 
-    // ✅ Reset validation when manually changing locations
     function invalidatePostal() {
         isPostalValid = false;
-        postalStatus.textContent = "Location changed. Please verify Postal Code.";
+        postalStatus.textContent = "Location changed. Verify Postal Code.";
         postalStatus.className = "text-warning small";
     }
 
+    // --- Init: Load Divisions using Shared API ---
+    if (window.OrderAPI && window.OrderAPI.getDivisions) {
+        window.OrderAPI.getDivisions().then(data => {
+            if (Array.isArray(data)) data.forEach(d => { divisionSelect.add(new Option(d, d)); });
+        });
+    } else {
+        console.error("OrderAPI missing. Ensure combo.js is loaded first.");
+    }
+
+    // --- Location Cascading Listeners ---
     divisionSelect.addEventListener('change', () => {
         invalidatePostal();
-        loadDropdown('/order/get-districts', 'division', divisionSelect.value, districtSelect)
-            .then(() => {
-                thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
-                subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
-            });
+        loadAdminDropdown(window.OrderAPI.getDistricts(divisionSelect.value), districtSelect);
+        thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
+        subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
     });
 
     districtSelect.addEventListener('change', () => {
         invalidatePostal();
-        loadDropdown('/order/get-thanas', 'district', districtSelect.value, thanaSelect);
+        loadAdminDropdown(window.OrderAPI.getThanas(districtSelect.value), thanaSelect);
     });
 
     thanaSelect.addEventListener('change', () => {
         invalidatePostal();
-        loadDropdown('/order/get-suboffices', 'thana', thanaSelect.value, subOfficeSelect);
+        loadAdminDropdown(window.OrderAPI.getSubOffices(thanaSelect.value), subOfficeSelect);
     });
 
-    // ✅ NEW: Autofill Postal Code when Sub-Office is selected
+    // --- Sub-Office Autofill ---
     subOfficeSelect.addEventListener('change', function () {
         const option = this.options[this.selectedIndex];
         const autoCode = option.getAttribute('data-code');
-
         if (autoCode) {
             postalInput.value = autoCode;
-            // Trigger blur to run validation
-            postalInput.dispatchEvent(new Event('blur'));
+            postalInput.dispatchEvent(new Event('blur')); // Trigger validation
         } else {
             invalidatePostal();
-            postalStatus.textContent = "Please enter Postal Code manually.";
+            postalStatus.textContent = "Enter Postal Code manually.";
         }
     });
 
-    // ✅ VALIDATION LOGIC on Blur
+    // --- Postal Code Validation (Using Shared API) ---
     postalInput.addEventListener('blur', function () {
         const code = this.value.trim();
-        if (code.length < 4) {
-            isPostalValid = false;
-            return;
-        }
+        if (code.length < 4) { isPostalValid = false; return; }
 
         postalStatus.textContent = "Checking...";
         postalStatus.className = "text-muted small";
 
-        fetch(`/order/check-postal-code?code=${code}`).then(r => r.json()).then(async data => {
+        window.OrderAPI.checkPostalCode(code).then(async data => {
             if (data.found) {
-                // Postal Code Exists
                 isPostalValid = true;
                 postalStatus.textContent = "Location found!";
                 postalStatus.className = "text-success small";
@@ -265,49 +260,41 @@
                 const th = data.thana || data.ThanaEn;
                 const sub = data.subOffice || data.SubOfficeEn;
 
-                // Auto-fill dropdowns if not already matching
+                // Auto-fill logic
                 if (div && divisionSelect.value !== div) {
                     divisionSelect.value = div;
                     calcTotal();
-                    await loadDropdown('/order/get-districts', 'division', div, districtSelect, dist);
-                    await loadDropdown('/order/get-thanas', 'district', dist, thanaSelect, th);
-                    await loadDropdown('/order/get-suboffices', 'thana', th, subOfficeSelect, sub);
+                    await loadAdminDropdown(window.OrderAPI.getDistricts(div), districtSelect, dist);
+                    await loadAdminDropdown(window.OrderAPI.getThanas(dist), thanaSelect, th);
+                    await loadAdminDropdown(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
+                } else if (div && divisionSelect.value === div) {
+                    if (dist && districtSelect.value !== dist) await loadAdminDropdown(window.OrderAPI.getDistricts(div), districtSelect, dist);
+                    if (th && thanaSelect.value !== th) await loadAdminDropdown(window.OrderAPI.getThanas(dist), thanaSelect, th);
+                    if (sub && subOfficeSelect.value !== sub) await loadAdminDropdown(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
                 }
-                // If division matches, ensure downstream is filled
-                else if (div && divisionSelect.value === div) {
-                    if (dist && districtSelect.value !== dist) await loadDropdown('/order/get-districts', 'division', div, districtSelect, dist);
-                    if (th && thanaSelect.value !== th) await loadDropdown('/order/get-thanas', 'district', dist, thanaSelect, th);
-                    if (sub && subOfficeSelect.value !== sub) await loadDropdown('/order/get-suboffices', 'thana', th, subOfficeSelect, sub);
-                }
-
             } else {
-                // Wrong Postal Code
                 isPostalValid = false;
-                postalStatus.textContent = "Invalid Postal Code! Order cannot be placed.";
+                postalStatus.textContent = "Invalid Postal Code!";
                 postalStatus.className = "text-danger fw-bold small";
             }
         });
     });
 
-    // --- Mode Toggle & Submit ---
+    // --- Customer Check (Using Shared API) ---
     const addressContainer = document.getElementById('address-container');
     const custAddress = document.getElementById('custAddress');
     const phoneInput = document.getElementById('custPhone');
 
-    function toggleMode() {
-        addressContainer.style.display = modeStore.checked ? 'none' : 'block';
-    }
-    modeDelivery.addEventListener('change', toggleMode);
-    modeStore.addEventListener('change', toggleMode);
-
     document.getElementById('btnCheckCust').addEventListener('click', () => {
         const phone = phoneInput.value.trim();
         if (phone.length < 10) return;
-        fetch(`/order/check-customer?phone=${phone}`).then(r => r.json()).then(data => {
+
+        window.OrderAPI.checkCustomer(phone).then(data => {
             if (data.found) {
                 document.getElementById('custName').value = data.name || '';
                 const emailEl = document.getElementById('custEmail');
                 if (emailEl) emailEl.value = data.email || '';
+
                 document.getElementById('custStatus').textContent = "Customer found!";
                 document.getElementById('custStatus').className = "text-success small";
 
@@ -318,9 +305,10 @@
                         setTimeout(() => { postalInput.dispatchEvent(new Event('blur')); }, 100);
                     } else if (data.addressData.divison) {
                         divisionSelect.value = data.addressData.divison;
-                        // Trigger calc on autofill
                         calcTotal();
-                        if (data.addressData.city) loadDropdown('/order/get-districts', 'division', data.addressData.divison, districtSelect, data.addressData.city);
+                        if (data.addressData.city) {
+                            loadAdminDropdown(window.OrderAPI.getDistricts(data.addressData.divison), districtSelect, data.addressData.city);
+                        }
                     }
                 }
             } else {
@@ -332,6 +320,16 @@
         });
     });
 
+    // --- Mode Toggle ---
+    function toggleMode() {
+        addressContainer.style.display = modeStore.checked ? 'none' : 'block';
+    }
+    modeDelivery.addEventListener('change', toggleMode);
+    modeStore.addEventListener('change', toggleMode);
+
+    // ==========================================
+    // 5. SUBMIT ORDER
+    // ==========================================
     document.getElementById('btnPlaceOrder').addEventListener('click', function () {
         const btn = this;
         const msg = document.getElementById('orderMsg');
@@ -342,7 +340,6 @@
             return;
         }
 
-        // ✅ NEW: Strict Postal Code Validation for Delivery
         if (!isStoreSale) {
             if (!custAddress.value || !divisionSelect.value) {
                 alert("Address and Division are required for Home Delivery.");
@@ -361,11 +358,13 @@
             CustomerEmail: document.getElementById('custEmail') ? document.getElementById('custEmail').value : '',
             Street: isStoreSale ? "Counter Sale - In Store" : custAddress.value,
             Divison: isStoreSale ? "Dhaka" : divisionSelect.value,
-            City: isStoreSale ? "Dhaka" : districtSelect.value,
+            City: isStoreSale ? "Dhaka" : districtSelect.value
+            Thana: isStoreSale ? "" : thanaSelect.value,
+            SubOffice: isStoreSale ? "" : subOfficeSelect.value,
             PostalCode: isStoreSale ? "1000" : postalInput.value,
             ProductVariantId: parseInt(variantSelect.value),
             OrderQuantity: parseInt(qtyInput.value),
-            TargetCompanyId: 1,
+            TargetCompanyId: parseInt(document.getElementById('targetCompanyId').value) || 0,
             Confirmed: document.getElementById('confirmImmediately').checked
         };
 
@@ -384,39 +383,32 @@
                     let finalAmount = data.netAmount;
                     let finalId = data.orderId;
                     if (typeof data.orderId === 'object' && data.orderId !== null) {
-                        finalAmount = data.orderId.NetAmount || data.orderId.netAmount;
                         finalId = data.orderId.OrderId || data.orderId.orderId;
                     }
 
-                    // Best effort display of total incl delivery
-                    const grandTotal = parseFloat(displayNet.textContent) || 0;
-
-                    // ✅ NEW: Show Bootstrap Modal instead of Alert
                     const modalHtml = `
-                <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content shadow-lg border-0">
-                      <div class="modal-header bg-success text-white border-0">
-                        <h5 class="modal-title fw-bold">✅ Order Placed!</h5>
-                      </div>
-                      <div class="modal-body text-center p-4">
-                        <div class="display-1 mb-3">📦</div>
-                        <h3 class="fw-bold text-dark mb-1">${finalId}</h3>
-                        <p class="text-muted">has been successfully created.</p>
-                      </div>
-                      <div class="modal-footer justify-content-center border-0 pb-4">
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.reload()">Create Another</button>
-                        <button type="button" class="btn btn-primary px-4" onclick="window.location.href='/Order/AllOrders'">Go to Orders</button>
-                      </div>
-                    </div>
+            <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0">
+                  <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold">✅ Order Placed!</h5>
                   </div>
-                </div>`;
+                  <div class="modal-body text-center p-4">
+                    <div class="display-1 mb-3">📦</div>
+                    <h3 class="fw-bold text-dark mb-1">${finalId}</h3>
+                    <p class="text-muted">has been successfully created.</p>
+                  </div>
+                  <div class="modal-footer justify-content-center border-0 pb-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="window.location.reload()">Create Another</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="window.location.href='/Order/AllOrders'">Go to Orders</button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
 
-                    // Remove previous modal if exists
                     const existingModal = document.getElementById('orderSuccessModal');
                     if (existingModal) existingModal.remove();
 
-                    // Append new modal
                     document.body.insertAdjacentHTML('beforeend', modalHtml);
                     const modalEl = document.getElementById('orderSuccessModal');
                     const modal = new bootstrap.Modal(modalEl);

@@ -77,8 +77,9 @@ namespace MDUA.Facade
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
             // 1. PRE-CALCULATION (Read-Only, outside transaction)
-            var variant = _productVariantDataAccess.Get(orderData.ProductVariantId);
+            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId); 
             if (variant == null) throw new Exception("Variant not found.");
+
             if (variant.StockQty == 0)
             {
                 throw new Exception("The selected product variant is currently out of stock.");
@@ -202,6 +203,8 @@ namespace MDUA.Facade
                             Street = orderData.Street,
                             City = orderData.City,
                             Divison = orderData.Divison,
+                            Thana = orderData.Thana,
+                            SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "System_Order",
@@ -435,6 +438,8 @@ namespace MDUA.Facade
                             Street = orderData.Street,
                             City = orderData.City,
                             Divison = orderData.Divison,
+                            Thana = orderData.Thana,
+                            SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "Admin",
