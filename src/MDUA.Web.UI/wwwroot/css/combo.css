@@ -1,0 +1,606 @@
+﻿:root {
+    /* --- Modern Palette --- */
+    --primary: #2563eb; /* Modern Blue */
+    --primary-hover: #1d4ed8;
+    --accent: #f59e0b; /* Amber/Orange for urgency */
+    --text-main: #1f2937; /* Dark Gray */
+    --text-muted: #6b7280;
+    --bg-body: #f3f4f6; /* Light Gray Background */
+    --bg-card: #ffffff;
+    --border-color: #e5e7eb;
+    --success: #10b981;
+    --error: #ef4444;
+    /* --- Spacing & Radius --- */
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --container-width: 1100px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* --- Global Reset & Typography --- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; /* Modern Font Stack */
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout Wrappers --- */
+.container {
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* --- Header --- */
+.header {
+    background: var(--bg-card);
+    padding: 1rem 0;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    height: 50px; /* Constrain height, auto width */
+    width: auto;
+    object-fit: contain;
+}
+
+/* --- Sections Common --- */
+section {
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    overflow: hidden;
+}
+
+/* --- Hero / Combo Info --- */
+.combo-info {
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    border: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+    .combo-info h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: #111827;
+        line-height: 1.2;
+    }
+
+    .combo-info p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 1.5rem auto;
+    }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.combo-btn {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+    .combo-btn:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+    }
+
+.status-btn {
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    margin-left: 10px;
+}
+
+    .status-btn:hover {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+/* --- Scarcity Bar --- */
+.scarcity-section {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.stock-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    margin: 8px auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.stock-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    border-radius: 99px;
+    transition: width 1s ease-in-out;
+}
+
+.hurry-text {
+    font-size: 0.875rem;
+    color: var(--error);
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* --- Price Section --- */
+.price-section {
+    text-align: center;
+}
+
+.price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+}
+
+.old-price {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-left: 0.5rem;
+    font-weight: 400;
+}
+
+.offer-text {
+    background: #ecfdf5;
+    color: #065f46;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* --- Images & Gallery --- */
+.product-image img.main-img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    display: block;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.product-gallery {
+    max-width: 800px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.carousel {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.slide {
+    display: none;
+    width: 100%;
+    height: auto;
+}
+
+    .slide.active {
+        display: block;
+    }
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.8);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--text-main);
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}
+
+    .prev:hover, .next:hover {
+        background: white;
+    }
+
+/* --- Description & Testimonials --- */
+.description, .testimonials {
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+    .description h2, .testimonials h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+.review {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--accent);
+}
+
+.review-text {
+    font-style: italic;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.reviewer {
+    font-weight: bold;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* =========================================
+   ORDER SECTION (THE ALIGNMENT FIX)
+   Using CSS Grid for robust layout
+   ========================================= */
+.order-section {
+    max-width: var(--container-width); /* Ensures it matches container */
+    margin: 2rem auto 4rem auto;
+    background: transparent; /* Remove white bg from wrapper, apply to cards */
+    padding: 0;
+    box-shadow: none;
+}
+
+    .order-section h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+
+/* The Grid Container */
+.order-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Form takes 60%, Summary 40% */
+    gap: 2rem;
+    align-items: start; /* Prevents stretching height */
+}
+
+/* Left Side: Form */
+.billing {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+/* Right Side: Summary (Sticky) */
+.order-summary {
+    background: white; /* Clean white */
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 100px; /* Sticks when scrolling */
+}
+
+/* --- Form Elements --- */
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-top: 1rem;
+}
+
+.required-star {
+    color: var(--error);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    background: #fff;
+}
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    input.input-error, select.input-error, textarea.input-error {
+        border-color: var(--error) !important;
+        background-color: #fef2f2;
+    }
+
+/* --- Variant Chips (Modernized) --- */
+.variant-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.variant-chip {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px; /* Slightly squarer than pill for modern tech feel */
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+    .variant-chip:hover {
+        border-color: var(--primary);
+        background: #eff6ff;
+    }
+
+    .variant-chip.selected {
+        background: var(--text-main); /* Black/Dark Gray like the request */
+        color: white;
+        border-color: var(--text-main);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+/* --- Quantity & Submit --- */
+.qty-row {
+    margin-top: 1.5rem;
+    background: #f3f4f6;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .quantity-wrapper button {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: white;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .quantity-wrapper button:hover {
+            background: #f9fafb;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+#quantity {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.submit-btn {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    padding: 1rem;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+}
+
+    .submit-btn:hover {
+        background-color: var(--primary-hover);
+    }
+
+    .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+/* --- Receipt Table --- */
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+    .receipt-table th, .receipt-table td {
+        padding: 0.75rem 0;
+        text-align: right;
+        border-bottom: 1px dashed #e5e7eb;
+    }
+
+        .receipt-table th:first-child, .receipt-table td:first-child {
+            text-align: left;
+        }
+
+    .receipt-table tfoot th {
+        border-top: 2px solid #374151;
+        color: #111827;
+        font-size: 1.1rem;
+        padding-top: 1rem;
+        border-bottom: none;
+    }
+
+#order-variant-image-holder {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+}
+
+/* --- Status Modal (Preserved) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: white;
+}
+
+.status-confirmed {
+    background: var(--primary);
+}
+
+.status-delivered {
+    background: var(--success);
+}
+
+.status-cancelled {
+    background: var(--error);
+}
+
+/* --- Responsive Design (Mobile) --- */
+@media (max-width: 768px) {
+    .order-container {
+        grid-template-columns: 1fr; /* Stack vertically */
+    }
+
+    .order-summary {
+        order: -1; /* Show summary TOP on mobile (optional, or keep bottom) */
+        position: static;
+        margin-bottom: 2rem;
+    }
+
+    .combo-info h1 {
+        font-size: 1.75rem;
+    }
+
+    .price {
+        font-size: 2rem;
+    }
+
+    .billing, .order-summary {
+        padding: 1.5rem;
+    }
+}
+/* Force autofill background to match your design */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+}

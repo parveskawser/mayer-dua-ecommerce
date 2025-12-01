@@ -1,0 +1,18 @@
+﻿.details-table th {
+    width: 40%;
+    font-weight: 600;
+    padding-left: 0;
+    border-top: none;
+}
+
+.details-table td {
+    padding-left: 0;
+    border-top: none;
+}
+
+.notes-box {
+    white-space: pre-wrap; /* Preserves formatting/line breaks in notes */
+    font-style: italic;
+    font-size: 0.95rem;
+    min-height: 50px;
+}

@@ -1,0 +1,43 @@
+﻿@model List<MDUA.Entities.Address>
+@{
+    // Assuming the CustomerId is passed via ViewBag
+    var customerId = ViewBag.CustomerId;
+}
+
+<h5 class="fw-bold mb-3">All Recorded Addresses (@(Model?.Count() ?? 0))</h5>
+<div class="small text-muted mb-3">Customer ID: @customerId</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Type</th>
+                <th>Street Address</th>
+                <th>City / Thana</th>
+                <th>Division</th>
+                <th>Postal / Zip</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var addr in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@(addr.AddressType ?? "N/A")</td>
+                        <td>@addr.Street</td>
+                        <td>@addr.City @(addr.Thana != null ? $"({addr.Thana})" : "")</td>
+                        <td>@addr.Divison</td>
+                        <td>@addr.PostalCode @(addr.ZipCode != null ? $"/{new string(addr.ZipCode).Trim()}" : "")</td>
+                        <td>@addr.CreatedAt.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="6" class="text-center text-muted p-3">No saved addresses found for this customer.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
