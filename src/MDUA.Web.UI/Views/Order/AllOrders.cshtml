@@ -3,14 +3,18 @@
     ViewData["Title"] = "All Sales Orders";
     Layout = "_AdminLayout";
 }
+<!---- new -->
+@section Styles {
+    <!-- Ensure orders.css contains your modal styles -->
+    <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+}
 
 <!-- 1. Generate Anti-Forgery Token for JS to use -->
 @Html.AntiForgeryToken()
 
-<!-- Link to Scripts -->
 @section Scripts {
-    <script src="~/js/order-details.js"></script> <!-- THIS FIXES THE MODAL -->
-    <script src="~/js/order-actions.js"></script> <!-- THIS HANDLES THE TOGGLE -->
+    <script src="~/js/order-details.js"></script>
+    <script src="~/js/order-actions.js"></script>
 }
 
 <h2 class="fw-bold mb-3">Order List</h2>
@@ -44,12 +48,11 @@
                     {
                         string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
                         string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
-
                         string dateStr = order.OrderDate != DateTime.MinValue ? order.OrderDate.ToString("MMM dd, yyyy hh:mm tt") : "N/A";
                         string createdStr = order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt");
                         string updatedStr = order.UpdatedAt.HasValue ? order.UpdatedAt.Value.ToString("MMM dd, yyyy hh:mm tt") : "-";
 
-                        // ✅ FIX: Map "Draft" (Database Value) to "Pending" (UI Display)
+                        // Logic: Map "Draft" -> "Pending"
                         string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
 
                         string statusBadgeClass = "bg-secondary-subtle text-dark";
@@ -61,14 +64,11 @@
                             <td>@orderType</td>
                             <td class="small">@FormatDate(order.OrderDate)</td>
                             <td>Tk. @FormatAmount(order.NetAmount)</td>
-
                             <td>
-                                <!-- Display the Mapped Status, not the Raw DB Value -->
                                 <span id="status-badge-@order.Id" class="badge @statusBadgeClass">
                                     @displayStatus
                                 </span>
                             </td>
-
                             <td>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input confirm-toggle" type="checkbox" role="switch"
@@ -80,10 +80,7 @@
                                     </label>
                                 </div>
                             </td>
-
                             <td class="text-end">
-                                <!-- DATA ATTRIBUTES MUST MATCH JS EXACTLY -->
-                                <!-- We pass the raw order.Status here just in case, or displayStatus if preferred for modal -->
                                 <button type="button"
                                         class="btn btn-sm btn-outline-info"
                                         data-bs-toggle="modal"
@@ -118,90 +115,145 @@
     </div>
 </div>
 
+<!-- change -->
+<!-- ✅ Added 'order-details-modal' class here so CSS works -->
 <!-- Details Modal -->
-<!-- It is cleaner to keep this OUTSIDE the loop and logic containers -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable order-details-modal">
         <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title" id="detailsModalLabel">Order Details: <span id="m-id" class="fw-bold text-primary"></span></h5>
+            <!-- Header -->
+            <div class="modal-header modal-header-soft">
+                <h5 class="modal-title" id="detailsModalLabel">Order <span id="m-id" class="text-primary"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h6 class="text-uppercase text-muted small fw-bold">General Information</h6>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span>Order Type:</span> <span id="m-type" class="fw-medium"></span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span>Customer ID:</span> <span id="m-cust-id"></span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between">
-                                <span>Address ID:</span> <span id="m-addr-id"></span>
-                            </li>
-                        </ul>
+                <!-- Status Section -->
+                <div class="info-section status-section">
+                    <div class="section-header">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                        </svg>
+                        <span>Order Status</span>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="text-uppercase text-muted small fw-bold">Status</h6>
-                        <div class="p-3 bg-light rounded text-center">
-                            <h4 id="m-status" class="mb-1"></h4>
-                            <small class="text-muted">Current Order Status</small>
+                    <div class="section-content">
+                        <h4 id="m-status" class="mb-0"></h4>
+                    </div>
+                </div>
+
+                <!-- General Information -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                        </svg>
+                        <span>General Information</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Order Type</span>
+                                <span class="info-value" id="m-type"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Customer ID</span>
+                                <span class="info-value" id="m-cust-id"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Address ID</span>
+                                <span class="info-value" id="m-addr-id"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <hr />
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="text-uppercase text-muted small fw-bold">Financial Breakdown</h6>
+
+                <!-- Financial Breakdown -->
+                <div class="info-section financial-section">
+                    <div class="section-header">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" />
+                        </svg>
+                        <span>Financial Breakdown</span>
                     </div>
-                    <div class="col-md-4 text-center border-end">
-                        <small class="d-block text-muted">Total Amount</small>
-                        <span class="fs-5">Tk. <span id="m-total"></span></span>
-                    </div>
-                    <div class="col-md-4 text-center border-end text-danger">
-                        <small class="d-block text-muted">Discount</small>
-                        <span class="fs-5">- Tk. <span id="m-discount"></span></span>
-                    </div>
-                    <div class="col-md-4 text-center text-success">
-                        <small class="d-block text-muted">Net Amount</small>
-                        <span class="fs-4 fw-bold">Tk. <span id="m-net"></span></span>
+                    <div class="section-content">
+                        <div class="finance-grid">
+                            <div class="finance-item">
+                                <span class="finance-label">Total Amount</span>
+                                <span class="finance-value">Tk. <span id="m-total"></span></span>
+                            </div>
+                            <div class="finance-item discount">
+                                <span class="finance-label">Discount</span>
+                                <span class="finance-value">- Tk. <span id="m-discount"></span></span>
+                            </div>
+                            <div class="finance-item net">
+                                <span class="finance-label">Net Amount</span>
+                                <span class="finance-value">Tk. <span id="m-net"></span></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <hr />
-                <div class="row">
-                    <div class="col-md-6 border-end">
-                        <h6 class="text-uppercase text-muted small fw-bold">System / Audit</h6>
-                        <dl class="row small mb-0">
-                            <dt class="col-sm-4">Created By:</dt>
-                            <dd class="col-sm-8" id="m-created-by"></dd>
-                            <dt class="col-sm-4">Created At:</dt>
-                            <dd class="col-sm-8" id="m-created-at"></dd>
-                            <dt class="col-sm-4">Updated By:</dt>
-                            <dd class="col-sm-8" id="m-updated-by"></dd>
-                            <dt class="col-sm-4">Updated At:</dt>
-                            <dd class="col-sm-8" id="m-updated-at"></dd>
-                        </dl>
+
+                <!-- System & Audit Info -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" />
+                        </svg>
+                        <span>System & Audit</span>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="text-uppercase text-muted small fw-bold">Technical Data</h6>
-                        <dl class="row small mb-0">
-                            <dt class="col-sm-4">IP Address:</dt>
-                            <dd class="col-sm-8 font-monospace" id="m-ip"></dd>
-                            <dt class="col-sm-4">Session ID:</dt>
-                            <dd class="col-sm-8 text-break" id="m-session"></dd>
-                        </dl>
+                    <div class="section-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Created By</span>
+                                <span class="info-value" id="m-created-by"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Created At</span>
+                                <span class="info-value" id="m-created-at"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Updated By</span>
+                                <span class="info-value" id="m-updated-by"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Updated At</span>
+                                <span class="info-value" id="m-updated-at"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Data -->
+                <div class="info-section">
+                    <div class="section-header">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z" />
+                        </svg>
+                        <span>Technical Data</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">IP Address</span>
+                                <span class="info-value code" id="m-ip"></span>
+                            </div>
+                            <div class="info-item full-width">
+                                <span class="info-label">Session ID</span>
+                                <span class="info-value code" id="m-session"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            <!-- Footer -->
+            <div class="modal-footer modal-footer-soft">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
-
 @functions {
     public string FormatDate(DateTime? date)
     {

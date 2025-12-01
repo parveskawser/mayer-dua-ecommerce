@@ -1,8 +1,10 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+﻿//change
+
+
+document.addEventListener('DOMContentLoaded', function () {
     var detailsModal = document.getElementById('detailsModal');
 
-    // 🛑 FIX 1: BLACK SCREEN ISSUE
-    // We move the modal HTML out of the nested layout and append it directly 
+    // Move the modal HTML out of the nested layout and append it directly 
     // to the body. This ensures the backdrop (dark overlay) appears *behind* the modal.
     if (detailsModal) {
         document.body.appendChild(detailsModal);
@@ -14,8 +16,7 @@
             var button = event.relatedTarget;
             if (!button) return;
 
-            // 🛑 FIX 2: EMPTY DATA ISSUE
-            // This function grabs data from the button and puts it into the modal spans
+            // Helper function to set text content
             function setText(id, val) {
                 var el = document.getElementById(id);
                 if (el) {
@@ -24,7 +25,6 @@
             }
 
             // --- Fill Data ---
-
             // General
             setText('m-id', button.getAttribute('data-id'));
             setText('m-status', button.getAttribute('data-status'));
@@ -47,17 +47,22 @@
             setText('m-updated-by', button.getAttribute('data-updated-by'));
             setText('m-updated-at', button.getAttribute('data-updated-at'));
 
-            // Optional: Update Badge Color in Modal dynamically
+            // ✅ NEW: Apply classes directly to the status element (not parent)
             var status = button.getAttribute('data-status');
             var statusEl = document.getElementById('m-status');
-            if (statusEl && statusEl.parentElement) {
-                // Reset classes
-                statusEl.parentElement.className = 'p-3 rounded text-center';
 
-                // Set color based on status
-                if (status === 'Confirmed') statusEl.parentElement.classList.add('bg-success', 'text-white');
-                else if (status === 'Pending') statusEl.parentElement.classList.add('bg-warning', 'text-dark');
-                else statusEl.parentElement.classList.add('bg-light');
+            if (statusEl) {
+                // Remove all previous status classes
+                statusEl.classList.remove('bg-success', 'bg-warning', 'bg-secondary-subtle', 'text-white', 'text-dark');
+
+                // Add appropriate class based on status
+                if (status === 'Confirmed') {
+                    statusEl.classList.add('bg-success');
+                } else if (status === 'Pending') {
+                    statusEl.classList.add('bg-warning');
+                } else {
+                    statusEl.classList.add('bg-secondary-subtle');
+                }
             }
         });
     }

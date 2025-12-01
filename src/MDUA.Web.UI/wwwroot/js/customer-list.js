@@ -1,78 +1,81 @@
-﻿$(document).ready(function () {
+﻿//change
+
+$(document).ready(function () {
+
+    // Move modal to body to fix z-index issues
+    var dataModal = document.getElementById('dataModal');
+    if (dataModal && !dataModal.hasAttribute('data-moved')) {
+        document.body.appendChild(dataModal);
+        dataModal.setAttribute('data-moved', 'true');
+    }
 
     // Helper to open modal and load content
-    function openCustomerDataModal(title, url) { // Removed customerId argument
+    function openCustomerDataModal(title, url) {
         // Show loading state
         $('#dataModalTitle').text(title);
         $('#dataModalBody').html('<div class="loading-spinner text-center py-4"><div class="spinner-border text-primary"></div></div>');
 
-        // Open the generic modal
-        $('#dataModal').modal('show');
+        // Open the generic modal with backdrop
+        var modalEl = document.getElementById('dataModal');
+        var modal = new bootstrap.Modal(modalEl, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
 
-        // 🛑 FIX: Ensure the backdrop is removed from the previous state
-        // This is a common fix for persistent dark screens on repeated modal calls
-        $('.modal-backdrop').hide();
-        $('#dataModal').css('z-index', 1050); // Ensure modal is on top
+        modal.show();
 
         // Fetch data
         $.get(url, function (html) {
             $('#dataModalBody').html(html);
         }).fail(function (xhr) {
             console.error("AJAX Load Failed:", xhr.responseText);
-            $('#dataModalBody').html('<div class="alert alert-danger">Failed to load data. Check server logs for exact error.</div>');
+            $('#dataModalBody').html('<div class="alert alert-danger m-3">Failed to load data. Please try again.</div>');
         });
     }
 
-    // 1. Orders Button Handler (AJAX + Modal)
-    $(document).on('click', '.js-manage-orders', function (e) {
-        let customerId = $(e.currentTarget).data('id');
-        let customerName = $(e.currentTarget).data('name');
-
-        let url = `/customer/get-orders-partial/${customerId}`;
-
-        // CRITICAL FIX: To prevent the backdrop issue in this shared modal:
-        // 1. Hide the modal immediately (to clear the previous backdrop)
-        $('#dataModal').modal('hide');
-        // 2. Open it after a very short delay to allow the framework to clean up the DOM
-        setTimeout(() => {
-            openCustomerDataModal(
-                `Orders for ${customerName}`,
-                url
-            );
-        }, 10); // 10ms delay is usually enough
-    });
-
-    // 2. Addresses Button Handler (AJAX + Modal)
-    $(document).on('click', '.js-manage-addresses', function (e) {
-        let customerId = $(e.currentTarget).data('id');
-        let customerName = $(e.currentTarget).data('name');
-
-        let url = `/customer/get-addresses-partial/${customerId}`;
-
-        // CRITICAL FIX: Repeat the hide-show cycle
-        $('#dataModal').modal('hide');
-        setTimeout(() => {
-            openCustomerDataModal(
-                `Addresses for ${customerName}`,
-                url
-            );
-        }, 10);
-    });
-
+    // 1. View Details Button Handler
     $(document).on('click', '.js-view-details', function (e) {
-        let customerId = $(e.currentTarget).data('id');
-        let customerName = $(e.currentTarget).data('name');
-
-        // This URL must point to your C# action that returns the Customer Details Partial View
+        e.preventDefault();
+        let customerId = $(this).data('id');
+        let customerName = $(this).data('name');
         let url = `/customer/get-details-partial/${customerId}`;
 
-        // CRITICAL FIX: Repeat the hide-show cycle
-        $('#dataModal').modal('hide');
-        setTimeout(() => {
-            openCustomerDataModal(
-                `Details for ${customerName}`,
-                url
-            );
-        }, 10);
+        openCustomerDataModal(`Details for ${customerName}`, url);
+    });
+
+    // 2. Orders Button Handler
+    $(document).on('click', '.js-manage-orders', function (e) {
+        e.preventDefault();
+        let customerId = $(this).data('id');
+        let customerName = $(this).data('name');
+        let url = `/customer/get-orders-partial/${customerId}`;
+
+        openCustomerDataModal(`Orders for ${customerName}`, url);
+    });
+
+    // 3. Addresses Button Handler
+    $(document).on('click', '.js-manage-addresses', function (e) {
+        e.preventDefault();
+        let customerId = $(this).data('id');
+        let customerName = $(this).data('name');
+        let url = `/customer/get-addresses-partial/${customerId}`;
+
+        openCustomerDataModal(`Addresses for ${customerName}`, url);
+    });
+
+    // 4. When modal is shown, ensure proper layering
+    $('#dataModal').on('shown.bs.modal', function () {
+        // Force correct z-index
+        $(this).css('z-index', '1050');
+        $('.modal-backdrop').css('z-index', '1040');
+    });
+
+    // 5. Clean up when modal closes
+    $('#dataModal').on('hidden.bs.modal', function () {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+        $('body').css('overflow', '');
+        $('body').css('padding-right', '');
     });
 });
