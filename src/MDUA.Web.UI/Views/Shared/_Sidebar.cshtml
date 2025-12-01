@@ -1,4 +1,9 @@
-﻿@model dynamic
+﻿<!-- change -->
+
+@model dynamic
+@using System.Security.Claims
+@using MDUA.Facade.Interface
+@inject ICompanyFacade CompanyFacade
 @{
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
@@ -8,15 +13,61 @@
     bool isCustomerPage = currentController == "Customer";
     bool isOrderPage = currentController == "Order";
 
+    //new
+    string companyName = "MDUA Admin"; // Default
+    string companyLogo = null;
+
+    // 1. Get Company ID from User Claims
+    var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+    // 2. Fetch Data if ID exists
+    if (int.TryParse(companyIdClaim, out int companyId))
+    {
+        var company = CompanyFacade.Get(companyId);
+        if (company != null)
+        {
+            companyName = company.CompanyName;
+            companyLogo = company.LogoImg;
+        }
+    }
+
 }
 
 <div class="sidebar glass-panel d-flex flex-column h-100">
     <!-- Brand -->
     <div class="d-flex align-items-center mb-4 ps-2 pt-2">
-        <div class="brand-logo me-2">M</div>
-        <div>
-            <div class="fw-bold">MDUA Admin</div>
-            <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">MANAGEMENT</div>
+
+        <!-- LOGO LOGIC -->
+        @if (!string.IsNullOrEmpty(companyLogo))
+        {
+            <img src="@companyLogo"
+                   alt="Logo"
+                   class="me-2 rounded-circle"
+                 style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);">
+        }
+        else
+        {
+            <!-- Fallback: First Letter -->
+            <div class="brand-logo me-2">
+                @if (!string.IsNullOrEmpty(companyName))
+                {
+                    @companyName.Substring(0, 1)
+                }
+                else
+                {
+                    <text>M</text>
+                }
+            </div>
+        }
+
+        <!-- NAME LOGIC -->
+        <div class="overflow-hidden">
+            <div class="fw-bold text-truncate" style="max-width: 150px;" title="@companyName">
+                @companyName
+            </div>
+            <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">
+                MANAGEMENT
+            </div>
         </div>
     </div>
 

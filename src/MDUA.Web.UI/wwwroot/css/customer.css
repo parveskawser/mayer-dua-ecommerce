@@ -1,18 +1,277 @@
-﻿.details-table th {
-    width: 40%;
-    font-weight: 600;
-    padding-left: 0;
-    border-top: none;
+﻿/* --- Change --- */
+:root {
+    /* Core Colors */
+    --blue-primary: #3b82f6;
+    --blue-light: #eff6ff;
+    --green-primary: #10b981;
+    --green-light: #ecfdf5;
+    --amber-primary: #f59e0b;
+    --amber-light: #fffbeb;
+    --red-primary: #ef4444; /* Added Red */
+    --red-light: #fef2f2; /* Added Red Light */
+    --gray-primary: #6b7280;
+    --gray-light: #f3f4f6;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 }
 
-.details-table td {
-    padding-left: 0;
-    border-top: none;
+.customer-details-modal {
+    background-color: #f8fafc;
+    padding-bottom: 1rem;
+}
+
+/* --- Generic Info Section (Base Card) --- */
+.info-section {
+    background: white;
+    margin: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.section-header {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.section-content {
+    padding: 1.25rem;
+}
+
+/* --- 🏠 ADDRESS CARDS (Blue Theme) --- */
+/* Also used for Primary Info */
+.address-card {
+    border-left: 5px solid var(--blue-primary);
+}
+
+    .address-card .section-header {
+        background: linear-gradient(90deg, var(--blue-light) 0%, #ffffff 100%);
+        color: #1d4ed8;
+    }
+
+    .address-card:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+.address-type-badge {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    margin-left: auto;
+}
+
+.address-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.address-meta {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* --- 🛒 ORDER / STATUS CARDS (Color Themes) --- */
+
+/* 1. Confirmed/Active (Green) */
+.order-card.card-confirmed {
+    border-left: 5px solid var(--green-primary);
+}
+
+    .order-card.card-confirmed .section-header {
+        background: linear-gradient(90deg, var(--green-light) 0%, #ffffff 100%);
+        color: #065f46;
+    }
+
+    .order-card.card-confirmed:hover {
+        transform: translateX(5px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15);
+    }
+
+/* 2. Pending/Notes (Amber) */
+.order-card.card-pending {
+    border-left: 5px solid var(--amber-primary);
+}
+
+    .order-card.card-pending .section-header {
+        background: linear-gradient(90deg, var(--amber-light) 0%, #ffffff 100%);
+        color: #92400e;
+    }
+
+    .order-card.card-pending:hover {
+        transform: translateX(5px);
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
+    }
+
+/* 3. Inactive/Danger (Red) - ✅ NEW */
+.order-card.card-danger {
+    border-left: 5px solid var(--red-primary);
+}
+
+    .order-card.card-danger .section-header {
+        background: linear-gradient(90deg, var(--red-light) 0%, #ffffff 100%);
+        color: #991b1b;
+    }
+
+    .order-card.card-danger:hover {
+        transform: translateX(5px);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.15);
+    }
+
+/* 4. Other/Audit (Gray) */
+.order-card.card-other {
+    border-left: 5px solid var(--gray-primary);
+}
+
+    .order-card.card-other .section-header {
+        background: linear-gradient(90deg, var(--gray-light) 0%, #ffffff 100%);
+        color: #374151;
+    }
+
+    .order-card.card-other:hover {
+        transform: translateX(5px);
+        box-shadow: 0 10px 20px rgba(107, 114, 128, 0.15);
+    }
+
+/* --- Details Grid Layout --- */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Status Badge Text */
+.status-badge {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+
+.status-active {
+    color: var(--green-primary);
+}
+
+.status-inactive {
+    color: var(--red-primary);
+}
+
+/* Order specific internal styles */
+.order-id {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.order-status-badge {
+    margin-left: auto;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.status-confirmed {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #f59e0b;
+}
+
+.status-other {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #9ca3af;
+}
+
+.order-amounts {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.amount-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+    .amount-row.net {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e2e8f0;
+        color: #15803d;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+.order-meta {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0284c7;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .notes-box {
-    white-space: pre-wrap; /* Preserves formatting/line breaks in notes */
-    font-style: italic;
-    font-size: 0.95rem;
-    min-height: 50px;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    line-height: 1.5;
 }
