@@ -22,6 +22,8 @@ public class CustomerController : BaseController
     [Route("customer/list")]
     public IActionResult CustomerList()
     {
+        if (!HasPermission("Customer.View")) return HandleAccessDenied();
+
         var userId = CurrentUserId; // Returns int?
         if (userId == null) return RedirectToAction("Login", "Account");
         
@@ -36,6 +38,8 @@ public class CustomerController : BaseController
     [Route("customer/get-orders-partial/{customerId}")]
     public IActionResult GetCustomerOrdersPartial(int customerId)
     {
+        if (!HasPermission("Customer.Orders")) return HandleAccessDenied();
+
         var userId = CurrentUserId;
         if (userId == null) return Unauthorized();
 
@@ -69,6 +73,8 @@ public class CustomerController : BaseController
     [Route("customer/get-addresses-partial/{customerId}")]
     public IActionResult GetCustomerAddressesPartial(int customerId)
     {
+        if (!HasPermission("Customer.Addresses")) return HandleAccessDenied();
+
         var userId = CurrentUserId;
         if (userId == null) return Unauthorized();
 
@@ -90,6 +96,8 @@ public class CustomerController : BaseController
     [Route("customer/details/{id}")]
     public IActionResult Details(int id)
     {
+        if (!HasPermission("Customer.Details")) return HandleAccessDenied();
+
         var customer = _customerFacade.GetCustomerDetails(id);
         if (customer == null) return NotFound();
         return View(customer);
@@ -100,6 +108,8 @@ public class CustomerController : BaseController
     [HttpGet]
     public IActionResult GetDetails(int id)
     {
+        if (!HasPermission("Customer.Details")) return HandleAccessDenied();
+
         // Call the facade method which uses the GetCustomerById stored procedure
         Customer customer = _customerFacade.GetCustomerDetailsById(id);
         if (customer == null)
@@ -116,6 +126,8 @@ public class CustomerController : BaseController
     [Route("customer/get-details-partial/{id}")]
     public IActionResult GetDetailsPartial(int id)
     {
+        if (!HasPermission("Customer.Details")) return HandleAccessDenied();
+
         if (id <= 0)
         {
             return BadRequest("Invalid Customer ID.");

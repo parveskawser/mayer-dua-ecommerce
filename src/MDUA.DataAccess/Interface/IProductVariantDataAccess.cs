@@ -16,5 +16,7 @@ namespace MDUA.DataAccess.Interface
         void InsertVariantAttributeValue(int variantId, int attributeValueId, int displayOrder);
         ProductVariantList GetProductVariantsByProductId(int productId);
         void UpdateVariantName(int variantId, string newName);
+        ProductVariant GetWithStock(int id);
+
     }
 }
