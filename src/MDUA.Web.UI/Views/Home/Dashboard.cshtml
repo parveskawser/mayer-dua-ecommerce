@@ -1,16 +1,25 @@
-﻿@model MDUA.Entities.UserLoginResult
+﻿<!-- change -->
+
+
+@model MDUA.Entities.UserLoginResult
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Dashboard";
-    var canAddProduct = Model.AuthorizedActions?
-            .Any(a => a.Trim().Equals("Product.Add", StringComparison.OrdinalIgnoreCase)) ?? false;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<!-- 1. WELCOME & KPIS -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-0">Overview</h2>
-        <div class="text-muted small">Welcome back, @Model.UserLogin.UserName</div>
+        <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
+        <div class="text-muted small">Overview for @Model.UserLogin.UserName</div>
     </div>
+    <span class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill">
+        📅 @DateTime.Now.ToString("dd MMM, yyyy")
+    </span>
 </div>
 
 <div class="row g-3 mb-4">
@@ -37,46 +46,192 @@
     </div>
 </div>
 
-@if (Model.CanViewProducts)
-{
-    <div class="glass-card p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">Recent Products</h5>
-
-            <div class="d-flex align-items-center gap-3">
-                @if (canAddProduct)
-                {
-                    <a href="@Url.Action("Add", "Product")" class="btn btn-sm btn-danger rounded-pill shadow-sm px-3">
-                        <span class="me-1">＋</span> Add Product
-                    </a>
-                }
-                <a href="@Url.Action("AllProducts", "Product")" class="text-danger text-decoration-none small fw-bold">View All &rarr;</a>
+<div class="row g-3 mb-4">
+    <!-- Revenue -->
+    <div class="col-md-3">
+        <div class="glass-card kpi-card p-3 border-start border-4 border-success position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                <div>
+                    <div class="text-uppercase text-muted small fw-bold mb-1">Total Revenue</div>
+                    <div class="fs-4 fw-bold text-success">Tk. @Model.Stats.TotalRevenue.ToString("N0")</div>
+                </div>
+                <div class="bg-success bg-opacity-10 p-2 rounded-circle text-success">💰</div>
             </div>
         </div>
+    </div>
 
-        <div class="table-wrapper">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Created At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model.LastFiveProducts)
-                    {
-                        <tr>
-                            <td class="fw-semibold">@p.ProductName</td>
-                            <td>@p.CreatedAt?.ToString("dd MMM yyyy")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- Total Orders -->
+    <div class="col-md-3">
+        <div class="glass-card kpi-card p-3 border-start border-4 border-primary position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                <div>
+                    <div class="text-uppercase text-muted small fw-bold mb-1">Total Orders</div>
+                    <div class="fs-4 fw-bold text-primary">@Model.Stats.TotalOrders</div>
+                    <div class="small text-muted">@Model.Stats.TodayOrders today</div>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">🛒</div>
+            </div>
         </div>
     </div>
-}
 
-<div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10">
+    <!-- Pending Orders -->
+    <div class="col-md-3">
+        <div class="glass-card kpi-card p-3 border-start border-4 border-warning position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                <div>
+                    <div class="text-uppercase text-muted small fw-bold mb-1">Pending</div>
+                    <div class="fs-4 fw-bold text-warning">@Model.Stats.PendingOrders</div>
+                    <div class="small text-muted">Needs action</div>
+                </div>
+                <div class="bg-warning bg-opacity-10 p-2 rounded-circle text-warning">⚡</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers -->
+    <div class="col-md-3">
+        <div class="glass-card kpi-card p-3 border-start border-4 border-info position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                <div>
+                    <div class="text-uppercase text-muted small fw-bold mb-1">Customers</div>
+                    <div class="fs-4 fw-bold text-info">@Model.Stats.TotalCustomers</div>
+                </div>
+                <div class="bg-info bg-opacity-10 p-2 rounded-circle text-info">👥</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="fw-bold text-dark mb-0">Order Status</h6>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. CONTENT GRID -->
+<div class="row g-4">
+
+    <!-- Left Column: Recent Orders -->
+    <div class="col-lg-8">
+        <div class="glass-card card-orders p-0 h-100 overflow-hidden">
+            <div class="card-header-custom">
+                <h6 class="fw-bold mb-0">New Orders</h6>
+                <!-- ✅ UPDATED: Blue Theme for Add Button -->
+                <a href="@Url.Action("Add", "Order")" class="btn btn-sm btn-orders rounded-pill px-3 shadow-sm" title="Add Order">
+                    <span class="me-1">＋</span>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-modern mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Order ID</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+                        {
+                            foreach (var o in Model.RecentOrders)
+                            {
+                                string statusClass = "bg-secondary-subtle text-dark";
+                                string displayStatus = o.Status == "Draft" ? "Pending" : o.Status;
+                                if (displayStatus == "Confirmed") statusClass = "bg-success text-white";
+                                else if (displayStatus == "Pending") statusClass = "bg-warning text-dark";
+
+                                string displayId = o.SalesOrderId ?? o.OnlineOrderId ?? o.Id.ToString();
+                                string type = o.SalesChannelId == 1 ? "Online" : "Direct";
+
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">@displayId</td>
+                                    <td>
+                                        <span class="badge bg-light text-secondary border">@type</span>
+                                    </td>
+                                    <td class="fw-bold text-dark">
+                                        Tk. @((o.TotalAmount - o.DiscountAmount).ToString("N0"))
+                                    </td>
+                                    <td><span class="badge @statusClass rounded-pill">@displayStatus</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="4" class="text-center py-5 text-muted">No recent orders found.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                <!-- ✅ UPDATED: Blue Theme for Link -->
+                <a href="@Url.Action("AllOrders", "Order")" class="text-decoration-none fw-bold text-orders small">See All Orders &rarr;</a>
+            </div>
+        </div>
+    </div>
+    <!-- Right Column: Recent Products -->
+    <div class="col-lg-4">
+        <!-- ✅ ADDED: 'card-products' class -->
+        <div class="glass-card card-products p-0 h-100 overflow-hidden">
+
+            <!-- ✅ ADDED: 'card-header-custom' class -->
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">New Products</h6>
+                <a href="@Url.Action("Add", "Product")" class="btn btn-sm btn-success rounded-pill px-3" title="Add Product">
+                    <span class="me-1">＋</span>
+                </a>
+            </div>
+
+            @if (Model.LastFiveProducts != null && Model.LastFiveProducts.Any())
+            {
+                <div class="product-list">
+                    @foreach (var p in Model.LastFiveProducts)
+                    {
+                        <!-- Using 'product-list-item' for hover effects -->
+                        <div class="product-list-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="product-icon">📦</div>
+                                <div>
+                                    <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">@p.ProductName</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">@p.CreatedAt?.ToString("MMM dd")</div>
+                                </div>
+                            </div>
+                            <span class="fw-bold small text-success">Tk. @(p.BasePrice?.ToString("N0") ?? "0")</span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted small">No products found.</div>
+            }
+
+            <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                <a href="@Url.Action("AllProducts", "Product")" class="text-decoration-none fw-bold text-success small">See All Products &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Debugger -->
+<div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
     <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
     <div class="row g-3 font-monospace small">
         <div class="col-md-3">
@@ -108,4 +263,89 @@
 </div>
 
 @section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Sales Trend Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+            const salesLabels = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Label).ToList() ?? new List<string>()));
+            const salesData = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Monthly Sales (Tk)',
+                        data: salesData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e5e7eb' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Status Distribution Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+            let rawLabels = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Label).ToList() ?? new List<string>()));
+            let rawData = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            // ✅ FIX: Map Labels (Draft -> Pending)
+            const statusLabels = rawLabels.map(l => l === "Draft" ? "Pending" : l);
+
+            // ✅ FIX: Distinct Color Palette (No overlapping hues)
+            const getStatusColor = (status) => {
+                switch(status) {
+                    case 'Confirmed': return '#86efac'; // Light Green
+                    case 'Shipped':   return '#a78bfa'; // Soft Purple (Distinct from Blue)
+                    case 'Delivered': return '#38bdf8'; // Sky Blue
+                    case 'Pending':   return '#fcd34d'; // Light Amber
+                    case 'Draft':     return '#fcd34d'; // Light Amber
+                    case 'Cancelled': return '#fca5a5'; // Light Red
+                    case 'Returned':  return '#cbd5e1'; // Light Gray
+                    default: return '#e5e7eb';
+                }
+            };
+
+            const backgroundColors = statusLabels.map(label => getStatusColor(label));
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: rawData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
+                    }
+                }
+            });
+        });
+    </script>
 }

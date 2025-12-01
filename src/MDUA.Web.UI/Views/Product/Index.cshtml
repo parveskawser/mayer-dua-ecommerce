@@ -148,6 +148,7 @@
             <h2>Place Your Order</h2>
             <div class="order-container">
 
+                <!-- LEFT: BILLING FORM (Order 1 on mobile) -->
                 <div class="billing">
                     <form id="order-form" novalidate>
                         <input type="hidden" id="product-id" value="@Model.Id" />
@@ -195,6 +196,16 @@
                                 <div id="stock-message" style="font-family: 'Inter', sans-serif;"></div>
                             </div>
                         </div>
+
+                        <div id="mobile-order-variant-image-holder">
+                            <img id="mobile-order-variant-image"
+                                 src="@FixPath(mainImageUrl)"
+                                 alt="Selected Variant"
+                                 style="width: 100%; height: 200px; object-fit: contain;"
+                                 onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                        </div>
+
+
 
                         <label>Phone Number <span class="required-star">*</span></label>
                         <div class="input-group">
@@ -262,11 +273,10 @@
                                 <small id="stock-error-message" class="text-danger"></small>
                             </div>
                         </div>
-
-                        <button type="submit" class="btn submit-btn">Confirm Order</button>
                     </form>
                 </div>
 
+                <!-- RIGHT: ORDER SUMMARY (Order 2 on mobile) -->
                 <div class="order-summary">
                     <div id="order-variant-image-holder">
                         <img id="order-variant-image"
@@ -292,9 +302,46 @@
                         </tfoot>
                     </table>
                 </div>
+
+                <!-- PAYMENT METHOD SECTION (BELOW receipt on both mobile & desktop) -->
+                <div class="payment-section">
+                    <h3>Choose Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" data-payment="cod">
+                            <input type="radio" name="paymentMethod" id="payment-cod" value="cod" checked>
+                            <label for="payment-cod">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
+                                     alt="Cash on Delivery" class="payment-logo">
+                                <span>Cash on Delivery</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" data-payment="bkash">
+                            <input type="radio" name="paymentMethod" id="payment-bkash" value="bkash">
+                            <label for="payment-bkash">
+                                <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
+                                     alt="bKash" class="payment-logo">
+                                <span>bKash</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" data-payment="card">
+                            <input type="radio" name="paymentMethod" id="payment-card" value="card">
+                            <label for="payment-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
+                                     alt="Card" class="payment-logo" style="width: auto; height: 15px; margin-right: 5px;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                                     alt="Card" class="payment-logo" style="width: auto; height: 20px;">
+                                <span style="margin-left: 10px;">Card</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
+                </div>
+
+                
             </div>
         </section>
-
     </div>
     <footer>
         <p>© @DateTime.Now.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
@@ -314,46 +361,53 @@
             image: "@FixPath(Model.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? Model.Images?.FirstOrDefault()?.ImageUrl)"
         };
         window.productVariants = [
-            @if (Model.Variants != null)
-            {
-                            foreach (var v in Model.Variants.Where(x => x.IsActive))
-                            {
-                                            var attrs = new Dictionary<string, string>();
-                                            if (Model.Specifications != null)
-                                            {
-                                                            foreach (var spec in Model.Specifications)
-                                                            {
-                                                                            foreach (var val in spec.Value)
-                                                                            {
-                                                                                            if (v.VariantName != null && v.VariantName.IndexOf(val, StringComparison.OrdinalIgnoreCase) >= 0)
-                                                                                            {
-                                                                                                            attrs[spec.Key] = val;
-                                                                                            }
-                                                                            }
-                                                            }
-                                            }
-                                            if (Model.AvailableSizes != null)
-                                            {
-                                                            foreach (var size in Model.AvailableSizes)
-                                                            {
-                                                                             if (v.VariantName.Contains($" {size} ") || v.VariantName.EndsWith($" {size}") || v.VariantName.EndsWith($"-{size}") || v.VariantName.StartsWith($"{size}-"))
-                                                                             {
-                                                                                             attrs["Size"] = size;
-                                                                             }
-                                                            }
-                                            }
-                                            <text>
-                                            {
-                                                id: @v.Id,
-                                                price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
-                                                stock: @v.StockQty,
-                                                image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
-                                                attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
-                                            },
-                                            </text>
-                            }
-            }
-        ];
+               @if (Model.Variants != null)
+               {
+                       foreach (var v in Model.Variants.Where(x => x.IsActive))
+                       {
+                               var attrs = new Dictionary<string, string>();
+
+                               // 1. Check Specifications (Dynamic Attributes)
+                               if (Model.Specifications != null)
+                               {
+                                       foreach (var spec in Model.Specifications)
+                                       {
+                                               foreach (var val in spec.Value)
+                                               {
+                                                       // ✅ FIX: Use IsSafeMatch instead of IndexOf
+                                                       if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                                       {
+                                                               attrs[spec.Key] = val;
+                                                       }
+                                               }
+                                       }
+                               }
+
+                               // 2. Check Available Sizes
+                               if (Model.AvailableSizes != null)
+                               {
+                                       foreach (var size in Model.AvailableSizes)
+                                       {
+                                               // ✅ FIX: Use IsSafeMatch here as well
+                                               if (v.VariantName != null && IsSafeMatch(v.VariantName, size))
+                                               {
+                                                       attrs["Size"] = size;
+                                               }
+                                       }
+                               }
+
+                               <text>
+                               {
+                                   id: @v.Id,
+                                   price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
+                                   stock: @v.StockQty,
+                                   image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
+                                   attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
+                               },
+                               </text>
+                       }
+               }
+           ];
     </script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -375,6 +429,26 @@
         string fixedPath = path.Replace("\\", "/");
         if (!fixedPath.StartsWith("/")) fixedPath = "/" + fixedPath;
         return fixedPath;
+    }
+  
+    public bool IsSafeMatch(string text, string term)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(term)) return false;
+
+        int index = -1;
+        // Loop through ALL occurrences, not just the first one
+        while ((index = text.IndexOf(term, index + 1, StringComparison.OrdinalIgnoreCase)) != -1)
+        {
+            // Check character BEFORE the match (must be start of string or non-letter)
+            bool startOk = (index == 0) || !char.IsLetterOrDigit(text[index - 1]);
+
+            // Check character AFTER the match (must be end of string or non-letter)
+            bool endOk = (index + term.Length == text.Length) || !char.IsLetterOrDigit(text[index + term.Length]);
+
+            if (startOk && endOk) return true;
+        }
+
+        return false;
     }
 
     public string GetAttributeIcon(string name)

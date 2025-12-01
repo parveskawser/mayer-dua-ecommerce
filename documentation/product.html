@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - MDUA Admin</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           1. ROOT VARIABLES & GLOBAL (from admin-theme.css)
+           ========================================= */
+        :root {
+            --red-main: #dc3545;
+            --red-dark: #b41f31;
+            --yellow-main: #ffc107;
+            --bg-body: #faf5f5;
+            --glass-bg: rgba(255, 255, 255, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.14);
+            --radius-xl: 20px;
+            --transition: 0.2s ease-out;
+            --sidebar-width: 260px;
+            --primary-color: #4e73df;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Prevent body scroll, handle in containers */
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top left, #ffe8e8 0, #fff7e0 50%, #f8f9fa 100%);
+            color: var(--text-main);
+        }
+
+        /* Scrollbar Styling */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+        /* =========================================
+           2. LAYOUT & SIDEBAR (from layout.css)
+           ========================================= */
+        .admin-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            padding: 15px;
+            gap: 15px;
+            position: relative;
+        }
+
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        .admin-main {
+            flex-grow: 1;
+            height: 100%;
+            min-width: 0;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-content-area {
+            padding: 1.5rem;
+            padding-top: 4rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Elements */
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 0, #fff5d0 0, var(--yellow-main) 45%, var(--red-main) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #721c24;
+            box-shadow: 0 10px 25px rgba(220, 53, 69, 0.45);
+            margin-right: 10px;
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 999px;
+            padding: .6rem 1rem;
+            font-size: .9rem;
+            color: var(--text-muted);
+            transition: all var(--transition);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 193, 7, 0.12);
+            color: var(--red-dark);
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(220, 53, 69, 0.08);
+            color: var(--red-main);
+            border-color: rgba(220, 53, 69, 0.15);
+            font-weight: 600;
+        }
+
+        .nav-link-sm { font-size: 0.85rem; padding: 0.4rem 1rem; margin-left: 2rem;}
+        .active-parent { color: var(--red-main) !important; font-weight: 600; }
+        
+        /* =========================================
+           3. PRODUCTS & TABLES (from products.css)
+           ========================================= */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(18px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .table-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .table thead {
+            background: linear-gradient(to right, rgba(220, 53, 69, 0.1), rgba(255, 193, 7, 0.1));
+            color: var(--red-dark);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            border-bottom: 2px solid var(--red-main);
+        }
+
+        .table th, .table td {
+            padding: 1rem 1.2rem;
+            vertical-align: middle;
+        }
+
+        .pill-tag {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .18em;
+            padding: .1rem .6rem;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid rgba(220, 53, 69, .25);
+            color: var(--red-dark);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-active { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; }
+        .status-inactive { background: linear-gradient(135deg, #fc8181 0%, #f56565 100%); color: white; }
+
+        .product-img-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        /* =========================================
+           4. MODALS (from admin-theme.css)
+           ========================================= */
+        .modal-custom {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header-custom {
+            background: linear-gradient(135deg, var(--red-main), var(--red-dark));
+            color: #fff;
+            padding: 20px 30px;
+            border: none;
+        }
+
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+        /* =========================================
+           5. FORMS (from admin-theme.css)
+           ========================================= */
+        .form-control-modal {
+            border-color: #e2e8f0;
+            padding: 0.6rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .form-control-modal:focus {
+            border-color: #a0aec0;
+            background-color: #f8fafc;
+            box-shadow: 0 0 0 3px rgba(160, 174, 192, 0.1);
+        }
+
+        /* =========================================
+           6. PRODUCT DETAILS (from product-details.css)
+           ========================================= */
+        .product-details-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .details-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .details-header-icon {
+            width: 32px; height: 32px; background: #f1f5f9;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        }
+        .price-value { font-size: 1.1rem; font-weight: 700; color: #10b981; }
+        .detail-group { padding: 0.5rem; border-radius: 8px; border: 1px solid transparent; }
+        .detail-group:hover { background-color: #f1f5f9; }
+
+        /* Toggle Logic */
+        .view-section { display: none; animation: fadeIn 0.3s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="admin-wrapper">
+
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar glass-panel d-flex flex-column h-100">
+                <div class="sidebar-brand">
+                    <div class="brand-logo">M</div>
+                    <div class="overflow-hidden">
+                        <div class="fw-bold">MDUA Admin</div>
+                        <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">MANAGEMENT</div>
+                    </div>
+                </div>
+
+                <div class="mb-2 text-uppercase small text-muted fw-semibold ps-3">Menu</div>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><span>📊</span> Dashboard</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active-parent" data-bs-toggle="collapse" href="#productsMenu" role="button" aria-expanded="true">
+                            <span>📦</span> Products <span class="ms-auto">▾</span>
+                        </a>
+                        <div class="collapse show" id="productsMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm active" href="#" onclick="switchView('list')">Product List</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm" href="#" onclick="switchView('add')">Add Product</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="#"><span>👥</span> Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><span>🛒</span> Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><span>⚙️</span> Settings</a></li>
+                </ul>
+
+                <div class="mt-auto pt-3 border-top border-secondary-subtle p-3">
+                    <button class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <span>🚪</span> Logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="glass-panel h-100 position-relative">
+                
+                <button id="sidebar-toggle-btn" class="btn btn-sm btn-white border shadow-sm position-absolute top-0 start-0 m-3 z-3" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="admin-content-area custom-scrollbar">
+                    
+                    <div id="view-list" class="view-section active">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="fw-bold mb-0">Products</h2>
+                                <div class="text-muted small">Manage catalog, prices & inventory</div>
+                            </div>
+                            <button class="btn btn-primary shadow-sm" onclick="switchView('add')">
+                                <i class="fas fa-plus fa-sm text-white-50"></i> Add New Product
+                            </button>
+                        </div>
+
+                        <div class="glass-card h-100 d-flex flex-column">
+                            <div class="p-3 border-bottom border-light d-flex justify-content-between align-items-center">
+                                <div class="fw-bold">Catalog Inventory</div>
+                                <div class="input-group w-25">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search...">
+                                </div>
+                            </div>
+
+                            <div class="table-wrapper flex-grow-1">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th>Level</th>
+                                                <th>Slug</th>
+                                                <th>Price</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-semibold">
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://via.placeholder.com/50" class="product-img-thumb me-2">
+                                                        <span>Combo Offer – 3 Premium T-Shirts</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="pill-tag">Apparel</span></td>
+                                                <td>10</td>
+                                                <td class="small text-muted">combo-offer</td>
+                                                <td><div class="fw-bold">Tk. 1,999.00</div></td>
+                                                <td><span class="status-badge status-active">Active</span></td>
+                                                <td>
+                                                    <div class="d-flex gap-1">
+                                                        <button class="btn btn-sm btn-light border" title="Images">🖼️</button>
+                                                        <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#productDiscountsModal">🏷️</button>
+                                                        <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#productDetailsModal">📄</button>
+                                                        <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#editProductModal">✏️</button>
+                                                        <button class="btn btn-sm btn-danger-subtle text-danger border border-danger-subtle" data-bs-toggle="modal" data-bs-target="#deleteProductModal">🗑️</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://via.placeholder.com/50" class="product-img-thumb me-2">
+                                                        <span>Winter Hoodie - Black</span>
+                                                    </div>
+                                                </td>
+                                                <td><span class="pill-tag">Winter Wear</span></td>
+                                                <td>5</td>
+                                                <td class="small text-muted">winter-hoodie-bk</td>
+                                                <td>
+                                                    <div class="text-decoration-line-through text-muted small">Tk. 1,200.00</div>
+                                                    <div class="text-danger fw-bold">Tk. 850.00</div>
+                                                </td>
+                                                <td><span class="status-badge status-inactive">Inactive</span></td>
+                                                <td>
+                                                    <div class="d-flex gap-1">
+                                                        <button class="btn btn-sm btn-light border">🖼️</button>
+                                                        <button class="btn btn-sm btn-light border">🏷️</button>
+                                                        <button class="btn btn-sm btn-light border">📄</button>
+                                                        <button class="btn btn-sm btn-light border">✏️</button>
+                                                        <button class="btn btn-sm btn-danger-subtle text-danger border border-danger-subtle">🗑️</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="view-add" class="view-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="fw-bold mb-0">Add Product</h2>
+                                <div class="text-muted small">Create a new item in your catalog</div>
+                            </div>
+                            <button onclick="switchView('list')" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                &larr; Back to List
+                            </button>
+                        </div>
+
+                        <form>
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="glass-card p-4 h-100">
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-4 border-bottom pb-2">Product Details</h6>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold small">Product Name</label>
+                                            <input type="text" class="form-control form-control-modal" placeholder="e.g. Premium T-Shirt" required />
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold small">Description</label>
+                                            <textarea class="form-control form-control-modal" rows="6" placeholder="Enter full product description..."></textarea>
+                                        </div>
+
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold small">Base Price</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light border-end-0">Tk</span>
+                                                    <input type="number" class="form-control form-control-modal border-start-0 ps-0" placeholder="0.00" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold small">Reorder Level</label>
+                                                <input type="number" class="form-control form-control-modal" value="0" />
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold small">Slug (Unique URL)</label>
+                                                <input type="text" class="form-control form-control-modal" placeholder="product-name-slug" />
+                                                <div class="form-text small">Leave empty to auto-generate from name.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="glass-card p-4 position-sticky" style="top: 1rem;">
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Configuration</h6>
+
+                                        <div class="bg-light p-3 rounded border mb-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="IsActive" checked />
+                                                <label class="form-check-label fw-bold" for="IsActive">Active</label>
+                                                <div class="small text-muted" style="font-size: 0.75rem;">Visible on storefront</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold small">Category</label>
+                                            <select class="form-select form-control-modal">
+                                                <option value="">-- Select Category --</option>
+                                                <option value="1">Apparel</option>
+                                                <option value="2">Electronics</option>
+                                                <option value="3">Winter Wear</option>
+                                            </select>
+                                        </div>
+
+                                        <hr class="border-light my-4" />
+
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Attributes & Variants</h6>
+                                        <div id="attributes-container" class="mb-2">
+                                            <div class="attribute-row mb-2">
+                                                <label class="small text-muted fw-bold mb-1">Add attribute</label>
+                                                <select class="form-select form-select-sm form-control-modal mb-2">
+                                                    <option value="">-- Select Attribute --</option>
+                                                    <option value="1">Size</option>
+                                                    <option value="2">Color</option>
+                                                    <option value="3">Fabric</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 dashed-border mb-3">
+                                            + Add Another Attribute
+                                        </button>
+
+                                        <hr class="border-light my-4" />
+
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-danger fw-bold shadow-sm">Create Product</button>
+                                            <button type="button" onclick="switchView('list')" class="btn btn-light text-muted">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Product Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="background: #f8f9fa;">
+                    <div class="product-details-card">
+                        <div class="details-header">
+                            <div class="details-header-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <h5 class="mb-0 fw-bold">Combo Offer – 3 Premium T-Shirts</h5>
+                        </div>
+                        <div class="row g-0">
+                            <div class="col-md-7 p-4">
+                                <h6 class="text-muted text-uppercase small fw-bold mb-3">Basic Info</h6>
+                                <div class="detail-group mb-2">
+                                    <label class="small text-muted fw-bold d-block">Category</label>
+                                    <span class="category-tag">Apparel</span>
+                                </div>
+                                <div class="detail-group mb-2">
+                                    <label class="small text-muted fw-bold d-block">Price</label>
+                                    <span class="price-value">1,999.00</span>
+                                </div>
+                            </div>
+                            <div class="col-md-5 bg-light p-4 border-start">
+                                <h6 class="text-muted text-uppercase small fw-bold mb-3">System Status</h6>
+                                <span class="status-badge status-active">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title">Edit Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="p-2">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Product Name</label>
+                            <input class="form-control form-control-lg fw-bold" value="Combo Offer – 3 Premium T-Shirts" />
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Category</label>
+                                <select class="form-select"><option selected>Apparel</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Slug</label>
+                                <input class="form-control bg-light text-secondary" value="combo-offer" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-custom">
+                <div class="modal-header modal-header-danger">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i> Delete Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="delete-warning">
+                        <div class="warning-icon">!</div>
+                        <div class="delete-warning-content">
+                            <p>Are you sure you want to delete <strong>Combo Offer</strong>?</p>
+                            <p class="small text-muted">This action cannot be undone.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger w-100">Confirm Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple View Switcher Logic
+        function switchView(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link-sm').forEach(el => el.classList.remove('active'));
+            
+            if (view === 'list') {
+                document.getElementById('view-list').classList.add('active');
+                document.querySelector('.nav-link-sm[onclick="switchView(\'list\')"]').classList.add('active');
+            } else {
+                document.getElementById('view-add').classList.add('active');
+                document.querySelector('.nav-link-sm[onclick="switchView(\'add\')"]').classList.add('active');
+            }
+        }
+
+        // Bootstrap Modal Fixes
+        var originalSetScrollbar = bootstrap.Modal.prototype._setScrollbar;
+        bootstrap.Modal.prototype._setScrollbar = function () { };
+        bootstrap.Modal.prototype._adjustDialog = function () { };
+    </script>
+
+</body>
+</html>

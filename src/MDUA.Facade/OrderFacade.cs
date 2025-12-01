@@ -72,13 +72,15 @@ namespace MDUA.Facade
         public List<string> GetThanas(string district) => _postalCodesDataAccess.GetThanas(district);
 
         public List<dynamic> GetSubOffices(string thana) => _postalCodesDataAccess.GetSubOffices(thana);
-       
-        
+
+
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
             // 1. PRE-CALCULATION (Read-Only, outside transaction)
-            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId); 
+            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId);
             if (variant == null) throw new Exception("Variant not found.");
+
+
 
             if (variant.StockQty == 0)
             {
@@ -274,6 +276,7 @@ namespace MDUA.Facade
             }
         }
 
+
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {
             var customer = _customerDataAccess.GetByPhone(phone);
@@ -302,8 +305,6 @@ namespace MDUA.Facade
             return _salesOrderHeaderDataAccess.GetAllSalesOrderHeaders().ToList();
         }
 
-
-        //new
         public string UpdateOrderConfirmation(int orderId, bool isConfirmed)
         {
             // 1. Determine DB Status (Must be "Draft" to satisfy SQL Check Constraint)
@@ -347,50 +348,43 @@ namespace MDUA.Facade
             return new List<dynamic>(rawList);
         }
 
-        // ✅ FIXED: Using Tuple access (.Item1, .Item2 or .StockQty, .Price)
-        public string PlaceAdminOrder(SalesOrderHeader orderData)
+        // Change
+        public dynamic PlaceAdminOrder(SalesOrderHeader orderData)
         {
-            // 1. Stock & Price Check (From VariantPriceStock)
+            // 1. Stock Check
             var variantInfo = _salesOrderHeaderDataAccess.GetVariantStockAndPrice(orderData.ProductVariantId);
+            if (variantInfo == null) throw new Exception("Variant not found.");
 
-            if (variantInfo == null) throw new Exception("Variant not found in Stock System.");
+            if (variantInfo.Value.StockQty < orderData.OrderQuantity)
+                throw new Exception($"Stock Error: Only {variantInfo.Value.StockQty} available.");
 
-            int currentStock = variantInfo.Value.StockQty;
-            decimal basePrice = variantInfo.Value.Price; // The selling price from VPS
-
-            if (currentStock < orderData.OrderQuantity)
-                throw new Exception($"Stock Error: Only {currentStock} available.");
+            decimal basePrice = variantInfo.Value.Price;
 
             // 2. Discount Calculation
-            // We need the ProductId to check for discounts, so we fetch the basic definition
             var variantBasic = _productVariantDataAccess.Get(orderData.ProductVariantId);
-            if (variantBasic == null) throw new Exception("Variant definition not found.");
-
             decimal finalUnitPrice = basePrice;
             decimal totalDiscount = 0;
-            int quantity = orderData.OrderQuantity;
 
-            // Call the Product Facade to check for active discounts
             var bestDiscount = _productFacade.GetBestDiscount(variantBasic.ProductId, basePrice);
-
             if (bestDiscount != null)
             {
                 if (bestDiscount.DiscountType == "Flat")
                 {
-                    decimal discountPerItem = bestDiscount.DiscountValue;
-                    finalUnitPrice -= discountPerItem;
-                    totalDiscount = discountPerItem * quantity;
+                    finalUnitPrice -= bestDiscount.DiscountValue;
+                    totalDiscount = bestDiscount.DiscountValue * orderData.OrderQuantity;
                 }
                 else if (bestDiscount.DiscountType == "Percentage")
                 {
-                    decimal discountRate = bestDiscount.DiscountValue / 100;
-                    decimal discountPerItem = basePrice * discountRate;
-                    finalUnitPrice -= discountPerItem;
-                    totalDiscount = discountPerItem * quantity;
+                    decimal disc = basePrice * (bestDiscount.DiscountValue / 100);
+                    finalUnitPrice -= disc;
+                    totalDiscount = disc * orderData.OrderQuantity;
                 }
             }
 
-            // 3. Transactional Save
+            decimal grossAmount = basePrice * orderData.OrderQuantity;
+            decimal netAmount = grossAmount - totalDiscount;
+
+            // 3. Save
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -409,19 +403,34 @@ namespace MDUA.Facade
                         int customerId = 0;
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
 
+                        // ✅ FIX: Determine Email (Use input if present, else fallback)
+                        string finalEmail = !string.IsNullOrEmpty(orderData.CustomerEmail)
+                                            ? orderData.CustomerEmail
+                                            : $"{orderData.CustomerPhone}@direct.local";
+
                         if (customer == null)
                         {
                             var newCust = new Customer
                             {
                                 CustomerName = orderData.CustomerName,
                                 Phone = orderData.CustomerPhone,
-                                Email = $"{orderData.CustomerPhone}@direct.local",
+                                Email = finalEmail, // ✅ Used here
                                 IsActive = true,
                                 CreatedAt = DateTime.Now,
                                 CreatedBy = "Admin"
                             };
                             transCustomerDA.Insert(newCust);
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
+                        }
+                        else
+                        {
+                            // ✅ FIX: Update email if provided and user currently has placeholder
+                            if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
+                               (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith("@direct.local") || customer.Email.EndsWith("@guest.local")))
+                            {
+                                customer.Email = orderData.CustomerEmail;
+                                transCustomerDA.Update(customer);
+                            }
                         }
                         customerId = customer.Id;
 
@@ -431,15 +440,17 @@ namespace MDUA.Facade
                             transCompanyCustomerDA.Insert(new CompanyCustomer { CompanyId = orderData.TargetCompanyId, CustomerId = customerId });
                         }
 
-                        // C. Address
+                        // C. Address Logic
                         var addr = new Address
                         {
                             CustomerId = customerId,
                             Street = orderData.Street,
                             City = orderData.City,
                             Divison = orderData.Divison,
+                            // ✅ FIX: Save Thana & SubOffice
                             Thana = orderData.Thana,
                             SubOffice = orderData.SubOffice,
+
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "Admin",
@@ -456,11 +467,8 @@ namespace MDUA.Facade
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 2; // Direct
                         orderData.OrderDate = DateTime.Now;
-
-                        // ✅ APPLY CALCULATED DISCOUNT
                         orderData.DiscountAmount = totalDiscount;
-                        orderData.TotalAmount = basePrice * quantity; // Gross Amount
-                                                                      // DB will calculate NetAmount = TotalAmount - DiscountAmount
+                        orderData.TotalAmount = grossAmount;
 
                         orderData.Status = orderData.Confirmed ? "Confirmed" : "Draft";
                         orderData.IsActive = true;
@@ -475,14 +483,20 @@ namespace MDUA.Facade
                             SalesOrderId = orderId,
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
-                            // ✅ SAVE DISCOUNTED UNIT PRICE
                             UnitPrice = finalUnitPrice,
                             CreatedBy = "Admin",
                             CreatedAt = DateTime.Now
                         });
 
                         transaction.Commit();
-                        return "DO" + orderId.ToString("D8");
+
+                        return new
+                        {
+                            OrderId = "DO" + orderId.ToString("D8"),
+                            NetAmount = netAmount,
+                            DiscountAmount = totalDiscount,
+                            TotalAmount = grossAmount
+                        };
                     }
                     catch
                     {
@@ -491,6 +505,28 @@ namespace MDUA.Facade
                     }
                 }
             }
+        }
+
+        //new
+        public DashboardStats GetDashboardMetrics()
+        {
+            return _salesOrderHeaderDataAccess.GetDashboardStats();
+        }
+
+        //new
+        public List<SalesOrderHeader> GetRecentOrders()
+        {
+            return _salesOrderHeaderDataAccess.GetRecentOrders(5); // Get top 5
+        }
+        //new
+        public List<ChartDataPoint> GetSalesTrend()
+        {
+            return _salesOrderHeaderDataAccess.GetSalesTrend(6);
+        }
+//new
+        public List<ChartDataPoint> GetOrderStatusCounts()
+        {
+            return _salesOrderHeaderDataAccess.GetOrderStatusCounts();
         }
         #endregion
     }

@@ -243,44 +243,54 @@ namespace MDUA.DataAccess
 			}
 			return _CompanyRowCount;
 		}
-		
-		#endregion
-	
-		#region Fill Methods
-		/// <summary>
+
+        #endregion
+
+        #region Fill Methods
+        /// <summary>
         /// Fills Company object
         /// </summary>
         /// <param name="companyObject">The object to be filled</param>
         /// <param name="reader">The reader to use to fill a single object</param>
         /// <param name="start">The ordinal position from which to start reading the reader</param>
+       
+		//change
 		protected void FillObject(CompanyBase companyObject, SqlDataReader reader, int start)
-		{
-			
-				companyObject.Id = reader.GetInt32( start + 0 );			
-				companyObject.CompanyName = reader.GetString( start + 1 );			
-				if(!reader.IsDBNull(2)) companyObject.CompanyCode = reader.GetString( start + 2 );			
-				if(!reader.IsDBNull(3)) companyObject.Email = reader.GetString( start + 3 );			
-				if(!reader.IsDBNull(4)) companyObject.Phone = reader.GetString( start + 4 );			
-				if(!reader.IsDBNull(5)) companyObject.Website = reader.GetString( start + 5 );			
-				if(!reader.IsDBNull(6)) companyObject.Address = reader.GetString( start + 6 );			
-				companyObject.IsActive = reader.GetBoolean( start + 7 );			
-				companyObject.CreatedBy = reader.GetString( start + 8 );			
-				companyObject.CreatedAt = reader.GetDateTime( start + 9 );			
-				if(!reader.IsDBNull(10)) companyObject.UpdatedBy = reader.GetString( start + 10 );			
-				if(!reader.IsDBNull(11)) companyObject.UpdatedAt = reader.GetDateTime( start + 11 );			
-				if(!reader.IsDBNull(12)) companyObject.LogoImg = reader.GetString( start + 12 );			
-			FillBaseObject(companyObject, reader, (start + 13));
+        {
+            // 0-7 match standard order
+            companyObject.Id = reader.GetInt32(start + 0);
+            companyObject.CompanyName = reader.GetString(start + 1);
+            if (!reader.IsDBNull(2)) companyObject.CompanyCode = reader.GetString(start + 2);
+            if (!reader.IsDBNull(3)) companyObject.Email = reader.GetString(start + 3);
+            if (!reader.IsDBNull(4)) companyObject.Phone = reader.GetString(start + 4);
+            if (!reader.IsDBNull(5)) companyObject.Website = reader.GetString(start + 5);
+            if (!reader.IsDBNull(6)) companyObject.Address = reader.GetString(start + 6);
+            companyObject.IsActive = reader.GetBoolean(start + 7);
 
-			
-			companyObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	
-		}
-		
-		/// <summary>
+            // FIX: Based on your SQL Table, LogoImg is at Index 8 (not 12)
+            if (!reader.IsDBNull(8)) companyObject.LogoImg = reader.GetString(start + 8);
+
+            // FIX: CreatedBy pushed to Index 9, CreatedAt to Index 10
+            companyObject.CreatedBy = reader.GetString(start + 9);
+            companyObject.CreatedAt = reader.GetDateTime(start + 10);
+
+            // FIX: UpdatedBy pushed to Index 11, UpdatedAt to Index 12
+            if (!reader.IsDBNull(11)) companyObject.UpdatedBy = reader.GetString(start + 11);
+            if (!reader.IsDBNull(12)) companyObject.UpdatedAt = reader.GetDateTime(start + 12);
+
+            // FillBaseObject starts after these 13 columns
+            FillBaseObject(companyObject, reader, (start + 13));
+
+            companyObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
+        }
+
+
+        /// <summary>
         /// Fills Company object
         /// </summary>
         /// <param name="companyObject">The object to be filled</param>
         /// <param name="reader">The reader to use to fill a single object</param>
-		protected void FillObject(CompanyBase companyObject, SqlDataReader reader)
+        protected void FillObject(CompanyBase companyObject, SqlDataReader reader)
 		{
 			FillObject(companyObject, reader, 0);
 		}

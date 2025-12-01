@@ -398,5 +398,174 @@ namespace MDUA.DataAccess
             }
             return null;
         }
+
+
+        // ✅ NEW: Fetch all KPI stats in one go
+        public DashboardStats GetDashboardStats()
+        {
+            var stats = new DashboardStats();
+
+            string SQLQuery = @"
+                SELECT 
+                    -- 1. Total Revenue (Confirmed Only)
+                    (SELECT ISNULL(SUM(TotalAmount - DiscountAmount), 0) 
+                     FROM SalesOrderHeader 
+                     WHERE Status = 'Confirmed') as TotalRevenue,
+
+                    -- 2. Total Orders
+                    (SELECT COUNT(*) FROM SalesOrderHeader) as TotalOrders,
+
+                    -- 3. Pending Actions (Draft or Pending)
+                    (SELECT COUNT(*) FROM SalesOrderHeader 
+                     WHERE Status IN ('Draft', 'Pending')) as PendingOrders,
+
+                    -- 4. Today's Orders
+                    (SELECT COUNT(*) FROM SalesOrderHeader 
+                     WHERE CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE)) as TodayOrders,
+
+                    -- 5. Total Customers
+                    (SELECT COUNT(*) FROM Customer WHERE IsActive = 1) as TotalCustomers
+            ";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        stats.TotalRevenue = reader.GetDecimal(0);
+                        stats.TotalOrders = reader.GetInt32(1);
+                        stats.PendingOrders = reader.GetInt32(2);
+                        stats.TodayOrders = reader.GetInt32(3);
+                        stats.TotalCustomers = reader.GetInt32(4);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return stats;
+        }
+
+        // ✅ NEW: Fetch top 5 recent orders
+        public List<SalesOrderHeader> GetRecentOrders(int count = 5)
+        {
+            // Explicitly selecting columns to match your entity structure
+            string SQLQuery = $@"
+                SELECT TOP ({count}) 
+                    [Id], [CompanyCustomerId], [AddressId], [SalesChannelId], [OnlineOrderId], [DirectOrderId], 
+                    [OrderDate], [TotalAmount], [DiscountAmount], [NetAmount], [SessionId], [IPAddress], 
+                    [Status], [IsActive], [Confirmed], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [SalesOrderId]
+                FROM [dbo].[SalesOrderHeader]
+                ORDER BY [OrderDate] DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                // Reusing your existing internal list mapping logic
+                // If you have a generic GetList(cmd), use it. Otherwise, this mimics GetAll() logic:
+                SqlDataReader reader;
+                SelectRecords(cmd, out reader);
+                SalesOrderHeaderList list = new SalesOrderHeaderList();
+
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        SalesOrderHeader order = new SalesOrderHeader();
+                        int i = 0;
+                        order.Id = reader.GetInt32(i++);
+                        order.CompanyCustomerId = reader.GetInt32(i++);
+                        order.AddressId = reader.GetInt32(i++);
+                        order.SalesChannelId = reader.GetInt32(i++);
+                        order.OnlineOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.DirectOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.OrderDate = reader.GetDateTime(i++);
+                        order.TotalAmount = reader.GetDecimal(i++);
+                        order.DiscountAmount = reader.GetDecimal(i++);
+                        order.NetAmount = reader.GetDecimal(i++);
+                        order.SessionId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.IPAddress = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.Status = reader.GetString(i++);
+                        order.IsActive = reader.GetBoolean(i++);
+                        order.Confirmed = reader.GetBoolean(i++);
+                        order.CreatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.CreatedAt = reader.GetDateTime(i++);
+                        order.UpdatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        order.UpdatedAt = reader.IsDBNull(i) ? (DateTime?)null : reader.GetDateTime(i); i++;
+                        order.SalesOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+
+                        order.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
+                        list.Add(order);
+                    }
+                    reader.Close();
+                }
+                return list;
+            }
+        }
+
+        // ✅ NEW: Get Monthly Sales Trend
+        public List<ChartDataPoint> GetSalesTrend(int months = 6)
+        {
+            var list = new List<ChartDataPoint>();
+
+            // Universal SQL Date Grouping (Works on older SQL versions too)
+            string SQLQuery = @"
+                SELECT 
+                    DATENAME(month, OrderDate) + ' ' + CAST(YEAR(OrderDate) AS VARCHAR(4)) as Label,
+                    SUM(TotalAmount - DiscountAmount) as Value,
+                    MIN(OrderDate) as SortDate
+                FROM SalesOrderHeader
+                WHERE OrderDate >= DATEADD(month, -@Months, GETDATE())
+                  AND Status != 'Cancelled'
+                GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(month, OrderDate)
+                ORDER BY MIN(OrderDate)";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Months", months));
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new ChartDataPoint
+                        {
+                            Label = reader.GetString(0),
+                            Value = Convert.ToDecimal(reader.GetValue(1)) // Safe Cast
+                        });
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return list;
+        }
+
+        public List<ChartDataPoint> GetOrderStatusCounts()
+        {
+            var list = new List<ChartDataPoint>();
+            string SQLQuery = @"
+                SELECT Status, COUNT(*) 
+                FROM SalesOrderHeader 
+                GROUP BY Status";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new ChartDataPoint
+                        {
+                            Label = reader.GetString(0),
+                            Value = Convert.ToDecimal(reader.GetValue(1)) // Count is int, need decimal for model
+                        });
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return list;
+        }
     }
-}
+    }
+

@@ -1,43 +1,86 @@
-﻿@model List<MDUA.Entities.Address>
+﻿    <!-- Change -->
+@model List<MDUA.Entities.Address>
 @{
-    // Assuming the CustomerId is passed via ViewBag
     var customerId = ViewBag.CustomerId;
+
+    // ✅ FILTER: Exclude "Counter Sale" (In-Store) dummy addresses from the list
+    var visibleAddresses = Model?
+        .Where(a => string.IsNullOrEmpty(a.Street) || !a.Street.Contains("Counter Sale", StringComparison.OrdinalIgnoreCase))
+        .ToList();
 }
 
-<h5 class="fw-bold mb-3">All Recorded Addresses (@(Model?.Count() ?? 0))</h5>
-<div class="small text-muted mb-3">Customer ID: @customerId</div>
+<div class="customer-details-modal">
+    <!-- Header Section -->
+    <div class="info-section">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z" />
+            </svg>
+            <span>All Recorded Addresses</span>
+        </div>
+        <div class="section-content">
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Use visible count -->
+                <span class="info-value">Total Addresses: @(visibleAddresses?.Count() ?? 0)</span>
+                <span class="info-label">Customer ID: @customerId</span>
+            </div>
+        </div>
+    </div>
 
-<div class="table-responsive">
-    <table class="table table-sm table-striped table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Type</th>
-                <th>Street Address</th>
-                <th>City / Thana</th>
-                <th>Division</th>
-                <th>Postal / Zip</th>
-                <th>Created At</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var addr in Model)
-                {
-                    <tr>
-                        <td class="fw-bold">@(addr.AddressType ?? "N/A")</td>
-                        <td>@addr.Street</td>
-                        <td>@addr.City @(addr.Thana != null ? $"({addr.Thana})" : "")</td>
-                        <td>@addr.Divison</td>
-                        <td>@addr.PostalCode @(addr.ZipCode != null ? $"/{new string(addr.ZipCode).Trim()}" : "")</td>
-                        <td>@addr.CreatedAt.ToString("MMM dd, yyyy")</td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr><td colspan="6" class="text-center text-muted p-3">No saved addresses found for this customer.</td></tr>
-            }
-        </tbody>
-    </table>
+    <!-- Address Cards -->
+    @if (visibleAddresses != null && visibleAddresses.Any())
+    {
+        foreach (var addr in visibleAddresses)
+        {
+            <div class="info-section address-card">
+                <div class="section-header address-type-header">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3.293l6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6zm5-.793V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z" />
+                        <path fill-rule="evenodd" d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z" />
+                    </svg>
+                    <span class="address-type-badge">@(addr.AddressType ?? "General")</span>
+                </div>
+                <div class="section-content">
+                    <div class="address-details">
+                        <div class="address-line">
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8.47 1.318a1 1 0 0 0-.94 0l-6 3.2A1 1 0 0 0 1 5.4v.817l5.75 3.45L8 8.917l1.25.75L15 6.217V5.4a1 1 0 0 0-.53-.882l-6-3.2Z" />
+                            </svg>
+                            <span>@addr.Street</span>
+                        </div>
+                        <div class="address-line">
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                            </svg>
+                            <span>
+                                @addr.City@(addr.Thana != null ? $", {addr.Thana}" : "")@(addr.SubOffice != null ? $", {addr.SubOffice}" : "")
+                            </span>
+                        </div>
+                        <div class="address-meta">
+                            <span class="meta-item">
+                                <strong>Division:</strong> @addr.Divison
+                            </span>
+                            <span class="meta-item">
+                                <strong>Postal:</strong> @addr.PostalCode@(addr.ZipCode != null ? $" / {new string(addr.ZipCode).Trim()}" : "")
+                            </span>
+                            <span class="meta-item">
+                                <strong>Added:</strong> @addr.CreatedAt.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="info-section">
+            <div class="section-content text-center py-4">
+                <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16" style="opacity: 0.3;">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z" />
+                </svg>
+                <p class="text-muted mt-3 mb-0">No saved addresses found for this customer.</p>
+            </div>
+        </div>
+    }
 </div>

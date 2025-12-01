@@ -42,17 +42,22 @@ namespace MDUA.DataAccess
                 return GetObject(cmd);
             }
         }
+
+        //change
         public long InsertAddressSafe(Address address)
         {
             // ✅ BULLETPROOF METHOD: Inline SQL
             // We insert and immediately select the new ID.
             string SQLQuery = @"
                 INSERT INTO [dbo].[Address]
-                ([CustomerId], [Street], [City], [Divison], [PostalCode], [Country], 
-                 [ZipCode], [AddressType], [CreatedBy], [CreatedAt])
+                ([CustomerId], [Street], [City], [Divison], [Thana], [SubOffice], 
+                 [PostalCode], [ZipCode], [Country], [AddressType], 
+                 [CreatedBy], [CreatedAt])
                 VALUES
-                (@CustomerId, @Street, @City, @Divison, @PostalCode, @Country, 
-                 @ZipCode, @AddressType, @CreatedBy, @CreatedAt);
+                (@CustomerId, @Street, @City, @Divison, @Thana, @SubOffice, 
+                 @PostalCode, @ZipCode, @Country, @AddressType, 
+                 @CreatedBy, @CreatedAt);
+                
                 
                 SELECT CONVERT(INT, SCOPE_IDENTITY());";
 
@@ -62,6 +67,9 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pNVarChar("Street", 255, address.Street));
                 AddParameter(cmd, pNVarChar("City", 100, address.City));
                 AddParameter(cmd, pNVarChar("Divison", 100, address.Divison));
+
+                AddParameter(cmd, pNVarChar("Thana", 100, address.Thana ?? ""));
+                AddParameter(cmd, pNVarChar("SubOffice", 100, address.SubOffice ?? ""));
                 AddParameter(cmd, pVarChar("PostalCode", 20, address.PostalCode));
                 AddParameter(cmd, pNVarChar("Country", 100, address.Country));
 
