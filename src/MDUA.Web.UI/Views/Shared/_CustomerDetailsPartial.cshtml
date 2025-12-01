@@ -1,56 +1,132 @@
-﻿@model MDUA.Entities.Customer
-@{
-    // Helper function for safe date formatting
-    string FormatDate(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy") : "N/A";
+﻿<!-- change -->
 
-    // Determine the badge class for status
-    string statusBadge = Model.IsActive ? "bg-success text-success" : "bg-danger text-danger";
+@model MDUA.Entities.Customer
+@{
+    string FormatDate(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy") : "N/A";
+    string FormatDateTime(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy HH:mm") : "N/A";
+
+    // Determine Status Theme
+    string statusCardClass = Model.IsActive ? "card-confirmed" : "card-danger";
+    string statusIconColor = Model.IsActive ? "text-success" : "text-danger";
 }
 
-<head>
-    <link rel="stylesheet" href="~/css/customer.css" />
-</head>
+<div class="customer-details-modal">
 
-<div class="customer-details-container p-3">
-
-    <h4 class="mb-4">Details for @Model.CustomerName</h4>
-
-    <div class="row">
-
-        <div class="col-md-6 mb-4">
-            <h5 class="text-primary border-bottom pb-1">Primary Information</h5>
-            <table class="table table-sm table-borderless details-table">
-                <tr><th>ID:</th><td>@Model.Id</td></tr>
-                <tr><th>Email:</th><td>@Model.Email</td></tr>
-                <tr><th>Phone:</th><td>@Model.Phone</td></tr>
-                <tr>
-                    <th>Status:</th>
-                    <td>
-                        <span class="badge @statusBadge bg-opacity-10">
-                            @(Model.IsActive ? "Active" : "Inactive")
-                        </span>
-                    </td>
-                </tr>
-            </table>
+    <!-- Status Section (Green/Red based on status) -->
+    <div class="info-section order-card @statusCardClass">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="@statusIconColor">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+            </svg>
+            <span>Account Status</span>
         </div>
-
-        <div class="col-md-6 mb-4">
-            <h5 class="text-primary border-bottom pb-1">Demographics & Audit</h5>
-            <table class="table table-sm table-borderless details-table">
-                <tr><th>Date of Birth:</th><td>@FormatDate(Model.DateOfBirth)</td></tr>
-                <tr><th>Gender:</th><td>@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</td></tr>
-                <tr><th>Created At:</th><td>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td></tr>
-                <tr><th>Created By:</th><td>@Model.CreatedBy</td></tr>
-                <tr><th>Last Updated:</th><td>@FormatDate(Model.UpdatedAt)</td></tr>
-            </table>
-        </div>
-
-    </div>
-
-    <div class="mt-2">
-        <h5 class="text-primary border-bottom pb-1">Notes</h5>
-        <div class="notes-box p-3 border rounded bg-light">
-            @(string.IsNullOrEmpty(Model.Notes) ? "No administrative notes available for this customer." : Model.Notes)
+        <div class="section-content">
+            <div class="d-flex align-items-center gap-2">
+                <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
+                    @(Model.IsActive ? "Active Account" : "Inactive / Suspended")
+                </span>
+            </div>
         </div>
     </div>
+
+    <!-- Primary Information (Blue Theme) -->
+    <div class="info-section address-card">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+            </svg>
+            <span>Primary Information</span>
+        </div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Customer ID</span>
+                    <span class="info-value">#@Model.Id</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">@Model.CustomerName</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email Address</span>
+                    <span class="info-value">@Model.Email</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Phone Number</span>
+                    <span class="info-value">@Model.Phone</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demographics (Blue Theme) -->
+    <div class="info-section address-card">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z" />
+            </svg>
+            <span>Demographics</span>
+        </div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Date of Birth</span>
+                    <span class="info-value">@FormatDate(Model.DateOfBirth)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gender</span>
+                    <span class="info-value">@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Section (Amber Theme) -->
+    @if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        <div class="info-section order-card card-pending">
+            <div class="section-header">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1H5z" />
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z" />
+                </svg>
+                <span>Administrative Notes</span>
+            </div>
+            <div class="section-content">
+                <div class="notes-box">@Model.Notes</div>
+            </div>
+        </div>
+    }
+
+    <!-- Audit Trail (Gray Theme) -->
+    <div class="info-section order-card card-other">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" />
+            </svg>
+            <span>Audit Trail</span>
+        </div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Created At</span>
+                    <span class="info-value">@FormatDateTime(Model.CreatedAt)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Created By</span>
+                    <span class="info-value">@Model.CreatedBy</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Updated</span>
+                    <span class="info-value">@FormatDateTime(Model.UpdatedAt)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Updated By</span>
+                    <span class="info-value">@(string.IsNullOrEmpty(Model.UpdatedBy) ? "N/A" : Model.UpdatedBy)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>

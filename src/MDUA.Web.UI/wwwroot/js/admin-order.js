@@ -1,9 +1,11 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+﻿//change
+
+document.addEventListener('DOMContentLoaded', function () {
 
     console.log("Admin Order Script Loaded");
 
     // ==========================================
-    // UI ELEMENTS
+    // 1. UI ELEMENTS
     // ==========================================
     const productSelect = document.getElementById('productSelect');
     const variantSelect = document.getElementById('variantSelect');
@@ -22,29 +24,29 @@
     const modeDelivery = document.getElementById('modeDelivery');
     const modeStore = document.getElementById('modeStore');
     const divisionSelect = document.getElementById('division-select');
-
-    // Location Dropdowns
     const districtSelect = document.getElementById('district-select');
     const thanaSelect = document.getElementById('thana-select');
     const subOfficeSelect = document.getElementById('suboffice-select');
     const postalInput = document.getElementById('postalCode');
     const postalStatus = document.getElementById('postalStatus');
 
-    // Validation State
     let isPostalValid = false;
 
-    // ==========================================
-    // 1. LOAD DATA & POPULATE PRODUCTS
-    // ==========================================
-    const allVariants = (typeof window.rawVariants !== 'undefined' && Array.isArray(window.rawVariants))
-        ? window.rawVariants
-        : [];
+    // Check if OrderAPI is loaded (from combo.js)
+    if (typeof window.OrderAPI === 'undefined') {
+        console.error("OrderAPI is missing! Make sure combo.js is loaded before admin-order.js");
+        return;
+    }
 
+    // ==========================================
+    // 2. PRODUCT LOGIC
+    // ==========================================
+    const allVariants = (typeof window.rawVariants !== 'undefined' && Array.isArray(window.rawVariants)) ? window.rawVariants : [];
     const productMap = {};
+
     allVariants.forEach(v => {
         const pId = v.ProductId || v.productId;
         const pName = v.ProductName || v.productName;
-
         if (pId) {
             if (!productMap[pId]) {
                 productMap[pId] = { name: pName, variants: [] };
@@ -55,84 +57,47 @@
         }
     });
 
-    // ==========================================
-    // 2. CALCULATION LOGIC
-    // ==========================================
-    function calcTotal() {
-        const option = variantSelect.options[variantSelect.selectedIndex];
-
-        const price = parseFloat(option.getAttribute('data-price')) || 0;
-        const qty = parseInt(qtyInput.value) || 1;
-
-        const discType = option.getAttribute('data-disc-type') || "None";
-        const discVal = parseFloat(option.getAttribute('data-disc-val')) || 0;
-
-        const subTotal = price * qty;
-
-        let discountAmount = 0;
-        if (discType === "Flat") {
-            discountAmount = discVal * qty;
-        } else if (discType === "Percentage") {
-            discountAmount = subTotal * (discVal / 100);
-        }
-
-        let deliveryCharge = 0;
-        if (modeStore.checked) {
-            deliveryCharge = 0;
-        } else {
-            const division = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
-            if (division.includes("dhaka")) {
-                deliveryCharge = 50;
-            } else if (division !== "") {
-                deliveryCharge = 100;
-            } else {
-                deliveryCharge = 0;
-            }
-        }
-
-        const grandTotal = (subTotal - discountAmount) + deliveryCharge;
-
-        displayPrice.textContent = price.toFixed(2);
-        displaySubTotal.textContent = subTotal.toFixed(2);
-        displayDiscount.textContent = discountAmount.toFixed(2);
-
-        if (displayDelivery) displayDelivery.textContent = deliveryCharge.toFixed(2);
-
-        displayNet.textContent = grandTotal.toFixed(2);
-    }
-
-    // ==========================================
-    // 3. EVENT LISTENERS (Product & Variant)
-    // ==========================================
-
     productSelect.addEventListener('change', function () {
         variantSelect.innerHTML = '<option value="" data-price="0">Select Variant...</option>';
         variantSelect.disabled = true;
         stockInfo.textContent = "";
-
-        displayPrice.textContent = "0.00";
-        displaySubTotal.textContent = "0.00";
-        displayDiscount.textContent = "0.00";
-        if (displayDelivery) displayDelivery.textContent = "0.00";
-        displayNet.textContent = "0.00";
+        calcTotal();
 
         const pId = this.value;
         if (pId && productMap[pId]) {
             productMap[pId].variants.forEach(v => {
                 const vId = v.VariantId || v.variantId;
                 const vName = v.VariantName || v.variantName;
-                const vPrice = v.Price || v.price || 0;
-                const vStock = v.Stock || v.stock || 0;
+                const vPrice = v.Price || v.price;
+                const vStock = parseInt(v.Stock || v.stock || 0);
 
+                // Discount Logic
                 const dType = v.DiscountType || v.discountType || "None";
                 const dVal = v.DiscountValue || v.discountValue || 0;
 
-                let opt = new Option(`${vName} (Tk. ${vPrice})`, vId);
+                // ✅ FIX: Check Stock Status
+                let label = `${vName} (Tk. ${vPrice})`;
+                let isOutOfStock = vStock <= 0;
+
+                if (isOutOfStock) {
+                    label += " ❌";
+                } else if (vStock < 10 && vStock !== 999) {
+                    // Optional: Show stock count in dropdown if low
+                    label += ` (${vStock} left)`;
+                }
+
+                let opt = new Option(label, vId);
                 opt.setAttribute('data-price', vPrice);
                 opt.setAttribute('data-stock', vStock);
-
                 opt.setAttribute('data-disc-type', dType);
                 opt.setAttribute('data-disc-val', dVal);
+
+                // ✅ FIX: Disable and Color Red if Out of Stock
+                if (isOutOfStock) {
+                    opt.disabled = true;
+                    opt.style.color = "#dc3545"; // Red color
+                    opt.style.fontWeight = "bold";
+                }
 
                 variantSelect.add(opt);
             });
@@ -142,112 +107,125 @@
 
     variantSelect.addEventListener('change', function () {
         const option = this.options[this.selectedIndex];
-        const stock = option.getAttribute('data-stock');
+        const stock = parseInt(option.getAttribute('data-stock')) || 0;
 
-        if (stock) {
-            if (parseInt(stock) === 999) {
-                stockInfo.textContent = "In Stock";
-                stockInfo.className = "form-text text-success";
-            } else {
-                stockInfo.textContent = `Available Stock: ${stock}`;
-                stockInfo.className = parseInt(stock) < 5 ? "form-text text-danger fw-bold" : "form-text text-success";
-            }
+        if (stock === 999) {
+            stockInfo.textContent = "In Stock";
+            stockInfo.className = "form-text text-success";
         } else {
-            stockInfo.textContent = "";
+            // We don't need to check <= 0 here because they are disabled in the dropdown,
+            // but good to handle just in case.
+            if (stock <= 0) {
+                stockInfo.textContent = "Out of Stock";
+                stockInfo.className = "form-text text-danger fw-bold";
+            } else {
+                stockInfo.textContent = `Available: ${stock}`;
+                stockInfo.className = stock < 5 ? "form-text text-danger fw-bold" : "form-text text-success";
+            }
         }
         calcTotal();
     });
 
     qtyInput.addEventListener('input', calcTotal);
-
     if (divisionSelect) divisionSelect.addEventListener('change', calcTotal);
     if (modeDelivery) modeDelivery.addEventListener('change', calcTotal);
     if (modeStore) modeStore.addEventListener('change', calcTotal);
 
+    function calcTotal() {
+        // Safety check
+        if (variantSelect.selectedIndex < 0) return;
+
+        const option = variantSelect.options[variantSelect.selectedIndex];
+        const price = parseFloat(option.getAttribute('data-price')) || 0;
+        const qty = parseInt(qtyInput.value) || 1;
+        const discType = option.getAttribute('data-disc-type');
+        const discVal = parseFloat(option.getAttribute('data-disc-val')) || 0;
+
+        const subTotal = price * qty;
+        let discount = 0;
+        if (discType === "Flat") discount = discVal * qty;
+        else if (discType === "Percentage") discount = subTotal * (discVal / 100);
+
+        let delivery = 0;
+        if (!modeStore.checked) {
+            const div = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
+            if (div.includes("dhaka")) delivery = 50;
+            else if (div !== "") delivery = 100;
+        }
+
+        const net = (subTotal - discount) + delivery;
+
+        displayPrice.textContent = price.toFixed(2);
+        displaySubTotal.textContent = subTotal.toFixed(2);
+        displayDiscount.textContent = discount.toFixed(2);
+        if (displayDelivery) displayDelivery.textContent = delivery.toFixed(2);
+        displayNet.textContent = net.toFixed(2);
+    }
 
     // ==========================================
-    // 4. SHARED LOGIC INTEGRATION (Refactored)
+    // 3. LOCATION LOGIC (Using OrderAPI)
     // ==========================================
 
-    // Helper to use the OrderAPI promises from combo.js
-    function loadAdminDropdown(apiPromise, targetSelect, selectedVal = null) {
+    // Helper to load data from Promise
+    async function loadFromApi(apiPromise, targetSelect, selectedValueToSet = null) {
         targetSelect.innerHTML = '<option value="">Loading...</option>';
         targetSelect.disabled = true;
 
-        return apiPromise.then(data => {
+        try {
+            const data = await apiPromise;
             targetSelect.innerHTML = '<option value="">Select...</option>';
 
             if (Array.isArray(data)) {
                 data.forEach(item => {
                     let val = item.name || item;
                     let opt = new Option(val, val);
-                    // Handle code for autofill if present
-                    if (item.code || item.postalCode || item.PostalCode) {
-                        opt.setAttribute('data-code', item.code || item.postalCode || item.PostalCode);
-                    }
+                    if (item.code || item.postalCode) opt.setAttribute('data-code', item.code || item.postalCode);
                     targetSelect.add(opt);
                 });
                 targetSelect.disabled = false;
-                if (selectedVal) targetSelect.value = selectedVal;
+                if (selectedValueToSet) targetSelect.value = selectedValueToSet;
             }
-        }).catch(() => {
+        } catch (e) {
             targetSelect.innerHTML = '<option value="">Error</option>';
-        });
+        }
     }
 
-    function invalidatePostal() {
-        isPostalValid = false;
-        postalStatus.textContent = "Location changed. Verify Postal Code.";
-        postalStatus.className = "text-warning small";
-    }
+    // Init Divisions
+    loadFromApi(window.OrderAPI.getDivisions(), divisionSelect);
 
-    // --- Init: Load Divisions using Shared API ---
-    if (window.OrderAPI && window.OrderAPI.getDivisions) {
-        window.OrderAPI.getDivisions().then(data => {
-            if (Array.isArray(data)) data.forEach(d => { divisionSelect.add(new Option(d, d)); });
-        });
-    } else {
-        console.error("OrderAPI missing. Ensure combo.js is loaded first.");
-    }
-
-    // --- Location Cascading Listeners ---
+    // Cascading Logic
     divisionSelect.addEventListener('change', () => {
-        invalidatePostal();
-        loadAdminDropdown(window.OrderAPI.getDistricts(divisionSelect.value), districtSelect);
-        thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
-        subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
+        loadFromApi(window.OrderAPI.getDistricts(divisionSelect.value), districtSelect)
+            .then(() => {
+                thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
+                subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
+                calcTotal();
+            });
     });
 
     districtSelect.addEventListener('change', () => {
-        invalidatePostal();
-        loadAdminDropdown(window.OrderAPI.getThanas(districtSelect.value), thanaSelect);
+        loadFromApi(window.OrderAPI.getThanas(districtSelect.value), thanaSelect);
     });
 
     thanaSelect.addEventListener('change', () => {
-        invalidatePostal();
-        loadAdminDropdown(window.OrderAPI.getSubOffices(thanaSelect.value), subOfficeSelect);
+        loadFromApi(window.OrderAPI.getSubOffices(thanaSelect.value), subOfficeSelect);
     });
 
-    // --- Sub-Office Autofill ---
     subOfficeSelect.addEventListener('change', function () {
-        const option = this.options[this.selectedIndex];
-        const autoCode = option.getAttribute('data-code');
-        if (autoCode) {
-            postalInput.value = autoCode;
-            postalInput.dispatchEvent(new Event('blur')); // Trigger validation
-        } else {
-            invalidatePostal();
-            postalStatus.textContent = "Enter Postal Code manually.";
+        const code = this.options[this.selectedIndex].getAttribute('data-code');
+        if (code) {
+            postalInput.value = code;
+            isPostalValid = true;
+            postalStatus.textContent = "Auto-filled";
+            postalStatus.className = "text-success small";
         }
     });
 
-    // --- Postal Code Validation (Using Shared API) ---
+    // Validation via API
     postalInput.addEventListener('blur', function () {
         const code = this.value.trim();
         if (code.length < 4) { isPostalValid = false; return; }
-
         postalStatus.textContent = "Checking...";
-        postalStatus.className = "text-muted small";
 
         window.OrderAPI.checkPostalCode(code).then(async data => {
             if (data.found) {
@@ -260,30 +238,70 @@
                 const th = data.thana || data.ThanaEn;
                 const sub = data.subOffice || data.SubOfficeEn;
 
-                // Auto-fill logic
-                if (div && divisionSelect.value !== div) {
+                if (div) {
                     divisionSelect.value = div;
                     calcTotal();
-                    await loadAdminDropdown(window.OrderAPI.getDistricts(div), districtSelect, dist);
-                    await loadAdminDropdown(window.OrderAPI.getThanas(dist), thanaSelect, th);
-                    await loadAdminDropdown(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
-                } else if (div && divisionSelect.value === div) {
-                    if (dist && districtSelect.value !== dist) await loadAdminDropdown(window.OrderAPI.getDistricts(div), districtSelect, dist);
-                    if (th && thanaSelect.value !== th) await loadAdminDropdown(window.OrderAPI.getThanas(dist), thanaSelect, th);
-                    if (sub && subOfficeSelect.value !== sub) await loadAdminDropdown(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
+                    await loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist);
+                    await loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th);
+                    await loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
                 }
             } else {
                 isPostalValid = false;
-                postalStatus.textContent = "Invalid Postal Code!";
-                postalStatus.className = "text-danger fw-bold small";
+                postalStatus.textContent = "Invalid Code";
+                postalStatus.className = "text-danger small";
             }
         });
     });
 
-    // --- Customer Check (Using Shared API) ---
-    const addressContainer = document.getElementById('address-container');
+    // ==========================================
+    // 4. CUSTOMER AUTOFILL (Using OrderAPI)
+    // ==========================================
     const custAddress = document.getElementById('custAddress');
     const phoneInput = document.getElementById('custPhone');
+    const addressContainer = document.getElementById('address-container');
+
+    // Email Check Logic (Visual Only)
+    const custEmail = document.getElementById('custEmail');
+    const emailStatus = document.getElementById('custEmailStatus'); // Assuming you created this element in view or JS
+    let currentLoadedEmail = "";
+
+    if (custEmail) {
+        custEmail.addEventListener('blur', function () {
+            const email = this.value.trim();
+            if (emailStatus) emailStatus.textContent = "";
+
+            if (!email || !email.includes('@')) return;
+
+            if (email === currentLoadedEmail) {
+                if (emailStatus) {
+                    emailStatus.textContent = "✓ Verified existing email";
+                    emailStatus.className = "d-block mt-1 text-success small";
+                }
+                return;
+            }
+
+            fetch(`/order/check-email?email=${encodeURIComponent(email)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (emailStatus) {
+                        if (data.exists) {
+                            emailStatus.textContent = "⚠ This email is already registered to another customer!";
+                            emailStatus.className = "d-block mt-1 text-danger fw-bold small";
+                        } else {
+                            emailStatus.textContent = "✓ Email available";
+                            emailStatus.className = "d-block mt-1 text-success small";
+                        }
+                    }
+                });
+        });
+    }
+
+    function toggleMode() {
+        addressContainer.style.display = modeStore.checked ? 'none' : 'block';
+        calcTotal();
+    }
+    modeDelivery.addEventListener('change', toggleMode);
+    modeStore.addEventListener('change', toggleMode);
 
     document.getElementById('btnCheckCust').addEventListener('click', () => {
         const phone = phoneInput.value.trim();
@@ -292,22 +310,45 @@
         window.OrderAPI.checkCustomer(phone).then(data => {
             if (data.found) {
                 document.getElementById('custName').value = data.name || '';
-                const emailEl = document.getElementById('custEmail');
-                if (emailEl) emailEl.value = data.email || '';
+
+                // Handle Email
+                if (custEmail) {
+                    custEmail.value = data.email || '';
+                    currentLoadedEmail = data.email || '';
+                }
 
                 document.getElementById('custStatus').textContent = "Customer found!";
                 document.getElementById('custStatus').className = "text-success small";
 
                 if (data.addressData && modeDelivery.checked) {
                     custAddress.value = data.addressData.street || '';
+
+                    // Waterfall Chain for Address
                     if (data.addressData.postalCode) {
                         postalInput.value = data.addressData.postalCode;
-                        setTimeout(() => { postalInput.dispatchEvent(new Event('blur')); }, 100);
-                    } else if (data.addressData.divison) {
-                        divisionSelect.value = data.addressData.divison;
+                        postalInput.dispatchEvent(new Event('blur'));
+                    }
+                    else if (data.addressData.divison) {
+                        const div = data.addressData.divison;
+                        const dist = data.addressData.city;
+                        const th = data.addressData.thana;
+                        const sub = data.addressData.subOffice;
+
+                        divisionSelect.value = div;
                         calcTotal();
-                        if (data.addressData.city) {
-                            loadAdminDropdown(window.OrderAPI.getDistricts(data.addressData.divison), districtSelect, data.addressData.city);
+
+                        if (dist) {
+                            loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist)
+                                .then(() => {
+                                    if (th) {
+                                        return loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th);
+                                    }
+                                })
+                                .then(() => {
+                                    if (sub) {
+                                        return loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
+                                    }
+                                });
                         }
                     }
                 }
@@ -315,17 +356,11 @@
                 document.getElementById('custStatus').textContent = "New Customer";
                 document.getElementById('custStatus').className = "text-primary small";
                 document.getElementById('custName').value = '';
+                if (custEmail) { custEmail.value = ''; currentLoadedEmail = ''; }
                 custAddress.value = '';
             }
         });
     });
-
-    // --- Mode Toggle ---
-    function toggleMode() {
-        addressContainer.style.display = modeStore.checked ? 'none' : 'block';
-    }
-    modeDelivery.addEventListener('change', toggleMode);
-    modeStore.addEventListener('change', toggleMode);
 
     // ==========================================
     // 5. SUBMIT ORDER
@@ -346,85 +381,105 @@
                 return;
             }
             if (!isPostalValid) {
-                alert("Please enter a valid Postal Code to continue.");
-                postalInput.focus();
+                alert("Please verify Postal Code before submitting.");
                 return;
             }
+        }
+
+        // Check email status before submitting
+        if (emailStatus && emailStatus.className.includes('text-danger')) {
+            alert("Please use a different email address.");
+            custEmail.focus();
+            return;
         }
 
         const payload = {
             CustomerPhone: phoneInput.value,
             CustomerName: document.getElementById('custName').value,
-            CustomerEmail: document.getElementById('custEmail') ? document.getElementById('custEmail').value : '',
+            CustomerEmail: custEmail ? custEmail.value : '',
             Street: isStoreSale ? "Counter Sale - In Store" : custAddress.value,
             Divison: isStoreSale ? "Dhaka" : divisionSelect.value,
-            City: isStoreSale ? "Dhaka" : districtSelect.value
+            City: isStoreSale ? "Dhaka" : districtSelect.value,
             Thana: isStoreSale ? "" : thanaSelect.value,
             SubOffice: isStoreSale ? "" : subOfficeSelect.value,
-            PostalCode: isStoreSale ? "1000" : postalInput.value,
+            PostalCode: isStoreSale ? "1000" : (postalInput.value || "0000"),
+
             ProductVariantId: parseInt(variantSelect.value),
             OrderQuantity: parseInt(qtyInput.value),
-            TargetCompanyId: parseInt(document.getElementById('targetCompanyId').value) || 0,
+            TargetCompanyId: parseInt(document.getElementById('targetCompanyId')?.value) || 1,
             Confirmed: document.getElementById('confirmImmediately').checked
         };
 
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        btn.disabled = true;
-        btn.textContent = "Processing...";
-        msg.textContent = "";
+        btn.disabled = true; btn.textContent = "Processing...";
+        if (msg) msg.textContent = "";
 
         fetch('/order/place-direct', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
             body: JSON.stringify(payload)
-        })
-            .then(r => r.json()).then(data => {
-                if (data.success) {
-                    let finalAmount = data.netAmount;
-                    let finalId = data.orderId;
-                    if (typeof data.orderId === 'object' && data.orderId !== null) {
-                        finalId = data.orderId.OrderId || data.orderId.orderId;
-                    }
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                let finalId = data.orderId;
+                let finalNet = 0;
 
-                    const modalHtml = `
-            <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0">
-                  <div class="modal-header bg-success text-white border-0">
-                    <h5 class="modal-title fw-bold">✅ Order Placed!</h5>
-                  </div>
-                  <div class="modal-body text-center p-4">
-                    <div class="display-1 mb-3">📦</div>
-                    <h3 class="fw-bold text-dark mb-1">${finalId}</h3>
-                    <p class="text-muted">has been successfully created.</p>
-                  </div>
-                  <div class="modal-footer justify-content-center border-0 pb-4">
-                    <button type="button" class="btn btn-outline-secondary" onclick="window.location.reload()">Create Another</button>
-                    <button type="button" class="btn btn-primary px-4" onclick="window.location.href='/Order/AllOrders'">Go to Orders</button>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-
-                    const existingModal = document.getElementById('orderSuccessModal');
-                    if (existingModal) existingModal.remove();
-
-                    document.body.insertAdjacentHTML('beforeend', modalHtml);
-                    const modalEl = document.getElementById('orderSuccessModal');
-                    const modal = new bootstrap.Modal(modalEl);
-                    modal.show();
-
-                } else {
-                    msg.textContent = "Error: " + data.message;
-                    msg.className = "mt-3 text-center small text-danger";
-                    btn.disabled = false;
-                    btn.textContent = "Create Direct Order";
+                if (typeof data.orderId === 'object' && data.orderId !== null) {
+                    finalNet = data.orderId.NetAmount || data.orderId.netAmount;
+                    finalId = data.orderId.OrderId || data.orderId.orderId;
+                } else if (data.netAmount) {
+                    finalNet = data.netAmount;
                 }
-            }).catch(err => {
+
+                const deliveryCharge = parseFloat(displayDelivery.textContent) || 0;
+                const grandTotal = (parseFloat(finalNet) || 0) + deliveryCharge;
+
+                const modalHtml = `
+                <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                      <div class="modal-body text-center p-5">
+                        <div class="mb-3" style="font-size: 4rem;">🎉</div>
+                        <h2 class="fw-bold text-success mb-2">Order Placed!</h2>
+                        <p class="text-muted mb-4">The direct order has been created successfully.</p>
+                        
+                        <div class="card bg-light border-0 p-3 mb-4">
+                            <h4 class="fw-bold text-dark m-0">${finalId}</h4>
+                            <div class="d-flex justify-content-between mt-3 border-top pt-2">
+                                <span class="fw-bold">Grand Total (Inc. Delivery):</span>
+                                <span class="fw-bold text-primary fs-5">Tk. ${grandTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                            <button type="button" class="btn btn-outline-secondary px-4" onclick="window.location.reload()">Create Another</button>
+                            <a href="/Order/AllOrders" class="btn btn-primary px-4">View Orders List</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+
+            } else {
+                if (msg) {
+                    msg.textContent = "Error: " + data.message;
+                    msg.className = "text-danger small mt-2";
+                }
+                btn.disabled = false; btn.textContent = "Create Direct Order";
+            }
+        }).catch(err => {
+            if (msg) {
                 msg.textContent = "Network Error";
-                msg.className = "mt-3 text-center small text-danger";
-                btn.disabled = false;
-                btn.textContent = "Create Direct Order";
-            });
+                msg.className = "text-danger small mt-2";
+            }
+            btn.disabled = false; btn.textContent = "Create Direct Order";
+        });
     });
+
+    // Initialize state
+    toggleMode();
+
 });

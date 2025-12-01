@@ -319,7 +319,7 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
-        //new
+
         [HttpPost]
         [Route("SalesOrder/ToggleConfirmation")]
         public IActionResult ToggleConfirmation(int id, bool isConfirmed)
@@ -359,6 +359,7 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
+        //change
         [HttpPost]
         [Route("order/place-direct")]
         public IActionResult PlaceDirectOrder([FromBody] SalesOrderHeader model)
@@ -367,16 +368,25 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // Default Target Company (Assuming 1 for now, or fetch from config/user)
-                if (model.TargetCompanyId == 0) model.TargetCompanyId = 1;
+                // ✅ FIX: Enforce valid Company ID from UI.
+                // We removed the fallback to ID 1 as per your requirement.
+                if (model.TargetCompanyId <= 0)
+                {
+                    return Json(new { success = false, message = "Target Company ID is required." });
+                }
 
-                string directOrderId = _orderFacade.PlaceAdminOrder(model);
+                // 🛑 FIX: Use 'var' or 'dynamic' because PlaceAdminOrder returns an object, not a string
+                var result = _orderFacade.PlaceAdminOrder(model);
 
-                return Json(new { success = true, orderId = directOrderId, message = "Direct Order placed successfully!" });
+                // Pass the whole result object to the frontend. 
+                // Your admin-order.js is already written to handle this object in the 'orderId' field.
+                return Json(new { success = true, orderId = result, message = "Direct Order placed successfully!" });
             }
             catch (Exception ex)
             {
                 var msg = ex.InnerException?.Message ?? ex.Message;
+                if (string.IsNullOrEmpty(msg)) msg = ex.ToString();
+
                 return Json(new { success = false, message = msg });
             }
         }

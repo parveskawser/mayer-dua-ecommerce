@@ -1,25 +1,60 @@
 ﻿//******************new*************************
 
+// wwwroot/js/combo.js
+
 window.OrderAPI = {
     // Check Customer Phone
-    checkCustomer: function (phone) {
-        return $.get('/order/check-customer', { phone: phone });
+    checkCustomer: async function (phone) {
+        try {
+            const response = await fetch(`/order/check-customer?phone=${phone}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            console.error("API Error:", e);
+            return { found: false };
+        }
     },
-    // Check Email
-    checkEmail: function (email) {
-        return $.get('/order/check-email', { email: email });
-    },
-    // Postal Code Lookup
-    checkPostalCode: function (code) {
-        return $.get('/order/check-postal-code', { code: code });
-    },
-    // Location Cascading
-    getDivisions: function () { return $.get('/order/get-divisions'); },
-    getDistricts: function (div) { return $.get('/order/get-districts', { division: div }); },
-    getThanas: function (dist) { return $.get('/order/get-thanas', { district: dist }); },
-    getSubOffices: function (thana) { return $.get('/order/get-suboffices', { thana: thana }); }
-};
 
+    // Check Postal Code
+    checkPostalCode: async function (code) {
+        try {
+            const response = await fetch(`/order/check-postal-code?code=${code}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            return { found: false };
+        }
+    },
+
+    // Location Cascading
+    getDivisions: async function () {
+        try {
+            const response = await fetch('/order/get-divisions');
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getDistricts: async function (div) {
+        try {
+            const response = await fetch(`/order/get-districts?division=${div}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getThanas: async function (dist) {
+        try {
+            const response = await fetch(`/order/get-thanas?district=${dist}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getSubOffices: async function (thana) {
+        try {
+            const response = await fetch(`/order/get-suboffices?thana=${thana}`);
+            return await response.json();
+        } catch (e) { return []; }
+    }
+};
 //******************newEND*************************
 
 

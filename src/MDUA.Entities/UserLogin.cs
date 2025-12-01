@@ -30,6 +30,8 @@ namespace MDUA.Entities
         public List<ProductCategory> Categories { get; set; } = new List<ProductCategory>();
         public List<AttributeName> Attributes { get; set; } = new List<AttributeName>();
 
+        public DashboardStats Stats { get; set; } = new DashboardStats(); //new
+        public List<SalesOrderHeader> RecentOrders { get; set; } = new List<SalesOrderHeader>(); //new
 
     }
 }

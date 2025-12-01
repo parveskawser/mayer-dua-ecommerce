@@ -36,12 +36,11 @@ namespace MDUA.DataAccess.Interface
         SalesOrderHeaderList GetOrdersByCustomerId(int customerId);
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         SalesOrderHeaderList GetAllSalesOrderHeaders();
-
-        //new
         void UpdateStatusSafe(int orderId, string status, bool confirmed);
         List<Dictionary<string, object>> GetVariantsForDropdown();
         (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId);
-
+        DashboardStats GetDashboardStats(); //new
+        List<SalesOrderHeader> GetRecentOrders(int count = 5); //new
 
     }
 }

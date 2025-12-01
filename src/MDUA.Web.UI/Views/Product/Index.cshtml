@@ -357,7 +357,11 @@
     </script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="~/js/combo.js"></script>
+  @*   <environment include="Development">
+        <script src="~/js/combo.js"></script>
+    </environment> *@
+
+        <script src="~/js/combo.js" asp-append-version="true"></script>
     <script src="~/js/order-track.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

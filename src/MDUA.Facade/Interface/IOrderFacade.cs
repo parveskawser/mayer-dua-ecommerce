@@ -18,11 +18,12 @@ namespace MDUA.Facade.Interface
         List<dynamic> GetSubOffices(string thana);
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         List<SalesOrderHeader> GetAllOrdersForAdmin();
-
-        //new
         string UpdateOrderConfirmation(int orderId, bool isConfirmed);
         List<dynamic> GetProductVariantsForAdmin();
-        string PlaceAdminOrder(SalesOrderHeader orderData);
+        dynamic PlaceAdminOrder(SalesOrderHeader orderData); //change
+
+        DashboardStats GetDashboardMetrics(); //new
+        List<SalesOrderHeader> GetRecentOrders(); //new
 
 
     }

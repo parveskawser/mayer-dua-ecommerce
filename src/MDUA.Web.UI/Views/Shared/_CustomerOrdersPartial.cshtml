@@ -1,51 +1,105 @@
-﻿@model MDUA.Entities.List.SalesOrderHeaderList
+﻿<!-- change -->
+
+@model MDUA.Entities.List.SalesOrderHeaderList
 @{
-    // Assuming the CustomerId is passed via ViewBag
     var customerId = ViewBag.CustomerId;
 }
 
-<h5 class="fw-bold mb-3">Recent Orders (@(Model?.Count() ?? 0))</h5>
-<div class="small text-muted mb-3">Customer ID: @customerId</div>
+<div class="customer-details-modal">
+    <!-- Header Section -->
+    <div class="info-section">
+        <div class="section-header">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+            </svg>
+            <span>Recent Orders</span>
+        </div>
+        <div class="section-content">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="info-value">Total Orders: @(Model?.Count() ?? 0)</span>
+                <span class="info-label">Customer ID: @customerId</span>
+            </div>
+        </div>
+    </div>
 
-<div class="table-responsive">
-    <table class="table table-sm table-striped table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Discount</th>
-                <th>Net Amount</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
+    <!-- Order Cards -->
+    @if (Model != null && Model.Any())
+    {
+        foreach (var order in Model)
+        {
+            decimal netAmount = order.TotalAmount - order.DiscountAmount;
+
+            // ✅ FIX: Map "Draft" to "Pending" for UI Display
+            string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
+
+            // Determine CSS Classes based on Display Status
+            string badgeClass = "status-other";
+            string cardThemeClass = "card-other"; // Default gray
+
+            if (displayStatus == "Confirmed")
             {
-                @foreach (var order in Model)
-                {
-                    // Calculate Net Amount (since it's computed in DB, show the final result)
-                    // ✅ FIX: Use '0M' (decimal literal) for safety
-                    // ✅ FIX 1: Remove '?? 0M' because DiscountAmount is not nullable in C# Entity
-                    decimal netAmount = order.TotalAmount - order.DiscountAmount;
-                    string statusClass = order.Status == "Confirmed" ? "bg-success" : (order.Status == "Draft" ? "bg-info" : "bg-warning");
-
-                    <tr>
-                        <td>@(order.SalesOrderId ?? order.OnlineOrderId)</td>
-                        <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
-                        <td>Tk. @order.TotalAmount.ToString("N2")</td>
-                        <td>Tk. @order.DiscountAmount.ToString("N2")</td>
-                        <td class="fw-bold">Tk. @netAmount.ToString("N2")</td>
-                        <td><span class="badge @statusClass">@order.Status</span></td>
-                    </tr>
-                }
+                badgeClass = "status-confirmed";
+                cardThemeClass = "card-confirmed"; // Triggers Green Theme
             }
-            else
+            else if (displayStatus == "Pending")
             {
-                <tr><td colspan="6" class="text-center text-muted p-3">No orders found for this customer.</td></tr>
+                badgeClass = "status-pending";
+                cardThemeClass = "card-pending"; // Triggers Amber Theme
             }
-        </tbody>
-    </table>
 
+            // Apply Theme Class to the Outer Card
+            <div class="info-section order-card @cardThemeClass">
+                <div class="section-header">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z" />
+                    </svg>
+                    <span class="order-id">Order #@(order.SalesOrderId ?? order.OnlineOrderId)</span>
 
+                    <!-- Status Badge using Display Status -->
+                    <span class="order-status-badge @badgeClass">@displayStatus</span>
+                </div>
+                <div class="section-content">
+                    <div class="order-details">
+                        <div class="mb-2">
+                            <!-- Date Box -->
+                            <span class="order-meta">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5z" />
+                                </svg>
+                                @order.OrderDate.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+
+                        <div class="order-amounts">
+                            <div class="amount-row">
+                                <span class="amount-label">Total Amount</span>
+                                <span class="amount-value">Tk. @order.TotalAmount.ToString("N2")</span>
+                            </div>
+
+                            @if (order.DiscountAmount > 0)
+                            {
+                                <div class="amount-row discount">
+                                    <span class="amount-label">Discount</span>
+                                    <span class="amount-value">- Tk. @order.DiscountAmount.ToString("N2")</span>
+                                </div>
+                            }
+
+                            <div class="amount-row net">
+                                <span class="amount-label">Net Amount</span>
+                                <span class="amount-value">Tk. @netAmount.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="info-section">
+            <div class="section-content text-center py-4">
+                <p class="text-muted mt-3 mb-0">No orders found for this customer.</p>
+            </div>
+        </div>
+    }
 </div>
