@@ -1,4 +1,75 @@
-﻿$(document).ready(function () {
+﻿//******************new*************************
+
+// wwwroot/js/combo.js
+
+window.OrderAPI = {
+    // Check Customer Phone
+    checkCustomer: async function (phone) {
+        try {
+            const response = await fetch(`/order/check-customer?phone=${phone}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            console.error("API Error:", e);
+            return { found: false };
+        }
+    },
+
+    // Check Postal Code
+    checkPostalCode: async function (code) {
+        try {
+            const response = await fetch(`/order/check-postal-code?code=${code}`);
+            if (!response.ok) return { found: false };
+            return await response.json();
+        } catch (e) {
+            return { found: false };
+        }
+    },
+
+    // Location Cascading
+    getDivisions: async function () {
+        try {
+            const response = await fetch('/order/get-divisions');
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getDistricts: async function (div) {
+        try {
+            const response = await fetch(`/order/get-districts?division=${div}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getThanas: async function (dist) {
+        try {
+            const response = await fetch(`/order/get-thanas?district=${dist}`);
+            return await response.json();
+        } catch (e) { return []; }
+    },
+
+    getSubOffices: async function (thana) {
+        try {
+            const response = await fetch(`/order/get-suboffices?thana=${thana}`);
+            return await response.json();
+        } catch (e) { return []; }
+    }
+};
+//******************newEND*************************
+
+
+
+
+$(document).ready(function () {
+    //******************new*************************
+
+    // SAFETY CHECK: If we are on the Admin page (which doesn't have #order-form),
+    // stop here so we don't cause errors.
+    if ($('#order-form').length === 0) {
+        return;
+    }
+
+    //******************newEND*************************
 
     // ==================================================
     // 0. GLOBAL VARIABLES & STATE
@@ -66,7 +137,6 @@
 
         findAndApplyVariant();
     });
-
     function findAndApplyVariant() {
         $('#selected-variant-id').val('');
 
@@ -79,6 +149,7 @@
             }
             return true;
         });
+
 
         if (matchedVariant) {
             if (Object.keys(selectedAttributes).length > 0) {
@@ -117,17 +188,17 @@
             $('.submit-btn').prop('disabled', false);
         }
     }
-
     function resetToDefault() {
         currentVariantPrice = baseInfo.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
         $('#order-variant-image').attr('src', baseProductImageUrl);
         $('#selected-variant-id').val('');
         maxAvailableStock = 0;
-        updateStockMessage(0);
+        // ✅ ADD THIS: Hide the stock info on reset
+        $('#variant-info').hide();
+        updateStockMessage(0); // This calls the function above, but the hide() line above ensures it stays hidden
         updateTotals();
     }
-
     function handleNoMatch() {
         $('#stock-message').text("This combination is currently unavailable.").addClass('text-danger show');
         $('#order-variant-image').attr('src', baseProductImageUrl);
@@ -137,21 +208,36 @@
 
     function updateStockMessage(stock) {
         const el = $('#stock-message');
-        el.removeClass('stock-high stock-medium stock-low text-danger show');
+        const parent = $('#variant-info'); // Get the parent container
 
-        if (Object.keys(selectedAttributes).length === 0 && variants.length > 1) return;
+        el.removeClass('stock-high stock-medium stock-low text-danger show text-success');
+
+        // If no attributes selected yet, keep hidden
+        if (Object.keys(selectedAttributes).length === 0 && variants.length > 1) {
+            parent.hide();
+            return;
+        }
+
+        parent.show(); // Reveal the container
 
         if (stock <= 0) {
             el.text('Out of Stock').addClass('text-danger show');
-        } else if (stock >= 10) {
-            el.text(`In stock: ${stock} items`).addClass('stock-high show');
-        } else if (stock >= 3) {
-            el.text(`Hurry! Only ${stock} left`).addClass('stock-medium show');
-        } else if (stock > 0) {
-            el.text(`Last few! Just ${stock} left`).addClass('stock-low show');
+            // Optional: Disable submit button if out of stock
+            $('.submit-btn').prop('disabled', true).text('Out of Stock');
+        } else {
+            // ✅ CHANGED: Always show specific stock count
+            el.text(`Current Stock: ${stock} items available`).addClass('text-success show').css({
+                'font-weight': 'bold',
+                'color': '#10b981', // Green color
+                'font-size': '0.95rem'
+            });
+
+            // Re-enable button if it was disabled by out-of-stock
+            if (!isCheckingEmail) {
+                $('.submit-btn').prop('disabled', false).text('Confirm Order');
+            }
         }
     }
-
     function showStockError(msg) {
         const el = $('#stock-error-message');
         el.text(msg).addClass('show');
@@ -178,17 +264,20 @@
 
         $msg.hide().removeClass('text-danger').removeClass('text-success');
 
+        // 1. If empty, reset button and exit
         if (!email) {
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
+        // 2. If it matches the autofilled email exactly, it's valid
         if (isEmailAutofilled && email === currentCustomerEmail) {
             $msg.text("✓ Using your registered email").css('color', 'green').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
+        // 3. Basic validation
         if (!email.includes('@')) {
             $msg.text("⚠ Please enter a valid email address").css('color', 'orange').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
@@ -203,21 +292,29 @@
             isCheckingEmail = false;
 
             if (res.exists) {
+                // --- CHANGED LOGIC HERE ---
+                // Previous logic: Blocked the user (Red text, Disabled button)
+                // New logic: Welcomes the user (Green/Blue text, ENABLED button)
+
                 if (email === currentCustomerEmail) {
                     $msg.text("✓ Using your registered email").css('color', 'green').show();
-                    $('.submit-btn').prop('disabled', false).text('Confirm Order');
                 } else {
-                    $msg.text("✗ Email already exists! Please use another.").css('color', 'red').show();
-                    $('.submit-btn').prop('disabled', true).text('Confirm Order');
+                    // Determine if this is a "Welcome Back" scenario
+                    $msg.text("✓ Account found! We will link this order to you.").css('color', 'blue').show();
                 }
+
+                // ALWAYS enable the button if the email is valid, even if it exists
+                $('.submit-btn').prop('disabled', false).text('Confirm Order');
             } else {
+                // Email is new - also valid
                 $msg.text("✓ Email available").css('color', 'green').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
         })
             .fail(function () {
                 isCheckingEmail = false;
-                $msg.text("⚠ Could not verify email. Please try again.").css('color', 'orange').show();
+                // In case of server error, usually safer to let them try to submit
+                $msg.text("⚠ Could not verify email, but you can proceed.").css('color', 'orange').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             });
     });
@@ -229,12 +326,19 @@
         if (phone.length >= 11) {
             $('#phone-status').text("⏳ Checking...").css('color', 'blue');
 
-            $.get('/order/check-customer', { phone: phone }, function (data) {
+
+            //******************************new*************** */
+
+            window.OrderAPI.checkCustomer(phone).then(function (data) {
+                //******************************newEND*************** */
+
                 if (data.found) {
                     $('#phone-status').text("✓ Welcome back! Info loaded.").css('color', 'green');
 
+                    // 1. FILL NAME
                     if (data.name) $('#customerName').val(data.name);
 
+                    // 2. FILL EMAIL (With logic for @guest.local)
                     if (data.email) {
                         const $emailField = $('#customerEmail');
                         const currentEmailValue = $emailField.val().trim();
@@ -250,17 +354,9 @@
                         }
                     }
 
-                    if (data.addressData) {
-                        const addr = data.addressData;
-                        $('textarea[name="Street"]').val(addr.street);
-                        $('input[name="PostalCode"]').val(addr.postalCode);
-                        $('input[name="ZipCode"]').val(addr.zipCode);
-                        $('#division-select').val(addr.divison).trigger('change');
+                    // ❌ REMOVED: Address Autofill Logic
+                    // The block that filled Street, PostalCode, Division, etc. is deleted.
 
-                        setTimeout(() => {
-                            $('#district-select').val(addr.city).trigger('change');
-                        }, 500);
-                    }
                 } else {
                     $('#phone-status').text("New Customer").css('color', '#666');
                     isEmailAutofilled = false;
@@ -276,7 +372,6 @@
             currentCustomerEmail = null;
         }
     }, 500)); // 500ms delay
-
     // ==================================================
     // 3. LOCATION & TOTALS (ROBUST CASCADING)
     // ==================================================

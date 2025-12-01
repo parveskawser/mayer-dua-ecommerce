@@ -1,12 +1,7 @@
 ﻿using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Entities.List;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static MDUA.Entities.ProductVariant;
+
 
 namespace MDUA.Facade.Interface
 {
@@ -21,9 +16,13 @@ namespace MDUA.Facade.Interface
         List<string> GetDistricts(string division);
         List<string> GetThanas(string district);
         List<dynamic> GetSubOffices(string thana);
-        // Add this line
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         List<SalesOrderHeader> GetAllOrdersForAdmin();
+
+        //new
+        string UpdateOrderConfirmation(int orderId, bool isConfirmed);
+        List<dynamic> GetProductVariantsForAdmin();
+        string PlaceAdminOrder(SalesOrderHeader orderData);
 
 
     }

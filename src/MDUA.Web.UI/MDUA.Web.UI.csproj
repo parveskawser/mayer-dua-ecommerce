@@ -4,15 +4,16 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-<Target Name="MyPostBuild" AfterTargets="Build">
-  <Exec Command="npm run build:js" />
-</Target>
 
   <ItemGroup>
     <None Include="wwwroot\css\product-image.css" />
   </ItemGroup>
+
+  <Target Name="MyPostBuild" AfterTargets="Build">
+  <Exec Command="npm run build:js" />
+</Target>
 
   <ItemGroup>
     <ProjectReference Include="..\MDUA.Facade\MDUA.Facade.csproj" />

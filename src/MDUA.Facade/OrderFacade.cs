@@ -72,10 +72,12 @@ namespace MDUA.Facade
         public List<string> GetThanas(string district) => _postalCodesDataAccess.GetThanas(district);
 
         public List<dynamic> GetSubOffices(string thana) => _postalCodesDataAccess.GetSubOffices(thana);
+       
+        
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
             // 1. PRE-CALCULATION (Read-Only, outside transaction)
-            var variant = _productVariantDataAccess.Get(orderData.ProductVariantId);
+            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId); 
             if (variant == null) throw new Exception("Variant not found.");
 
             if (variant.StockQty == 0)
@@ -201,6 +203,8 @@ namespace MDUA.Facade
                             Street = orderData.Street,
                             City = orderData.City,
                             Divison = orderData.Divison,
+                            Thana = orderData.Thana,
+                            SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "System_Order",
@@ -290,11 +294,203 @@ namespace MDUA.Facade
             }
             return _salesOrderHeaderDataAccess.GetOrderReceiptByOnlineId(onlineOrderId);
         }
+        
         public List<SalesOrderHeader> GetAllOrdersForAdmin()
         {
             // Assuming the existing _salesOrderHeaderDataAccess.GetAll() calls the 
             // [dbo].[GetAllSalesOrderHeader] stored procedure, or equivalent.
             return _salesOrderHeaderDataAccess.GetAllSalesOrderHeaders().ToList();
+        }
+
+
+        //new
+        public string UpdateOrderConfirmation(int orderId, bool isConfirmed)
+        {
+            // 1. Determine DB Status (Must be "Draft" to satisfy SQL Check Constraint)
+            string dbStatus = isConfirmed ? "Confirmed" : "Draft";
+
+            // 2. Call the safe update method to save to Database
+            _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, dbStatus, isConfirmed);
+
+            // 3. Return "Pending" to the UI for display purposes
+            // This ensures the badge immediately shows "Pending" instead of "Draft"
+            return isConfirmed ? "Confirmed" : "Pending";
+        }
+
+        public List<dynamic> GetProductVariantsForAdmin()
+        {
+            var rawList = _salesOrderHeaderDataAccess.GetVariantsForDropdown();
+
+            // Loop through and attach discount info from ProductFacade
+            foreach (var item in rawList)
+            {
+                if (item.ContainsKey("ProductId") && item.ContainsKey("Price"))
+                {
+                    int pId = (int)item["ProductId"];
+                    decimal price = (decimal)item["Price"];
+
+                    var bestDiscount = _productFacade.GetBestDiscount(pId, price);
+
+                    if (bestDiscount != null)
+                    {
+                        item["DiscountType"] = bestDiscount.DiscountType; // "Flat" or "Percentage"
+                        item["DiscountValue"] = bestDiscount.DiscountValue;
+                    }
+                    else
+                    {
+                        item["DiscountType"] = "None";
+                        item["DiscountValue"] = 0m;
+                    }
+                }
+            }
+
+            return new List<dynamic>(rawList);
+        }
+
+        // ✅ FIXED: Using Tuple access (.Item1, .Item2 or .StockQty, .Price)
+        public string PlaceAdminOrder(SalesOrderHeader orderData)
+        {
+            // 1. Stock & Price Check (From VariantPriceStock)
+            var variantInfo = _salesOrderHeaderDataAccess.GetVariantStockAndPrice(orderData.ProductVariantId);
+
+            if (variantInfo == null) throw new Exception("Variant not found in Stock System.");
+
+            int currentStock = variantInfo.Value.StockQty;
+            decimal basePrice = variantInfo.Value.Price; // The selling price from VPS
+
+            if (currentStock < orderData.OrderQuantity)
+                throw new Exception($"Stock Error: Only {currentStock} available.");
+
+            // 2. Discount Calculation
+            // We need the ProductId to check for discounts, so we fetch the basic definition
+            var variantBasic = _productVariantDataAccess.Get(orderData.ProductVariantId);
+            if (variantBasic == null) throw new Exception("Variant definition not found.");
+
+            decimal finalUnitPrice = basePrice;
+            decimal totalDiscount = 0;
+            int quantity = orderData.OrderQuantity;
+
+            // Call the Product Facade to check for active discounts
+            var bestDiscount = _productFacade.GetBestDiscount(variantBasic.ProductId, basePrice);
+
+            if (bestDiscount != null)
+            {
+                if (bestDiscount.DiscountType == "Flat")
+                {
+                    decimal discountPerItem = bestDiscount.DiscountValue;
+                    finalUnitPrice -= discountPerItem;
+                    totalDiscount = discountPerItem * quantity;
+                }
+                else if (bestDiscount.DiscountType == "Percentage")
+                {
+                    decimal discountRate = bestDiscount.DiscountValue / 100;
+                    decimal discountPerItem = basePrice * discountRate;
+                    finalUnitPrice -= discountPerItem;
+                    totalDiscount = discountPerItem * quantity;
+                }
+            }
+
+            // 3. Transactional Save
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var transCustomerDA = new CustomerDataAccess(transaction);
+                        var transCompanyCustomerDA = new CompanyCustomerDataAccess(transaction);
+                        var transAddressDA = new AddressDataAccess(transaction);
+                        var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
+                        var transDetailDA = new SalesOrderDetailDataAccess(transaction);
+
+                        // A. Customer Logic
+                        int customerId = 0;
+                        var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
+
+                        if (customer == null)
+                        {
+                            var newCust = new Customer
+                            {
+                                CustomerName = orderData.CustomerName,
+                                Phone = orderData.CustomerPhone,
+                                Email = $"{orderData.CustomerPhone}@direct.local",
+                                IsActive = true,
+                                CreatedAt = DateTime.Now,
+                                CreatedBy = "Admin"
+                            };
+                            transCustomerDA.Insert(newCust);
+                            customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
+                        }
+                        customerId = customer.Id;
+
+                        // B. Link
+                        if (!transCompanyCustomerDA.IsLinked(orderData.TargetCompanyId, customerId))
+                        {
+                            transCompanyCustomerDA.Insert(new CompanyCustomer { CompanyId = orderData.TargetCompanyId, CustomerId = customerId });
+                        }
+
+                        // C. Address
+                        var addr = new Address
+                        {
+                            CustomerId = customerId,
+                            Street = orderData.Street,
+                            City = orderData.City,
+                            Divison = orderData.Divison,
+                            Thana = orderData.Thana,
+                            SubOffice = orderData.SubOffice,
+                            Country = "Bangladesh",
+                            AddressType = "Shipping",
+                            CreatedBy = "Admin",
+                            CreatedAt = DateTime.Now,
+                            PostalCode = orderData.PostalCode ?? "0000",
+                            ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
+                        };
+
+                        var existingAddr = transAddressDA.CheckExistingAddress(customerId, addr);
+                        int addressId = (existingAddr != null) ? existingAddr.Id : (int)transAddressDA.InsertAddressSafe(addr);
+
+                        // D. Header
+                        orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(orderData.TargetCompanyId, customerId);
+                        orderData.AddressId = addressId;
+                        orderData.SalesChannelId = 2; // Direct
+                        orderData.OrderDate = DateTime.Now;
+
+                        // ✅ APPLY CALCULATED DISCOUNT
+                        orderData.DiscountAmount = totalDiscount;
+                        orderData.TotalAmount = basePrice * quantity; // Gross Amount
+                                                                      // DB will calculate NetAmount = TotalAmount - DiscountAmount
+
+                        orderData.Status = orderData.Confirmed ? "Confirmed" : "Draft";
+                        orderData.IsActive = true;
+                        orderData.CreatedBy = "Admin";
+                        orderData.CreatedAt = DateTime.Now;
+
+                        int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
+
+                        // E. Detail
+                        transDetailDA.InsertSalesOrderDetailSafe(new SalesOrderDetail
+                        {
+                            SalesOrderId = orderId,
+                            ProductVariantId = orderData.ProductVariantId,
+                            Quantity = orderData.OrderQuantity,
+                            // ✅ SAVE DISCOUNTED UNIT PRICE
+                            UnitPrice = finalUnitPrice,
+                            CreatedBy = "Admin",
+                            CreatedAt = DateTime.Now
+                        });
+
+                        transaction.Commit();
+                        return "DO" + orderId.ToString("D8");
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
         }
         #endregion
     }
