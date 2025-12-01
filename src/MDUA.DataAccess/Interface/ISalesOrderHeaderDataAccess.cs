@@ -41,6 +41,7 @@ namespace MDUA.DataAccess.Interface
         (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId);
         DashboardStats GetDashboardStats(); //new
         List<SalesOrderHeader> GetRecentOrders(int count = 5); //new
-
+        List<ChartDataPoint> GetSalesTrend(int months = 6); //new
+        List<ChartDataPoint> GetOrderStatusCounts(); //new
     }
 }

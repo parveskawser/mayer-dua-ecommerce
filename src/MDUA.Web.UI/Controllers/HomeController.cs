@@ -38,37 +38,41 @@ namespace MDUA.Web.UI.Controllers
         public IActionResult Dashboard()
         {
             int userId = CurrentUserId;
-
-            // 1. Get Basic Login Info
             var loginResult = _userLoginFacade.GetUserLoginById(userId);
-            loginResult.AuthorizedActions = _userLoginFacade.GetAllUserPermissionNames(userId);
 
+            // ... (Permissions & Products loading) ...
+            loginResult.AuthorizedActions = _userLoginFacade.GetAllUserPermissionNames(userId);
             loginResult.CanViewProducts = loginResult.AuthorizedActions.Contains("Product.View");
             bool canAddProduct = loginResult.AuthorizedActions.Contains("Product.Add");
 
-            // 2. Load Products
             if (loginResult.CanViewProducts)
                 loginResult.LastFiveProducts = _productFacade.GetLastFiveProducts();
 
             if (canAddProduct)
             {
-                var addProductData = _productFacade.GetAddProductData(userId);
-                loginResult.Categories = addProductData.Categories;
-                loginResult.Attributes = addProductData.Attributes;
+                var add = _productFacade.GetAddProductData(userId);
+                loginResult.Categories = add.Categories;
+                loginResult.Attributes = add.Attributes;
             }
 
-            // 3. ✅ LOAD DASHBOARD STATS & ORDERS
+            // ✅ LOAD DASHBOARD DATA (Stats, Orders, Charts)
             try
             {
                 loginResult.Stats = _orderFacade.GetDashboardMetrics();
                 loginResult.RecentOrders = _orderFacade.GetRecentOrders();
+
+                // Load Chart Data
+                loginResult.SalesTrend = _orderFacade.GetSalesTrend();
+                loginResult.OrderStatusCounts = _orderFacade.GetOrderStatusCounts();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load dashboard stats");
-                // Initialize empty to prevent null reference in view
+                _logger.LogError(ex, "Failed to load dashboard data");
+                // Init empty to avoid nulls
                 loginResult.Stats = new DashboardStats();
                 loginResult.RecentOrders = new List<SalesOrderHeader>();
+                loginResult.SalesTrend = new List<ChartDataPoint>();
+                loginResult.OrderStatusCounts = new List<ChartDataPoint>();
             }
 
             return View(loginResult);

@@ -502,5 +502,70 @@ namespace MDUA.DataAccess
                 return list;
             }
         }
+
+        // ✅ NEW: Get Monthly Sales Trend
+        public List<ChartDataPoint> GetSalesTrend(int months = 6)
+        {
+            var list = new List<ChartDataPoint>();
+
+            // Universal SQL Date Grouping (Works on older SQL versions too)
+            string SQLQuery = @"
+                SELECT 
+                    DATENAME(month, OrderDate) + ' ' + CAST(YEAR(OrderDate) AS VARCHAR(4)) as Label,
+                    SUM(TotalAmount - DiscountAmount) as Value,
+                    MIN(OrderDate) as SortDate
+                FROM SalesOrderHeader
+                WHERE OrderDate >= DATEADD(month, -@Months, GETDATE())
+                  AND Status != 'Cancelled'
+                GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(month, OrderDate)
+                ORDER BY MIN(OrderDate)";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Months", months));
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new ChartDataPoint
+                        {
+                            Label = reader.GetString(0),
+                            Value = Convert.ToDecimal(reader.GetValue(1)) // Safe Cast
+                        });
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return list;
+        }
+
+        public List<ChartDataPoint> GetOrderStatusCounts()
+        {
+            var list = new List<ChartDataPoint>();
+            string SQLQuery = @"
+                SELECT Status, COUNT(*) 
+                FROM SalesOrderHeader 
+                GROUP BY Status";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new ChartDataPoint
+                        {
+                            Label = reader.GetString(0),
+                            Value = Convert.ToDecimal(reader.GetValue(1)) // Count is int, need decimal for model
+                        });
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return list;
+        }
     }
-}
+    }
+

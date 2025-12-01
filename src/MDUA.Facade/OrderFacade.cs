@@ -515,6 +515,16 @@ namespace MDUA.Facade
         {
             return _salesOrderHeaderDataAccess.GetRecentOrders(5); // Get top 5
         }
+        //new
+        public List<ChartDataPoint> GetSalesTrend()
+        {
+            return _salesOrderHeaderDataAccess.GetSalesTrend(6);
+        }
+//new
+        public List<ChartDataPoint> GetOrderStatusCounts()
+        {
+            return _salesOrderHeaderDataAccess.GetOrderStatusCounts();
+        }
         #endregion
     }
 }

@@ -35,7 +35,6 @@ namespace MDUA.Facade
             // Company
             services.AddScoped<ICompanyDataAccess, CompanyDataAccess>();
 
-            // ✅ ADDED THESE: Order & Customer Related Data Access
             // These are required by  OrderFacade
             services.AddScoped<ISalesOrderHeaderDataAccess, SalesOrderHeaderDataAccess>();
             services.AddScoped<ISalesOrderDetailDataAccess, SalesOrderDetailDataAccess>();
@@ -55,6 +54,8 @@ namespace MDUA.Facade
             services.AddScoped<IProductFacade, ProductFacade>();
             services.AddScoped<IOrderFacade, OrderFacade>();
             services.AddScoped<ICustomerFacade, CustomerFacade>();
+            services.AddScoped<ICompanyFacade, CompanyFacade>(); //new
+
         }
     }
 }

@@ -24,7 +24,8 @@ namespace MDUA.Facade.Interface
 
         DashboardStats GetDashboardMetrics(); //new
         List<SalesOrderHeader> GetRecentOrders(); //new
-
+        List<ChartDataPoint> GetSalesTrend(); //new
+        List<ChartDataPoint> GetOrderStatusCounts(); //new
 
     }
 }

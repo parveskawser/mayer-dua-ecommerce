@@ -102,6 +102,29 @@
     </div>
 </div>
 
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="fw-bold text-dark mb-0">Order Status</h6>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 2. CONTENT GRID -->
 <div class="row g-4">
 
@@ -238,3 +261,91 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Sales Trend Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+            const salesLabels = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Label).ToList() ?? new List<string>()));
+            const salesData = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Monthly Sales (Tk)',
+                        data: salesData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e5e7eb' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Status Distribution Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+            let rawLabels = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Label).ToList() ?? new List<string>()));
+            let rawData = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            // ✅ FIX: Map Labels (Draft -> Pending)
+            const statusLabels = rawLabels.map(l => l === "Draft" ? "Pending" : l);
+
+            // ✅ FIX: Distinct Color Palette (No overlapping hues)
+            const getStatusColor = (status) => {
+                switch(status) {
+                    case 'Confirmed': return '#86efac'; // Light Green
+                    case 'Shipped':   return '#a78bfa'; // Soft Purple (Distinct from Blue)
+                    case 'Delivered': return '#38bdf8'; // Sky Blue
+                    case 'Pending':   return '#fcd34d'; // Light Amber
+                    case 'Draft':     return '#fcd34d'; // Light Amber
+                    case 'Cancelled': return '#fca5a5'; // Light Red
+                    case 'Returned':  return '#cbd5e1'; // Light Gray
+                    default: return '#e5e7eb';
+                }
+            };
+
+            const backgroundColors = statusLabels.map(label => getStatusColor(label));
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: rawData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
+                    }
+                }
+            });
+        });
+    </script>
+}
