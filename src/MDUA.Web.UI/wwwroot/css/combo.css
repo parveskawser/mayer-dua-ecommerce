@@ -25,7 +25,7 @@
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif; /* Modern Font Stack */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-main);
     margin: 0;
@@ -54,7 +54,7 @@ body {
 }
 
 .logo {
-    height: 50px; /* Constrain height, auto width */
+    height: 50px;
     width: auto;
     object-fit: contain;
 }
@@ -312,13 +312,12 @@ section {
 }
 
 /* =========================================
-   ORDER SECTION (THE ALIGNMENT FIX)
-   Using CSS Grid for robust layout
+   ORDER SECTION - FIXED LAYOUT
    ========================================= */
 .order-section {
-    max-width: var(--container-width); /* Ensures it matches container */
+    max-width: var(--container-width);
     margin: 2rem auto 4rem auto;
-    background: transparent; /* Remove white bg from wrapper, apply to cards */
+    background: transparent;
     padding: 0;
     box-shadow: none;
 }
@@ -332,13 +331,17 @@ section {
 /* The Grid Container */
 .order-container {
     display: grid;
-    grid-template-columns: 1.5fr 1fr; /* Form takes 60%, Summary 40% */
+    grid-template-columns: 1.5fr 1fr;
     gap: 2rem;
-    align-items: start; /* Prevents stretching height */
+    grid-template-areas:
+        "billing summary"
+        "payment summary";
+    align-items: start;
 }
 
 /* Left Side: Form */
 .billing {
+    grid-area: billing;
     background: var(--bg-card);
     padding: 2rem;
     border-radius: var(--radius-lg);
@@ -348,13 +351,132 @@ section {
 
 /* Right Side: Summary (Sticky) */
 .order-summary {
-    background: white; /* Clean white */
+    grid-area: summary;
+    background: white;
     padding: 2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
     position: sticky;
-    top: 100px; /* Sticks when scrolling */
+    top: 100px;
+    align-self: flex-start;
+}
+
+/* Payment Method Section */
+.payment-section {
+    grid-area: payment;
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+    .payment-section h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        color: var(--text-main);
+        text-align: center;
+    }
+
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-option {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column; /* Stack vertically by default */
+    align-items: center;
+    justify-content: center;
+    gap: 0; /* Gap handled by image margin */
+    text-align: center;
+    min-height: 100px;
+}
+
+    .payment-option:hover {
+        border-color: var(--primary);
+        background: #f0f9ff;
+        transform: translateY(-2px);
+    }
+
+    /* Radio Button Positioning */
+    .payment-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .payment-option label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0;
+    }
+
+    .payment-option.selected {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+/* --- Payment Logos (Official Images) --- */
+.payment-logo {
+    height: 35px; /* Fixed height for consistency */
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 5px; /* Space between logo and text */
+    display: block;
+}
+
+/* Confirm Button - In Payment Section */
+.payment-section .submit-btn {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    padding: 1rem;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+}
+
+    .payment-section .submit-btn:hover {
+        background-color: var(--primary-hover);
+    }
+
+    .payment-section .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+/* Remove old submit button from billing section */
+.billing .submit-btn {
+    display: none;
 }
 
 /* --- Form Elements --- */
@@ -393,7 +515,7 @@ input, select, textarea {
         background-color: #fef2f2;
     }
 
-/* --- Variant Chips (Modernized) --- */
+/* --- Variant Chips --- */
 .variant-chips-container {
     display: flex;
     flex-wrap: wrap;
@@ -404,7 +526,7 @@ input, select, textarea {
 .variant-chip {
     padding: 0.6rem 1.2rem;
     border: 1px solid #d1d5db;
-    border-radius: 6px; /* Slightly squarer than pill for modern tech feel */
+    border-radius: 6px;
     background: white;
     cursor: pointer;
     font-size: 0.9rem;
@@ -419,13 +541,13 @@ input, select, textarea {
     }
 
     .variant-chip.selected {
-        background: var(--text-main); /* Black/Dark Gray like the request */
+        background: var(--text-main);
         color: white;
         border-color: var(--text-main);
         box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
 
-/* --- Quantity & Submit --- */
+/* --- Quantity Controls --- */
 .qty-row {
     margin-top: 1.5rem;
     background: #f3f4f6;
@@ -471,31 +593,15 @@ input, select, textarea {
     font-size: 1.1rem;
     padding: 0;
 }
-
-.submit-btn {
-    width: 100%;
-    background-color: var(--primary);
-    color: white;
-    padding: 1rem;
-    font-size: 1.1rem;
-    margin-top: 1.5rem;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+/* Add this to combo.css */
+.variant-chip.disabled {
+    opacity: 0.4;
+    pointer-events: none; /* Prevents clicking */
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    text-decoration: line-through;
 }
-
-    .submit-btn:hover {
-        background-color: var(--primary-hover);
-    }
-
-    .submit-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-
 /* --- Receipt Table --- */
 .receipt-table {
     width: 100%;
@@ -529,7 +635,12 @@ input, select, textarea {
     margin-bottom: 1rem;
 }
 
-/* --- Status Modal (Preserved) --- */
+/* Hide mobile image holder on Desktop */
+#mobile-order-variant-image-holder {
+    display: none;
+}
+
+/* --- Status Modal --- */
 .modal {
     display: none;
     position: fixed;
@@ -572,16 +683,64 @@ input, select, textarea {
     background: var(--error);
 }
 
+/* Force autofill background to match design */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+}
+
 /* --- Responsive Design (Mobile) --- */
 @media (max-width: 768px) {
     .order-container {
-        grid-template-columns: 1fr; /* Stack vertically */
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "billing"
+            "summary"
+            "payment";
+        gap: 1.5rem;
     }
 
-    .order-summary {
-        order: -1; /* Show summary TOP on mobile (optional, or keep bottom) */
+    /* All sections full width */
+    .billing,
+    .order-summary,
+    .payment-section {
         position: static;
-        margin-bottom: 2rem;
+        width: 100%;
+    }
+
+    /* Mobile Payment Options (Horizontal Row) */
+    .payment-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .payment-option {
+        flex-direction: row; /* Icon Left, Text Right */
+        justify-content: flex-start;
+        padding: 1rem;
+        min-height: auto;
+    }
+
+        .payment-option input[type="radio"] {
+            position: static; /* Radio visible inline */
+            margin-right: 0.75rem;
+        }
+
+        .payment-option label {
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            width: auto;
+        }
+
+    /* Mobile Payment Logo Sizing */
+    .payment-logo {
+        height: 25px; /* Smaller for mobile row */
+        margin-bottom: 0;
+        margin-right: 12px;
     }
 
     .combo-info h1 {
@@ -592,15 +751,21 @@ input, select, textarea {
         font-size: 2rem;
     }
 
-    .billing, .order-summary {
+    .billing, .order-summary, .payment-section {
         padding: 1.5rem;
     }
-}
-/* Force autofill background to match your design */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: var(--text-main) !important;
+
+    /* Mobile Variant Image Logic */
+    #mobile-order-variant-image-holder {
+        display: block;
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    #order-variant-image-holder {
+        display: none;
+    }
 }

@@ -1,7 +1,8 @@
-﻿//******************new*************************
+﻿// wwwroot/js/combo.js
 
-// wwwroot/js/combo.js
-
+// ==================================================
+// 1. ORDER API HELPERS
+// ==================================================
 window.OrderAPI = {
     // Check Customer Phone
     checkCustomer: async function (phone) {
@@ -55,13 +56,8 @@ window.OrderAPI = {
         } catch (e) { return []; }
     }
 };
-//******************newEND*************************
-
-
-
 
 $(document).ready(function () {
-    //******************new*************************
 
     // SAFETY CHECK: If we are on the Admin page (which doesn't have #order-form),
     // stop here so we don't cause errors.
@@ -69,10 +65,57 @@ $(document).ready(function () {
         return;
     }
 
-    //******************newEND*************************
+    // ==================================================
+    // 2. PAYMENT METHOD UI LOGIC
+    // ==================================================
+
+    // Handle payment option clicks
+    $('.payment-option').on('click', function () {
+        // Remove selected class from all options
+        $('.payment-option').removeClass('selected');
+
+        // Add selected class to clicked option
+        $(this).addClass('selected');
+
+        // Check the radio button
+        $(this).find('input[type="radio"]').prop('checked', true);
+
+        // Update button text based on payment method
+        updateSubmitButtonText();
+    });
+
+    // Handle radio button changes (for keyboard navigation)
+    $('input[name="paymentMethod"]').on('change', function () {
+        $('.payment-option').removeClass('selected');
+        $(this).closest('.payment-option').addClass('selected');
+        updateSubmitButtonText();
+    });
+
+    // Function to update submit button text
+    function updateSubmitButtonText() {
+        const selectedPayment = $('input[name="paymentMethod"]:checked').val();
+        const $btn = $('#final-submit-btn');
+        const totalAmount = $('#receipt-grand-total').text();
+
+        if (selectedPayment === 'cod') {
+            $btn.text('Confirm Order');
+        } else {
+            $btn.text(`Proceed and Pay ${totalAmount}`);
+        }
+    }
+
+    // Initialize button text on page load
+    updateSubmitButtonText();
+
+    // Update button text when total changes
+    const originalUpdateTotals = updateTotals;
+    updateTotals = function () {
+        originalUpdateTotals();
+        updateSubmitButtonText();
+    };
 
     // ==================================================
-    // 0. GLOBAL VARIABLES & STATE
+    // 3. GLOBAL VARIABLES & STATE
     // ==================================================
 
     const baseInfo = window.baseProductInfo || { price: 0, image: "/images/default-product.jpg" };
@@ -102,7 +145,7 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // AUTO-SELECT FIRST VARIANT IF ONLY ONE EXISTS
+    // 4. AUTO-SELECT FIRST VARIANT IF ONLY ONE EXISTS
     // ==================================================
     const variants = window.productVariants || [];
 
@@ -118,7 +161,7 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // 1. DYNAMIC ATTRIBUTE SELECTION LOGIC (WITH TOGGLE)
+    // 5. DYNAMIC ATTRIBUTE SELECTION LOGIC (WITH CASCADING)
     // ==================================================
 
     $(document).on('click', '.variant-chip', function () {
@@ -126,30 +169,84 @@ $(document).ready(function () {
         let attributeName = $el.data('attribute');
         let attributeValue = $el.data('value');
 
+        // 1. Toggle Selection
         if ($el.hasClass('selected')) {
             $el.removeClass('selected');
             delete selectedAttributes[attributeName];
         } else {
+            // Remove 'selected' from other chips in the same row
             $(`.variant-chip[data-attribute='${attributeName}']`).removeClass('selected');
             $el.addClass('selected');
             selectedAttributes[attributeName] = attributeValue;
         }
 
+        // 2. Update Availability of OTHER options based on this new selection
+        updateAttributeAvailability();
+
+        // 3. Try to find the matching variant
         findAndApplyVariant();
     });
+
+    // --- NEW CASCADING LOGIC FUNCTION ---
+    function updateAttributeAvailability() {
+        $('.variant-chip').each(function () {
+            const $chip = $(this);
+            const chipAttribute = $chip.data('attribute');
+            const chipValue = $chip.data('value');
+
+            // Skip if this specific chip is already selected (always keep selected items enabled)
+            if ($chip.hasClass('selected')) {
+                $chip.removeClass('disabled');
+                return;
+            }
+
+            // Create a "Test Scenario"
+            const testSelection = { ...selectedAttributes };
+
+            // Allow switching values within the same attribute group
+            delete testSelection[chipAttribute];
+            testSelection[chipAttribute] = chipValue;
+
+            // Check if ANY variant matches this test scenario
+            const isCompatible = variants.some(v => {
+                for (const [key, val] of Object.entries(testSelection)) {
+                    if (!v.attributes || v.attributes[key] !== val) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // Apply visual state
+            if (isCompatible) {
+                $chip.removeClass('disabled');
+            } else {
+                $chip.addClass('disabled');
+            }
+        });
+    }
+
+    // Call once on load to initialize states
+    updateAttributeAvailability();
+
     function findAndApplyVariant() {
         $('#selected-variant-id').val('');
 
         const matchedVariant = variants.find(v => {
-            for (let key in selectedAttributes) {
-                // Use strict equality check logic or robust string comparison
-                if (!v.attributes[key] || String(v.attributes[key]) !== String(selectedAttributes[key])) {
+            const variantKeys = Object.keys(v.attributes);
+            const selectedKeys = Object.keys(selectedAttributes);
+
+            // 1. STRICT COUNT CHECK
+            if (variantKeys.length !== selectedKeys.length) return false;
+
+            // 2. STRICT VALUE CHECK
+            for (let key of selectedKeys) {
+                if (!v.attributes.hasOwnProperty(key) || v.attributes[key] !== selectedAttributes[key]) {
                     return false;
                 }
             }
             return true;
         });
-
 
         if (matchedVariant) {
             if (Object.keys(selectedAttributes).length > 0) {
@@ -167,7 +264,7 @@ $(document).ready(function () {
         currentVariantPrice = variant.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
 
-        // ✅ CRITICAL FIX: Handle stock properly
+        // Handle stock properly
         maxAvailableStock = variant.stock;
 
         let currentQty = parseInt($('#quantity').val()) || 1;
@@ -179,7 +276,9 @@ $(document).ready(function () {
         let newImg = variant.image && variant.image.length > 1 ? variant.image : baseProductImageUrl;
         if (!newImg.startsWith("/") && !newImg.startsWith("http")) newImg = "/" + newImg;
 
+        // Update BOTH Desktop and Mobile images
         $('#order-variant-image').attr('src', newImg);
+        $('#mobile-order-variant-image').attr('src', newImg);
 
         $('.variant-chips-container').css('border', 'none');
         updateTotals();
@@ -188,56 +287,62 @@ $(document).ready(function () {
             $('.submit-btn').prop('disabled', false);
         }
     }
+
     function resetToDefault() {
         currentVariantPrice = baseInfo.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
+
         $('#order-variant-image').attr('src', baseProductImageUrl);
+        $('#mobile-order-variant-image').attr('src', baseProductImageUrl);
+
         $('#selected-variant-id').val('');
         maxAvailableStock = 0;
-        // ✅ ADD THIS: Hide the stock info on reset
+        selectedAttributes = {};
+        $('.variant-chip').removeClass('selected');
+
+        updateAttributeAvailability();
         $('#variant-info').hide();
-        updateStockMessage(0); // This calls the function above, but the hide() line above ensures it stays hidden
+        updateStockMessage(0);
         updateTotals();
     }
+
     function handleNoMatch() {
         $('#stock-message').text("This combination is currently unavailable.").addClass('text-danger show');
         $('#order-variant-image').attr('src', baseProductImageUrl);
+        $('#mobile-order-variant-image').attr('src', baseProductImageUrl);
         $('#selected-variant-id').val('');
         maxAvailableStock = 0;
     }
 
     function updateStockMessage(stock) {
         const el = $('#stock-message');
-        const parent = $('#variant-info'); // Get the parent container
+        const parent = $('#variant-info');
 
         el.removeClass('stock-high stock-medium stock-low text-danger show text-success');
 
-        // If no attributes selected yet, keep hidden
         if (Object.keys(selectedAttributes).length === 0 && variants.length > 1) {
             parent.hide();
             return;
         }
 
-        parent.show(); // Reveal the container
+        parent.show();
 
         if (stock <= 0) {
             el.text('Out of Stock').addClass('text-danger show');
-            // Optional: Disable submit button if out of stock
             $('.submit-btn').prop('disabled', true).text('Out of Stock');
         } else {
-            // ✅ CHANGED: Always show specific stock count
             el.text(`Current Stock: ${stock} items available`).addClass('text-success show').css({
                 'font-weight': 'bold',
-                'color': '#10b981', // Green color
+                'color': '#10b981',
                 'font-size': '0.95rem'
             });
 
-            // Re-enable button if it was disabled by out-of-stock
             if (!isCheckingEmail) {
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
         }
     }
+
     function showStockError(msg) {
         const el = $('#stock-error-message');
         el.text(msg).addClass('show');
@@ -249,7 +354,7 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // 2. EMAIL & PHONE CHECK (INLINE REAL-TIME VALIDATION)
+    // 6. EMAIL & PHONE CHECK (INLINE REAL-TIME VALIDATION)
     // ==================================================
 
     $('#customerEmail').on('input', function () {
@@ -292,57 +397,49 @@ $(document).ready(function () {
             isCheckingEmail = false;
 
             if (res.exists) {
-                // --- CHANGED LOGIC HERE ---
-                // Previous logic: Blocked the user (Red text, Disabled button)
-                // New logic: Welcomes the user (Green/Blue text, ENABLED button)
+                // LOGIC UPDATE:
+                // Since the backend blocks an email if it belongs to a different phone,
+                // we must treat `exists` as an ERROR unless it matches `currentCustomerEmail`.
 
-                if (email === currentCustomerEmail) {
+                if (currentCustomerEmail && email === currentCustomerEmail) {
+                    // It exists and matches the current phone number -> OK
                     $msg.text("✓ Using your registered email").css('color', 'green').show();
+                    $('.submit-btn').prop('disabled', false).text('Confirm Order');
                 } else {
-                    // Determine if this is a "Welcome Back" scenario
-                    $msg.text("✓ Account found! We will link this order to you.").css('color', 'blue').show();
+                    // It exists but does NOT match the phone number (or no phone entered) -> ERROR
+                    $msg.text("⚠ This email is already registered with a different phone number.").css('color', 'red').show();
+                    $('.submit-btn').prop('disabled', true).text('Fix Email');
                 }
-
-                // ALWAYS enable the button if the email is valid, even if it exists
-                $('.submit-btn').prop('disabled', false).text('Confirm Order');
             } else {
-                // Email is new - also valid
+                // Email is new -> OK
                 $msg.text("✓ Email available").css('color', 'green').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
-        })
-            .fail(function () {
-                isCheckingEmail = false;
-                // In case of server error, usually safer to let them try to submit
-                $msg.text("⚠ Could not verify email, but you can proceed.").css('color', 'orange').show();
-                $('.submit-btn').prop('disabled', false).text('Confirm Order');
-            });
+        }).fail(function () {
+            isCheckingEmail = false;
+            $msg.text("⚠ Could not verify email, but you can proceed.").css('color', 'orange').show();
+            $('.submit-btn').prop('disabled', false).text('Confirm Order');
+        });
     });
 
-    // ✅ FIXED: Using Debounce (500ms) to prevent server spam on typing
+    // Handle Phone Input with Debounce
     $('#customerPhone').on('input', debounce(function () {
         let phone = $(this).val();
 
         if (phone.length >= 11) {
             $('#phone-status').text("⏳ Checking...").css('color', 'blue');
 
-
-            //******************************new*************** */
-
             window.OrderAPI.checkCustomer(phone).then(function (data) {
-                //******************************newEND*************** */
-
                 if (data.found) {
                     $('#phone-status').text("✓ Welcome back! Info loaded.").css('color', 'green');
 
-                    // 1. FILL NAME
                     if (data.name) $('#customerName').val(data.name);
 
-                    // 2. FILL EMAIL (With logic for @guest.local)
                     if (data.email) {
                         const $emailField = $('#customerEmail');
                         const currentEmailValue = $emailField.val().trim();
 
+                        // Only autofill if email is empty or has a placeholder value
                         if (!currentEmailValue || currentEmailValue.includes('@guest.local')) {
                             isEmailAutofilled = true;
                             currentCustomerEmail = data.email;
@@ -350,30 +447,30 @@ $(document).ready(function () {
                             $('#email-status').text("✓ Using your registered email").css('color', 'green').show();
                             $('.submit-btn').prop('disabled', false).text('Confirm Order');
                         } else {
+                            // Even if we don't overwrite, we need to know the correct email for this phone
                             currentCustomerEmail = data.email;
                         }
+                    } else {
+                        // Phone exists but has no email (or generated one)
+                        currentCustomerEmail = null;
                     }
-
-                    // ❌ REMOVED: Address Autofill Logic
-                    // The block that filled Street, PostalCode, Division, etc. is deleted.
-
                 } else {
                     $('#phone-status').text("New Customer").css('color', '#666');
                     isEmailAutofilled = false;
                     currentCustomerEmail = null;
                 }
-            })
-                .fail(function () {
-                    $('#phone-status').text("⚠ Could not verify phone").css('color', 'orange');
-                });
+            }).fail(function () {
+                $('#phone-status').text("⚠ Could not verify phone").css('color', 'orange');
+            });
         } else {
             $('#phone-status').text("");
             isEmailAutofilled = false;
             currentCustomerEmail = null;
         }
-    }, 500)); // 500ms delay
+    }, 500));
+
     // ==================================================
-    // 3. LOCATION & TOTALS (ROBUST CASCADING)
+    // 7. LOCATION & TOTALS (ROBUST CASCADING)
     // ==================================================
 
     function resetSelect(selector, defaultText) {
@@ -492,7 +589,7 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // ✅ FIXED QUANTITY CONTROLS
+    // 8. QUANTITY CONTROLS
     // ==================================================
 
     $('#increase').click(function (e) {
@@ -530,7 +627,6 @@ $(document).ready(function () {
 
         // Case 3: Variant selected - check stock
         if (maxAvailableStock > 0) {
-            // Stock limit exists
             if (qty < maxAvailableStock) {
                 $('#quantity').val(qty + 1);
                 $('#summary-qty').text(qty + 1);
@@ -540,7 +636,6 @@ $(document).ready(function () {
                 $('#quantity').val(maxAvailableStock);
             }
         } else {
-            // Stock is 0 or undefined - treat as out of stock
             showStockError('This item is currently out of stock');
         }
     });
@@ -560,7 +655,6 @@ $(document).ready(function () {
         }
     });
 
-    // Manual input validation
     $('#quantity').on('input change', function () {
         let qty = parseInt($(this).val()) || 1;
 
@@ -595,7 +689,7 @@ $(document).ready(function () {
     });
 
     // ==================================================
-    // 4. SUBMIT ORDER
+    // 9. SUBMIT ORDER (MERGED VALIDATION & PAYMENTS)
     // ==================================================
 
     $('#order-form').submit(function (e) {
@@ -607,7 +701,6 @@ $(document).ready(function () {
 
         // 2. CHECK: Is Email check pending?
         if (isCheckingEmail) {
-            // Replaced alert with SweetAlert
             Swal.fire({
                 title: 'Please wait',
                 text: 'Validating email address...',
@@ -618,75 +711,55 @@ $(document).ready(function () {
             return;
         }
 
+        // 3. CHECK: Email Error Visible (New Check)
+        // If the email field shows an error message (red text), do not proceed.
+        const $emailStatus = $('#email-status');
+        if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') { // Checks for red color
+            $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
+            $('#customerEmail').focus();
+            return;
+        }
+
         let isValid = true;
         let firstErrorField = null;
 
-        // 3. CHECK: Variant Selected (Check this FIRST as it is visually at the top)
+        // 4. CHECK: Variant Selected
         if (!$('#selected-variant-id').val()) {
             isValid = false;
-
-            // Highlight the container
             const $variantContainer = $('.variant-chips-container');
             $variantContainer.css({
                 'border': '2px solid #dc3545',
                 'padding': '5px',
                 'border-radius': '5px'
             });
-
-            // Set as first error
             firstErrorField = $(".variant-selection-area");
         }
 
-        // 4. CHECK: General Required Fields (Name, Phone, Address)
+        // 5. CHECK: General Required Fields
         $(this).find('input[required], select[required], textarea[required]')
             .filter(':visible')
             .each(function () {
-
-                // Skip disabled fields
                 if ($(this).prop('disabled')) return;
-
                 if (!$(this).val() || $(this).val().trim() === "") {
                     isValid = false;
                     $(this).addClass('input-error');
-
-                    // Only set firstErrorField if we haven't found one yet (e.g., Variant)
-                    if (!firstErrorField) {
-                        firstErrorField = $(this);
-                    }
+                    if (!firstErrorField) firstErrorField = $(this);
                 }
             });
 
-        // 5. IF INVALID: Scroll to the first problem
+        // 6. IF INVALID: Scroll to error
         if (!isValid || firstErrorField) {
             if (firstErrorField && firstErrorField.length) {
-
                 const elementTop = firstErrorField[0].getBoundingClientRect().top + window.scrollY;
-
-                $('html, body').animate({
-                    scrollTop: elementTop - 120
-                }, 600);
-
-                // focus if it's a typing field
-                if (firstErrorField.is('input, select, textarea')) {
-                    firstErrorField.focus();
-                }
+                $('html, body').animate({ scrollTop: elementTop - 120 }, 600);
             }
-            return; // Stop execution
+            return; // STOP HERE IF INVALID
         }
 
-        // 6. CHECK: Stock Limits
+        // 7. CHECK: Stock Limits
         let requestedQty = parseInt($('#quantity').val());
         if (maxAvailableStock > 0 && requestedQty > maxAvailableStock) {
-            $('#stock-error-message').text(`ERROR: Requested quantity (${requestedQty}) exceeds stock limit (${maxAvailableStock}).`);
-            $('html, body').animate({ scrollTop: $('#quantity').offset().top - 150 }, 400);
-            return;
-        }
-
-        // 7. CHECK: Email Error Visible
-        const $emailStatus = $('#email-status');
-        if ($emailStatus.is(':visible') && $emailStatus.text().includes('✗')) {
-            $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
-            $('#customerEmail').focus();
+            $('#stock-error-message').text(`ERROR: Requested quantity exceeds limit.`);
             return;
         }
 
@@ -698,13 +771,23 @@ $(document).ready(function () {
             formData[item.name] = item.value;
         });
 
+        // Add Payment Method (From your new logic)
+        formData.PaymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cod';
+
         // Ensure numeric types
         formData.TargetCompanyId = 1;
         formData.ProductVariantId = parseInt(formData.ProductVariantId);
         formData.OrderQuantity = parseInt(formData.OrderQuantity);
 
-        let $btn = $('.submit-btn');
-        $btn.prop('disabled', true).text('Processing...');
+        let $btn = $('#final-submit-btn');
+        $btn.prop('disabled', true);
+
+        // Update text based on payment
+        if (formData.PaymentMethod === 'cod') {
+            $btn.text('Processing...');
+        } else {
+            $btn.text('Redirecting...');
+        }
 
         $.ajax({
             url: '/order/place',
@@ -713,25 +796,43 @@ $(document).ready(function () {
             data: JSON.stringify(formData),
             success: function (res) {
                 if (res.success) {
-                    // ✅ Fixed: Using SweetAlert2 for Success
-                    Swal.fire({
-                        title: 'Success!',
-                        text: "Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'),
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#2563eb'
-                    }).then((result) => {
-                        location.reload();
-                    });
+                    // Success Logic
+                    if (formData.PaymentMethod === 'cod') {
+                        // COD Success
+                        Swal.fire({
+                            title: 'Success!',
+                            text: "Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'),
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#2563eb'
+                        }).then((result) => {
+                            location.reload();
+                        });
+                    } else {
+                        // Online Payment Redirect
+                        if (res.paymentUrl) {
+                            window.location.href = res.paymentUrl;
+                        } else {
+                            Swal.fire({
+                                title: 'Payment Pending',
+                                text: 'Order created. Redirecting to payment...',
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    }
                 } else {
-                    // ✅ Fixed: Using SweetAlert2 for Error
+                    // Server returned false
                     Swal.fire({
                         title: 'Order Failed',
                         text: res.message || "Failed to place order.",
                         icon: 'error',
                         confirmButtonText: 'Try Again'
                     });
-                    $btn.prop('disabled', false).text('Confirm Order');
+                    $btn.prop('disabled', false);
+                    updateSubmitButtonText();
                 }
             },
             error: function (xhr) {
@@ -742,20 +843,20 @@ $(document).ready(function () {
                     errorMessage = xhr.responseText.substring(0, 200);
                 }
 
-                // ✅ Fixed: Using SweetAlert2 for Server Error
                 Swal.fire({
                     title: 'Server Error',
                     text: errorMessage,
                     icon: 'error',
                     confirmButtonText: 'Close'
                 });
-                $btn.prop('disabled', false).text('Confirm Order');
+                $btn.prop('disabled', false);
+                updateSubmitButtonText();
             }
         });
     });
 
     // ==================================================
-    // 5. IMAGE GALLERY SLIDER
+    // 10. IMAGE GALLERY SLIDER
     // ==================================================
     let currentSlide = 0;
     window.changeSlide = function (dir) {
@@ -773,7 +874,7 @@ $(document).ready(function () {
 });
 
 // ==================================================
-// 6. POSTAL CODE AUTOFILL (AUTOMATIC)
+// 11. POSTAL CODE AUTOFILL (AUTOMATIC)
 // ==================================================
 $('input[name="PostalCode"]').on('input keyup blur', function () {
     let code = $(this).val().trim();

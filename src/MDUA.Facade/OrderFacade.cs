@@ -72,13 +72,15 @@ namespace MDUA.Facade
         public List<string> GetThanas(string district) => _postalCodesDataAccess.GetThanas(district);
 
         public List<dynamic> GetSubOffices(string thana) => _postalCodesDataAccess.GetSubOffices(thana);
-       
-        
+
+
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
             // 1. PRE-CALCULATION (Read-Only, outside transaction)
-            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId); 
+            var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId);
             if (variant == null) throw new Exception("Variant not found.");
+
+
 
             if (variant.StockQty == 0)
             {
@@ -273,6 +275,7 @@ namespace MDUA.Facade
                 }
             }
         }
+
 
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {

@@ -295,12 +295,17 @@ namespace MDUA.Web.UI.Controllers
                  return View(new List<SalesOrderHeader>());
              }
          }
-        
+
+
         [HttpPost]
         [Route("order/place")]
         public IActionResult PlaceOrder([FromBody] SalesOrderHeader model)
         {
-
+            // 1. Safety Check: If JSON binding failed (e.g., sending null for an int), model will be null.
+            if (model == null)
+            {
+                return BadRequest(new { success = false, message = "Invalid Data: Please select a product variant and fill all required fields." });
+            }
 
             try
             {
@@ -309,10 +314,8 @@ namespace MDUA.Web.UI.Controllers
             }
             catch (Exception ex)
             {
-                // ✅ FIX: Get the Inner Exception if available (This usually holds the SQL error)
+                // Get the Inner Exception if available
                 var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-
-                // If both are empty, dump the whole object
                 if (string.IsNullOrEmpty(realError)) realError = ex.ToString();
 
                 return Json(new { success = false, message = realError });
