@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MDUA.Entities\MDUA.Entities.csproj" />
+    <ProjectReference Include="..\MDUA.Framework\MDUA.Framework.csproj" />
+  </ItemGroup>
+
+</Project>

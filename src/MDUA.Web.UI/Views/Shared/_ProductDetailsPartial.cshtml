@@ -1,0 +1,95 @@
+﻿@model MDUA.Entities.Product
+<link rel="stylesheet" href="~/css/product-details.css?v=3" />
+<div class="product-details-container">
+    @if (Model != null)
+    {
+        <div class="product-details-card">
+            <div class="details-header">
+                <div class="details-header-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                </div>
+                <h5 class="mb-0 fw-bold">@Model.ProductName</h5>
+            </div>
+
+            <div class="details-body p-0">
+                <div class="row g-0">
+                    <div class="col-md-7 p-4">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-3">Basic Info</h6>
+
+                        <div class="detail-group mb-2">
+                            <label class="small text-muted fw-bold d-block">Category</label>
+                            <span class="category-tag">@Model.CategoryName</span>
+                        </div>
+
+                        <div class="detail-group mb-2">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="small text-muted fw-bold d-block">Price</label>
+                                    <span class="price-value">@Model.BasePrice?.ToString("N2")</span>
+                                </div>
+                                <div class="col-6">
+                                    <label class="small text-muted fw-bold d-block">Stock Warning</label>
+                                    <span class="fw-bold text-dark">@Model.ReorderLevel <span class="text-muted small fw-normal">units</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-group mb-2">
+                            <label class="small text-muted fw-bold d-block">Slug</label>
+                            <span class="slug-badge text-truncate d-inline-block" style="max-width: 100%;">@Model.Slug</span>
+                        </div>
+
+                        <div class="detail-group">
+                            <label class="small text-muted fw-bold d-block">Description</label>
+                            <p class="small text-secondary mb-0">@(Model.Description ?? "No description provided.")</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5 bg-light p-4 border-start">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-3">System Status</h6>
+
+                        <div class="detail-group mb-3">
+                            <label class="small text-muted fw-bold d-block mb-1">Current Status</label>
+                            <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
+                                @(Model.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+
+                        <hr class="border-secondary opacity-25 my-3" />
+
+                        <h6 class="text-muted text-uppercase small fw-bold mb-3">Audit Trail</h6>
+
+                        <div class="detail-group mb-2">
+                            <div class="small fw-bold text-dark">Created By</div>
+                            <div class="small text-muted">
+                                @(Model.CreatedBy ?? "System")
+                                <br>
+                                <span class="audit-date">@Model.CreatedAt?.ToString("dd MMM yyyy, hh:mm tt")</span>
+                            </div>
+                        </div>
+
+                        @if (Model.UpdatedAt != null)
+                        {
+                            <div class="detail-group">
+                                <div class="small fw-bold text-dark">Last Updated</div>
+                                <div class="small text-muted">
+                                    @(Model.UpdatedBy ?? "Unknown")
+                                    <br>
+                                    <span class="audit-date">@Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="error-message">Could not load product details.</div>
+    }
+</div>
