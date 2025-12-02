@@ -1,0 +1,31 @@
+﻿/* Inventory Status Page Styles */
+
+/* --- Healthy Stock Row (Green) --- */
+/* Using !important to override Bootstrap's default striped/hover styles */
+.table tbody tr.healthy-stock-row,
+.table tbody tr.healthy-stock-row > td {
+    color: #155724;
+}
+
+    /* Healthy Hover State */
+    .table tbody tr.healthy-stock-row:hover,
+    .table tbody tr.healthy-stock-row:hover > td {
+        background-color: #b1dfbb !important; /* Slightly darker green */
+    }
+
+/* Text Utilities */
+.text-success-bold {
+    color: #198754 !important;
+    font-weight: 700;
+}
+
+.text-danger-bold {
+    color: #dc3545 !important;
+    font-weight: 700;
+}
+
+/* Modal Tweaks */
+#requestModal .modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}

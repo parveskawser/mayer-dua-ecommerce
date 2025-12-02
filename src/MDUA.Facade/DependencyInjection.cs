@@ -17,6 +17,7 @@ namespace MDUA.Facade
             services.AddScoped<IPermissionGroupDataAccess, PermissionGroupDataAccess>();
             services.AddScoped<IUserPermissionDataAccess, UserPermissionDataAccess>();
             services.AddScoped<IPostalCodesDataAccess, PostalCodesDataAccess>();
+            services.AddScoped<IUserSessionDataAccess, UserSessionDataAccess>();
 
             // Product-related Data Access
             services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
@@ -35,12 +36,20 @@ namespace MDUA.Facade
             // Company
             services.AddScoped<ICompanyDataAccess, CompanyDataAccess>();
 
-            // These are required by  OrderFacade
+            // Order Facade Requirements
             services.AddScoped<ISalesOrderHeaderDataAccess, SalesOrderHeaderDataAccess>();
             services.AddScoped<ISalesOrderDetailDataAccess, SalesOrderDetailDataAccess>();
             services.AddScoped<ICustomerDataAccess, CustomerDataAccess>();
             services.AddScoped<ICompanyCustomerDataAccess, CompanyCustomerDataAccess>();
             services.AddScoped<IAddressDataAccess, AddressDataAccess>();
+
+            // ✅ Purchase Facade Requirements (Inventory & POs)
+            services.AddScoped<IPoRequestedDataAccess, PoRequestedDataAccess>();
+            services.AddScoped<IPoReceivedDataAccess, PoReceivedDataAccess>();
+            services.AddScoped<IVendorDataAccess, VendorDataAccess>();
+
+            // ✅ MISSING LINE ADDED: Required for stock transaction logging
+            services.AddScoped<IInventoryTransactionDataAccess, InventoryTransactionDataAccess>();
 
             // Facade Layer
             services.AddServiceFacade();
@@ -54,8 +63,10 @@ namespace MDUA.Facade
             services.AddScoped<IProductFacade, ProductFacade>();
             services.AddScoped<IOrderFacade, OrderFacade>();
             services.AddScoped<ICustomerFacade, CustomerFacade>();
-            services.AddScoped<ICompanyFacade, CompanyFacade>(); //new
+            services.AddScoped<ICompanyFacade, CompanyFacade>();
 
+            // Register Purchase Facade
+            services.AddScoped<IPurchaseFacade, PurchaseFacade>();
         }
     }
 }

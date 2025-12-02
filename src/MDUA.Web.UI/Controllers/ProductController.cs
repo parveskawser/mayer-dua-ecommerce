@@ -19,11 +19,10 @@ namespace MDUA.Web.UI.Controllers
         }
 
         #region Products
-
+        [AllowAnonymous]
         [Route("product/{slug}")]
         public IActionResult Index(string slug)
         {
-            // Permission Check
 
             if (string.IsNullOrWhiteSpace(slug)) return BadRequest();
 

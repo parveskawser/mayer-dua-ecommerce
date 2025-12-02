@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IInventoryTransactionDataAccess : ICommonDataAccess<InventoryTransaction, InventoryTransactionList, InventoryTransactionBase>
-	{ 
-	}	
+	{
+        void InsertInTransaction(int poReceivedId, int variantId, int qty, decimal price, string remarks, SqlTransaction transaction);
+
+    }
 }

@@ -110,6 +110,13 @@
                             Add Product
                         </a>
                     </li>
+                    <!-- new -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "StockStatus" ? "active" : "")"
+                           href="@Url.Action("StockStatus", "Purchase")">
+                            Stock Status
+                        </a>
+                    </li>
                 </ul>
             </div>
         </li>

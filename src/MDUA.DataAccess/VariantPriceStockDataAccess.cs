@@ -66,5 +66,31 @@ namespace MDUA.DataAccess
                 return 1;
             }
         }
+
+        public void AddStock(int variantId, int qty, SqlTransaction transaction)
+        {
+            // Simply adds to existing stock
+            string SQL = @"UPDATE VariantPriceStock SET StockQty = StockQty + @Qty WHERE Id = @Id";
+            using (SqlCommand cmd = new SqlCommand(SQL, transaction.Connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@Id", variantId);
+                cmd.Parameters.AddWithValue("@Qty", qty);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // Helper to find ProductId from Variant (for InventoryTransaction)
+        public int GetProductIdByVariant(int variantId)
+        {
+            string SQL = "SELECT ProductId FROM ProductVariant WHERE Id = @Id";
+            using (SqlCommand cmd = GetSQLCommand(SQL))
+            {
+                AddParameter(cmd, pInt32("Id", variantId));
+                if (cmd.Connection.State != System.Data.ConnectionState.Open) cmd.Connection.Open();
+                var result = cmd.ExecuteScalar();
+                cmd.Connection.Close();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+        }
     }	
 }

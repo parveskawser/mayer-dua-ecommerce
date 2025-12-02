@@ -19,7 +19,7 @@ namespace MDUA.Web.UI.Controllers
         [HttpGet]
         public IActionResult LogIn()
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
@@ -42,18 +42,30 @@ namespace MDUA.Web.UI.Controllers
 
             if (loginResult.IsSuccess)
             {
-                // 3. Build Claims List
+                // 3.  DB AUTH: Create User Session in SQL
+                // Get IP and User Agent for security tracking
+                string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                string deviceInfo = Request.Headers["User-Agent"].ToString();
+
+                // This writes to the UserSession table and returns a unique SessionKey (Guid)
+                Guid sessionKey = _userLoginFacade.CreateUserSession(loginResult.UserLogin.Id, ipAddress, deviceInfo);
+
+                // 4. Build Claims List
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, loginResult.UserLogin.Id.ToString()),
                     new Claim(ClaimTypes.Name, loginResult.UserLogin.UserName),
                     new Claim("CompanyId", loginResult.UserLogin.CompanyId.ToString()),
                     
-                    // ✅ FIXED: Use the actual RoleName from DB. Default to "User" only if null.
-                    new Claim(ClaimTypes.Role, !string.IsNullOrEmpty(loginResult.RoleName) ? loginResult.RoleName : "User")
+                    // actual RoleName from DB
+                    new Claim(ClaimTypes.Role, !string.IsNullOrEmpty(loginResult.RoleName) ? loginResult.RoleName : "User"),
+
+                    //   Add the SessionKey to the cookie claims. 
+                    // This allows Program.cs to validate against the DB on every request.
+                    new Claim("SessionKey", sessionKey.ToString())
                 };
 
-                // 4. Add Permissions to Claims
+                // 5. Add Permissions to Claims
                 if (loginResult.AuthorizedActions != null)
                 {
                     foreach (var permission in loginResult.AuthorizedActions)
@@ -62,10 +74,10 @@ namespace MDUA.Web.UI.Controllers
                     }
                 }
 
-                // 5. Create Identity
+                // 6. Create Identity
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-                // 6. Configure Cookie Properties
+                // 7. Configure Cookie Properties
                 var authProperties = new AuthenticationProperties
                 {
                     IsPersistent = rememberMe,
@@ -73,7 +85,7 @@ namespace MDUA.Web.UI.Controllers
                     AllowRefresh = true
                 };
 
-                // 7. Sign In
+                // 8. Sign In
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
@@ -95,6 +107,15 @@ namespace MDUA.Web.UI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            // 1.  DB AUTH: Invalidate Session in SQL
+            // Before deleting the cookie, we grab the SessionKey and tell the DB this session is over.
+            var sessionClaim = User.FindFirst("SessionKey");
+            if (sessionClaim != null && Guid.TryParse(sessionClaim.Value, out Guid key))
+            {
+                _userLoginFacade.InvalidateSession(key);
+            }
+
+            // 2. Remove Cookie
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
         }
