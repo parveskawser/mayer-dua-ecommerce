@@ -1,0 +1,353 @@
+﻿/* --- NEW --- */
+
+:root {
+    --modal-radius: 20px;
+    --primary-accent: #6366f1;
+    --success-green: #10b981;
+    --warning-amber: #f59e0b;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --bg-light: #fafbfc;
+    --border-light: #e2e8f0;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* 1. Modal Container */
+.order-details-modal .modal-dialog {
+    max-width: 600px;
+    margin: 1.5rem auto;
+}
+
+.order-details-modal .modal-content {
+    border-radius: var(--modal-radius);
+    border: 1px solid var(--border-light);
+    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 2. Header */
+.modal-header-soft {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-light);
+    padding: 1.5rem 1.75rem;
+}
+
+    .modal-header-soft .modal-title {
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        color: var(--text-primary);
+        font-size: 1.125rem;
+    }
+
+    .modal-header-soft .text-primary {
+        color: var(--primary-accent) !important;
+        font-weight: 700;
+    }
+
+    .modal-header-soft .btn-close {
+        opacity: 0.4;
+        transition: opacity 0.2s;
+    }
+
+        .modal-header-soft .btn-close:hover {
+            opacity: 0.8;
+        }
+
+/* 3. Modal Body */
+.order-details-modal .modal-body {
+    padding: 0;
+    background: #fafbfc;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+    /* Custom Scrollbar */
+    .order-details-modal .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .order-details-modal .modal-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .order-details-modal .modal-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+        .order-details-modal .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+/* 4. Info Sections - Card Style */
+.info-section {
+    background: #ffffff;
+    margin: 0.75rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+    .info-section:first-child {
+        margin-top: 1.25rem;
+    }
+
+    .info-section:last-child {
+        margin-bottom: 1.25rem;
+    }
+
+    .info-section:hover {
+        box-shadow: var(--shadow-md);
+        border-color: #cbd5e1;
+    }
+
+/* Section Header with Icon */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(to bottom, #fafbfc, #f8fafc);
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+    .section-header svg {
+        color: var(--primary-accent);
+        opacity: 0.7;
+    }
+
+/* Section Content */
+.section-content {
+    padding: 1.25rem;
+}
+
+/* 5. Status Section Special Styling */
+.status-section .section-content {
+    padding: 1rem 1.25rem;
+}
+
+.status-section #m-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.938rem !important;
+    font-weight: 600 !important;
+    padding: 0 0 0 1.25rem !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    letter-spacing: -0.01em !important;
+    background: transparent !important;
+    border: none !important;
+    position: relative !important;
+    box-shadow: none !important;
+}
+
+    .status-section #m-status::before {
+        content: '' !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 10px !important;
+        height: 10px !important;
+        border-radius: 50% !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .status-section #m-status.bg-success {
+        color: #059669 !important;
+    }
+
+        .status-section #m-status.bg-success::before {
+            background: #10b981 !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12) !important;
+        }
+
+    .status-section #m-status.bg-warning {
+        color: #d97706 !important;
+    }
+
+        .status-section #m-status.bg-warning::before {
+            background: #f59e0b !important;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12) !important;
+        }
+
+    .status-section #m-status.bg-secondary-subtle {
+        color: #475569 !important;
+    }
+
+        .status-section #m-status.bg-secondary-subtle::before {
+            background: #64748b !important;
+            box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12) !important;
+        }
+
+/* 6. Info Grid Layout */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 0.938rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+    .info-value.code {
+        font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+        background: #f1f5f9;
+        padding: 0.375rem 0.625rem;
+        border-radius: 6px;
+        font-size: 0.813rem;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        word-break: break-all;
+    }
+
+/* 7. Financial Section Special */
+.financial-section {
+    background: linear-gradient(135deg, #fafbfc 0%, #f0f9ff 100%);
+    border: 1px solid #dbeafe;
+}
+
+    .financial-section .section-header {
+        background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+        border-bottom-color: #bae6fd;
+    }
+
+.finance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.finance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+    .finance-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    }
+
+.finance-label {
+    font-size: 0.688rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.finance-value {
+    font-size: 1.125rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.finance-item.discount {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+    .finance-item.discount .finance-value {
+        color: #dc2626;
+    }
+
+.finance-item.net {
+    border-color: #a7f3d0;
+    background: #f0fdf4;
+}
+
+    .finance-item.net .finance-value {
+        color: #059669;
+        font-size: 1.375rem;
+    }
+
+/* 8. Footer */
+.modal-footer-soft {
+    background: #ffffff;
+    border-top: 1px solid var(--border-light);
+    padding: 1rem 1.75rem;
+}
+
+    .modal-footer-soft .btn-light {
+        background: #ffffff;
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+        font-weight: 500;
+        padding: 0.625rem 1.75rem;
+        border-radius: 8px;
+        font-size: 0.938rem;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .modal-footer-soft .btn-light:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+/* 9. Responsive */
+@media (max-width: 768px) {
+    .order-details-modal .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .info-section {
+        margin: 0.5rem 1rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-content {
+        padding: 1rem;
+    }
+}

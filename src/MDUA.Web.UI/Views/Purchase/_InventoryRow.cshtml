@@ -1,0 +1,58 @@
+﻿@model dynamic
+@{
+    bool isHealthy = Model.IsHealthyStock;
+    bool hasPending = Model.HasPendingPO;
+    string rowClass = isHealthy ? "healthy-stock-row" : "";
+    string stockTextClass = isHealthy ? "text-success-bold" : "text-danger-bold";
+}
+
+<tr class="@rowClass" id="row-@Model.VariantId" data-variant-id="@Model.VariantId">
+    <td class="ps-4">
+        <span class="badge bg-white text-dark border shadow-sm">@Model.VariantName</span>
+    </td>
+
+    <td class="text-center">
+        <span class="@stockTextClass fw-bold" id="stock-@Model.VariantId">@Model.CurrentStock</span>
+    </td>
+
+    <td class="text-center text-muted">@Model.ReorderLevel</td>
+
+    <td class="text-end pe-4">
+        <div id="action-@Model.VariantId">
+            @if (hasPending)
+            {
+                <div class="d-flex gap-2 justify-content-end">
+                    <button class="btn btn-sm btn-info text-white btn-req-info shadow-sm"
+                            title="View Request Details"
+                            data-variant-id="@Model.VariantId">
+                        ℹ Info
+                    </button>
+                    <button class="btn btn-sm btn-success btn-receive shadow-sm"
+                            title="Receive Stock"
+                            data-variant-id="@Model.VariantId"
+                            data-name="@Model.ProductName - @Model.VariantName">
+                        📥 Receive
+                    </button>
+                </div>
+            }
+            else if (!isHealthy)
+            {
+                <button class="btn btn-sm btn-danger btn-request shadow-sm"
+                        data-variant-id="@Model.VariantId"
+                        data-name="@Model.ProductName - @Model.VariantName"
+                        data-suggested="@Model.SuggestedQty">
+                    ⚡ Request Stock
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-light border btn-request text-muted"
+                        data-variant-id="@Model.VariantId"
+                        data-name="@Model.ProductName - @Model.VariantName"
+                        data-suggested="10">
+                    Request
+                </button>
+            }
+        </div>
+    </td>
+</tr>

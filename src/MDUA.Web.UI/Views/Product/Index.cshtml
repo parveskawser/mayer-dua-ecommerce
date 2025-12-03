@@ -1,0 +1,472 @@
+﻿@model MDUA.Entities.Product
+@{
+    ViewData["Title"] = Model.ProductName ?? "Combo Offer";
+    Layout = null;
+    // 1. Extract dynamic delivery charges safely
+    int dhakaCharge = Model.DeliveryCharges?.GetValueOrDefault("dhaka", 0) ?? 0;
+    int outsideCharge = Model.DeliveryCharges?.GetValueOrDefault("outside", 0) ?? 0;
+    decimal basePrice = Model.BasePrice ?? 0;
+    // 2. Identify Primary Image for Fallback
+    var primaryImageObject = Model.Images?.FirstOrDefault(i => i.IsPrimary) ?? Model.Images?.FirstOrDefault();
+    string mainImageUrl = (primaryImageObject != null && !string.IsNullOrEmpty(primaryImageObject.ImageUrl))
+        ? primaryImageObject.ImageUrl
+        : "/images/default-product.jpg";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.ProductName | @(Model.CompanyName ?? "Shop")</title>
+    <link rel="stylesheet" href="~/css/combo.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
+                 alt="@(Model.CompanyName ?? "Company") Logo"
+                 class="logo"
+                 onerror="this.onerror=null; this.src='/images/logo.jpg';" />
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="combo-info card">
+            <h1>🎉 @Model.ProductName 🎉</h1>
+            <p>@Model.Description</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="#order" class="btn combo-btn">Order Now</a>
+                <button id="open-status-modal" class="btn status-btn">Track My Order</button>
+            </div>
+        </section>
+
+        <section class="scarcity-section">
+            <p class="stock-text">@Model.ScarcityMessage</p>
+            <div class="stock-bar">
+                <div class="stock-fill" style="width:@Model.StockBarPercentage.ToString("0")%;"></div>
+            </div>
+            <p class="hurry-text">Hurry! Selling fast 🚀</p>
+        </section>
+
+        <section class="price-section">
+            <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
+                <p class="price">
+                    Tk. @Model.SellingPrice.ToString("N0")
+                    <span class="old-price">Tk. @basePrice.ToString("N0")</span>
+                </p>
+                <p class="offer-text">💰 Cash on delivery available</p>
+            </div>
+        </section>
+
+        <section class="product-image">
+            <img src="@Url.Content($"~{mainImageUrl}")"
+                 alt="@Model.ProductName"
+                 class="combo main-img"
+                 id="main-product-img"
+                 loading="eager" />
+        </section>
+
+        <section class="product-gallery card">
+            <h2>Product Gallery</h2>
+            <div class="carousel">
+                <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+                <div class="slides">
+                    @if (Model.Images != null && Model.Images.Count > 0)
+                    {
+                        var galleryImages = Model.Images.Where(i => mainImageUrl == null || i.ImageUrl != mainImageUrl).ToList();
+                        if (galleryImages.Any())
+                        {
+                            foreach (var img in galleryImages)
+                            {
+                                string slideImg = FixPath(img.ImageUrl);
+                                <img src="@Url.Content($"~{slideImg}")"
+                                     alt="@Model.ProductName Gallery"
+                                     class="slide"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                            }
+                        }
+                        else
+                        {
+                            <img src="@Url.Content($"~{mainImageUrl}")" class="slide" />
+                        }
+                    }
+                    else
+                    {
+                        <img src="~/images/default-product.jpg" alt="No gallery images" class="slide" />
+                    }
+                </div>
+                <button class="next" onclick="changeSlide(1)">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="description card">
+            <h2>Product Details</h2>
+            @if (Model.Specifications != null && Model.Specifications.Count > 0)
+            {
+                foreach (var spec in Model.Specifications)
+                {
+                    <div class="detail-row">
+                        <span class="detail-icon">@GetAttributeIcon(spec.Key)</span>
+                        <p>
+                            <strong>@spec.Key:</strong>
+                            @string.Join(", ", spec.Value)
+                        </p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="text-align:center; color:#666;">No specific details available.</p>
+            }
+        </section>
+
+        <section class="testimonials card">
+            <h2>What Our Customers Say</h2>
+            <div class="reviews">
+                @if (Model.Reviews != null && Model.Reviews.Count > 0)
+                {
+                    foreach (var review in Model.Reviews)
+                    {
+                        <div class="review">
+                            <p class="review-text">"@review.ReviewText"</p>
+                            <p class="reviewer">– @review.CustomerName</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center text-muted">No reviews yet.</p>
+                }
+            </div>
+        </section>
+
+        <section id="order" class="order-section">
+            <h2>Place Your Order</h2>
+            <div class="order-container">
+
+                <!-- LEFT: BILLING FORM (Order 1 on mobile) -->
+                <div class="billing">
+                    <form id="order-form" novalidate>
+                        <input type="hidden" id="product-id" value="@Model.Id" />
+                        <input type="hidden" id="selected-variant-id" name="ProductVariantId" required />
+
+                        <div class="variant-selection-area">
+                            @{
+                                var dynamicAttributes = new Dictionary<string, List<string>>();
+                                if (Model.Specifications != null)
+                                {
+                                    foreach (var spec in Model.Specifications)
+                                    {
+                                        dynamicAttributes[spec.Key] = spec.Value;
+                                    }
+                                }
+                                if (Model.AvailableSizes != null && Model.AvailableSizes.Any() && !dynamicAttributes.ContainsKey("Size"))
+                                {
+                                    dynamicAttributes["Size"] = Model.AvailableSizes;
+                                }
+                            }
+
+                            @if (dynamicAttributes.Any())
+                            {
+                                foreach (var attr in dynamicAttributes)
+                                {
+                                    var attributeName = attr.Key;
+                                    var attributeValues = attr.Value;
+                                    if (attributeValues != null && attributeValues.Any())
+                                    {
+                                        <label class="section-label">Select @attributeName:</label>
+                                        <div class="variant-chips-container" id="container-@attributeName.ToLower().Replace(" ", "-")">
+                                            @foreach (var val in attributeValues)
+                                            {
+                                                <div class="variant-chip"
+                                                     data-attribute="@attributeName"
+                                                     data-value="@val">
+                                                    @val
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            }
+                            <div id="variant-info" style="display:none; margin-top: 15px; margin-bottom: 15px; padding: 8px 12px; background-color: #f0fdf4; border-radius: 6px; border: 1px solid #bbf7d0;">
+                                <div id="stock-message" style="font-family: 'Inter', sans-serif;"></div>
+                            </div>
+                        </div>
+
+                        <div id="mobile-order-variant-image-holder">
+                            <img id="mobile-order-variant-image"
+                                 src="@FixPath(mainImageUrl)"
+                                 alt="Selected Variant"
+                                 style="width: 100%; height: 200px; object-fit: contain;"
+                                 onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                        </div>
+
+
+
+                        <label>Phone Number <span class="required-star">*</span></label>
+                        <div class="input-group">
+                            <input type="tel" id="customerPhone" name="CustomerPhone" placeholder="017XXXXXXXX" required />
+                            <div id="phone-status" class="status-text" style="font-size: 0.85rem; margin-top: 4px;"></div>
+                        </div>
+
+                        <label>Full Name <span class="required-star">*</span></label>
+                        <input type="text" id="customerName" name="CustomerName" required />
+
+                        <label>Email (Optional)</label>
+                        <input type="email" id="customerEmail" name="CustomerEmail" placeholder="email@example.com" />
+                        <div id="email-status" class="status-text" style="font-size: 0.85rem; margin-top: 4px;"></div>
+
+                        <div class="address-section">
+                            <label>Postal Code <span class="required-star">*</span></label>
+                            <input type="text" name="PostalCode" placeholder="1212" required />
+
+                            <label>Street Address <span class="required-star">*</span></label>
+                            <textarea name="Street" placeholder="House No, Road No, Area..." rows="2" required></textarea>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <label>Division <span class="required-star">*</span></label>
+                                    <select id="division-select" name="Divison" required>
+                                        <option value="">Select Division</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>District <span class="required-star">*</span></label>
+                                    <select id="district-select" name="City" disabled required>
+                                        <option value="">Select...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <label>Thana <span class="required-star">*</span></label>
+                                    <select id="thana-select" name="Thana" disabled required>
+                                        <option value="">Select...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Sub-Office <span class="required-star">*</span></label>
+                                    <select id="suboffice-select" name="SubOffice" disabled required>
+                                        <option value="">Select...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="ZipCOde" />
+                            <input type="hidden" name="Country" value="Bangladesh" />
+                            <input type="hidden" name="AddressType" value="Shipping" />
+                        </div>
+
+                        <div class="qty-row">
+                            <label style="margin:0;">Quantity</label>
+                            <div style="text-align: right;">
+                                <div class="quantity-wrapper">
+                                    <button type="button" id="decrease">-</button>
+                                    <input type="number" id="quantity" name="OrderQuantity" value="1" min="1" readonly />
+                                    <button type="button" id="increase">+</button>
+                                </div>
+                                <small id="stock-error-message" class="text-danger"></small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RIGHT: ORDER SUMMARY (Order 2 on mobile) -->
+                <div class="order-summary">
+                    <div id="order-variant-image-holder">
+                        <img id="order-variant-image"
+                             src="@FixPath(mainImageUrl)"
+                             alt="Selected Variant"
+                             style="width: 100%; height: 200px; object-fit: contain;"
+                             onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                    </div>
+
+                    <h3 style="margin-top:0;">Your Receipt</h3>
+                    <table class="receipt-table">
+                        <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="receipt-item-name">@Model.ProductName</div></td>
+                                <td id="summary-qty">1</td>
+                                <td id="summary-subtotal">Tk. 0</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><th colspan="2">Delivery</th><th id="receipt-delivery">Tk. 0</th></tr>
+                            <tr class="grand-total"><th colspan="2">Total</th><th id="receipt-grand-total">Tk. 0</th></tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- PAYMENT METHOD SECTION (BELOW receipt on both mobile & desktop) -->
+                <div class="payment-section">
+                    <h3>Choose Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" data-payment="cod">
+                            <input type="radio" name="paymentMethod" id="payment-cod" value="cod" checked>
+                            <label for="payment-cod">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
+                                     alt="Cash on Delivery" class="payment-logo">
+                                <span>Cash on Delivery</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" data-payment="bkash">
+                            <input type="radio" name="paymentMethod" id="payment-bkash" value="bkash">
+                            <label for="payment-bkash">
+                                <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
+                                     alt="bKash" class="payment-logo">
+                                <span>bKash</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" data-payment="card">
+                            <input type="radio" name="paymentMethod" id="payment-card" value="card">
+                            <label for="payment-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
+                                     alt="Card" class="payment-logo" style="width: auto; height: 15px; margin-right: 5px;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                                     alt="Card" class="payment-logo" style="width: auto; height: 20px;">
+                                <span style="margin-left: 10px;">Card</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
+                </div>
+
+                
+            </div>
+        </section>
+    </div>
+    <footer>
+        <p>© @DateTime.Now.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
+    </footer>
+
+    @Html.Partial("_OrderStatusModal")
+
+    <script>
+        const pricePerCombo = parseFloat(@(Model.SellingPrice));
+        const deliveryCharges = {
+            dhaka: @(Model.DeliveryCharges?.GetValueOrDefault("dhaka", 0) ?? 0),
+            outside: @(Model.DeliveryCharges?.GetValueOrDefault("outside", 0) ?? 0)
+        };
+        window.baseProductInfo = {
+            id: @Model.Id,
+            price: pricePerCombo,
+            image: "@FixPath(Model.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? Model.Images?.FirstOrDefault()?.ImageUrl)"
+        };
+        window.productVariants = [
+               @if (Model.Variants != null)
+               {
+                       foreach (var v in Model.Variants.Where(x => x.IsActive))
+                       {
+                               var attrs = new Dictionary<string, string>();
+
+                               // 1. Check Specifications (Dynamic Attributes)
+                               if (Model.Specifications != null)
+                               {
+                                       foreach (var spec in Model.Specifications)
+                                       {
+                                               foreach (var val in spec.Value)
+                                               {
+                                                       // ✅ FIX: Use IsSafeMatch instead of IndexOf
+                                                       if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                                       {
+                                                               attrs[spec.Key] = val;
+                                                       }
+                                               }
+                                       }
+                               }
+
+                               // 2. Check Available Sizes
+                               if (Model.AvailableSizes != null)
+                               {
+                                       foreach (var size in Model.AvailableSizes)
+                                       {
+                                               // ✅ FIX: Use IsSafeMatch here as well
+                                               if (v.VariantName != null && IsSafeMatch(v.VariantName, size))
+                                               {
+                                                       attrs["Size"] = size;
+                                               }
+                                       }
+                               }
+
+                               <text>
+                               {
+                                   id: @v.Id,
+                                   price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
+                                   stock: @v.StockQty,
+                                   image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
+                                   attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
+                               },
+                               </text>
+                       }
+               }
+           ];
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  @*   <environment include="Development">
+        <script src="~/js/combo.js"></script>
+    </environment> *@
+
+        <script src="~/js/combo.js" asp-append-version="true"></script>
+    <script src="~/js/order-track.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>
+
+@functions {
+    public string FixPath(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return "/images/default-product.webp";
+        string fixedPath = path.Replace("\\", "/");
+        if (!fixedPath.StartsWith("/")) fixedPath = "/" + fixedPath;
+        return fixedPath;
+    }
+  
+    public bool IsSafeMatch(string text, string term)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(term)) return false;
+
+        int index = -1;
+        // Loop through ALL occurrences, not just the first one
+        while ((index = text.IndexOf(term, index + 1, StringComparison.OrdinalIgnoreCase)) != -1)
+        {
+            // Check character BEFORE the match (must be start of string or non-letter)
+            bool startOk = (index == 0) || !char.IsLetterOrDigit(text[index - 1]);
+
+            // Check character AFTER the match (must be end of string or non-letter)
+            bool endOk = (index + term.Length == text.Length) || !char.IsLetterOrDigit(text[index + term.Length]);
+
+            if (startOk && endOk) return true;
+        }
+
+        return false;
+    }
+
+    public string GetAttributeIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "🔹";
+        return name.ToLower().Trim() switch
+        {
+            "fabric" or "material" => "🧵",
+            "size" or "dimension" => "📏",
+            "color" or "colour" => "🎨",
+            "weight" => "⚖️",
+            "brand" => "🏷️",
+            "warranty" => "🛡️",
+            "storage" => "💾",
+            "ram" or "memory" => "⚡",
+            "battery" => "🔋",
+            "display" or "screen" => "📱",
+            _ => "✨"
+        };
+    }
+}

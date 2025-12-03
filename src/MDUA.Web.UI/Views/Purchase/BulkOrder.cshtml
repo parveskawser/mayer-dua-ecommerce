@@ -1,0 +1,142 @@
+@model List<dynamic>
+@{
+    ViewData["Title"] = "Bulk Order";
+    Layout = "_AdminLayout";
+    var vendors = ViewBag.VendorList as List<MDUA.Entities.Vendor>;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 sticky-top bg-white py-3 border-bottom" style="z-index: 1000;">
+        <div>
+            <h2 class="fw-bold text-dark">Bulk Purchase Order</h2>
+            <div class="text-muted small">Tick products to reveal variants, then select items to order.</div>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">🔍</span>
+                <input type="text" id="productSearch" class="form-control border-start-0" placeholder="Search products..." style="width: 250px;">
+            </div>
+            
+            <button class="btn btn-primary px-4 shadow-sm" id="btnSubmitBulk">
+                Submit Order
+            </button>
+        </div>
+    </div>
+
+    <div class="accordion" id="productAccordion">
+        @if (Model != null && Model.Any())
+        {
+            // Group by Product Name
+            var groups = Model.GroupBy(x => x.ProductName).ToList();
+
+            // SORTING LOGIC: 
+            // Put products that have ANY low stock variant at the top
+            var sortedGroups = groups.OrderByDescending(g => g.Any(v => v.IsLowStock)).ThenBy(g => g.Key);
+
+            foreach (var group in sortedGroups)
+            {
+                // Unique ID for JS
+                string safeId = System.Text.RegularExpressions.Regex.Replace(group.Key, @"[^a-zA-Z0-9]", ""); 
+                bool hasLowStock = group.Any(x => x.IsLowStock);
+                int totalVariants = group.Count();
+                int totalStock = group.Sum(x => (int)x.CurrentStock);
+
+                <div class="card mb-3 border-0 shadow-sm product-card" data-search-term="@group.Key.ToLower()">
+                    
+                    <div class="card-header bg-white d-flex align-items-center p-3">
+                        <div class="form-check m-0 d-flex align-items-center">
+                            <input class="form-check-input product-checkbox fs-5" type="checkbox" 
+                                   id="chk-@safeId" 
+                                   data-bs-toggle="collapse" 
+                                   data-bs-target="#collapse-@safeId"
+                                   aria-expanded="false">
+                            
+                            <label class="form-check-label ms-3 fs-5 fw-bold cursor-pointer" for="chk-@safeId">
+                                @group.Key
+                            </label>
+                        </div>
+
+                        <div class="ms-auto d-flex gap-3 align-items-center">
+                             @if (hasLowStock)
+                             {
+                                 <span class="badge bg-danger-subtle text-danger border border-danger">Low Stock Variants</span>
+                             }
+                             <span class="text-muted small">Stock: <b>@totalStock</b></span>
+                             <span class="badge bg-light text-dark border">@totalVariants Variants</span>
+                        </div>
+                    </div>
+
+                    <div id="collapse-@safeId" class="collapse">
+                        <div class="card-body bg-light p-0">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="text-muted small">
+                                    <tr>
+                                        <th class="ps-5" style="width:5%">Select</th>
+                                        <th style="width:25%">Variant</th>
+                                        <th style="width:15%">Current Stock</th>
+                                        <th style="width:25%">Vendor</th>
+                                        <th style="width:15%">Quantity</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var variant in group)
+                                    {
+                                        bool isLow = variant.IsLowStock;
+                                        string stockClass = isLow ? "text-danger fw-bold" : "text-success";
+
+                                        <tr class="variant-row @(isLow ? "table-danger-subtle" : "")">
+                                            <td class="ps-5">
+                                                <input type="checkbox" class="form-check-input variant-checkbox" 
+                                                       data-variant-id="@variant.VariantId">
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold">@variant.VariantName</span>
+                                            </td>
+                                            <td>
+                                                <span class="@stockClass">@variant.CurrentStock</span>
+                                                <small class="text-muted ms-1">(Reorder: @variant.ReorderLevel)</small>
+                                            </td>
+                                            <td>
+                                                <select class="form-select form-select-sm input-vendor">
+                                                    <option value="">Choose...</option>
+                                                    @if (vendors != null)
+                                                    {
+                                                        foreach (var v in vendors)
+                                                        {
+                                                            <option value="@v.Id">@v.VendorName</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm input-qty" 
+                                                       min="1" value="@variant.SuggestedQty" disabled>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm input-remarks" 
+                                                       placeholder="Note" disabled>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">No inventory items found.</div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory.js"></script>
+}

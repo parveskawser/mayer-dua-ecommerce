@@ -1,0 +1,391 @@
+﻿:root {
+    --red-main: #dc3545;
+    --red-dark: #b41f31;
+    --yellow-main: #ffc107;
+    --bg-body: #faf5f5;
+    --glass-bg: rgba(255, 255, 255, 0.82);
+    --glass-border: rgba(255, 255, 255, 0.9);
+    --text-main: #212529;
+    --text-muted: #6c757d;
+    --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.14);
+    --radius-xl: 20px;
+    --transition: 0.2s ease-out;
+    --sidebar-width: 260px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: auto;
+}
+
+/* Make inputs look cleaner inside modals */
+.edit-product-container .form-control,
+.edit-product-container .form-select {
+    border-color: #e2e8f0;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-shadow: none;
+    transition: all 0.2s;
+}
+
+    .edit-product-container .form-control:focus,
+    .edit-product-container .form-select:focus {
+        border-color: #a0aec0;
+        background-color: #f8fafc;
+        box-shadow: 0 0 0 3px rgba(160, 174, 192, 0.1);
+    }
+
+/* Special styling for the Price Input */
+.edit-product-container .input-group-text {
+    border-color: #e2e8f0;
+    background-color: #f8fafc;
+}
+
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at top left, #ffe8e8 0, #fff7e0 50%, #f8f9fa 100%);
+    color: var(--text-main);
+}
+
+    /* --- SCROLLBAR STABILITY FIX (Prevents Table Jump) --- */
+
+    /* 1. Completely disable Bootstrap's body padding adjustment */
+    body.modal-open {
+        padding-right: 0 !important;
+        overflow: hidden !important;
+    }
+
+/* 2. Force the inner scrollbar track to ALWAYS be visible.
+      This reserves the ~17px space permanently, so opening a modal (which hides body scroll)
+      doesn't cause the inner content to expand into that space. */
+.admin-main .glass-panel > .overflow-auto {
+    overflow-y: scroll !important;
+    scrollbar-gutter: stable;
+}
+
+
+/* --- FLEX WRAPPER --- */
+.admin-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    padding: 15px;
+    gap: 15px;
+    position: relative;
+}
+
+.admin-sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+}
+
+/* --- SIDEBAR STATES --- */
+@media (min-width: 768px) {
+    .admin-sidebar.toggled {
+        width: 0;
+        margin-left: -15px;
+        opacity: 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-sidebar {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        bottom: 15px;
+        z-index: 1050;
+        transform: translateX(calc(-100% - 20px));
+        height: calc(100% - 30px);
+        box-shadow: 5px 0 25px rgba(0,0,0,0.15);
+    }
+
+        .admin-sidebar.toggled {
+            transform: translateX(0);
+        }
+}
+
+.admin-main {
+    flex-grow: 1;
+    height: 100%;
+    min-width: 0;
+}
+
+/* GLASS PANEL */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-soft);
+    transform: none !important;
+}
+
+/* CONTENT AREA PADDING */
+.admin-content-area {
+    padding: 1.5rem;
+    padding-top: 4rem;
+}
+
+/* GLASS CARD */
+.glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+    }
+
+/* SIDEBAR CONTENT */
+.sidebar {
+    padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
+    width: var(--sidebar-width);
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 0, #fff5d0 0, var(--yellow-main) 45%, var(--red-main) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #721c24;
+    box-shadow: 0 10px 25px rgba(220, 53, 69, 0.45);
+}
+
+/* NAVIGATION */
+.nav-pills .nav-link {
+    border-radius: 999px;
+    padding: .5rem 1rem;
+    font-size: .9rem;
+    color: var(--text-muted);
+    transition: all var(--transition);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+    .nav-pills .nav-link:hover {
+        background: rgba(255, 193, 7, 0.12);
+        color: var(--red-dark);
+    }
+
+    .nav-pills .nav-link.active {
+        background: rgba(220, 53, 69, 0.08);
+        color: var(--red-main);
+        border-color: rgba(220, 53, 69, 0.15);
+        font-weight: 600;
+    }
+
+        .nav-pills .nav-link.active:hover {
+            background: rgba(220, 53, 69, 0.18);
+            color: var(--red-dark);
+            border-color: rgba(220, 53, 69, 0.3);
+        }
+
+/* SUBMENU STYLES */
+.nav-link-sm {
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+}
+
+.active-parent {
+    color: var(--red-main) !important;
+    font-weight: 600;
+}
+
+.dropdown-arrow {
+    transition: transform 0.2s ease;
+}
+
+.nav-link[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* TABLES */
+.table-wrapper {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.table thead {
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.1), rgba(255, 193, 7, 0.1));
+    color: var(--red-dark);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 900;
+    border-bottom: 2px solid var(--red-main);
+}
+
+.table th {
+    padding: 1rem 1.2rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* TABLE ROW STABILITY (Prevent Height Jump) */
+.table td {
+    padding: 0.5rem 1.2rem !important;
+    vertical-align: middle !important;
+    height: 55px !important;
+    max-height: 55px !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* MODALS */
+.modal-custom {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header-custom {
+    background: linear-gradient(135deg, var(--red-main), var(--red-dark));
+    color: #fff;
+    padding: 20px 30px;
+    border: none;
+}
+
+/* Z-INDEX */
+.modal {
+    z-index: 1055 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+    opacity: 0.4 !important;
+}
+
+    .modal-backdrop + .modal-backdrop {
+        z-index: 1060 !important;
+    }
+
+/* UTILITIES */
+.pill-tag {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    padding: .1rem .6rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid rgba(220, 53, 69, .25);
+    color: var(--red-dark);
+}
+
+.dashed-border {
+    border-style: dashed !important;
+}
+
+/* SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(0,0,0,0.2);
+    }
+
+/* CHECKBOX */
+.form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.2em;
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.25);
+}
+
+    .form-check-input:checked {
+        background-color: var(--red-main);
+        border-color: var(--red-main);
+    }
+
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        border-color: var(--red-main);
+    }
+
+/* COMPACT EDIT INPUTS */
+.table td input,
+.table td select,
+.table td .edit-input,
+.table td .form-control {
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    padding: 0 5px !important;
+    font-size: 0.9rem !important;
+    line-height: 30px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+#editProductModal .modal-dialog {
+    margin: 0 auto !important; /* horizontal center */
+    top: 50px !important; /* manual vertical spacing */
+    transform: none !important; /* disable Bootstrap y-centering */
+}
+
+.products-table tbody tr {
+    height: 55px !important;
+    max-height: 55px !important;
+}
+.original-price {
+    text-decoration: line-through;
+    color: #a0aec0;
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+.discounted-price {
+    color: #38a169;
+    font-weight: 700;
+    font-size: 1rem;
+}
