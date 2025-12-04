@@ -65,27 +65,45 @@ namespace MDUA.Facade
             po.Status = "Pending";
             po.CreatedAt = DateTime.Now;
             po.UpdatedAt = DateTime.Now;
-            if (string.IsNullOrEmpty(po.CreatedBy)) po.CreatedBy = "Admin";
-            if (po.Remarks == null) po.Remarks = "";
-            if (po.ReferenceNo == null) po.ReferenceNo = "";
+
+            // ✅ Use empty string as fallback if CreatedBy is still null
+            if (string.IsNullOrEmpty(po.CreatedBy))
+                po.CreatedBy = "System"; // Better than empty string
+
+            if (po.Remarks == null)
+                po.Remarks = "";
+
+            if (po.ReferenceNo == null)
+                po.ReferenceNo = "";
 
             return _poDataAccess.Insert(po);
         }
-
         public List<Vendor> GetAllVendors()
         {
             return _vendorDataAccess.GetAll().ToList();
         }
 
-        // ✅ FIXED: Full Implementation with Transaction
+        // Implementation with Transaction
         public void ReceiveStock(int variantId, int qty, decimal price, string invoice, string remarks)
         {
             // 1. Get Pending PO
             var pendingPO = _poDataAccess.GetPendingRequestByVariant(variantId);
-            if (pendingPO == null) throw new Exception("No pending request found for this item.");
 
-            // Access properties safely (ExpandoObject allows this)
-            int poReqId = (int)pendingPO.Id;
+            if (pendingPO == null)
+                throw new Exception("No pending request found for this item.");
+
+            // (Dictionary cast because 'dynamic' case-sensitivity)
+            var poData = (IDictionary<string, object>)pendingPO;
+
+            // Retrieve values 
+            int poReqId = (int)poData["id"];
+            int requestedQty = (int)poData["quantity"];
+
+            //  Validate Quantity (Received cannot exceed Requested)
+            if (qty > requestedQty)
+            {
+                throw new Exception($"Error: You cannot receive more stock ({qty}) than was requested ({requestedQty}).");
+            }
 
             string connStr = _config.GetConnectionString("DefaultConnection");
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -96,9 +114,9 @@ namespace MDUA.Facade
                     try
                     {
                         // A. Insert PO Received
+                        // Use the retrieved poReqId
                         int receivedId = _poReceiveDA.Insert(poReqId, qty, price, invoice, remarks, trans);
 
-                        // ✅ CRITICAL FIX: Stop if Insert failed
                         if (receivedId <= 0)
                         {
                             throw new Exception("Failed to save Receipt. The database returned an invalid ID.");
@@ -123,6 +141,12 @@ namespace MDUA.Facade
                 }
             }
         }
+
+        public dynamic GetVariantStatus(int variantId)
+        {
+            return _poDataAccess.GetVariantStatus(variantId);
+        }
+
         #endregion
     }
 }

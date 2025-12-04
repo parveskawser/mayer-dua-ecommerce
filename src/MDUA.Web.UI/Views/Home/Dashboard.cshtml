@@ -1,7 +1,4 @@
-﻿<!-- change -->
-
-
-@model MDUA.Entities.UserLoginResult
+﻿@model MDUA.Entities.UserLoginResult
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Dashboard";
@@ -11,256 +8,217 @@
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 }
 
-<!-- 1. WELCOME & KPIS -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
-        <div class="text-muted small">Overview for @Model.UserLogin.UserName</div>
-    </div>
-    <span class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill">
-        📅 @DateTime.Now.ToString("dd MMM, yyyy")
-    </span>
-</div>
+<div class="dashboard-wrapper">
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="glass-card p-3">
-            <div class="text-muted small text-uppercase fw-bold">User ID</div>
-            <div class="fs-4 fw-bold">@Model.UserLogin.Id</div>
-            <div class="small text-muted">System Identifier</div>
+    <div class="dashboard-header d-flex justify-content-between align-items-center mb-0">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
+            <div class="text-muted small">Welcome, @Model.UserLogin.UserName!</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="glass-card p-3">
-            <div class="text-muted small text-uppercase fw-bold">Role</div>
-            <div class="fs-4 fw-bold text-danger">@Model.RoleName</div>
-            <div class="small text-muted">Access Level</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="glass-card p-3">
-            <div class="text-muted small text-uppercase fw-bold">Email</div>
-            <div class="fs-5 fw-semibold text-truncate">@Model.UserLogin.Email</div>
-            <div class="small text-muted">Verified Contact</div>
-        </div>
-    </div>
-</div>
 
-<div class="row g-3 mb-4">
-    <!-- Revenue -->
-    <div class="col-md-3">
-        <div class="glass-card kpi-card p-3 border-start border-4 border-success position-relative overflow-hidden">
-            <div class="d-flex justify-content-between align-items-start position-relative z-1">
-                <div>
-                    <div class="text-uppercase text-muted small fw-bold mb-1">Total Revenue</div>
-                    <div class="fs-4 fw-bold text-success">Tk. @Model.Stats.TotalRevenue.ToString("N0")</div>
+    <div class="dashboard-scroll-content">
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-success position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Total Revenue</div>
+                            <div class="fs-4 fw-bold text-success">Tk. @Model.Stats.TotalRevenue.ToString("N0")</div>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-2 rounded-circle text-success">💰</div>
+                    </div>
                 </div>
-                <div class="bg-success bg-opacity-10 p-2 rounded-circle text-success">💰</div>
             </div>
-        </div>
-    </div>
 
-    <!-- Total Orders -->
-    <div class="col-md-3">
-        <div class="glass-card kpi-card p-3 border-start border-4 border-primary position-relative overflow-hidden">
-            <div class="d-flex justify-content-between align-items-start position-relative z-1">
-                <div>
-                    <div class="text-uppercase text-muted small fw-bold mb-1">Total Orders</div>
-                    <div class="fs-4 fw-bold text-primary">@Model.Stats.TotalOrders</div>
-                    <div class="small text-muted">@Model.Stats.TodayOrders today</div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-primary position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Total Orders</div>
+                            <div class="fs-4 fw-bold text-primary">@Model.Stats.TotalOrders</div>
+                            <div class="small text-muted">@Model.Stats.TodayOrders today</div>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">🛒</div>
+                    </div>
                 </div>
-                <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">🛒</div>
             </div>
-        </div>
-    </div>
 
-    <!-- Pending Orders -->
-    <div class="col-md-3">
-        <div class="glass-card kpi-card p-3 border-start border-4 border-warning position-relative overflow-hidden">
-            <div class="d-flex justify-content-between align-items-start position-relative z-1">
-                <div>
-                    <div class="text-uppercase text-muted small fw-bold mb-1">Pending</div>
-                    <div class="fs-4 fw-bold text-warning">@Model.Stats.PendingOrders</div>
-                    <div class="small text-muted">Needs action</div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-warning position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Pending</div>
+                            <div class="fs-4 fw-bold text-warning">@Model.Stats.PendingOrders</div>
+                            <div class="small text-muted">Needs action</div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-2 rounded-circle text-warning">⚡</div>
+                    </div>
                 </div>
-                <div class="bg-warning bg-opacity-10 p-2 rounded-circle text-warning">⚡</div>
             </div>
-        </div>
-    </div>
 
-    <!-- Customers -->
-    <div class="col-md-3">
-        <div class="glass-card kpi-card p-3 border-start border-4 border-info position-relative overflow-hidden">
-            <div class="d-flex justify-content-between align-items-start position-relative z-1">
-                <div>
-                    <div class="text-uppercase text-muted small fw-bold mb-1">Customers</div>
-                    <div class="fs-4 fw-bold text-info">@Model.Stats.TotalCustomers</div>
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-info position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Customers</div>
+                            <div class="fs-4 fw-bold text-info">@Model.Stats.TotalCustomers</div>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-2 rounded-circle text-info">👥</div>
+                    </div>
                 </div>
-                <div class="bg-info bg-opacity-10 p-2 rounded-circle text-info">👥</div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-8">
-        <div class="glass-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <div style="height: 250px;">
-                <canvas id="salesChart"></canvas>
+            <div class="col-lg-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold text-dark mb-0">Order Status</h6>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="glass-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h6 class="fw-bold text-dark mb-0">Order Status</h6>
-            </div>
-            <div style="height: 250px; position: relative;">
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- 2. CONTENT GRID -->
-<div class="row g-4">
-
-    <!-- Left Column: Recent Orders -->
-    <div class="col-lg-8">
-        <div class="glass-card card-orders p-0 h-100 overflow-hidden">
-            <div class="card-header-custom">
-                <h6 class="fw-bold mb-0">New Orders</h6>
-                <!-- ✅ UPDATED: Blue Theme for Add Button -->
-                <a href="@Url.Action("Add", "Order")" class="btn btn-sm btn-orders rounded-pill px-3 shadow-sm" title="Add Order">
-                    <span class="me-1">＋</span>
-                </a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-modern mb-0 align-middle">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Order ID</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.RecentOrders != null && Model.RecentOrders.Any())
-                        {
-                            foreach (var o in Model.RecentOrders)
-                            {
-                                string statusClass = "bg-secondary-subtle text-dark";
-                                string displayStatus = o.Status == "Draft" ? "Pending" : o.Status;
-                                if (displayStatus == "Confirmed") statusClass = "bg-success text-white";
-                                else if (displayStatus == "Pending") statusClass = "bg-warning text-dark";
-
-                                string displayId = o.SalesOrderId ?? o.OnlineOrderId ?? o.Id.ToString();
-                                string type = o.SalesChannelId == 1 ? "Online" : "Direct";
-
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="glass-card card-orders p-0 h-100 overflow-hidden">
+                    <div class="card-header-custom">
+                        <h6 class="fw-bold mb-0">New Orders</h6>
+                        <a href="@Url.Action("Add", "Order")" class="btn btn-sm btn-orders rounded-pill px-3 shadow-sm" title="Add Order">
+                            <span class="me-1">＋</span>
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern mb-0 align-middle">
+                            <thead>
                                 <tr>
-                                    <td class="ps-4 fw-bold text-dark">@displayId</td>
-                                    <td>
-                                        <span class="badge bg-light text-secondary border">@type</span>
-                                    </td>
-                                    <td class="fw-bold text-dark">
-                                        Tk. @((o.TotalAmount - o.DiscountAmount).ToString("N0"))
-                                    </td>
-                                    <td><span class="badge @statusClass rounded-pill">@displayStatus</span></td>
+                                    <th class="ps-4">Order ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+                                {
+                                    foreach (var o in Model.RecentOrders)
+                                    {
+                                        string statusClass = "bg-secondary-subtle text-dark";
+                                        string displayStatus = o.Status == "Draft" ? "Pending" : o.Status;
+                                        if (displayStatus == "Confirmed") statusClass = "bg-success text-white";
+                                        else if (displayStatus == "Pending") statusClass = "bg-warning text-dark";
+
+                                        string displayId = o.SalesOrderId ?? o.OnlineOrderId ?? o.Id.ToString();
+                                        string type = o.SalesChannelId == 1 ? "Online" : "Direct";
+
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-dark">@displayId</td>
+                                            <td>
+                                                <span class="badge bg-light text-secondary border">@type</span>
+                                            </td>
+                                            <td class="fw-bold text-dark">
+                                                Tk. @((o.TotalAmount - o.DiscountAmount).ToString("N0"))
+                                            </td>
+                                            <td><span class="badge @statusClass rounded-pill">@displayStatus</span></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="4" class="text-center py-5 text-muted">No recent orders found.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                        <a href="@Url.Action("AllOrders", "Order")" class="text-decoration-none fw-bold text-orders small">See All Orders &rarr;</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card card-products p-0 h-100 overflow-hidden">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">New Products</h6>
+                        <a href="@Url.Action("Add", "Product")" class="btn btn-sm btn-success rounded-pill px-3" title="Add Product">
+                            <span class="me-1">＋</span>
+                        </a>
+                    </div>
+                    @if (Model.LastFiveProducts != null && Model.LastFiveProducts.Any())
+                    {
+                        <div class="product-list">
+                            @foreach (var p in Model.LastFiveProducts)
+                            {
+                                <div class="product-list-item d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="product-icon">📦</div>
+                                        <div>
+                                            <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">@p.ProductName</div>
+                                            <div class="text-muted" style="font-size: 0.7rem;">@p.CreatedAt?.ToString("MMM dd")</div>
+                                        </div>
+                                    </div>
+                                    <span class="fw-bold small text-success">Tk. @(p.BasePrice?.ToString("N0") ?? "0")</span>
+                                </div>
                             }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted small">No products found.</div>
+                    }
+                    <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                        <a href="@Url.Action("AllProducts", "Product")" class="text-decoration-none fw-bold text-success small">See All Products &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
+            <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
+            <div class="row g-3 font-monospace small">
+                <div class="col-md-3">
+                    <span class="text-muted d-block">Current User:</span>
+                    <strong>@Model.UserLogin.UserName</strong>
+                </div>
+                <div class="col-md-2">
+                    <span class="text-muted d-block">User ID:</span>
+                    <strong>@Model.UserLogin.Id</strong>
+                </div>
+                <div class="col-md-2">
+                    <span class="text-muted d-block">Company ID:</span>
+                    <strong>@Model.UserLogin.CompanyId</strong>
+                </div>
+                <div class="col-md-5">
+                    <span class="text-muted d-block">Active Permissions (@(Model.AuthorizedActions?.Count ?? 0)):</span>
+                    <div class="text-break mt-1" style="max-height: 60px; overflow-y: auto;">
+                        @if (Model.AuthorizedActions != null && Model.AuthorizedActions.Any())
+                        {
+                            @string.Join(", ", Model.AuthorizedActions)
                         }
                         else
                         {
-                            <tr><td colspan="4" class="text-center py-5 text-muted">No recent orders found.</td></tr>
+                            <em class="text-muted">No permissions found</em>
                         }
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-3 text-center border-top bg-light bg-opacity-25">
-                <!-- ✅ UPDATED: Blue Theme for Link -->
-                <a href="@Url.Action("AllOrders", "Order")" class="text-decoration-none fw-bold text-orders small">See All Orders &rarr;</a>
-            </div>
-        </div>
-    </div>
-    <!-- Right Column: Recent Products -->
-    <div class="col-lg-4">
-        <!-- ✅ ADDED: 'card-products' class -->
-        <div class="glass-card card-products p-0 h-100 overflow-hidden">
-
-            <!-- ✅ ADDED: 'card-header-custom' class -->
-            <div class="card-header-custom d-flex justify-content-between align-items-center">
-                <h6 class="fw-bold mb-0">New Products</h6>
-                <a href="@Url.Action("Add", "Product")" class="btn btn-sm btn-success rounded-pill px-3" title="Add Product">
-                    <span class="me-1">＋</span>
-                </a>
-            </div>
-
-            @if (Model.LastFiveProducts != null && Model.LastFiveProducts.Any())
-            {
-                <div class="product-list">
-                    @foreach (var p in Model.LastFiveProducts)
-                    {
-                        <!-- Using 'product-list-item' for hover effects -->
-                        <div class="product-list-item d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-icon">📦</div>
-                                <div>
-                                    <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">@p.ProductName</div>
-                                    <div class="text-muted" style="font-size: 0.7rem;">@p.CreatedAt?.ToString("MMM dd")</div>
-                                </div>
-                            </div>
-                            <span class="fw-bold small text-success">Tk. @(p.BasePrice?.ToString("N0") ?? "0")</span>
-                        </div>
-                    }
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="text-center py-5 text-muted small">No products found.</div>
-            }
-
-            <div class="p-3 text-center border-top bg-light bg-opacity-25">
-                <a href="@Url.Action("AllProducts", "Product")" class="text-decoration-none fw-bold text-success small">See All Products &rarr;</a>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Debugger -->
-<div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
-    <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
-    <div class="row g-3 font-monospace small">
-        <div class="col-md-3">
-            <span class="text-muted d-block">Current User:</span>
-            <strong>@Model.UserLogin.UserName</strong>
-        </div>
-        <div class="col-md-2">
-            <span class="text-muted d-block">User ID:</span>
-            <strong>@Model.UserLogin.Id</strong>
-        </div>
-        <div class="col-md-2">
-            <span class="text-muted d-block">Company ID:</span>
-            <strong>@Model.UserLogin.CompanyId</strong>
-        </div>
-        <div class="col-md-5">
-            <span class="text-muted d-block">Active Permissions (@(Model.AuthorizedActions?.Count ?? 0)):</span>
-            <div class="text-break mt-1" style="max-height: 60px; overflow-y: auto;">
-                @if (Model.AuthorizedActions != null && Model.AuthorizedActions.Any())
-                {
-                    @string.Join(", ", Model.AuthorizedActions)
-                }
-                else
-                {
-                    <em class="text-muted">No permissions found</em>
-                }
-            </div>
-        </div>
-    </div>
-</div>
+    </div> </div> 
 
 @section Scripts {
     <!-- Chart.js CDN -->

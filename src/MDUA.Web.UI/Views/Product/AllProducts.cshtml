@@ -3,6 +3,7 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Product List";
 }
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
@@ -17,21 +18,28 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="fw-bold mb-0">Products</h2>
-        <div class="text-muted small">Manage catalog, prices & inventory</div>
-    </div>
-</div>
 
-<div class="glass-card h-100 d-flex flex-column">
-    <div class="p-3 border-bottom border-light d-flex justify-content-between align-items-center">
-        <div class="fw-bold">Catalog Inventory</div>
-        <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Refresh</button>
+<link rel="stylesheet" href="~/css/product-list.css" />
+<div class="fixed-layout-wrapper">
+    <div class="header-section d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold mb-0">Products</h2>
+            <div class="text-muted small">Manage catalog, prices & inventory</div>
+        </div>
+
+        <!-- LIVE SEARCH INPUT -->
+        <div class="position-relative" style="width: 300px;">
+            <input type="text"
+                   id="productSearchInput"
+                   class="form-control rounded-pill ps-4"
+                   placeholder="Type to search products..."
+                   autocomplete="off">
+            <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted">🔍</span>
+        </div>
     </div>
 
-    <div class="table-wrapper flex-grow-1">
-        <div class="table-responsive">
+    <div class="glass-card">
+        <div class="table-wrapper">
             @Html.AntiForgeryToken()
             <table class="table table-hover mb-0 align-middle products-table">
                 <thead>
@@ -42,102 +50,21 @@
                         <th>Slug</th>
                         <th>Price</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th class="text-end" style="width: 120px;">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        @foreach (var p in Model)
-                        {
-                            <tr data-product-row-id="@p.Id">
-                                <td class="fw-semibold" data-product-name="@p.ProductName">@p.ProductName</td>
-                                <td><span class="pill-tag">@p.CategoryName</span></td>
-                                <td>@p.ReorderLevel</td>
-                                <td class="small text-muted">@p.Slug</td>
-                                <td class="price-cell">
-                                    @if (p.ActiveDiscount != null)
-                                    {
-                                        <div class="text-decoration-line-through text-muted small">Tk. @p.BasePrice?.ToString("0.00")</div>
-                                        <div class="text-danger fw-bold">Tk. @p.SellingPrice.ToString("0.00")</div>
-                                    }
-                                    else
-                                    {
-                                        <div class="fw-bold">Tk. @p.BasePrice?.ToString("0.00")</div>
-                                    }
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-sm rounded-pill fw-bold border-0 px-3 js-toggle-status @(p.IsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")"
-                                            data-product-id="@p.Id"
-                                            title="Toggle Status">
-                                        @(p.IsActive ? "Active" : "Inactive")
-                                    </button>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <button type="button" class="btn btn-sm btn-light border js-manage-images" data-product-id="@p.Id" title="Images">
-                                            🖼️
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-light border js-manage-discounts"
-                                                data-bs-toggle="modal" data-bs-target="#productDiscountsModal"
-                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Discounts">
-                                            🏷️
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-light border btn-view-variants"
-                                                data-bs-toggle="modal" data-bs-target="#productVariantsModal"
-                                                data-product-id="@p.Id" title="Variants">
-                                            🔢
-                                        </button>
-                                        <!-- ADDED BACK: Details Button -->
-                                        <button type="button" class="btn btn-sm btn-light border js-view-details"
-                                                data-bs-toggle="modal" data-bs-target="#productDetailsModal"
-                                                data-product-id="@p.Id" title="Details">
-                                            📄
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-light border js-edit-product"
-                                                data-bs-toggle="modal" data-bs-target="#editProductModal"
-                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Edit">
-                                            ✏️
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger-subtle border border-danger-subtle text-danger js-delete-product"
-                                                data-bs-toggle="modal" data-bs-target="#deleteProductModal"
-                                                data-product-id="@p.Id" data-product-name="@p.ProductName" title="Delete">
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center p-5 text-muted">No products found.</td>
-                        </tr>
-                    }
+                <!-- ID added here to target with JS -->
+                <tbody id="productTableBody">
+                    <!-- Load initial data using the partial -->
+                    <partial name="_ProductTableRows" model="Model" />
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-
 @section Modals {
     <div class="modal fade" id="productVariantsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content modal-custom">
-                <div class="modal-header modal-header-custom">
-                    <h5 class="modal-title">Variants: <span id="modal-product-name" class="text-warning"></span></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="modal-variants-content">
-                    <div class="loading-spinner text-center py-4"><div class="spinner-border text-primary"></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="productVariantsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content modal-custom">
                 <div class="modal-header modal-header-custom">
                     <h5 class="modal-title">Variants: <span id="modal-product-name" class="text-warning"></span></h5>
@@ -175,7 +102,7 @@
     </div>
 
     <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
-<div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content modal-custom">
                 <div class="modal-header modal-header-custom">
                     <h5 class="modal-title">Edit Product</h5>
@@ -331,7 +258,6 @@
 
 @section Scripts {
     <script>
-        // Keep your configuration exactly as is
         window.productConfig = {
             urls: {
                 getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
@@ -359,6 +285,38 @@
                 updateVariantImageOrder: '@Url.Action("UpdateVariantImageOrder", "Product")',
             }
         };
+
+         $(document).ready(function() {
+            let searchTimer;
+            // Force the URL to ensure it matches the Controller Route
+            const searchUrl = '/product/search-ajax';
+
+            $('#productSearchInput').on('input', function() {
+                const query = $(this).val();
+                console.log("Typing: " + query); // Debug: Check if typing is detected
+
+                clearTimeout(searchTimer);
+
+                searchTimer = setTimeout(function() {
+                    console.log("Sending request to: " + searchUrl); // Debug: Check URL
+
+                    // Show loading opacity
+                    $('#productTableBody').css('opacity', '0.5');
+
+                    $.get(searchUrl, { query: query })
+                        .done(function(data) {
+                            console.log("Success! Data received.");
+                            $('#productTableBody').html(data);
+                            $('#productTableBody').css('opacity', '1');
+                        })
+                        .fail(function(xhr, status, error) {
+                            console.error("Error:", error);
+                            console.log(xhr.responseText); // This will print the exact error in console
+                            $('#productTableBody').css('opacity', '1');
+                        });
+                }, 300); // 300ms delay
+            });
+        });
     </script>
     <script src="~/js/products-index.js"></script>
 }

@@ -149,6 +149,77 @@ namespace MDUA.DataAccess
             return newStatus;
         }
 
-       
+        // 1. GET FULL LIST
+        public ProductList GetAllProductsWithCategory()
+        {
+            string SQLQuery = @"
+                SELECT TOP 100 
+                    p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+                    p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+                    p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+                    NULL as DummyForBase, -- Index 15: Buffer for FillBaseObject
+                    ISNULL(c.Name, '') as CategoryName -- Index 16: Actual Data
+                FROM Product p
+                LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+                ORDER BY p.CreatedAt DESC";
+
+            using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            return GetListWithCategory(cmd);
+        }
+        private ProductList GetListWithCategory(SqlCommand cmd)
+        {
+            ProductList list = new ProductList();
+            SqlDataReader reader;
+
+            SelectRecords(cmd, out reader);
+
+            using (reader)
+            {
+                while (reader.Read())
+                {
+                    Product product = new Product();
+
+                    // 1. Fill standard properties (Indices 0-14, and potentially 15 via Base)
+                    FillObject(product, reader);
+
+                    // 2. Explicitly read Index 16 for CategoryName
+                    if (reader.FieldCount > 16 && !reader.IsDBNull(16))
+                    {
+                        product.CategoryName = reader.GetString(16);
+                    }
+                    else
+                    {
+                        // Use empty string so Facade can set "N/A" if needed
+                        // or leave as is if you want it blank
+                        product.CategoryName = "";
+                    }
+
+                    list.Add(product);
+                }
+                reader.Close();
+            }
+            return list;
+        }
+        // 2. SEARCH PRODUCTS
+        public ProductList SearchProducts(string searchTerm)
+        {
+            string SQLQuery = @"
+                SELECT TOP 50
+                    p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+                    p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+                    p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+                    NULL as DummyForBase, -- Index 15: Buffer
+                    ISNULL(c.Name, '') as CategoryName -- Index 16: Data
+                FROM Product p
+                LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+                WHERE p.IsActive = 1 
+                  AND p.ProductName LIKE @Search
+                ORDER BY p.ProductName ASC";
+
+            using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            AddParameter(cmd, pNVarChar("Search", 400, $"%{searchTerm}%"));
+
+            return GetListWithCategory(cmd);
+        }
     }
 }

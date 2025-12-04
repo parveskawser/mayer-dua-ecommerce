@@ -71,27 +71,51 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [Route("product/all")]
-        public IActionResult AllProducts()
+        [HttpGet]
+        public IActionResult AllProducts(string search)
         {
-            // Permission Check
+            // 1. Permission Check (Kept from your existing code)
             if (!HasPermission("Product.View")) return HandleAccessDenied();
 
-            var products = _productFacade.GetAllProductsWithCategory();
+            IEnumerable<Product> products;
+
+            // 2. Pass the search term back to the View (so the input box remembers it)
+            ViewData["CurrentSearch"] = search;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // 3. If a search term exists, use the Search method
+                // Note: Ensure _productFacade.SearchProducts(search) is implemented in your Facade
+                products = _productFacade.SearchProducts(search);
+            }
+            else
+            {
+                // 4. Default: Show all products (Your existing method)
+                products = _productFacade.GetAllProductsWithCategory();
+            }
+
             return View(products);
         }
-
         [HttpGet]
-        [Route("product/get-attribute-values")]
-        public IActionResult GetAttributeValues(int attributeId)
+        [Route("product/search-ajax")] // This defines the URL as /product/search-ajax
+        public IActionResult SearchProductsAjax(string query)
         {
-            // Permission Check 
-            if (!HasPermission("Product.View")) return HandleAccessDenied();
+            IEnumerable<Product> model;
 
-            var values = _productFacade.GetAttributeValues(attributeId);
-            var result = values.Select(v => new { id = v.Id, value = v.Value }).ToList();
-            return new JsonResult(result);
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // If search is empty, return default top 5
+                model = _productFacade.GetAllProductsWithCategory();
+            }
+            else
+            {
+                // Perform Search
+                model = _productFacade.SearchProducts(query);
+            }
+
+            // This returns ONLY the table rows to the JavaScript
+            return PartialView("_ProductTableRows", model);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("product/toggle-status")]
@@ -227,6 +251,7 @@ namespace MDUA.Web.UI.Controllers
             long result = _productFacade.AddVariantToExistingProduct(newVariant);
             return Json(new { success = result > 0, message = result > 0 ? "" : "Failed to add variant." });
         }
+
 
         #endregion
 

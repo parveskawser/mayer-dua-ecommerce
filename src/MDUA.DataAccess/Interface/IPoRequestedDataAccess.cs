@@ -35,5 +35,6 @@ namespace MDUA.DataAccess.Interface
         List<dynamic> GetInventoryStatus();
         dynamic GetPendingRequestByVariant(int variantId);
         void UpdateStatus(int poId, string status, SqlTransaction transaction);
+        dynamic GetVariantStatus(int variantId);
     }	
 }

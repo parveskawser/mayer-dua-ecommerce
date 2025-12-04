@@ -17,5 +17,6 @@ namespace MDUA.Facade.Interface
         List<Vendor> GetAllVendors();
         dynamic GetPendingRequestInfo(int variantId);
         void ReceiveStock(int variantId, int qty, decimal price, string invoice, string remarks);
+        object GetVariantStatus(int variantId);
     }
 }

@@ -1,5 +1,103 @@
-﻿/* --- NEW --- */
+﻿/* /* --- 1. PAGE LOCK (NUCLEAR OPTION) --- */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
+}
 
+/* --- 2. MAIN LAYOUT WRAPPER --- */
+.orders-wrapper {
+    /* Adjust 85px based on your Top Navbar height */
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* --- 3. FIXED HEADER --- */
+.orders-header {
+    flex: 0 0 auto; /* Fixed height */
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
+    z-index: 50;
+    /* Glass effect */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    margin-bottom: 1rem;
+}
+
+/* --- 4. SCROLLABLE AREAS --- */
+
+/* A. For Data Tables (Fills the glass card) */
+.glass-card-fill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+}
+
+.table-scroll-lock {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding-bottom: 20px;
+}
+
+/* B. For Forms (Create Order, etc.) - NEW ADDITION */
+.orders-scroll-content {
+    flex: 1; /* Fills remaining space */
+    overflow-y: auto; /* Scroll happens here */
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    padding-right: 5px;
+}
+
+    /* Scrollbar Styling */
+    .table-scroll-lock::-webkit-scrollbar,
+    .orders-scroll-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .table-scroll-lock::-webkit-scrollbar-track,
+    .orders-scroll-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .table-scroll-lock::-webkit-scrollbar-thumb,
+    .orders-scroll-content::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+        .table-scroll-lock::-webkit-scrollbar-thumb:hover,
+        .orders-scroll-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+/* Sticky Header for Tables */
+.products-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 10;
+    box-shadow: 0 1px 0 #dee2e6;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* --- EXISTING MODAL STYLES (Keep as is) --- */
 :root {
     --modal-radius: 20px;
     --primary-accent: #6366f1;
@@ -13,8 +111,9 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
 }
+/* ... rest of your modal styles ... */
 
-/* 1. Modal Container */
+/* Modal Container */
 .order-details-modal .modal-dialog {
     max-width: 600px;
     margin: 1.5rem auto;
@@ -29,7 +128,7 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* 2. Header */
+/* Header */
 .modal-header-soft {
     background: #ffffff;
     border-bottom: 1px solid var(--border-light);
@@ -57,7 +156,7 @@
             opacity: 0.8;
         }
 
-/* 3. Modal Body */
+/* Modal Body */
 .order-details-modal .modal-body {
     padding: 0;
     background: #fafbfc;
@@ -65,7 +164,6 @@
     overflow-y: auto;
 }
 
-    /* Custom Scrollbar */
     .order-details-modal .modal-body::-webkit-scrollbar {
         width: 6px;
     }
@@ -83,7 +181,7 @@
             background: #94a3b8;
         }
 
-/* 4. Info Sections - Card Style */
+/* Info Sections */
 .info-section {
     background: #ffffff;
     margin: 0.75rem 1.25rem;
@@ -107,7 +205,7 @@
         border-color: #cbd5e1;
     }
 
-/* Section Header with Icon */
+/* Section Header */
 .section-header {
     display: flex;
     align-items: center;
@@ -127,12 +225,11 @@
         opacity: 0.7;
     }
 
-/* Section Content */
 .section-content {
     padding: 1.25rem;
 }
 
-/* 5. Status Section Special Styling */
+/* Status Section */
 .status-section .section-content {
     padding: 1rem 1.25rem;
 }
@@ -165,6 +262,7 @@
         transition: all 0.3s ease !important;
     }
 
+    /* Status Colors */
     .status-section #m-status.bg-success {
         color: #059669 !important;
     }
@@ -192,7 +290,7 @@
             box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12) !important;
         }
 
-/* 6. Info Grid Layout */
+/* Info Grid */
 .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -234,7 +332,7 @@
         word-break: break-all;
     }
 
-/* 7. Financial Section Special */
+/* Financial Section */
 .financial-section {
     background: linear-gradient(135deg, #fafbfc 0%, #f0f9ff 100%);
     border: 1px solid #dbeafe;
@@ -303,7 +401,7 @@
         font-size: 1.375rem;
     }
 
-/* 8. Footer */
+/* Footer */
 .modal-footer-soft {
     background: #ffffff;
     border-top: 1px solid var(--border-light);
@@ -329,7 +427,7 @@
             transform: translateY(-1px);
         }
 
-/* 9. Responsive */
+/* Responsive */
 @media (max-width: 768px) {
     .order-details-modal .modal-dialog {
         margin: 0.5rem;
@@ -339,11 +437,7 @@
         margin: 0.5rem 1rem;
     }
 
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .finance-grid {
+    .info-grid, .finance-grid {
         grid-template-columns: 1fr;
     }
 

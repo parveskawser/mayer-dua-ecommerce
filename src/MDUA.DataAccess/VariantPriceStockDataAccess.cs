@@ -27,11 +27,9 @@ namespace MDUA.DataAccess
             AddParameter(cmd, pBool("AllowBackorder", vps.AllowBackorder));
             AddParameter(cmd, pInt32("WeightGrams", vps.WeightGrams));
 
-            // Use ExecuteNonQuery for inserts that don't return an identity
-            // Or use your framework's equivalent. Assuming InsertRecord handles this.
             long result = InsertRecord(cmd);
 
-            return (int)result; // Returns the row count (1 if successful)
+            return (int)result; 
         }
 
         public long UpdatePrice(int variantId, decimal price, string sku)

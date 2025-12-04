@@ -1,31 +1,77 @@
-﻿/* Inventory Status Page Styles */
+﻿/* --- LAYOUT LOCK (Inventory Page) --- */
 
-/* --- Healthy Stock Row (Green) --- */
-/* Using !important to override Bootstrap's default striped/hover styles */
-.table tbody tr.healthy-stock-row,
-.table tbody tr.healthy-stock-row > td {
-    color: #155724;
+/* 1. Nuclear Option: Disable Browser Scroll */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
 }
 
-    /* Healthy Hover State */
-    .table tbody tr.healthy-stock-row:hover,
-    .table tbody tr.healthy-stock-row:hover > td {
-        background-color: #b1dfbb !important; /* Slightly darker green */
+/* 2. Main Wrapper: Locks the height */
+.inventory-wrapper {
+    /* Adjust '85px' based on your Top Navbar height */
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 3. Header Section (Title) */
+.inventory-header {
+    flex: 0 0 auto; /* Fixed height */
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
+    z-index: 50;
+    /* Glass Background so scrolled content doesn't bleed through */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    margin-bottom: 1rem;
+}
+
+/* 4. Table Container (The Glass Card) */
+.inventory-scroll-container {
+    flex: 1; /* Fills remaining space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent card from scrolling */
+}
+
+/* 5. The Actual Scrollable Area */
+.table-responsive-lock {
+    flex: 1; /* Fill the glass card */
+    overflow-y: auto; /* Vertical scroll ONLY here */
+    overflow-x: auto; /* Horizontal scroll if needed */
+    padding-bottom: 20px;
+}
+
+/* 6. Sticky Table Header */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; /* Match bg-light */
+    z-index: 10;
+    box-shadow: 0 1px 0 #dee2e6;
+}
+
+/* Optional: Custom Scrollbar */
+.table-responsive-lock::-webkit-scrollbar {
+    width: 6px;
+}
+
+.table-responsive-lock::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-responsive-lock::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+    .table-responsive-lock::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
     }
-
-/* Text Utilities */
-.text-success-bold {
-    color: #198754 !important;
-    font-weight: 700;
-}
-
-.text-danger-bold {
-    color: #dc3545 !important;
-    font-weight: 700;
-}
-
-/* Modal Tweaks */
-#requestModal .modal-content {
-    border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}

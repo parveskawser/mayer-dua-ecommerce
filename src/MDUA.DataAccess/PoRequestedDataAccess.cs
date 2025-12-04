@@ -14,7 +14,6 @@ namespace MDUA.DataAccess
         {
             string SQL = "UPDATE PoRequested SET Status = @Status, UpdatedAt = GETDATE() WHERE Id = @Id";
 
-            // Note: When using a transaction, we must use the connection associated with it
             using (SqlCommand cmd = new SqlCommand(SQL, transaction.Connection, transaction))
             {
                 cmd.Parameters.AddWithValue("@Id", poId);
@@ -79,17 +78,17 @@ namespace MDUA.DataAccess
         public dynamic GetPendingRequestByVariant(int variantId)
         {
             string SQL = @"
-                SELECT TOP 1 
-                    po.Id, 
-                    po.Quantity, 
-                    po.RequestDate, 
-                    v.VendorName, 
-                    po.Remarks
-                FROM PoRequested po
-                JOIN Vendor v ON po.VendorId = v.Id
-                WHERE po.ProductVariantId = @VariantId 
-                  AND po.Status = 'Pending'
-                ORDER BY po.RequestDate DESC";
+        SELECT TOP 1 
+            po.Id, 
+            po.Quantity, 
+            po.RequestDate, 
+            v.VendorName, 
+            po.Remarks
+        FROM PoRequested po
+            JOIN Vendor v ON po.VendorId = v.Id
+        WHERE po.ProductVariantId = @VariantId 
+            AND po.Status = 'Pending'
+        ORDER BY po.RequestDate DESC";
 
             using (SqlCommand cmd = GetSQLCommand(SQL))
             {
@@ -100,13 +99,14 @@ namespace MDUA.DataAccess
                 {
                     if (reader.Read())
                     {
-                        // ✅ Change: Use ExpandoObject
+                        //  lowercase property names for JS compatibility
                         dynamic info = new ExpandoObject();
-                        info.Id = reader.GetInt32(0);
-                        info.Quantity = reader.GetInt32(1);
-                        info.RequestDate = reader.GetDateTime(2).ToString("dd MMM yyyy");
-                        info.VendorName = reader.GetString(3);
-                        info.Remarks = reader.IsDBNull(4) ? "" : reader.GetString(4);
+                        // Map to lowercase keys explicitly
+                        ((IDictionary<string, object>)info)["id"] = reader.GetInt32(0);
+                        ((IDictionary<string, object>)info)["quantity"] = reader.GetInt32(1);
+                        ((IDictionary<string, object>)info)["requestDate"] = reader.GetDateTime(2).ToString("dd MMM yyyy");
+                        ((IDictionary<string, object>)info)["vendorName"] = reader.GetString(3);
+                        ((IDictionary<string, object>)info)["remarks"] = reader.IsDBNull(4) ? "" : reader.GetString(4);
 
                         return info;
                     }
@@ -115,5 +115,53 @@ namespace MDUA.DataAccess
             }
             return null;
         }
+
+
+        public dynamic GetVariantStatus(int variantId)
+        {
+            // Reusing your exact query logic, just filtered by ID
+            string SQL = @"
+        SELECT 
+            v.Id as VariantId,
+            p.ProductName,
+            ISNULL(v.VariantName, 'Standard') as VariantName,
+            ISNULL(vps.StockQty, 0) as CurrentStock,
+            p.ReorderLevel,
+            CASE WHEN ISNULL(vps.StockQty, 0) <= p.ReorderLevel THEN 1 ELSE 0 END as IsLowStock,
+            CASE WHEN ISNULL(vps.StockQty, 0) > p.ReorderLevel THEN 1 ELSE 0 END as IsHealthyStock,
+            (p.ReorderLevel * 2) - ISNULL(vps.StockQty, 0) as SuggestedQty,
+            (SELECT COUNT(*) FROM PoRequested po WHERE po.ProductVariantId = v.Id AND po.Status = 'Pending') as PendingCount
+        FROM ProductVariant v
+        JOIN Product p ON v.ProductId = p.Id
+        LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
+        WHERE v.Id = @VariantId"; // Filter applied here
+
+            using (SqlCommand cmd = GetSQLCommand(SQL))
+            {
+                AddParameter(cmd, pInt32("VariantId", variantId));
+                if (cmd.Connection.State != System.Data.ConnectionState.Open) cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        dynamic item = new System.Dynamic.ExpandoObject();
+                        // Explicitly mapping to match your View's expectations
+                        ((IDictionary<string, object>)item)["VariantId"] = reader.GetInt32(0);
+                        ((IDictionary<string, object>)item)["ProductName"] = reader.GetString(1);
+                        ((IDictionary<string, object>)item)["VariantName"] = reader.GetString(2);
+                        ((IDictionary<string, object>)item)["CurrentStock"] = reader.GetInt32(3);
+                        ((IDictionary<string, object>)item)["ReorderLevel"] = reader.GetInt32(4);
+                        ((IDictionary<string, object>)item)["IsHealthyStock"] = reader.GetInt32(6) == 1;
+                        ((IDictionary<string, object>)item)["SuggestedQty"] = reader.GetInt32(7) > 0 ? reader.GetInt32(7) : 10;
+                        ((IDictionary<string, object>)item)["HasPendingPO"] = reader.GetInt32(8) > 0;
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+
     }
+
 }

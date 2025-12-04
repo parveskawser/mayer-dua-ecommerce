@@ -272,3 +272,91 @@
 }
 
 
+/* --- 1. PAGE LOCK (NUCLEAR OPTION) --- */
+/* This forces the browser window to NEVER scroll */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- 2. LAYOUT STRUCTURE --- */
+.dashboard-wrapper {
+    /* CALCULATION: 100vh - (Navbar Height + Footer/Padding). 
+       Try increasing '80px' to '100px' or '120px' if you still see a double scrollbar. 
+    */
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevents wrapper itself from scrolling */
+    position: relative;
+}
+
+.dashboard-header {
+    flex: 0 0 auto; /* Keeps header fixed height */
+    z-index: 50;
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
+    /* VISUAL FIX: Add background so scrolled content doesn't show through */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    margin-bottom: 1rem;
+}
+
+.dashboard-scroll-content {
+    flex: 1; /* Fills remaining space */
+    overflow-y: auto; /* The ONLY place scrolling happens */
+    overflow-x: hidden;
+    padding-bottom: 50px; /* Space for scrolling bottom */
+    padding-right: 5px;
+}
+
+/* --- 3. COMPONENTS --- */
+
+/* Base Glass Card - REMOVED global height: 100% to fix layout issues */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* KPI Cards */
+.kpi-card {
+    border: 1px solid #bfdbfe; /* Default Light Blue */
+    min-height: 120px;
+    justify-content: center;
+}
+
+/* Chart/Order Cards Specifics */
+.card-orders {
+    border: 1px solid #bfdbfe !important;
+}
+
+.card-products {
+    border: 1px solid #a7f3d0 !important;
+}
+
+/* Custom Scrollbar for dashboard content */
+.dashboard-scroll-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-scroll-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dashboard-scroll-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}

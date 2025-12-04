@@ -273,7 +273,10 @@ namespace MDUA.Web.UI.Controllers
             var data = _orderFacade.GetSubOffices(thana);
             return Json(data);
         }
-         
+
+        [Route("order/all")]
+
+
         [HttpGet]
         public IActionResult AllOrders()
         {
@@ -341,6 +344,7 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        [Route("order/add")]
 
         [HttpGet]
         public IActionResult Add()
@@ -362,9 +366,8 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
-        //change
+        [Route("order/add")]
         [HttpPost]
-        [Route("order/place-direct")]
         public IActionResult PlaceDirectOrder([FromBody] SalesOrderHeader model)
         {
             if (!HasPermission("Order.Place")) return HandleAccessDenied();

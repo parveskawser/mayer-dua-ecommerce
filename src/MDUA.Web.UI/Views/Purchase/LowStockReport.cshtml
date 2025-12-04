@@ -9,95 +9,90 @@
     <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-0 text-dark">Inventory Status</h2>
-        <div class="text-muted small">Monitor stock levels and reorder items</div>
-    </div>
-</div>
+<div class="inventory-wrapper">
 
-<div class="glass-card p-0 overflow-hidden">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-            <thead class="bg-light">
-                <tr>
-                    <th class="ps-4">Product</th>
-                    <th>Variant</th>
-                    <th class="text-center">Stock Level</th>
-                    <th class="text-center">Reorder Point</th>
-                    <th class="text-end pe-4" style="min-width: 180px;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var item in Model)
+    <div class="inventory-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">Inventory Status</h2>
+            <div class="text-muted small">Monitor stock levels and reorder items</div>
+        </div>
+    </div>
+
+    <div class="glass-card p-0 inventory-scroll-container">
+
+        <div class="table-responsive-lock">
+            <table class="table mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4" style="width: 40%">Product</th>
+                        <th class="text-center">Total Variants</th>
+                        <th class="text-center">Total Stock</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        bool isHealthy = item.IsHealthyStock;
-                        bool hasPending = item.HasPendingPO;
+                        var groups = ((IEnumerable<dynamic>)Model).GroupBy(x => x.ProductName);
 
-                        string rowClass = isHealthy ? "healthy-stock-row" : "";
-                        string stockTextClass = isHealthy ? "text-success-bold" : "text-danger-bold";
+                        foreach (var group in groups)
+                        {
+                            var productId = Guid.NewGuid();
+                            var totalStock = group.Sum(x => (int)x.CurrentStock);
+                            var variantCount = group.Count();
 
-                        <tr class="@rowClass">
-                            <td class="ps-4 fw-bold">@item.ProductName</td>
-                            <td><span class="badge bg-white text-dark border shadow-sm">@item.VariantName</span></td>
+                            <tr class="bg-white border-bottom">
+                                <td class="ps-4">
+                                    <button class="btn btn-link text-decoration-none fw-bold text-dark p-0 d-flex align-items-center"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-@productId">
+                                        <span class="me-2">▶</span> @group.Key
+                                    </button>
+                                </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@variantCount variants</span></td>
+                                <td class="text-center fw-bold text-muted group-total-stock">@totalStock</td>
+                                <td class="text-end pe-4">
+                                    <small class="text-muted" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#collapse-@productId">
+                                        Click to view
+                                    </small>
+                                </td>
+                            </tr>
 
-                            <td class="text-center">
-                                <span class="@stockTextClass">@item.CurrentStock</span>
-                            </td>
-
-                            <td class="text-center text-muted">@item.ReorderLevel</td>
-
-                            <td class="text-end pe-4">
-                                @if (hasPending)
-                                {
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <button class="btn btn-sm btn-info text-white btn-req-info shadow-sm"
-                                                title="View Request Details"
-                                                data-variant-id="@item.VariantId">
-                                            ℹ Info
-                                        </button>
-                                        <button class="btn btn-sm btn-success btn-receive shadow-sm"
-                                                title="Receive Stock"
-                                                data-variant-id="@item.VariantId"
-                                                data-name="@item.ProductName - @item.VariantName">
-                                            📥 Receive
-                                        </button>
+                            <tr>
+                                <td colspan="4" class="p-0 border-0">
+                                    <div class="collapse bg-light" id="collapse-@productId">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <thead class="text-muted small border-bottom">
+                                                <tr>
+                                                    <th class="ps-5">Variant Name</th>
+                                                    <th class="text-center">Current Stock</th>
+                                                    <th class="text-center">Reorder Level</th>
+                                                    <th class="text-end pe-5">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var variant in group)
+                                                {
+                                                    <partial name="_InventoryRow" model="variant" />
+                                                }
+                                            </tbody>
+                                        </table>
                                     </div>
-                                }
-                                else if (!isHealthy)
-                                {
-                                    <button class="btn btn-sm btn-danger btn-request shadow-sm"
-                                            data-variant-id="@item.VariantId"
-                                            data-name="@item.ProductName - @item.VariantName"
-                                            data-suggested="@item.SuggestedQty">
-                                        ⚡ Request Stock
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-light border btn-request text-muted"
-                                            data-variant-id="@item.VariantId"
-                                            data-name="@item.ProductName - @item.VariantName"
-                                            data-suggested="10">
-                                        Request
-                                    </button>
-                                }
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-                else
-                {
-                    <tr><td colspan="5" class="text-center py-5 text-muted">No inventory items found.</td></tr>
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        <tr><td colspan="4" class="text-center py-5 text-muted">No inventory items found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<!-- 1. Request Modal -->
+</div>
 <div class="modal fade" id="requestModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -141,7 +136,6 @@
     </div>
 </div>
 
-<!-- 2. ✅ INFO MODAL (Displays Data) -->
 <div class="modal fade" id="infoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -150,7 +144,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0" id="infoModalBody">
-                <!-- JS will inject content here -->
                 <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
             </div>
             <div class="modal-footer border-top-0 bg-light">
@@ -160,7 +153,6 @@
     </div>
 </div>
 
-<!-- 3. ✅ RECEIVE MODAL (With Requested Qty & Date) -->
 <div class="modal fade" id="receiveModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -171,13 +163,10 @@
             <div class="modal-body p-4">
                 <form id="receiveForm">
                     <input type="hidden" id="recVariantId">
-
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">Item</label>
                         <div class="form-control-plaintext fw-bold" id="recProductName"></div>
                     </div>
-
-                    <!-- Info Row -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold">Receive Date</label>
@@ -188,8 +177,6 @@
                             <input type="text" class="form-control bg-light text-primary fw-bold" id="recReqQty" readonly value="...">
                         </div>
                     </div>
-
-                    <!-- Input Row -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold">Received Qty <span class="text-danger">*</span></label>
@@ -203,17 +190,14 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">Invoice / Ref No.</label>
                         <input type="text" class="form-control" id="recInvoice" placeholder="Optional">
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">Remarks</label>
                         <textarea class="form-control" id="recRemarks" rows="2" placeholder="Condition, notes..."></textarea>
                     </div>
-
                 </form>
             </div>
             <div class="modal-footer border-top-0 bg-light">

@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace MDUA.Web.UI.Controllers
 {
-    public class PurchaseController : Controller
+    public class PurchaseController : BaseController
     {
         private readonly IPurchaseFacade _purchaseFacade;
 
@@ -16,6 +16,9 @@ namespace MDUA.Web.UI.Controllers
         {
             _purchaseFacade = purchaseFacade;
         }
+
+        [Route("purchase/stock-status")]
+
 
         [HttpGet]
         public IActionResult StockStatus()
@@ -52,6 +55,9 @@ namespace MDUA.Web.UI.Controllers
                 {
                     return Json(new { success = false, message = "Invalid Vendor or Quantity selected." });
                 }
+
+                // ✅ Set the CreatedBy to current logged-in user
+                model.CreatedBy = CurrentUserName;
 
                 // 2. Execute
                 long id = _purchaseFacade.CreatePurchaseOrder(model);
@@ -122,5 +128,16 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = "Server Error: " + ex.Message });
             }
         }
+        [HttpGet]
+        [Route("purchase/get-variant-row")]
+        public IActionResult GetVariantRow(int variantId)
+        {
+            var variantData = _purchaseFacade.GetVariantStatus(variantId);
+            if (variantData == null) return NotFound();
+            return PartialView("_InventoryRow", variantData);
+        }
+
+
+
     }
 }

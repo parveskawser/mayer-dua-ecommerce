@@ -1,0 +1,62 @@
+﻿@model IEnumerable<MDUA.Entities.Product>
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var p in Model)
+    {
+        <tr data-product-row-id="@p.Id">
+            <td class="fw-semibold" data-product-name="@p.ProductName">@p.ProductName</td>
+            <!-- Note: CategoryName might be null if we removed the Join, handle gracefully -->
+            <td><span class="pill-tag">@(p.CategoryName ?? "-")</span></td>
+            <td>@p.ReorderLevel</td>
+            <td class="small text-muted">@p.Slug</td>
+            <td class="price-cell">
+                @if (p.ActiveDiscount != null)
+                {
+                    <div class="text-decoration-line-through text-muted small">Tk. @p.BasePrice?.ToString("0.00")</div>
+                    <div class="text-danger fw-bold">Tk. @p.SellingPrice.ToString("0.00")</div>
+                }
+                else
+                {
+                    <div class="fw-bold">Tk. @p.BasePrice?.ToString("0.00")</div>
+                }
+            </td>
+            <td>
+                <button type="button"
+                        class="btn btn-sm rounded-pill fw-bold border-0 px-3 js-toggle-status @(p.IsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")"
+                        data-product-id="@p.Id"
+                        title="Toggle Status">
+                    @(p.IsActive ? "Active" : "Inactive")
+                </button>
+            </td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-manage js-expand-actions"
+                        data-product-id="@p.Id">
+                    Manage <span class="ms-1 text-muted small">&#9660;</span>
+                </button>
+            </td>
+        </tr>
+
+        <!-- Drawer Row (Must be included in partial to work after search) -->
+        <tr class="action-drawer-row d-none" id="drawer-@p.Id">
+            <td colspan="7">
+                <div class="p-3 border rounded bg-light">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                        <button class="btn btn-outline-primary btn-sm js-manage-images" data-product-id="@p.Id">🖼️ Manage Images</button>
+                        <button class="btn btn-outline-primary btn-sm js-manage-discounts" data-product-id="@p.Id" data-product-name="@p.ProductName">🏷️ Discounts</button>
+                        <button class="btn btn-outline-primary btn-sm btn-view-variants" data-product-id="@p.Id" data-product-name="@p.ProductName">🔢 Variants</button>
+                        <button class="btn btn-outline-primary btn-sm js-view-details" data-product-id="@p.Id" data-product-name="@p.ProductName">📄 Details</button>
+                        <button class="btn btn-outline-secondary btn-sm js-edit-product" data-product-id="@p.Id" data-product-name="@p.ProductName">✏️ Edit</button>
+                        <button class="btn btn-outline-danger btn-sm js-delete-product" data-product-id="@p.Id" data-product-name="@p.ProductName">🗑️ Delete</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="text-center p-5 text-muted">No products found matching your search.</td>
+    </tr>
+}

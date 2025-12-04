@@ -1,11 +1,15 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
 
-    // 1. Initialize Modals
+    // ============================================================
+    // 1. INITIALIZATION & SETUP
+    // ============================================================
+
+    // Initialize Modals
     const reqModalEl = document.getElementById('requestModal');
     const infoModalEl = document.getElementById('infoModal');
     const receiveModalEl = document.getElementById('receiveModal');
 
-    // Move modals to body to prevent stacking issues
+    // Move modals to body to prevent z-index/backdrop issues
     [reqModalEl, infoModalEl, receiveModalEl].forEach(el => {
         if (el && el.parentNode !== document.body) document.body.appendChild(el);
     });
@@ -15,34 +19,72 @@
     const receiveModal = new bootstrap.Modal(receiveModalEl);
 
     // ============================================================
-    // 2. EVENT LISTENERS
+    // 2. EVENT DELEGATION (Handles Clicks for Dynamic Rows)
     // ============================================================
+    // We attach one listener to the Document. It detects clicks on our buttons.
 
-    // A. REQUEST STOCK (Standard)
-    document.querySelectorAll('.btn-request').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.getElementById('reqVariantId').value = this.dataset.variantId;
-            document.getElementById('reqProductName').value = this.dataset.name;
-            document.getElementById('reqQty').value = this.dataset.suggested;
+    document.addEventListener('click', function (e) {
+
+        // --- A. REQUEST STOCK BUTTON ---
+        // Checks if the clicked element OR its parent has class .btn-request
+        const reqBtn = e.target.closest('.btn-request');
+        if (reqBtn) {
+            document.getElementById('reqVariantId').value = reqBtn.dataset.variantId;
+            document.getElementById('reqProductName').value = reqBtn.dataset.name;
+            document.getElementById('reqQty').value = reqBtn.dataset.suggested;
             requestModal.show();
-        });
-    });
+            return; // Stop processing
+        }
 
-    // B. VIEW INFO (Pending Request)
-    document.querySelectorAll('.btn-req-info').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const variantId = this.dataset.variantId;
+        // --- B. RECEIVE STOCK BUTTON ---
+        const recBtn = e.target.closest('.btn-receive');
+        if (recBtn) {
+            const variantId = recBtn.dataset.variantId;
+            const name = recBtn.dataset.name;
+
+            document.getElementById('recVariantId').value = variantId;
+            document.getElementById('recProductName').textContent = name;
+
+            // Reset Form Fields
+            document.getElementById('recQty').value = "";
+            document.getElementById('recPrice').value = "";
+            document.getElementById('recInvoice').value = "";
+            document.getElementById('recRemarks').value = "";
+            document.getElementById('recReqQty').value = "Loading...";
+
+            receiveModal.show();
+
+            // Fetch info to autofill requested qty
+            fetch(`/purchase/get-pending-info?variantId=${variantId}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        const reqQty = res.data.quantity;
+                        document.getElementById('recReqQty').value = reqQty;
+                        // Convenience: Auto-fill receive qty
+                        document.getElementById('recQty').value = reqQty;
+                    } else {
+                        document.getElementById('recReqQty').value = "N/A";
+                    }
+                });
+            return;
+        }
+
+        // --- C. INFO BUTTON ---
+        const infoBtn = e.target.closest('.btn-req-info');
+        if (infoBtn) {
+            const variantId = infoBtn.dataset.variantId;
             const body = document.getElementById('infoModalBody');
 
             body.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-info"></div><div class="mt-2">Loading details...</div></div>';
             infoModal.show();
 
-            // Fetch Info
             fetch(`/purchase/get-pending-info?variantId=${variantId}`)
                 .then(r => r.json())
                 .then(res => {
                     if (res.success && res.data) {
                         const d = res.data;
+                        // Render Details
                         body.innerHTML = `
                             <div class="list-group list-group-flush">
                                 <div class="list-group-item d-flex justify-content-between align-items-center p-3">
@@ -75,41 +117,8 @@
                 .catch(() => {
                     body.innerHTML = `<div class="text-center text-danger py-4">Failed to load data.</div>`;
                 });
-        });
-    });
-
-    // C. RECEIVE STOCK
-    document.querySelectorAll('.btn-receive').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const variantId = this.dataset.variantId;
-            const name = this.dataset.name;
-
-            document.getElementById('recVariantId').value = variantId;
-            document.getElementById('recProductName').textContent = name;
-
-            // Clear previous inputs
-            document.getElementById('recQty').value = "";
-            document.getElementById('recPrice').value = "";
-            document.getElementById('recInvoice').value = "";
-            document.getElementById('recRemarks').value = "";
-            document.getElementById('recReqQty').value = "Loading...";
-
-            receiveModal.show();
-
-            // Fetch requested qty to help the user
-            fetch(`/purchase/get-pending-info?variantId=${variantId}`)
-                .then(r => r.json())
-                .then(res => {
-                    if (res.success && res.data) {
-                        const reqQty = res.data.quantity;
-                        document.getElementById('recReqQty').value = reqQty;
-                        // Auto-fill received qty for convenience
-                        document.getElementById('recQty').value = reqQty;
-                    } else {
-                        document.getElementById('recReqQty').value = "N/A";
-                    }
-                });
-        });
+            return;
+        }
     });
 
     // ============================================================
@@ -149,7 +158,10 @@
         });
     }
 
-    // Helper: Generic Submit Function
+    // ============================================================
+    // 4. HELPER FUNCTIONS
+    // ============================================================
+
     function submitData(url, payload, btn, modalInstance) {
         const originalText = btn.textContent;
         btn.disabled = true;
@@ -167,13 +179,31 @@
             })
             .then(data => {
                 if (data.success) {
+                    modalInstance.hide();
+
+                    // ✅ SUCCESS: Update the specific row without reloading
+                    if (payload.ProductVariantId) {
+                        refreshVariantRow(payload.ProductVariantId);
+                    }
+
+                    // Show Toast (Using SweetAlert if available)
                     if (typeof Swal !== 'undefined') {
-                        Swal.fire('Success!', data.message || 'Operation Successful', 'success').then(() => location.reload());
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                        Toast.fire({ icon: 'success', title: data.message || 'Success' });
                     } else {
                         alert(data.message || "Success!");
-                        location.reload();
                     }
-                    modalInstance.hide();
+
                 } else {
                     throw new Error(data.message || "Unknown Error");
                 }
@@ -181,8 +211,83 @@
             .catch(err => {
                 if (typeof Swal !== 'undefined') Swal.fire('Error', err.message, 'error');
                 else alert("Error: " + err.message);
+            })
+            .finally(() => {
                 btn.disabled = false;
                 btn.textContent = originalText;
             });
+    }
+
+    // ✅ REFRESH FUNCTION: Fetches the partial HTML and replaces the row
+    // ... inside inventory.js ...
+
+    // ✅ UPDATED REFRESH FUNCTION
+    function refreshVariantRow(variantId) {
+        const row = document.getElementById(`row-${variantId}`);
+        if (!row) return;
+
+        // Visual feedback
+        row.style.transition = "opacity 0.3s";
+        row.style.opacity = '0.4';
+
+        fetch(`/purchase/get-variant-row?variantId=${variantId}`)
+            .then(r => r.text())
+            .then(html => {
+                // 1. Replace the HTML
+                row.outerHTML = html;
+
+                // 2. Flash effect
+                const newRow = document.getElementById(`row-${variantId}`);
+                if (newRow) {
+                    newRow.style.backgroundColor = "#e8f5e9";
+                    setTimeout(() => {
+                        newRow.style.backgroundColor = "";
+                    }, 1000);
+                }
+
+                // 3. ✅ TRIGGER TOTAL UPDATE
+                updateGroupTotal(variantId);
+            })
+            .catch(err => console.error("Auto-refresh failed:", err));
+    }
+
+    // ✅ NEW HELPER: Recalculates the Parent Group's Total Stock
+    function updateGroupTotal(variantId) {
+        // 1. Find the newly updated row
+        const row = document.getElementById(`row-${variantId}`);
+        if (!row) return;
+
+        // 2. Find the container (the accordion div)
+        const collapseDiv = row.closest('.collapse');
+        if (!collapseDiv) return;
+
+        // 3. Sum up all stock values in this group
+        // We look for spans with IDs starting with "stock-"
+        let newTotal = 0;
+        const stockSpans = collapseDiv.querySelectorAll('[id^="stock-"]');
+        stockSpans.forEach(span => {
+            // Parse integer, default to 0 if NaN
+            const val = parseInt(span.textContent.trim()) || 0;
+            newTotal += val;
+        });
+
+        // 4. Find the Parent Row to update
+        // We match the button's target ID to the collapseDiv ID
+        const parentBtn = document.querySelector(`button[data-bs-target="#${collapseDiv.id}"]`);
+        if (parentBtn) {
+            const parentRow = parentBtn.closest('tr');
+            const totalCell = parentRow.querySelector('.group-total-stock');
+
+            if (totalCell) {
+                // Animate the change
+                totalCell.style.transition = "color 0.3s";
+                totalCell.style.color = "#198754"; // Flash Green
+                totalCell.textContent = newTotal;
+
+                setTimeout(() => {
+                    totalCell.style.color = ""; // Reset color
+                }, 1000);
+            }
+        }
     }
 });
