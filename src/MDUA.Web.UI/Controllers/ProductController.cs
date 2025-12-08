@@ -536,7 +536,24 @@ namespace MDUA.Web.UI.Controllers
             return str;
         }
 
+        [HttpGet]
+        [Route("product/get-attribute-values")]
+        public IActionResult GetAttributeValues(int attributeId)
+        {
+            // Optional: Add permission check if needed
+            // if (!HasPermission("Product.Add")) return HandleAccessDenied();
 
+            // Fetch data from your Facade
+            var values = _productFacade.GetAttributeValues(attributeId);
+
+            // Return as JSON. 
+            // We project to an anonymous object to ensure the JS receives 'id' and 'value'
+            // exactly as the script expects (lowercase).
+            return Json(values.Select(v => new { 
+                id = v.Id, 
+                value = v.Value // Or v.Name, depending on your Entity
+            }));
+        }
      
         #endregion
     }

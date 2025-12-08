@@ -62,30 +62,73 @@
     });
 
     // 🔄 Load attribute values
+// 🔄 Load attribute values (CORRECTED)
     $("#addProductModal").on("change", ".attribute-select", function () {
-        // ... (This function is unchanged)
-        let row = $(this).closest(".attribute-row");
+        let $select = $(this);
+        let row = $select.closest(".attribute-row");
         let container = row.find(".attribute-values-container");
-        container.html("");
-        updateAttributeDropdowns();
-        let attributeId = $(this).val();
-        if (!attributeId) return;
+        let attributeId = $select.val();
 
-        $.get("/product/get-attribute-values", { attributeId: attributeId }, function (data) {
-            data.forEach(v => {
-                container.append(`
-                    <label class="d-block">
+        // 1. Clear container immediately
+        container.empty();
+
+        // 2. Handle empty selection
+        if (!attributeId) {
+            updateAttributeDropdowns();
+            return;
+        }
+
+        // 3. Show a loading indicator so the user knows something is happening
+        container.html('<div class="text-muted small fst-italic">Loading values...</div>');
+
+        // 4. Use the URL from window.productConfig (Safe for routing)
+        // Fallback to hardcoded string only if config fails
+        let url = (window.productConfig && window.productConfig.urls)
+            ? window.productConfig.urls.getAttributeValues
+            : "/Product/GetAttributeValues";
+
+        $.ajax({
+            url: url,
+            type: "GET",
+            data: { attributeId: attributeId },
+            success: function (data) {
+                container.empty(); // Remove "Loading..." text
+
+                if (!data || data.length === 0) {
+                    container.html('<span class="text-muted small">No values found.</span>');
+                    return;
+                }
+
+                // 5. Loop through data and append checkboxes
+                // Note: Ensure your Controller returns 'id' and 'value' (camelCase)
+                data.forEach(v => {
+                    // Handle casing differences (Id vs id, Value vs value)
+                    let valId = v.id || v.Id;
+                    let valName = v.value || v.Value || v.name || v.Name;
+
+                    container.append(`
+                    <div class="form-check">
                         <input type="checkbox" 
-                               class="attribute-value-checkbox" 
-                               value="${v.id}" 
-                               data-attrname="${v.value}" />
-                        ${v.value}
-                    </label>
+                               class="form-check-input attribute-value-checkbox" 
+                               id="attr_val_${valId}"
+                               value="${valId}" 
+                               data-attrname="${valName}" />
+                        <label class="form-check-label" for="attr_val_${valId}">
+                            ${valName}
+                        </label>
+                    </div>
                 `);
-            });
+                });
+
+                // Update disabled status of other dropdowns
+                updateAttributeDropdowns();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading attributes:", error);
+                container.html('<span class="text-danger small">Error loading data.</span>');
+            }
         });
     });
-
     // 🔁 Refresh variants when clicking attribute value checkbox
     $("#addProductModal").on("change", ".attribute-value-checkbox", generateVariants);
 

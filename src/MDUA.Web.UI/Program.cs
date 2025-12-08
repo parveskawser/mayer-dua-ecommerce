@@ -1,5 +1,6 @@
 ﻿using MDUA.Facade;
 using MDUA.Facade.Interface;
+using MDUA.Web.UI.Hubs; // ✅ Required for SupportHub
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
@@ -9,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Register Services and Facades
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
+
+// ✅ NEW: Add SignalR Service
+builder.Services.AddSignalR();
 
 // 2. Configure Authentication with "Real World" Validation
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -54,9 +58,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     else
                     {
                         // ✅ VALID: Now force-refresh Permissions (Real-Time Authorization)
-                        // This ensures that if you remove a permission in DB, it applies INSTANTLY,
-                        // even if the user doesn't log out.
-
                         var userIdClaim = context.Principal.FindFirst(ClaimTypes.NameIdentifier);
                         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                         {
@@ -70,7 +71,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                             }
 
                             // 2. Fetch NEW permissions from DB
-                            // This hits the DB again, but ensures 100% accuracy.
                             var freshPermissions = userFacade.GetAllUserPermissionNames(userId);
 
                             // 3. Add NEW permissions to the current request
@@ -78,10 +78,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                             {
                                 identity.AddClaim(new Claim("Permission", permissionName));
                             }
-
-                            // Note: We modify the 'identity' in memory for THIS request.
-                            // We do not strictly need to rewrite the cookie here, because we
-                            // will just fetch fresh data again on the next request.
                         }
                     }
                 }
@@ -110,6 +106,10 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ✅ NEW: Map the SignalR Hub
+// This creates the endpoint "/supportHub" that combo.js connects to
+app.MapHub<SupportHub>("/supportHub");
 
 app.MapControllerRoute(
     name: "default",

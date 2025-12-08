@@ -1,0 +1,144 @@
+@model IEnumerable<MDUA.Entities.BulkPurchaseOrder>
+
+@{
+    ViewData["Title"] = "Bulk Orders Received";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📂 Bulk Orders Received</h3>
+        <a asp-action="BulkOrder" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> New Bulk Order
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="ps-4">#ID</th>
+                            <th>Agreement No</th>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th class="text-center">Total Qty</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">@item.Id</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @item.AgreementNumber
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-primary">@(item.Title ?? "N/A")</td>
+                                    <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
+                                    <td class="text-center fw-bold">@item.TotalTargetQuantity</td>
+                                    <td>
+                                        @if (item.Status == "Active")
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else if (item.Status == "Received")
+                                        {
+                                            <span class="badge bg-info text-dark">Received</span>
+                                        }
+                                        else if (item.Status == "Inactive")
+                                        {
+                                            @* ✅ FIX 1: Distinct badge for Completed/Inactive orders *@
+                                            <span class="badge bg-secondary text-white">Completed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark border">@item.Status</span>
+                                        }
+                                    </td>
+                                    <td class="small text-muted">@item.CreatedBy</td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary js-btn-details"
+                                                type="button"
+                                                data-order-id="@item.Id">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No bulk orders found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal *@
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary bg-gradient text-white">
+                <h5 class="modal-title" id="detailsModalLabel">
+                    <i class="bi bi-receipt-cutoff me-2"></i>
+                    Order Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-0" id="modalContentPlaceholder">
+                <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="mt-2 text-muted">Ready to load...</span>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/bulk-order.js"></script>
+
+    @* ✅ FIX 2: Reload page when modal closes to reflect Status changes *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const myModal = document.getElementById('detailsModal');
+            myModal.addEventListener('hidden.bs.modal', function () {
+                // Simple reload to ensure Status column updates from 'Active' to 'Completed'
+                location.reload();
+            });
+        });
+    </script>
+}

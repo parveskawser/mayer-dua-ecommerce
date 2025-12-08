@@ -10,13 +10,42 @@
 
 <div class="dashboard-wrapper">
 
-    <div class="dashboard-header d-flex justify-content-between align-items-center mb-0">
-        <div>
-            <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
-            <div class="text-muted small">Welcome, @Model.UserLogin.UserName!</div>
-        </div>
+<div class="dashboard-header d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
+        <div class="text-muted small">Welcome, @Model.UserLogin.UserName!</div>
     </div>
 
+    <div class="d-flex align-items-center position-relative me-4">
+        
+        <button id="header-msg-btn" class="btn btn-light border rounded-circle shadow-sm position-relative" style="width: 45px; height: 45px;">
+            <i class="fas fa-comment-dots text-secondary fs-5"></i>
+            
+            <span id="header-msg-badge" 
+                  class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger shadow-sm" 
+                  style="display:none; border: 2px solid #fff; font-size: 0.7rem;">
+                0
+            </span>
+        </button>
+
+        <div id="header-msg-dropdown" class="dropdown-menu dropdown-menu-end p-0 shadow border-0" 
+             style="display: none; position: absolute; right: 0; top: 55px; width: 340px; z-index: 1050;">
+            
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white rounded-top">
+                <h6 class="mb-0 fw-bold">Messages</h6>
+                <small class="text-primary fw-bold cursor-pointer" onclick="loadHeaderChats()">Refresh</small>
+            </div>
+
+            <div id="header-chat-list" style="max-height: 350px; overflow-y: auto; background: #fff;">
+                <div class="text-center p-4 text-muted small">Loading...</div>
+            </div>
+
+            <div class="p-2 border-top text-center bg-light rounded-bottom">
+                <small class="text-secondary fw-bold" style="cursor:pointer;" onclick="$('#admin-chat-panel').fadeIn(); $('#header-msg-dropdown').hide();">View All in Panel</small>
+            </div>
+        </div>
+    </div>
+</div>
     <div class="dashboard-scroll-content">
         
         <div class="row g-3 mb-4">
@@ -218,12 +247,14 @@
             </div>
         </div>
 
-    </div> </div> 
+    </div>     <partial name="_AdminChatWidget" />
+</div>
 
 @section Scripts {
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="~/js/admin-chat.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // 1. Sales Trend Chart

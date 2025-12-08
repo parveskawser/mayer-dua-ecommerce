@@ -360,3 +360,53 @@ html, body {
     background: #cbd5e1;
     border-radius: 3px;
 }
+
+
+/* Header Chat Dropdown Styles */
+#header-msg-dropdown {
+    animation: fadeIn 0.2s ease-in-out;
+    border-radius: 12px;
+}
+
+.header-chat-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .header-chat-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .header-chat-item:last-child {
+        border-bottom: none;
+    }
+
+.chat-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #e0f2fe;
+    color: #0284c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
