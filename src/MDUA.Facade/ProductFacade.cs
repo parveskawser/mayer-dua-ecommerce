@@ -743,6 +743,15 @@ namespace MDUA.Facade
                 _variantImageDataAccess.Update(img);
             }
         }
+
+        public ProductList SearchProducts(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return new ProductList();
+            }
+            return _ProductDataAccess.SearchProducts(searchTerm);
+        }
         #endregion
     }
 }

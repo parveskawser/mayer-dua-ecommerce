@@ -1,5 +1,34 @@
-﻿$(document).ready(function () {
+﻿
 
+$(document).ready(function () {
+
+    // Expand / collapse action drawer
+    $(document).on("click", ".js-expand-actions", function () {
+        const id = $(this).data("product-id");
+        const drawer = $("#drawer-" + id);
+        const $thisButton = $(this);
+
+        // 1. Reset all other buttons
+        $(".js-expand-actions").not($thisButton).removeClass("btn-primary text-white").addClass("btn-manage");
+        $(".js-expand-actions").not($thisButton).find("span").html("&#9660;"); // Reset arrow down
+
+        // 2. Close other drawers
+        $(".action-drawer-row").not(drawer).addClass("d-none");
+
+        // 3. Toggle this drawer
+        drawer.toggleClass("d-none");
+
+        // 4. Toggle Button Style
+        if (drawer.hasClass("d-none")) {
+            // Closed state
+            $thisButton.removeClass("btn-primary text-white").addClass("btn-manage");
+            $thisButton.find("span").html("&#9660;"); // Arrow Down
+        } else {
+            // Open state
+            $thisButton.removeClass("btn-manage").addClass("btn-primary text-white");
+            $thisButton.find("span").html("&#9650;"); // Arrow Up
+        }
+    });
     // ============================================================
     // 1. GLOBAL CONFIGURATION & VARIABLES
     // ============================================================
@@ -250,12 +279,16 @@
     // ============================================================
 
     // 1. View Variants Button
+    // 1. View Variants Button
     $('.btn-view-variants').on('click', function () {
         var productId = $(this).data('product-id');
-        var productName = $(this).closest('tr').find('td[data-product-name]').data('product-name');
+        var productName = $(this).data('product-name');
 
         $('#modal-product-name').text(productName);
         $('#modal-variants-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productVariantsModal').modal('show');
 
         $.get(urls.getVariantsPartial, { productId: productId }, function (data) {
             $('#modal-variants-content').html(data);
@@ -292,13 +325,19 @@
     });
 
     // 3. View Details
+    // 3. View Details
     $('.js-view-details').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
-        let productName = $button.closest('tr').find('td[data-product-name]').data('product-name');
+
+        // [FIX] Get name directly from button (requires HTML update above)
+        let productName = $button.data('product-name');
 
         $('#productDetailsModalLabel').text("Details for " + productName);
         $('#modal-details-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productDetailsModal').modal('show');
 
         $.get(urls.getProductDetailsPartial, { productId: productId }, function (data) {
             $('#modal-details-content').html(data);
@@ -308,12 +347,17 @@
     });
 
     // 4. Edit Product (Main)
+    // 4. Edit Product (Main)
     $('.js-edit-product').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
         let productName = $button.data('product-name');
+
         $('#editProductModalLabel').text("Edit: " + productName);
         $('#modal-edit-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#editProductModal').modal('show');
 
         $.get(urls.getEditPartial, { productId: productId }, function (data) {
             $('#modal-edit-content').html(data);
@@ -326,8 +370,12 @@
     $('.js-delete-product').on('click', function () {
         let productId = $(this).data('product-id');
         let productName = $(this).data('product-name');
+
         $('#modal-delete-product-name').text(productName);
         $('#confirm-delete-button').data('product-id', productId);
+
+        // [FIX] Open the modal!
+        $('#deleteProductModal').modal('show');
     });
 
     // Checkbox Logic for Delete
@@ -545,11 +593,16 @@
     // ============================================================
 
     // 1. Open Modal
+    // 1. Open Modal (Discounts)
     $('.js-manage-discounts').on('click', function () {
         let productId = $(this).data('product-id');
         let name = $(this).data('product-name');
+
         $('#modal-discount-product-name').text(name);
         $('#modal-discounts-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productDiscountsModal').modal('show');
 
         $.get(urls.getDiscounts, { productId: productId }, function (html) {
             $('#modal-discounts-content').html(html);
@@ -974,5 +1027,6 @@
             }
         });
     });
+    
 
 }); // End of Document Ready

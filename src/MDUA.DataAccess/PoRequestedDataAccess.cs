@@ -5,11 +5,73 @@ using System.Collections.Generic;
 using System.Dynamic;
 using MDUA.Framework;
 using MDUA.Entities;
+using MDUA.Entities.Bases;        // Required for PoRequestedBase
+using MDUA.Framework.Exceptions;  // Required for ObjectInsertException
 
 namespace MDUA.DataAccess
 {
     public partial class PoRequestedDataAccess
     {
+        // ============================================================================
+        // ✅ THE FIX: Custom Insert Method supporting SqlTransaction
+        // ============================================================================
+        public long Insert(PoRequestedBase obj, SqlTransaction trans)
+        {
+            try
+            {
+                // 1. Get the Stored Procedure Command
+                SqlCommand cmd = GetSPCommand("InsertPoRequested");
+
+                // 2. Attach the Transaction
+                if (trans != null)
+                {
+                    cmd.Connection = trans.Connection;
+                    cmd.Transaction = trans;
+                }
+
+                // 3. Add Parameters
+                // We add the output ID parameter
+                AddParameter(cmd, pInt32Out(PoRequestedBase.Property_Id));
+
+                // We add the rest of the parameters. 
+                // NOTE: Ensure these property names match your generated Base class constants exactly.
+                AddParameter(cmd, pInt32(PoRequestedBase.Property_ProductVariantId, obj.ProductVariantId));
+                AddParameter(cmd, pInt32(PoRequestedBase.Property_VendorId, obj.VendorId));
+                AddParameter(cmd, pInt32(PoRequestedBase.Property_Quantity, obj.Quantity));
+                AddParameter(cmd, pDateTime(PoRequestedBase.Property_RequestDate, obj.RequestDate));
+                AddParameter(cmd, pNVarChar(PoRequestedBase.Property_Status, 50, obj.Status));
+                AddParameter(cmd, pNVarChar(PoRequestedBase.Property_Remarks, 500, obj.Remarks));
+                AddParameter(cmd, pNVarChar(PoRequestedBase.Property_ReferenceNo, 50, obj.ReferenceNo));
+
+                // Add BulkOrderId (This is required for your Bulk Order feature)
+                AddParameter(cmd, pInt32(PoRequestedBase.Property_BulkPurchaseOrderId, obj.BulkPurchaseOrderId));
+
+                // Audit fields
+                AddParameter(cmd, pNVarChar(PoRequestedBase.Property_CreatedBy, 100, obj.CreatedBy));
+                AddParameter(cmd, pDateTime(PoRequestedBase.Property_CreatedAt, obj.CreatedAt));
+                AddParameter(cmd, pNVarChar(PoRequestedBase.Property_UpdatedBy, 100, obj.UpdatedBy));
+                AddParameter(cmd, pDateTime(PoRequestedBase.Property_UpdatedAt, obj.UpdatedAt));
+
+                // 4. Execute
+                long result = InsertRecord(cmd);
+
+                if (result > 0)
+                {
+                    obj.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
+                    obj.Id = (Int32)GetOutParameter(cmd, PoRequestedBase.Property_Id);
+                }
+                return result;
+            }
+            catch (SqlException x)
+            {
+                throw new ObjectInsertException(obj, x);
+            }
+        }
+
+        // ============================================================================
+        // YOUR EXISTING CUSTOM METHODS
+        // ============================================================================
+
         public void UpdateStatus(int poId, string status, SqlTransaction transaction)
         {
             string SQL = "UPDATE PoRequested SET Status = @Status, UpdatedAt = GETDATE() WHERE Id = @Id";
@@ -33,13 +95,9 @@ namespace MDUA.DataAccess
                     ISNULL(v.VariantName, 'Standard') as VariantName,
                     ISNULL(vps.StockQty, 0) as CurrentStock,
                     p.ReorderLevel,
-                    -- Calculate if stock is low (1 = True, 0 = False)
                     CASE WHEN ISNULL(vps.StockQty, 0) <= p.ReorderLevel THEN 1 ELSE 0 END as IsLowStock,
-                    -- Calculate if stock is healthy (Above reorder level)
                     CASE WHEN ISNULL(vps.StockQty, 0) > p.ReorderLevel THEN 1 ELSE 0 END as IsHealthyStock,
-                    -- Suggest reorder qty
                     (p.ReorderLevel * 2) - ISNULL(vps.StockQty, 0) as SuggestedQty,
-                    -- Check for Pending POs
                     (SELECT COUNT(*) FROM PoRequested po WHERE po.ProductVariantId = v.Id AND po.Status = 'Pending') as PendingCount
                 FROM ProductVariant v
                 JOIN Product p ON v.ProductId = p.Id
@@ -73,55 +131,21 @@ namespace MDUA.DataAccess
             }
             return list;
         }
-        public List<dynamic> GetVariantsSortedByStock()
-        {
-            var list = new List<dynamic>();
 
-            // SQL: Joins Product and Variant, Sorts by StockQty ASC
-            string SQL = @"
-        SELECT 
-            v.Id as VariantId,
-            p.ProductName + ' - ' + ISNULL(v.VariantName, 'Standard') as FullName,
-            ISNULL(vps.StockQty, 0) as CurrentStock
-        FROM ProductVariant v
-        JOIN Product p ON v.ProductId = p.Id
-        LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
-        WHERE p.IsActive = 1 AND v.IsActive = 1
-        ORDER BY ISNULL(vps.StockQty, 0) ASC, p.ProductName ASC"; 
-
-            using (SqlCommand cmd = GetSQLCommand(SQL))
-            {
-                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        dynamic item = new ExpandoObject();
-                        item.VariantId = reader.GetInt32(0);
-                        item.FullName = reader.GetString(1);
-                        item.CurrentStock = reader.GetInt32(2);
-                        list.Add(item);
-                    }
-                }
-                cmd.Connection.Close();
-            }
-            return list;
-        }
-        // 2. Get Pending Request Details (For Info Modal & Autofill)
         public dynamic GetPendingRequestByVariant(int variantId)
         {
             string SQL = @"
-        SELECT TOP 1 
-            po.Id, 
-            po.Quantity, 
-            po.RequestDate, 
-            v.VendorName, 
-            po.Remarks
-        FROM PoRequested po
-            JOIN Vendor v ON po.VendorId = v.Id
-        WHERE po.ProductVariantId = @VariantId 
-            AND po.Status = 'Pending'
-        ORDER BY po.RequestDate DESC";
+                SELECT TOP 1 
+                    po.Id, 
+                    po.Quantity, 
+                    po.RequestDate, 
+                    v.VendorName, 
+                    po.Remarks
+                FROM PoRequested po
+                    JOIN Vendor v ON po.VendorId = v.Id
+                WHERE po.ProductVariantId = @VariantId 
+                    AND po.Status = 'Pending'
+                ORDER BY po.RequestDate DESC";
 
             using (SqlCommand cmd = GetSQLCommand(SQL))
             {
@@ -132,9 +156,7 @@ namespace MDUA.DataAccess
                 {
                     if (reader.Read())
                     {
-                        //  lowercase property names for JS compatibility
                         dynamic info = new ExpandoObject();
-                        // Map to lowercase keys explicitly
                         ((IDictionary<string, object>)info)["id"] = reader.GetInt32(0);
                         ((IDictionary<string, object>)info)["quantity"] = reader.GetInt32(1);
                         ((IDictionary<string, object>)info)["requestDate"] = reader.GetDateTime(2).ToString("dd MMM yyyy");
@@ -149,25 +171,23 @@ namespace MDUA.DataAccess
             return null;
         }
 
-
         public dynamic GetVariantStatus(int variantId)
         {
-            // Reusing your exact query logic, just filtered by ID
             string SQL = @"
-        SELECT 
-            v.Id as VariantId,
-            p.ProductName,
-            ISNULL(v.VariantName, 'Standard') as VariantName,
-            ISNULL(vps.StockQty, 0) as CurrentStock,
-            p.ReorderLevel,
-            CASE WHEN ISNULL(vps.StockQty, 0) <= p.ReorderLevel THEN 1 ELSE 0 END as IsLowStock,
-            CASE WHEN ISNULL(vps.StockQty, 0) > p.ReorderLevel THEN 1 ELSE 0 END as IsHealthyStock,
-            (p.ReorderLevel * 2) - ISNULL(vps.StockQty, 0) as SuggestedQty,
-            (SELECT COUNT(*) FROM PoRequested po WHERE po.ProductVariantId = v.Id AND po.Status = 'Pending') as PendingCount
-        FROM ProductVariant v
-        JOIN Product p ON v.ProductId = p.Id
-        LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
-        WHERE v.Id = @VariantId"; // Filter applied here
+                SELECT 
+                    v.Id as VariantId,
+                    p.ProductName,
+                    ISNULL(v.VariantName, 'Standard') as VariantName,
+                    ISNULL(vps.StockQty, 0) as CurrentStock,
+                    p.ReorderLevel,
+                    CASE WHEN ISNULL(vps.StockQty, 0) <= p.ReorderLevel THEN 1 ELSE 0 END as IsLowStock,
+                    CASE WHEN ISNULL(vps.StockQty, 0) > p.ReorderLevel THEN 1 ELSE 0 END as IsHealthyStock,
+                    (p.ReorderLevel * 2) - ISNULL(vps.StockQty, 0) as SuggestedQty,
+                    (SELECT COUNT(*) FROM PoRequested po WHERE po.ProductVariantId = v.Id AND po.Status = 'Pending') as PendingCount
+                FROM ProductVariant v
+                JOIN Product p ON v.ProductId = p.Id
+                LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
+                WHERE v.Id = @VariantId";
 
             using (SqlCommand cmd = GetSQLCommand(SQL))
             {
@@ -179,7 +199,6 @@ namespace MDUA.DataAccess
                     if (reader.Read())
                     {
                         dynamic item = new System.Dynamic.ExpandoObject();
-                        // Explicitly mapping to match your View's expectations
                         ((IDictionary<string, object>)item)["VariantId"] = reader.GetInt32(0);
                         ((IDictionary<string, object>)item)["ProductName"] = reader.GetString(1);
                         ((IDictionary<string, object>)item)["VariantName"] = reader.GetString(2);
@@ -194,7 +213,5 @@ namespace MDUA.DataAccess
             }
             return null;
         }
-
     }
-
 }

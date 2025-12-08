@@ -1,50 +1,44 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
 
     // ============================================================
-    // 1. INITIALIZATION & SETUP (SAFE MODE)
+    // 1. INITIALIZATION & SETUP
     // ============================================================
 
-    // We use 'let' so these variables exist even if the elements are missing
-    let requestModal = null;
-    let infoModal = null;
-    let receiveModal = null;
+    // Initialize Modals
+    const reqModalEl = document.getElementById('requestModal');
+    const infoModalEl = document.getElementById('infoModal');
+    const receiveModalEl = document.getElementById('receiveModal');
 
-    // Helper to safely initialize a modal
-    function initSafeModal(id) {
-        const el = document.getElementById(id);
-        if (el) {
-            // Move to body to prevent z-index issues
-            if (el.parentNode !== document.body) document.body.appendChild(el);
-            return new bootstrap.Modal(el);
-        }
-        return null;
-    }
+    // Move modals to body to prevent z-index/backdrop issues
+    [reqModalEl, infoModalEl, receiveModalEl].forEach(el => {
+        if (el && el.parentNode !== document.body) document.body.appendChild(el);
+    });
 
-    // Initialize only if they exist (Fixes crash on Bulk Order page)
-    requestModal = initSafeModal('requestModal');
-    infoModal = initSafeModal('infoModal');
-    receiveModal = initSafeModal('receiveModal');
-
+    const requestModal = new bootstrap.Modal(reqModalEl);
+    const infoModal = new bootstrap.Modal(infoModalEl);
+    const receiveModal = new bootstrap.Modal(receiveModalEl);
 
     // ============================================================
-    // 2. EVENT DELEGATION (Inventory Page Actions)
+    // 2. EVENT DELEGATION (Handles Clicks for Dynamic Rows)
     // ============================================================
+    // We attach one listener to the Document. It detects clicks on our buttons.
 
     document.addEventListener('click', function (e) {
 
         // --- A. REQUEST STOCK BUTTON ---
+        // Checks if the clicked element OR its parent has class .btn-request
         const reqBtn = e.target.closest('.btn-request');
-        if (reqBtn && requestModal) { // Check if modal exists
+        if (reqBtn) {
             document.getElementById('reqVariantId').value = reqBtn.dataset.variantId;
             document.getElementById('reqProductName').value = reqBtn.dataset.name;
             document.getElementById('reqQty').value = reqBtn.dataset.suggested;
             requestModal.show();
-            return;
+            return; // Stop processing
         }
 
         // --- B. RECEIVE STOCK BUTTON ---
         const recBtn = e.target.closest('.btn-receive');
-        if (recBtn && receiveModal) {
+        if (recBtn) {
             const variantId = recBtn.dataset.variantId;
             const name = recBtn.dataset.name;
 
@@ -60,18 +54,17 @@
 
             receiveModal.show();
 
-            // Fetch info
+            // Fetch info to autofill requested qty
             fetch(`/purchase/get-pending-info?variantId=${variantId}`)
                 .then(r => r.json())
                 .then(res => {
-                    const reqQtyField = document.getElementById('recReqQty');
-                    if (reqQtyField) {
-                        if (res.success && res.data) {
-                            reqQtyField.value = res.data.quantity;
-                            document.getElementById('recQty').value = res.data.quantity;
-                        } else {
-                            reqQtyField.value = "N/A";
-                        }
+                    if (res.success && res.data) {
+                        const reqQty = res.data.quantity;
+                        document.getElementById('recReqQty').value = reqQty;
+                        // Convenience: Auto-fill receive qty
+                        document.getElementById('recQty').value = reqQty;
+                    } else {
+                        document.getElementById('recReqQty').value = "N/A";
                     }
                 });
             return;
@@ -79,60 +72,60 @@
 
         // --- C. INFO BUTTON ---
         const infoBtn = e.target.closest('.btn-req-info');
-        if (infoBtn && infoModal) {
+        if (infoBtn) {
             const variantId = infoBtn.dataset.variantId;
             const body = document.getElementById('infoModalBody');
 
-            if (body) {
-                body.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-info"></div><div class="mt-2">Loading details...</div></div>';
-                infoModal.show();
+            body.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-info"></div><div class="mt-2">Loading details...</div></div>';
+            infoModal.show();
 
-                fetch(`/purchase/get-pending-info?variantId=${variantId}`)
-                    .then(r => r.json())
-                    .then(res => {
-                        if (res.success && res.data) {
-                            const d = res.data;
-                            body.innerHTML = `
-                                <div class="list-group list-group-flush">
-                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                        <span class="text-muted">Request ID</span>
-                                        <span class="fw-bold">PO #${d.id}</span>
+            fetch(`/purchase/get-pending-info?variantId=${variantId}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        const d = res.data;
+                        // Render Details
+                        body.innerHTML = `
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <span class="text-muted">Request ID</span>
+                                    <span class="fw-bold">PO #${d.id}</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <span class="text-muted">Vendor</span>
+                                    <span class="fw-bold text-dark">${d.vendorName}</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <span class="text-muted">Requested Quantity</span>
+                                    <span class="badge bg-warning text-dark fs-6">${d.quantity}</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <span class="text-muted">Request Date</span>
+                                    <span>${d.requestDate}</span>
+                                </div>
+                                <div class="list-group-item p-3">
+                                    <span class="text-muted d-block mb-2">Remarks</span>
+                                    <div class="bg-light p-2 rounded border text-break text-secondary small">
+                                        ${d.remarks || 'No remarks provided.'}
                                     </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                        <span class="text-muted">Vendor</span>
-                                        <span class="fw-bold text-dark">${d.vendorName}</span>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                        <span class="text-muted">Requested Quantity</span>
-                                        <span class="badge bg-warning text-dark fs-6">${d.quantity}</span>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                        <span class="text-muted">Request Date</span>
-                                        <span>${d.requestDate}</span>
-                                    </div>
-                                    <div class="list-group-item p-3">
-                                        <span class="text-muted d-block mb-2">Remarks</span>
-                                        <div class="bg-light p-2 rounded border text-break text-secondary small">
-                                            ${d.remarks || 'No remarks provided.'}
-                                        </div>
-                                    </div>
-                                </div>`;
-                        } else {
-                            body.innerHTML = `<div class="text-center text-danger py-4 p-3">${res.message || 'Data not found'}</div>`;
-                        }
-                    })
-                    .catch(() => {
-                        body.innerHTML = `<div class="text-center text-danger py-4">Failed to load data.</div>`;
-                    });
-            }
+                                </div>
+                            </div>`;
+                    } else {
+                        body.innerHTML = `<div class="text-center text-danger py-4 p-3">${res.message || 'Data not found'}</div>`;
+                    }
+                })
+                .catch(() => {
+                    body.innerHTML = `<div class="text-center text-danger py-4">Failed to load data.</div>`;
+                });
             return;
         }
     });
 
     // ============================================================
-    // 3. SUBMIT ACTIONS (Inventory Page)
+    // 3. SUBMIT ACTIONS
     // ============================================================
 
+    // Submit REQUEST
     const btnConfirmReq = document.getElementById('btnConfirmRequest');
     if (btnConfirmReq) {
         btnConfirmReq.addEventListener('click', function () {
@@ -144,6 +137,7 @@
         });
     }
 
+    // Submit RECEIVE
     const btnConfirmRec = document.getElementById('btnConfirmReceive');
     if (btnConfirmRec) {
         btnConfirmRec.addEventListener('click', function () {
@@ -155,6 +149,7 @@
                 Remarks: document.getElementById('recRemarks').value
             };
 
+            // Validation
             if (!payload.ProductVariantId || isNaN(payload.ProductVariantId)) { alert("System Error: Variant ID missing"); return; }
             if (!payload.Quantity || payload.Quantity < 1) { alert("Please enter a valid quantity."); return; }
             if (isNaN(payload.BuyingPrice) || payload.BuyingPrice < 0) { alert("Please enter a valid total cost."); return; }
@@ -184,23 +179,31 @@
             })
             .then(data => {
                 if (data.success) {
-                    if (modalInstance) modalInstance.hide(); // Hide only if modal exists
+                    modalInstance.hide();
 
+                    // ✅ SUCCESS: Update the specific row without reloading
                     if (payload.ProductVariantId) {
                         refreshVariantRow(payload.ProductVariantId);
                     }
 
+                    // Show Toast (Using SweetAlert if available)
                     if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: data.message || 'Success',
-                            timer: 2000,
-                            showConfirmButton: false
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
                         });
+                        Toast.fire({ icon: 'success', title: data.message || 'Success' });
                     } else {
                         alert(data.message || "Success!");
                     }
+
                 } else {
                     throw new Error(data.message || "Unknown Error");
                 }
@@ -215,195 +218,76 @@
             });
     }
 
+    // ✅ REFRESH FUNCTION: Fetches the partial HTML and replaces the row
+    // ... inside inventory.js ...
+
+    // ✅ UPDATED REFRESH FUNCTION
     function refreshVariantRow(variantId) {
         const row = document.getElementById(`row-${variantId}`);
         if (!row) return;
 
+        // Visual feedback
         row.style.transition = "opacity 0.3s";
         row.style.opacity = '0.4';
 
         fetch(`/purchase/get-variant-row?variantId=${variantId}`)
             .then(r => r.text())
             .then(html => {
+                // 1. Replace the HTML
                 row.outerHTML = html;
+
+                // 2. Flash effect
                 const newRow = document.getElementById(`row-${variantId}`);
                 if (newRow) {
                     newRow.style.backgroundColor = "#e8f5e9";
-                    setTimeout(() => newRow.style.backgroundColor = "", 1000);
+                    setTimeout(() => {
+                        newRow.style.backgroundColor = "";
+                    }, 1000);
                 }
+
+                // 3. ✅ TRIGGER TOTAL UPDATE
                 updateGroupTotal(variantId);
             })
             .catch(err => console.error("Auto-refresh failed:", err));
     }
 
+    // ✅ NEW HELPER: Recalculates the Parent Group's Total Stock
     function updateGroupTotal(variantId) {
+        // 1. Find the newly updated row
         const row = document.getElementById(`row-${variantId}`);
         if (!row) return;
+
+        // 2. Find the container (the accordion div)
         const collapseDiv = row.closest('.collapse');
         if (!collapseDiv) return;
 
+        // 3. Sum up all stock values in this group
+        // We look for spans with IDs starting with "stock-"
         let newTotal = 0;
         const stockSpans = collapseDiv.querySelectorAll('[id^="stock-"]');
         stockSpans.forEach(span => {
+            // Parse integer, default to 0 if NaN
             const val = parseInt(span.textContent.trim()) || 0;
             newTotal += val;
         });
 
+        // 4. Find the Parent Row to update
+        // We match the button's target ID to the collapseDiv ID
         const parentBtn = document.querySelector(`button[data-bs-target="#${collapseDiv.id}"]`);
         if (parentBtn) {
-            const parentRow = parentBtn.closest('tr') || parentBtn.closest('.card-header'); // Handle both Table and Accordion layouts
-            if (parentRow) {
-                // Try to find the total cell (Table layout) or badge (Accordion layout)
-                const totalCell = parentRow.querySelector('.group-total-stock') || parentRow.querySelector('b');
-                if (totalCell) {
-                    totalCell.style.transition = "color 0.3s";
-                    totalCell.style.color = "#198754";
-                    totalCell.textContent = newTotal;
-                    setTimeout(() => totalCell.style.color = "", 1000);
-                }
+            const parentRow = parentBtn.closest('tr');
+            const totalCell = parentRow.querySelector('.group-total-stock');
+
+            if (totalCell) {
+                // Animate the change
+                totalCell.style.transition = "color 0.3s";
+                totalCell.style.color = "#198754"; // Flash Green
+                totalCell.textContent = newTotal;
+
+                setTimeout(() => {
+                    totalCell.style.color = ""; // Reset color
+                }, 1000);
             }
         }
     }
-
-    // ============================================================
-    // 5. BULK ORDER PAGE LOGIC
-    // ============================================================
-
-    // --- A. SEARCH FUNCTIONALITY (FIXED) ---
-    // --- A. SEARCH FUNCTIONALITY (ENHANCED) ---
-    const searchInput = document.getElementById('productSearch');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function (e) {
-            const term = e.target.value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.product-card');
-
-            cards.forEach(card => {
-                const productName = (card.dataset.searchTerm || "").toLowerCase();
-                const variantRows = card.querySelectorAll('.variant-row');
-
-                // 1. Check if Product Name matches
-                const isProductMatch = productName.includes(term);
-
-                let hasVisibleVariant = false;
-
-                // 2. Loop through variants to check and filter them
-                variantRows.forEach(row => {
-                    // If product matches, always show the variant (reset previous filters)
-                    if (isProductMatch) {
-                        row.classList.remove('d-none');
-                        hasVisibleVariant = true;
-                    } else {
-                        // If product doesn't match, check if the variant row text matches
-                        // We use .textContent to search name, stock, remarks, etc.
-                        const variantText = row.textContent.toLowerCase();
-
-                        if (variantText.includes(term)) {
-                            row.classList.remove('d-none');
-                            hasVisibleVariant = true;
-                        } else {
-                            row.classList.add('d-none');
-                        }
-                    }
-                });
-
-                // 3. Show Card if Product matches OR at least one variant matches
-                if (isProductMatch || hasVisibleVariant) {
-                    card.classList.remove('d-none');
-                } else {
-                    card.classList.add('d-none');
-                }
-            });
-        });
-    }
-
-    // --- B. CHECKBOX INTERACTION ---
-    document.body.addEventListener('change', function (e) {
-        if (e.target.classList.contains('variant-checkbox')) {
-            const checkbox = e.target;
-            const row = checkbox.closest('tr');
-            const inputs = row.querySelectorAll('.input-vendor, .input-qty, .input-remarks');
-
-            if (checkbox.checked) {
-                row.classList.add('table-primary');
-                inputs.forEach(input => input.disabled = false);
-            } else {
-                row.classList.remove('table-primary');
-                inputs.forEach(input => input.disabled = true);
-            }
-        }
-    });
-
-    // --- C. BULK SUBMIT ACTION ---
-    const btnSubmitBulk = document.getElementById('btnSubmitBulk');
-    if (btnSubmitBulk) {
-        btnSubmitBulk.addEventListener('click', function () {
-
-            const selectedCheckboxes = document.querySelectorAll('.variant-checkbox:checked');
-
-            if (selectedCheckboxes.length === 0) {
-                alert("Please select at least one item to order.");
-                return;
-            }
-
-            const payload = [];
-            let hasError = false;
-
-            selectedCheckboxes.forEach(chk => {
-                const row = chk.closest('tr');
-                const variantId = chk.dataset.variantId;
-                const vendorId = row.querySelector('.input-vendor').value;
-                const qty = row.querySelector('.input-qty').value;
-                const remarks = row.querySelector('.input-remarks').value;
-
-                if (!vendorId || !qty || qty <= 0) {
-                    hasError = true;
-                    row.classList.add('table-danger');
-                    setTimeout(() => row.classList.remove('table-danger'), 2000);
-                } else {
-                    payload.push({
-                        ProductVariantId: parseInt(variantId),
-                        VendorId: parseInt(vendorId),
-                        Quantity: parseInt(qty),
-                        Remarks: remarks
-                    });
-                }
-            });
-
-            if (hasError) {
-                alert("Please select a Vendor and valid Quantity for all checked items.");
-                return;
-            }
-
-            const originalText = btnSubmitBulk.innerHTML;
-            btnSubmitBulk.disabled = true;
-            btnSubmitBulk.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-
-            fetch('/purchase/bulk-create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'success', title: 'Order Placed!', text: data.message, confirmButtonText: 'OK'
-                            }).then(() => window.location.reload());
-                        } else {
-                            alert(data.message);
-                            window.location.reload();
-                        }
-                    } else {
-                        alert("Error: " + data.message);
-                    }
-                })
-                .catch(err => alert("System Error: " + err.message))
-                .finally(() => {
-                    btnSubmitBulk.disabled = false;
-                    btnSubmitBulk.innerHTML = originalText;
-                });
-        });
-    }
-
 });

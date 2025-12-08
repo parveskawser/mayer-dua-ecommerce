@@ -31,7 +31,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
 
-
+        [Route("dashboard")]
         //change
         [Authorize]
         [HttpGet]

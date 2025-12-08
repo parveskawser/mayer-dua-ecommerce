@@ -33,9 +33,9 @@ namespace MDUA.DataAccess.Interface
 	{
         // ✅ NEW: Add this missing definition
         List<dynamic> GetInventoryStatus();
-        List<dynamic> GetVariantsSortedByStock();
         dynamic GetPendingRequestByVariant(int variantId);
         void UpdateStatus(int poId, string status, SqlTransaction transaction);
         dynamic GetVariantStatus(int variantId);
+        long Insert(PoRequestedBase obj, SqlTransaction trans);
     }	
 }

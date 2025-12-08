@@ -133,10 +133,18 @@
                         <a class="nav-link nav-link-sm @(currentAction == "StockStatus" ? "active" : "")"
                            href="@Url.Action("StockStatus", "Purchase")"> Stock
                         </a>
-                    </li>
+                    </li         
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm @(currentAction == "BulkOrder" ? "active" : "")"
                            href="@Url.Action("BulkOrder", "Purchase")"> Bulk Order
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "BulkOrder" ? "active" : "")"
+                           href="@Url.Action("BulkOrderReceivedList", "Purchase")">
+                            Bulk Order Receive
                         </a>
                     </li>
                 </ul>

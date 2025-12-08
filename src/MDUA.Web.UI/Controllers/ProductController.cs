@@ -19,7 +19,6 @@ namespace MDUA.Web.UI.Controllers
         }
 
         #region Products
-
         [AllowAnonymous]
         [Route("product/{slug}")]
         public IActionResult Index(string slug)
@@ -72,27 +71,51 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [Route("product/all")]
-        public IActionResult AllProducts()
+        [HttpGet]
+        public IActionResult AllProducts(string search)
         {
-            // Permission Check
+            // 1. Permission Check (Kept from your existing code)
             if (!HasPermission("Product.View")) return HandleAccessDenied();
 
-            var products = _productFacade.GetAllProductsWithCategory();
+            IEnumerable<Product> products;
+
+            // 2. Pass the search term back to the View (so the input box remembers it)
+            ViewData["CurrentSearch"] = search;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // 3. If a search term exists, use the Search method
+                // Note: Ensure _productFacade.SearchProducts(search) is implemented in your Facade
+                products = _productFacade.SearchProducts(search);
+            }
+            else
+            {
+                // 4. Default: Show all products (Your existing method)
+                products = _productFacade.GetAllProductsWithCategory();
+            }
+
             return View(products);
         }
-
         [HttpGet]
-        [Route("product/get-attribute-values")]
-        public IActionResult GetAttributeValues(int attributeId)
+        [Route("product/search-ajax")] // This defines the URL as /product/search-ajax
+        public IActionResult SearchProductsAjax(string query)
         {
-            // Permission Check 
-            if (!HasPermission("Product.View")) return HandleAccessDenied();
+            IEnumerable<Product> model;
 
-            var values = _productFacade.GetAttributeValues(attributeId);
-            var result = values.Select(v => new { id = v.Id, value = v.Value }).ToList();
-            return new JsonResult(result);
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // If search is empty, return default top 5
+                model = _productFacade.GetAllProductsWithCategory();
+            }
+            else
+            {
+                // Perform Search
+                model = _productFacade.SearchProducts(query);
+            }
+
+            // This returns ONLY the table rows to the JavaScript
+            return PartialView("_ProductTableRows", model);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("product/toggle-status")]
@@ -138,7 +161,6 @@ namespace MDUA.Web.UI.Controllers
                     TempData["Success"] = "Product deleted successfully!";
                     return Json(new { success = true });
                 }
-
                 return Json(new { success = false, message = "Product not found." });
             }
             catch (Exception ex)
@@ -150,7 +172,6 @@ namespace MDUA.Web.UI.Controllers
         #endregion
 
         #region parital edits and updates for product and its variants
-
         [HttpGet]
         [Route("product/get-edit-partial")]
         public IActionResult GetEditPartial(int productId)
@@ -231,10 +252,10 @@ namespace MDUA.Web.UI.Controllers
             return Json(new { success = result > 0, message = result > 0 ? "" : "Failed to add variant." });
         }
 
+
         #endregion
 
         #region attributes
-
         [HttpGet]
         [Route("product/get-missing-attributes")]
         public IActionResult GetMissingAttributes(int productId, int variantId)
@@ -257,11 +278,9 @@ namespace MDUA.Web.UI.Controllers
             _productFacade.AddAttributeToVariant(variantId, attributeValueId);
             return Json(new { success = true });
         }
-
         #endregion
 
         #region discounts and pricing
-
         [HttpGet]
         [Route("product/get-discounts")]
         public IActionResult GetDiscountsPartial(int productId)
@@ -335,7 +354,6 @@ namespace MDUA.Web.UI.Controllers
         #endregion
 
         #region product and variant images
-
         [HttpGet]
         [Route("product/get-images")]
         public IActionResult GetImagesPartial(int productId)
@@ -421,10 +439,7 @@ namespace MDUA.Web.UI.Controllers
                         System.IO.File.Delete(physicalPath);
                     }
                 }
-                catch
-                {
-                    /* Log error */
-                }
+                catch { /* Log error */ }
             }
 
             _productFacade.DeleteProductImage(id);
@@ -488,9 +503,7 @@ namespace MDUA.Web.UI.Controllers
                         System.IO.File.Delete(physicalPath);
                     }
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
             _productFacade.DeleteVariantImage(id);
@@ -508,7 +521,6 @@ namespace MDUA.Web.UI.Controllers
             _productFacade.UpdateVariantImageDisplayOrder(imageId, displayOrder);
             return Json(new { success = true });
         }
-
         #endregion
 
         #region Helpers & Slug
@@ -524,9 +536,25 @@ namespace MDUA.Web.UI.Controllers
             return str;
         }
 
+        [HttpGet]
+        [Route("product/get-attribute-values")]
+        public IActionResult GetAttributeValues(int attributeId)
+        {
+            // Optional: Add permission check if needed
+            // if (!HasPermission("Product.Add")) return HandleAccessDenied();
 
+            // Fetch data from your Facade
+            var values = _productFacade.GetAttributeValues(attributeId);
 
+            // Return as JSON. 
+            // We project to an anonymous object to ensure the JS receives 'id' and 'value'
+            // exactly as the script expects (lowercase).
+            return Json(values.Select(v => new { 
+                id = v.Id, 
+                value = v.Value // Or v.Name, depending on your Entity
+            }));
+        }
+     
         #endregion
-
     }
 }

@@ -19,7 +19,7 @@ public class CustomerController : BaseController
     // In CustomerController.cs
 
     [HttpGet]
-    [Route("customer/list")]
+    [Route("customer/all")]
     public IActionResult CustomerList()
     {
         if (!HasPermission("Customer.View")) return HandleAccessDenied();

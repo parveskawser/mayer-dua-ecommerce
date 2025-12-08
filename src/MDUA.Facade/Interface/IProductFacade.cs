@@ -54,5 +54,7 @@ namespace MDUA.Facade.Interface
         void UpdateProductImageSortOrder(int imageId, int sortOrder);
         void UpdateVariantImageDisplayOrder(int imageId, int displayOrder);
         ProductDiscount GetBestDiscount(int productId, decimal basePrice);
+        ProductList SearchProducts(string searchTerm);
+
     }
 }

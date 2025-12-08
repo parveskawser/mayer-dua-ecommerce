@@ -24,10 +24,9 @@ namespace MDUA.Web.UI.Controllers
         {
             get
             {
-                return User.FindFirst(ClaimTypes.Name)?.Value;
+                return User.FindFirst(ClaimTypes.Name)?.Value ?? "System";
             }
         }
-
         // Helper to get the logged-in user's CompanyId
         protected int CurrentCompanyId
         {

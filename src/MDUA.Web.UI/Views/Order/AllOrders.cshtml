@@ -3,121 +3,122 @@
     ViewData["Title"] = "All Sales Orders";
     Layout = "_AdminLayout";
 }
-<!---- new -->
+
 @section Styles {
-    <!-- Ensure orders.css contains your modal styles -->
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
 }
 
-<!-- 1. Generate Anti-Forgery Token for JS to use -->
 @Html.AntiForgeryToken()
 
-@section Scripts {
-    <script src="~/js/order-details.js"></script>
-    <script src="~/js/order-actions.js"></script>
-}
+<!-- WRAPPER START -->
+<div class="orders-wrapper">
 
-<h2 class="fw-bold mb-3">Order List</h2>
-<div class="text-muted small mb-4">Total Orders: @(Model?.Count() ?? 0)</div>
-
-@if (ViewData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @ViewData["ErrorMessage"]
+    <!-- 1. FIXED HEADER -->
+    <div class="orders-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Order List</h2>
+            <div class="text-muted small">Total Orders: @(Model?.Count() ?? 0)</div>
+        </div>
     </div>
-}
 
-<div class="glass-card h-100 d-flex flex-column">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle products-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Order Type</th>
-                    <th>Order Date</th>
-                    <th>Net Amount</th>
-                    <th>Status</th>
-                    <th>Confirmed</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+    @if (ViewData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            @ViewData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- 2. SCROLLABLE CARD CONTAINER -->
+    <div class="glass-card-fill">
+
+        <!-- The Actual Scrollable Table Area -->
+        <div class="table-scroll-lock">
+            <table class="table table-hover mb-0 align-middle products-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Order Type</th>
+                        <th>Order Date</th>
+                        <th>Net Amount</th>
+                        <th>Status</th>
+                        <th>Confirmed</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
-                        string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
-                        string dateStr = order.OrderDate != DateTime.MinValue ? order.OrderDate.ToString("MMM dd, yyyy hh:mm tt") : "N/A";
-                        string createdStr = order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt");
-                        string updatedStr = order.UpdatedAt.HasValue ? order.UpdatedAt.Value.ToString("MMM dd, yyyy hh:mm tt") : "-";
+                        foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                        {
+                            string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
+                            string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
+                            string dateStr = order.OrderDate != DateTime.MinValue ? order.OrderDate.ToString("MMM dd, yyyy hh:mm tt") : "N/A";
+                            string createdStr = order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt");
+                            string updatedStr = order.UpdatedAt.HasValue ? order.UpdatedAt.Value.ToString("MMM dd, yyyy hh:mm tt") : "-";
+                            string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
 
-                        // Logic: Map "Draft" -> "Pending"
-                        string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
+                            string statusBadgeClass = "bg-secondary-subtle text-dark";
+                            if (displayStatus == "Confirmed") { statusBadgeClass = "bg-success text-white"; }
+                            else if (displayStatus == "Pending") { statusBadgeClass = "bg-warning text-dark"; }
 
-                        string statusBadgeClass = "bg-secondary-subtle text-dark";
-                        if (displayStatus == "Confirmed") { statusBadgeClass = "bg-success text-white"; }
-                        else if (displayStatus == "Pending") { statusBadgeClass = "bg-warning text-dark"; }
-
-                        <tr>
-                            <td class="fw-medium">@orderIdDisplay</td>
-                            <td>@orderType</td>
-                            <td class="small">@FormatDate(order.OrderDate)</td>
-                            <td>Tk. @FormatAmount(order.NetAmount)</td>
-                            <td>
-                                <span id="status-badge-@order.Id" class="badge @statusBadgeClass">
-                                    @displayStatus
-                                </span>
-                            </td>
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input confirm-toggle" type="checkbox" role="switch"
-                                           id="toggle-@order.Id"
-                                           data-id="@order.Id"
-                                           @(order.Confirmed ? "checked" : "")>
-                                    <label class="form-check-label small" for="toggle-@order.Id">
-                                        @(order.Confirmed ? "Yes" : "No")
-                                    </label>
-                                </div>
-                            </td>
-                            <td class="text-end">
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-info"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#detailsModal"
-                                        title="View Details"
-                                        data-id="@orderIdDisplay"
-                                        data-status="@displayStatus"
-                                        data-type="@orderType"
-                                        data-cust-id="@order.CompanyCustomerId"
-                                        data-addr-id="@order.AddressId"
-                                        data-total="@FormatAmount(order.TotalAmount)"
-                                        data-discount="@FormatAmount(order.DiscountAmount)"
-                                        data-net="@FormatAmount(order.NetAmount)"
-                                        data-ip="@(order.IPAddress ?? "N/A")"
-                                        data-session="@(order.SessionId ?? "N/A")"
-                                        data-created-by="@(order.CreatedBy ?? "System")"
-                                        data-created-at="@createdStr"
-                                        data-updated-by="@(order.UpdatedBy ?? "-")"
-                                        data-updated-at="@updatedStr">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
-                                </button>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="fw-medium">@orderIdDisplay</td>
+                                <td>@orderType</td>
+                                <td class="small">@FormatDate(order.OrderDate)</td>
+                                <td>Tk. @FormatAmount(order.NetAmount)</td>
+                                <td>
+                                    <span id="status-badge-@order.Id" class="badge @statusBadgeClass">
+                                        @displayStatus
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input confirm-toggle" type="checkbox" role="switch"
+                                               id="toggle-@order.Id"
+                                               data-id="@order.Id"
+                                               @(order.Confirmed ? "checked" : "")>
+                                        <label class="form-check-label small" for="toggle-@order.Id">
+                                            @(order.Confirmed ? "Yes" : "No")
+                                        </label>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-info"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detailsModal"
+                                            title="View Details"
+                                            data-id="@orderIdDisplay"
+                                            data-status="@displayStatus"
+                                            data-type="@orderType"
+                                            data-cust-id="@order.CompanyCustomerId"
+                                            data-addr-id="@order.AddressId"
+                                            data-total="@FormatAmount(order.TotalAmount)"
+                                            data-discount="@FormatAmount(order.DiscountAmount)"
+                                            data-net="@FormatAmount(order.NetAmount)"
+                                            data-ip="@(order.IPAddress ?? "N/A")"
+                                            data-session="@(order.SessionId ?? "N/A")"
+                                            data-created-by="@(order.CreatedBy ?? "System")"
+                                            data-created-at="@createdStr"
+                                            data-updated-by="@(order.UpdatedBy ?? "-")"
+                                            data-updated-at="@updatedStr">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-                else
-                {
-                    <tr><td colspan="7" class="text-center p-4 text-muted">No sales orders found.</td></tr>
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        <tr><td colspan="7" class="text-center p-4 text-muted">No sales orders found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<!-- change -->
-<!-- ✅ Added 'order-details-modal' class here so CSS works -->
-<!-- Details Modal -->
+</div> <!-- END WRAPPER -->
+<!-- DETAILS MODAL (Kept outside wrapper) -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable order-details-modal">
         <div class="modal-content">
@@ -254,6 +255,12 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/order-details.js"></script>
+    <script src="~/js/order-actions.js"></script>
+}
+
 @functions {
     public string FormatDate(DateTime? date)
     {

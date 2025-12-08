@@ -7,21 +7,16 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
     <None Include="wwwroot\css\product-image.css" />
   </ItemGroup>
 
   <Target Name="MyPostBuild" AfterTargets="Build">
-<!--  <Exec Command="npm run build:js" />-->
+  <!--//<Exec Command="npm run build:js" />-->
 </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\MDUA.Facade\MDUA.Facade.csproj">
-      <ReferenceSourceTarget></ReferenceSourceTarget>
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
+    <ProjectReference Include="..\MDUA.Facade\MDUA.Facade.csproj" />
   </ItemGroup>
-
 
 </Project>

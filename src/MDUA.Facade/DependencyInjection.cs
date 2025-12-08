@@ -3,7 +3,6 @@ using MDUA.DataAccess;
 using MDUA.DataAccess.Interface;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
-
 namespace MDUA.Facade
 {
     public static class DependencyInjection
@@ -48,8 +47,13 @@ namespace MDUA.Facade
             services.AddScoped<IPoReceivedDataAccess, PoReceivedDataAccess>();
             services.AddScoped<IVendorDataAccess, VendorDataAccess>();
 
-            // ✅ MISSING LINE ADDED: Required for stock transaction logging
+            // ✅ Required for stock transaction logging
             services.AddScoped<IInventoryTransactionDataAccess, InventoryTransactionDataAccess>();
+
+            // ✅ RESTORED MISSING LINE: Bulk Purchase Order
+            services.AddScoped<IBulkPurchaseOrderDataAccess, BulkPurchaseOrderDataAccess>();
+
+            services.AddScoped<IChatDataAccess, MDUA.DataAccess.ChatDataAccess>();
 
             // Facade Layer
             services.AddServiceFacade();
@@ -64,6 +68,8 @@ namespace MDUA.Facade
             services.AddScoped<IOrderFacade, OrderFacade>();
             services.AddScoped<ICustomerFacade, CustomerFacade>();
             services.AddScoped<ICompanyFacade, CompanyFacade>();
+            services.AddScoped<IChatFacade, ChatFacade>();
+
 
             // Register Purchase Facade
             services.AddScoped<IPurchaseFacade, PurchaseFacade>();

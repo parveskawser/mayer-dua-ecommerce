@@ -6,149 +6,161 @@
     var variants = ViewBag.ProductVariants as List<dynamic>;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+}
+
 @Html.AntiForgeryToken()
 
 <input type="hidden" id="targetCompanyId" value="@ViewBag.TargetCompanyId" />
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">🛒 Create Direct Order</h2>
-    <span class="badge bg-primary fs-6">Admin Console</span>
-</div>
+<!-- WRAPPER START -->
+<div class="orders-wrapper">
 
-<div class="row">
-    <!-- Left Column: Customer & Address -->
-    <div class="col-lg-8">
-        <div class="glass-card p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold text-primary m-0">Customer & Delivery Info</h5>
+    <!-- 1. FIXED HEADER -->
+    <div class="orders-header d-flex justify-content-between align-items-center">
+        <h2 class="fw-bold mb-0">🛒 Create Direct Order</h2>
+    </div>
 
-                <div class="btn-group" role="group">
-                    <input type="radio" class="btn-check" name="orderMode" id="modeDelivery" autocomplete="off" checked>
-                    <label class="btn btn-outline-primary btn-sm" for="modeDelivery">🚚 Home Delivery</label>
+    <!-- 2. SCROLLABLE FORM AREA -->
+    <div class="orders-scroll-content">
 
-                    <input type="radio" class="btn-check" name="orderMode" id="modeStore" autocomplete="off">
-                    <label class="btn btn-outline-success btn-sm" for="modeStore">🏪 In-Store Sale</label>
+        <div class="row">
+            <!-- Left Column: Customer & Address -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary m-0">Customer & Delivery Info</h5>
+
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="orderMode" id="modeDelivery" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary btn-sm" for="modeDelivery">🚚 Home Delivery</label>
+
+                            <input type="radio" class="btn-check" name="orderMode" id="modeStore" autocomplete="off">
+                            <label class="btn btn-outline-success btn-sm" for="modeStore">🏪 In-Store Sale</label>
+                        </div>
+                    </div>
+
+                    <form id="direct-order-form">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="custPhone" name="CustomerPhone" placeholder="017..." required>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnCheckCust" title="Search">🔍</button>
+                                </div>
+                                <small id="custStatus" class="text-muted">Enter phone to autofill</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="custName" name="CustomerName" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email Address <span class="text-muted small">(Optional)</span></label>
+                            <input type="email" class="form-control" id="custEmail" name="CustomerEmail" placeholder="customer@example.com">
+                        </div>
+
+                        <div id="address-container">
+                            <div class="mb-3">
+                                <label class="form-label">Address / Street <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="custAddress" name="Street" rows="2" placeholder="House No, Road No..."></textarea>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Postal Code</label>
+                                    <input type="text" class="form-control" id="postalCode" name="PostalCode" placeholder="e.g. 1212">
+                                    <small class="text-muted" id="postalStatus">Type to autofill</small>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Division <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="division-select" name="Divison"><option value="">Select Division</option></select>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4"><label class="form-label">District</label><select class="form-select" id="district-select" name="City" disabled><option value="">Select...</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Thana</label><select class="form-select" id="thana-select" name="Thana" disabled><option value="">Select...</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Sub-Office</label><select class="form-select" id="suboffice-select" name="SubOffice" disabled><option value="">Select...</option></select></div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <form id="direct-order-form">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="custPhone" name="CustomerPhone" placeholder="017..." required>
-                            <button class="btn btn-outline-secondary" type="button" id="btnCheckCust" title="Search">🔍</button>
-                        </div>
-                        <small id="custStatus" class="text-muted">Enter phone to autofill</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="custName" name="CustomerName" required>
-                    </div>
-                </div>
+            <!-- Right Column: Product & Calculation -->
+            <div class="col-lg-4">
+                <!-- Sticky positioning works perfectly inside the scroll container -->
+                <div class="glass-card p-4 h-100 position-sticky" style="top: 0.5rem;">
+                    <h5 class="fw-bold mb-3 text-success">Order Items</h5>
 
-                <div class="mb-3">
-                    <label class="form-label">Email Address <span class="text-muted small">(Optional)</span></label>
-                    <input type="email" class="form-control" id="custEmail" name="CustomerEmail" placeholder="customer@example.com">
-                </div>
-
-                <div id="address-container">
                     <div class="mb-3">
-                        <label class="form-label">Address / Street <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="custAddress" name="Street" rows="2" placeholder="House No, Road No..."></textarea>
+                        <label class="form-label fw-bold">1. Select Product <span class="text-danger">*</span></label>
+                        <select class="form-select" id="productSelect" required>
+                            <option value="">Choose Product...</option>
+                        </select>
                     </div>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">Postal Code</label>
-                            <input type="text" class="form-control" id="postalCode" name="PostalCode" placeholder="e.g. 1212">
-                            <small class="text-muted" id="postalStatus">Type to autofill</small>
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label">Division <span class="text-danger">*</span></label>
-                            <select class="form-select" id="division-select" name="Divison"><option value="">Select Division</option></select>
-                        </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">2. Select Variant <span class="text-danger">*</span></label>
+                        <select class="form-select" id="variantSelect" disabled required>
+                            <option value="" data-price="0">Select Variant...</option>
+                        </select>
+                        <div id="stockInfo" class="form-text text-end"></div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-4"><label class="form-label">District</label><select class="form-select" id="district-select" name="City" disabled><option value="">Select...</option></select></div>
-                        <div class="col-md-4"><label class="form-label">Thana</label><select class="form-select" id="thana-select" name="Thana" disabled><option value="">Select...</option></select></div>
-                        <div class="col-md-4"><label class="form-label">Sub-Office</label><select class="form-select" id="suboffice-select" name="SubOffice" disabled><option value="">Select...</option></select></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quantity</label>
+                        <input type="number" class="form-control" id="orderQty" value="1" min="1">
                     </div>
+
+                    <hr>
+
+                    <!-- Calculation Area -->
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span>Unit Price:</span>
+                        <span class="fw-medium">Tk. <span id="displayPrice">0.00</span></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span>Subtotal:</span>
+                        <span class="fw-medium">Tk. <span id="displaySubTotal">0.00</span></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 text-danger">
+                        <span>Discount:</span>
+                        <span class="fw-bold">- Tk. <span id="displayDiscount">0.00</span></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span>Delivery:</span>
+                        <span class="fw-medium text-primary">+ Tk. <span id="displayDelivery">0.00</span></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-4 border-top pt-2">
+                        <span class="fs-5 fw-bold">Net Payable:</span>
+                        <span class="fs-5 fw-bold text-success">Tk. <span id="displayNet">0.00</span></span>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmImmediately" checked>
+                        <label class="form-check-label" for="confirmImmediately">Confirm Immediately</label>
+                    </div>
+
+                    <button type="button" id="btnPlaceOrder" class="btn btn-primary w-100 py-2 fw-bold">
+                        Create Direct Order
+                    </button>
+                    <div id="orderMsg" class="mt-3 text-center small"></div>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Right Column: Product & Calculation -->
-    <div class="col-lg-4">
-        <div class="glass-card p-4 h-100">
-            <h5 class="fw-bold mb-3 text-success">Order Items</h5>
+    </div> <!-- END SCROLL AREA -->
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">1. Select Product <span class="text-danger">*</span></label>
-                <select class="form-select" id="productSelect" required>
-                    <option value="">Choose Product...</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-bold">2. Select Variant <span class="text-danger">*</span></label>
-                <select class="form-select" id="variantSelect" disabled required>
-                    <option value="" data-price="0">Select Variant...</option>
-                </select>
-                <div id="stockInfo" class="form-text text-end"></div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-bold">Quantity</label>
-                <input type="number" class="form-control" id="orderQty" value="1" min="1">
-            </div>
-
-            <hr>
-
-            <!-- Calculation Area -->
-            <div class="d-flex justify-content-between mb-2 small">
-                <span>Unit Price:</span>
-                <span class="fw-medium">Tk. <span id="displayPrice">0.00</span></span>
-            </div>
-            <div class="d-flex justify-content-between mb-2 small">
-                <span>Subtotal:</span>
-                <span class="fw-medium">Tk. <span id="displaySubTotal">0.00</span></span>
-            </div>
-
-            <!-- ✅ ADDED: Discount Display -->
-            <div class="d-flex justify-content-between mb-2 text-danger">
-                <span>Discount:</span>
-                <span class="fw-bold">- Tk. <span id="displayDiscount">0.00</span></span>
-            </div>
-            <div class="d-flex justify-content-between mb-2 small">
-                <span>Delivery:</span>
-                <span class="fw-medium text-primary">+ Tk. <span id="displayDelivery">0.00</span></span>
-            </div>
-            <!-- ✅ ADDED: Net Amount Display -->
-            <div class="d-flex justify-content-between mb-4 border-top pt-2">
-                <span class="fs-5 fw-bold">Net Payable:</span>
-                <span class="fs-5 fw-bold text-success">Tk. <span id="displayNet">0.00</span></span>
-            </div>
-
-            <div class="form-check form-switch mb-4">
-                <input class="form-check-input" type="checkbox" id="confirmImmediately" checked>
-                <label class="form-check-label" for="confirmImmediately">Confirm Immediately</label>
-            </div>
-
-            <button type="button" id="btnPlaceOrder" class="btn btn-primary w-100 py-2 fw-bold">
-                Create Direct Order
-            </button>
-            <div id="orderMsg" class="mt-3 text-center small"></div>
-        </div>
-    </div>
-</div>
-
+</div> <!-- END WRAPPER -->
 @section Scripts {
     <script>
         window.rawVariants = @Html.Raw(Json.Serialize(variants ?? new List<dynamic>()));
     </script>
 
     <script src="~/js/combo.js"></script>
-
     <script src="~/js/admin-order.js"></script>
 }

@@ -1,0 +1,225 @@
+﻿/* ========== DESKTOP STYLES (768px and above) ========== */
+@media (min-width: 768px) {
+    /* Sticky Sidebar behavior for desktop */
+    .sticky-panel {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+    }
+}
+
+/* ========== MOBILE STYLES (below 768px) ========== */
+@media (max-width: 767px) {
+    /* Remove sticky behavior on mobile */
+    .sticky-panel {
+        position: relative;
+        top: auto;
+        z-index: auto;
+    }
+
+    /* Order Details appears AFTER product selection on mobile */
+    .order-md-2 {
+        order: 2 !important;
+    }
+
+    .order-md-1 {
+        order: 1 !important;
+    }
+}
+
+/* ========== COMMON STYLES FOR ALL DEVICES ========== */
+
+/* Table styling adjustments */
+.table-v-middle td {
+    vertical-align: middle;
+}
+
+/* Variant row transitions */
+.variant-row {
+    transition: background-color 0.2s;
+}
+
+.variant-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge spacing */
+.badge-stock {
+    margin-left: 8px;
+    font-size: 0.75em;
+}
+
+/* Force the backdrop to be lower */
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Force the modal dialog to be higher */
+.modal-content, .modal-dialog {
+    z-index: 1100 !important;
+}
+
+.btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+    border-radius: 0.2rem;
+}
+
+.receive-form-row {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.receive-form-row td {
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FIX: Prevent collapse content from overflowing the card */
+.card {
+    overflow: hidden;
+}
+
+/* Ensure the collapse div respects card boundaries */
+.collapse {
+    overflow: hidden;
+}
+
+/* Make sure table doesn't overflow - no horizontal scroll on desktop */
+.card-body.p-0 {
+    overflow-x: hidden;
+}
+
+/* Enable horizontal scroll on mobile */
+@media (max-width: 767px) {
+    .card-body.p-0 {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Allow table to be wider on mobile */
+    .table {
+        min-width: 600px;
+    }
+}
+
+/* Make table layout fixed to prevent overflow */
+.table {
+    table-layout: auto;
+    width: 100%;
+}
+
+/* Allow text to wrap in table cells - but not headers */
+.table td {
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Keep table headers in single line */
+.table th {
+    white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Add proper spacing between header text */
+.table thead th {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+/* Adjust column widths for better fit */
+.table thead th:first-child {
+    width: 60px;
+    text-align: center;
+}
+
+.table thead th:nth-child(3) {
+    width: 140px;
+    text-align: center;
+}
+
+.table thead th:nth-child(4) {
+    width: 140px;
+}
+
+/* Variant name column takes remaining space */
+.table thead th:nth-child(2) {
+    width: auto;
+    max-width: none;
+}
+
+/* Remove ellipsis from checkboxes */
+.table td:first-child {
+    text-overflow: clip;
+    overflow: visible;
+}
+
+/* Ensure variant text shows properly */
+.table td:nth-child(2) {
+    max-width: 400px;
+}
+
+/* Ensure collapsible content stays within card */
+.card .collapse .card-body {
+    max-width: 100%;
+}
+
+/* Make table responsive within the card - no scroll */
+.table {
+    margin-bottom: 0;
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Additional fix for border styling - lighter borders */
+.card.border-start {
+    border-left-width: 5px !important;
+    border-top: 1px solid #e9ecef !important;
+    border-right: 1px solid #e9ecef !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.card.border-danger {
+    border-left-color: #f8b4b4 !important; /* Light red */
+}
+
+.card.border-success {
+    border-left-color: #b4e4b4 !important; /* Light green */
+}
+
+/* Make card header border lighter */
+.card-header {
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.sticky-product-header {
+    /* Sticky Behavior */
+    
+    position: fixed;
+    width: 90%;
+    top: 0; /* Adjust this value if you have a top navigation bar (e.g., top: 60px;) */
+
+    /* Layering & Visibility */
+    z-index: 1; /* Keeps it above the scrolling cards */
+    background-color: #ffffff; /* Crucial: Hides content scrolling behind it */
+
+    /* Spacing & Borders */
+    padding-top: 20px;
+    padding-bottom: 15px;
+    margin-bottom: 20px; /* Restores the spacing originally provided by mb-4 */
+    border-bottom: 1px solid #dee2e6; /* Adds a subtle separator line */
+}

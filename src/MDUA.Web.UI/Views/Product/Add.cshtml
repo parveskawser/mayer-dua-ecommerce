@@ -1,13 +1,18 @@
 ﻿@model dynamic
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Add Product";
+Layout = "_AdminLayout";
+ViewData["Title"] = "Add Product";
 }
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-product.css" asp-append-version="true" />
+}
 <div class="d-flex justify-content-between align-items-center mb-4">
+    
     <div>
-        <h2 class="fw-bold mb-0">Add Product</h2>
-        <div class="text-muted small">Create a new item in your catalog</div>
+        <div class="fixed-page-title">
+            <h2 class="fw-bold mb-0 text-dark" style="margin-left: 25px;">Add Product</h2>
+            <div class="text-muted small" style="margin-left: 25px;">Create a new item in your catalog</div>
+        </div>
     </div>
     <a href="@Url.Action("AllProducts", "Product")" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
         &larr; Back to List
@@ -81,10 +86,10 @@
                             <option value="">-- Select Category --</option>
                             @if (Model.Categories != null)
                             {
-                                foreach (var c in Model.Categories)
-                                {
-                                    <option value="@c.Id">@c.Name</option>
-                                }
+                            foreach (var c in Model.Categories)
+                            {
+                            <option value="@c.Id">@c.Name</option>
+                            }
                             }
                         </select>
                     </div>
@@ -101,10 +106,10 @@
                                 <option value="">-- Select Attribute --</option>
                                 @if (Model.Attributes != null)
                                 {
-                                    foreach (var a in Model.Attributes)
-                                    {
-                                        <option value="@a.Id">@a.Name</option>
-                                    }
+                                foreach (var a in Model.Attributes)
+                                {
+                                <option value="@a.Id">@a.Name</option>
+                                }
                                 }
                             </select>
                             <div class="attribute-values-container bg-white rounded border p-2 small"></div>
@@ -132,16 +137,16 @@
 </div>
 
 @section Scripts {
-    <script>
-        window.productConfig = {
-            urls: {
-                getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
-                getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
-                addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
-                getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
-                addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")'
-            }
-        };
-    </script>
-    <script src="~/js/product.js"></script>
+<script>
+    window.productConfig = {
+        urls: {
+            getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
+            getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
+            addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
+            getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
+            addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")'
+        }
+    };
+</script>
+<script src="~/js/product.js"></script>
 }
