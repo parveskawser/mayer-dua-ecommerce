@@ -79,7 +79,7 @@ html, body {
 .sticky-header {
     position: fixed;
     top: 0;
-    width: 95%; /* Required because 'fixed' shrinks to fit content */
+    width: 95.2%; /* Required because 'fixed' shrinks to fit content */
 
     /* Visual styles */
     z-index: 1;

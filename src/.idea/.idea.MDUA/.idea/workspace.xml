@@ -9,6 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="a1e52ecf-6312-45d3-b1fe-e3b15df6c9cb" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../../Voot-master/src/MDUA.Web.UI/Controllers/SalesOrderDetsilsController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +90,7 @@
       <workItem from="1765168223931" duration="14644000" />
       <workItem from="1765192204708" duration="1404000" />
       <workItem from="1765203583090" duration="1400000" />
-      <workItem from="1765206211234" duration="413000" />
+      <workItem from="1765206211234" duration="763000" />
     </task>
     <servers />
   </component>
