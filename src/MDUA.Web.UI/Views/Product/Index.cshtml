@@ -11,6 +11,7 @@
     string mainImageUrl = (primaryImageObject != null && !string.IsNullOrEmpty(primaryImageObject.ImageUrl))
         ? primaryImageObject.ImageUrl
         : "/images/default-product.jpg";
+   string productVideoUrl = "https://www.youtube.com/embed/C00TuGYrvWs";
 }
 
 <!DOCTYPE html>
@@ -111,22 +112,23 @@
         </section>
 
         @* YOUTUBE VIDEO SECTION *@
+        @if (!string.IsNullOrEmpty(productVideoUrl))
+        {
+            <section class="video-section card" style="text-align: center; padding: 20px; max-width: 800px; margin: 20px auto;">
 
-<section class="video-section card" style="text-align: center; padding: 20px; max-width: 800px; margin: 20px auto;">
+                <h2 style="margin-bottom: 15px;">Product Video</h2>
 
-    <h2 style="margin-bottom: 15px;">Product Video</h2>
+                <div class="video-container" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                    <iframe src="@productVideoUrl"
+                            title="Product Video"
+                            frameborder="0"
+                            allowfullscreen
+                            style="width: 100%; height: 350px; border-radius: 8px;">
+                    </iframe>
+                </div>
 
-    <div class="video-container" style="display: flex; justify-content: center; align-items: center; width: 100%;">
-        <iframe src="https://www.youtube.com/embed/C00TuGYrvWs"
-                title="Product Video"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-                style="width: 100%; height: 350px; border-radius: 8px;">
-        </iframe>
-    </div>
-
-</section>
+            </section>
+        }
 
         <section class="description card">
             <h2>Product Details</h2>

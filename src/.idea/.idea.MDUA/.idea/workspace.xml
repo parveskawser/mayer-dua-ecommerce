@@ -9,9 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="a1e52ecf-6312-45d3-b1fe-e3b15df6c9cb" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../../Voot-master/src/MDUA.Web.UI/Controllers/SalesOrderDetsilsController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Index.cshtml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +89,8 @@
       <workItem from="1765168223931" duration="14644000" />
       <workItem from="1765192204708" duration="1404000" />
       <workItem from="1765203583090" duration="1400000" />
-      <workItem from="1765206211234" duration="763000" />
+      <workItem from="1765206211234" duration="954000" />
+      <workItem from="1765240137460" duration="704000" />
     </task>
     <servers />
   </component>
@@ -116,14 +116,6 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Index.cshtml</url>
-          <line>117</line>
-          <properties isMultiMethodBreakpoint="true">
-            <option name="multiMethodBreakpoint" value="true" />
-          </properties>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
