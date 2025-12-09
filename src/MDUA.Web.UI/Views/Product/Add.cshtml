@@ -28,7 +28,6 @@ ViewData["Title"] = "Add Product";
             <!-- LEFT COLUMN: Main Information -->
             <div class="col-lg-8">
                 <div class="glass-card p-4 h-100">
-                    <h6 class="text-uppercase text-muted small fw-bold mb-4 border-bottom pb-2">Product Details</h6>
 
                     <!-- Product Name -->
                     <div class="mb-4">
@@ -57,9 +56,22 @@ ViewData["Title"] = "Add Product";
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold small">Slug (Unique URL)</label>
-                            <input type="text" name="Slug" class="form-control form-control-modal" placeholder="product-name-slug" required />
+
+                            <input type="text"
+                                   id="slugInput"
+                                   name="Slug"
+                                   class="form-control form-control-modal"
+                                   placeholder="product-name-slug"
+                                   required />
+
+                            <div id="slug-error" class="text-danger small mt-1 fw-bold" style="display:none;">
+                                ⚠️ This slug is already taken. Please choose another.
+                            </div>
+
                             <div class="form-text small">Leave empty to auto-generate from name.</div>
                         </div>
+
+
                     </div>
                 </div>
             </div>
@@ -127,7 +139,9 @@ ViewData["Title"] = "Add Product";
 
                     <!-- Actions -->
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger fw-bold shadow-sm">Create Product</button>
+                        <button type="submit" id="btn-save-product" class="btn btn-danger fw-bold shadow-sm">
+                            Create Product
+                        </button>
                         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-light text-muted">Cancel</a>
                     </div>
                 </div>

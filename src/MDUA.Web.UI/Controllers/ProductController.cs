@@ -11,11 +11,12 @@ namespace MDUA.Web.UI.Controllers
     {
         private readonly IProductFacade _productFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
-
-        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment)
+        private readonly IPaymentMethodFacade _paymentMethodFacade;
+        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade)
         {
             _productFacade = productFacade;
             _webHostEnvironment = webHostEnvironment;
+            _paymentMethodFacade = paymentMethodFacade;
         }
 
         #region Products
@@ -29,7 +30,14 @@ namespace MDUA.Web.UI.Controllers
             Product model = _productFacade.GetProductDetailsForWebBySlug(slug);
 
             if (model == null) return NotFound();
+            // --- FETCH PAYMENT METHODS ---
+            // Fetch active methods, ordered by DisplayOrder
+            var paymentMethods = _paymentMethodFacade.GetAll()
+                                    .Where(x => x.IsActive)
+                                    .OrderBy(x => x.DisplayOrder)
+                                    .ToList();
 
+            ViewBag.PaymentMethods = paymentMethods;
             return View(model);
         }
 
@@ -52,7 +60,13 @@ namespace MDUA.Web.UI.Controllers
         {
             // Permission Check
             if (!HasPermission("Product.Add")) return HandleAccessDenied();
-
+            if (product.Attributes != null)
+            {
+                // Remove attributes where AttributeId is 0 (invalid/unselected)
+                product.Attributes = product.Attributes
+                    .Where(a => a.AttributeId > 0)
+                    .ToList();
+            }
             if (string.IsNullOrWhiteSpace(product.Slug))
                 product.Slug = GenerateSlug(product.ProductName);
             else
@@ -96,6 +110,20 @@ namespace MDUA.Web.UI.Controllers
 
             return View(products);
         }
+
+        // Add this inside your ProductController class
+        [HttpGet]
+        [Route("product/check-slug")]
+        public IActionResult CheckSlugAvailability(string slug)
+        {
+            if (string.IsNullOrWhiteSpace(slug)) return Json(new { exists = false });
+
+            // Reuse your existing facade method
+            var product = _productFacade.GetProductDetailsForWebBySlug(slug);
+
+            return Json(new { exists = product != null });
+        }
+
         [HttpGet]
         [Route("product/search-ajax")] // This defines the URL as /product/search-ajax
         public IActionResult SearchProductsAjax(string query)

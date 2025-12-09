@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Payment Settings";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4 fw-bold text-dark">Payment Methods</h3>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                @foreach (var item in Model)
+                {
+                    <div class="list-group-item p-4 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded p-2 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <img src="@item.LogoUrl" alt="@item.MethodName" style="max-width: 100%; max-height: 100%;">
+                            </div>
+                            <div>
+                                <h5 class="mb-1 fw-bold">@item.MethodName</h5>
+                                <p class="mb-0 text-muted small">
+                                    @(item.IsEnabled ? "Visible on checkout page" : "Hidden from customers")
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input js-payment-toggle"
+                                   type="checkbox"
+                                   style="width: 3em; height: 1.5em; cursor: pointer;"
+                                   data-id="@item.PaymentMethodId"
+                                   @(item.IsEnabled ? "checked" : "")>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.js-payment-toggle').change(function() {
+                var $toggle = $(this);
+                var methodId = $toggle.data('id');
+                var isEnabled = $toggle.is(':checked');
+
+                // Optimistic UI update (optional feedback)
+                var statusText = $toggle.closest('.list-group-item').find('p');
+                statusText.text(isEnabled ? "Visible on checkout page" : "Hidden from customers");
+
+                $.ajax({
+                    url: '@Url.Action("TogglePaymentMethod", "Settings")',
+                    type: 'POST',
+                    data: {
+                        methodId: methodId,
+                        isEnabled: isEnabled,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(res) {
+                        if(res.success) {
+                            // Optional: Show tiny toast
+                            const Toast = Swal.mixin({
+                                toast: true, position: 'top-end', showConfirmButton: false, timer: 1500
+                            });
+                            Toast.fire({ icon: 'success', title: 'Settings saved' });
+                        } else {
+                            // Revert if failed
+                            $toggle.prop('checked', !isEnabled);
+                            alert("Failed to save setting.");
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

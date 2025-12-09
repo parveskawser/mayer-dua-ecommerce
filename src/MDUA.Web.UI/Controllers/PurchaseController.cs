@@ -17,6 +17,7 @@ namespace MDUA.Web.UI.Controllers
         {
             _purchaseFacade = purchaseFacade;
         }
+        [Route("purchase/stock-status")]
 
         [HttpGet]
         public IActionResult StockStatus()
@@ -136,7 +137,8 @@ namespace MDUA.Web.UI.Controllers
         }
 
         #region bulk order
-      
+        [Route("purchase/bulk-order")]
+
         [HttpGet]
         public IActionResult BulkOrder()
         {
@@ -257,8 +259,9 @@ namespace MDUA.Web.UI.Controllers
                 return RedirectToAction("BulkOrder");
             }
         }
+        [Route("purchase/bulk-order-received")]
 
-         [HttpGet]
+        [HttpGet]
         public IActionResult BulkOrderReceivedList()
         {
             var list = _purchaseFacade.GetBulkOrdersReceivedList();

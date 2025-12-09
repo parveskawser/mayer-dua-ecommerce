@@ -10,11 +10,12 @@
     var primaryImageObject = Model.Images?.FirstOrDefault(i => i.IsPrimary) ?? Model.Images?.FirstOrDefault();
     string mainImageUrl = (primaryImageObject != null && !string.IsNullOrEmpty(primaryImageObject.ImageUrl))
         ? primaryImageObject.ImageUrl
-        : "/images/default-product.webp";
+        : null;
    string productVideoUrl = "https://www.youtube.com/embed/C00TuGYrvWs";
     var galleryImages = Model.Images?
          .Where(i => !string.IsNullOrEmpty(i.ImageUrl) && i.ImageUrl != mainImageUrl)
          .ToList();
+
 }
 
 <!DOCTYPE html>
@@ -65,7 +66,12 @@
             <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
                 <p class="price">
                     Tk. @Model.SellingPrice.ToString("N0")
-                    <span class="old-price">Tk. @basePrice.ToString("N0")</span>
+
+                    @* Only show the old cut price if it is higher than the selling price *@
+                    @if (basePrice > Model.SellingPrice)
+                    {
+                        <span class="old-price">Tk. @basePrice.ToString("N0")</span>
+                    }
                 </p>
                 <p class="offer-text">💰 Cash on delivery available</p>
             </div>
@@ -142,26 +148,21 @@
                 }
             </section>
         }
-
-        <section class="testimonials card">
-            <h2>What Our Customers Say</h2>
-            <div class="reviews">
-                @if (Model.Reviews != null && Model.Reviews.Count > 0)
-                {
-                    foreach (var review in Model.Reviews)
+        @if (Model.Reviews != null && Model.Reviews.Count > 0)
+        {
+            <section class="testimonials card">
+                <h2>What Our Customers Say</h2>
+                <div class="reviews">
+                    @foreach (var review in Model.Reviews)
                     {
                         <div class="review">
                             <p class="review-text">"@review.ReviewText"</p>
                             <p class="reviewer">– @review.CustomerName</p>
                         </div>
                     }
-                }
-                else
-                {
-                    <p class="text-center text-muted">No reviews yet.</p>
-                }
-            </div>
-        </section>
+                </div>
+            </section>
+        }
 
         <section id="order" class="order-section">
             <h2>Place Your Order</h2>
@@ -183,10 +184,7 @@
                                         dynamicAttributes[spec.Key] = spec.Value;
                                     }
                                 }
-                                if (Model.AvailableSizes != null && Model.AvailableSizes.Any() && !dynamicAttributes.ContainsKey("Size"))
-                                {
-                                    dynamicAttributes["Size"] = Model.AvailableSizes;
-                                }
+
                             }
 
                             @if (dynamicAttributes.Any())
@@ -221,7 +219,7 @@
                                  src="@FixPath(mainImageUrl)"
                                  alt="Selected Variant"
                                  style="width: 100%; height: 200px; object-fit: contain;"
-                                 onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                                 onerror="this.style.display='none'" />
                         </div>
 
 
@@ -302,7 +300,7 @@
                              src="@FixPath(mainImageUrl)"
                              alt="Selected Variant"
                              style="width: 100%; height: 200px; object-fit: contain;"
-                             onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                             onerror="this.style.display='none'" />
                     </div>
 
                     <h3 style="margin-top:0;">Your Receipt</h3>
@@ -325,39 +323,83 @@
                 <!-- PAYMENT METHOD SECTION (BELOW receipt on both mobile & desktop) -->
                 <div class="payment-section">
                     <h3>Choose Payment Method</h3>
+
                     <div class="payment-options">
-                        <div class="payment-option selected" data-payment="cod">
-                            <input type="radio" name="paymentMethod" id="payment-cod" value="cod" checked>
-                            <label for="payment-cod">
-                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
-                                     alt="Cash on Delivery" class="payment-logo">
-                                <span>Cash on Delivery</span>
-                            </label>
+                        @{
+                            var paymentMethods = ViewBag.PaymentMethods as List<MDUA.Entities.PaymentMethod>;
+                        }
+
+                        @if (paymentMethods != null)
+                        {
+                            for (int i = 0; i < paymentMethods.Count; i++)
+                            {
+                                var pm = paymentMethods[i];
+                                var isSelected = (i == 0);
+                                var paymentId = $"payment-{pm.SystemCode}";
+
+                                <div class="payment-option @(isSelected ? "selected" : "")"
+                                     data-payment="@pm.SystemCode"
+                                     data-manual="@(pm.SupportsManual.ToString().ToLower())"
+                                     data-gateway="@(pm.SupportsGateway.ToString().ToLower())">
+
+                                    <input type="radio" name="paymentMethod" id="@paymentId" value="@pm.SystemCode" @(isSelected ? "checked" : "")>
+
+                                    <label for="@paymentId">
+                                        <img src="@pm.LogoUrl" alt="@pm.Name" class="payment-logo"
+                                             style="@(pm.SystemCode == "card" ? "width: auto; height: 15px; margin-right: 5px;" : "")">
+
+                                        @if (pm.SystemCode == "card")
+                                        {
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
+                                            <span style="margin-left: 10px;">@pm.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@pm.Name</span>
+                                        }
+                                    </label>
+
+                                    <input type="hidden" class="manual-instruction-text" value="@pm.ManualInstruction" />
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div id="payment-details-area" class="mt-3 p-3 border rounded bg-light" style="display:none;">
+
+                        <div id="payment-mode-selector" class="mb-3" style="display:none;">
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMode" id="mode-gateway" value="Gateway" checked>
+                                    <label class="form-check-label" for="mode-gateway">
+                                        Pay Securely (App/Online)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMode" id="mode-manual" value="Manual">
+                                    <label class="form-check-label" for="mode-manual">
+                                        Send Money (Manual)
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="payment-option" data-payment="bkash">
-                            <input type="radio" name="paymentMethod" id="payment-bkash" value="bkash">
-                            <label for="payment-bkash">
-                                <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
-                                     alt="bKash" class="payment-logo">
-                                <span>bKash</span>
-                            </label>
-                        </div>
+                        <div id="manual-payment-fields" style="display:none;">
+                            <div class="alert alert-info py-2 small mb-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <span id="instruction-text"></span>
+                            </div>
 
-                        <div class="payment-option" data-payment="card">
-                            <input type="radio" name="paymentMethod" id="payment-card" value="card">
-                            <label for="payment-card">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
-                                     alt="Card" class="payment-logo" style="width: auto; height: 15px; margin-right: 5px;">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                                     alt="Card" class="payment-logo" style="width: auto; height: 20px;">
-                                <span style="margin-left: 10px;">Card</span>
-                            </label>
+                            <label class="small fw-bold">Transaction ID (TrxID) <span class="text-danger">*</span></label>
+                            <input type="text" name="TransactionReference" id="trx-id-input"
+                                   class="form-control form-control-sm" placeholder="e.g. 8H7FA..." maxlength="20">
                         </div>
                     </div>
-                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
-                </div>
 
+                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">
+                        Confirm Order
+                    </button>
+                </div>
                 @Html.Partial("_CustomerChatWidget")
             </div>
         </section>
@@ -466,7 +508,9 @@
 @functions {
     public string FixPath(string path)
     {
-        if (string.IsNullOrEmpty(path)) return "/images/default-product.webp";
+        // Change this line to return empty string or null
+        if (string.IsNullOrEmpty(path)) return "";
+
         string fixedPath = path.Replace("\\", "/");
         if (!fixedPath.StartsWith("/")) fixedPath = "/" + fixedPath;
         return fixedPath;

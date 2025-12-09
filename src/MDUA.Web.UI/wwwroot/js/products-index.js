@@ -404,10 +404,34 @@ $(document).ready(function () {
             success: function (data) {
                 if (data.success) {
                     $('#deleteProductModal').modal('hide');
-                    $('tr[data-product-row-id="' + productId + '"]').fadeOut(500, function () { $(this).remove(); });
-                } else { alert('Error: ' + data.message); }
+                    // 1. Remove the row from the table smoothly
+                    const $targetRows = $(`tr[data-product-row-id="${productId}"], #drawer-${productId}`);
+
+                    // Fade out and remove both
+                    $targetRows.fadeOut(300, function () {
+                        $(this).remove();
+                    });
+
+                    // 2. FIRE THE TOAST (Success)
+                    window.Toast.fire({
+                        icon: 'success',
+                        title: 'Product deleted successfully!'
+                    });
+
+                } else {
+                    // FIRE THE TOAST (Error)
+                    window.Toast.fire({
+                        icon: 'error',
+                        title: res.message || 'Failed to delete product.'
+                    });
+                }
             },
-            complete: function () { $button.prop('disabled', false).text('Delete Product'); }
+            error: function () {
+                window.Toast.fire({
+                    icon: 'error',
+                    title: 'Something went wrong.'
+                });
+            }
         });
     });
 

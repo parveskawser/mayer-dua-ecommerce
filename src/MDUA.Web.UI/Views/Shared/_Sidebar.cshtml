@@ -36,6 +36,8 @@
                 companyLogo = company.LogoImg;
             }
         }
+
+    bool isSettingsPage = currentController == "Settings";
     }
 <div class="sidebar glass-panel d-flex flex-column h-100">
     <!-- Brand -->
@@ -190,9 +192,29 @@
 
         <!-- Settings Link -->
         <li class="nav-item">
-            <a class="nav-link" href="#">
-                <span>⚙️</span> Settings
+            <a class="nav-link d-flex justify-content-between align-items-center @(isSettingsPage ? "active-parent" : "collapsed")"
+               data-bs-toggle="collapse"
+               href="#settingsMenu"
+               role="button"
+               aria-expanded="@(isSettingsPage ? "true" : "false")"
+               aria-controls="settingsMenu">
+                <span>
+                    <span>⚙️</span> Settings
+                </span>
+                <span class="dropdown-arrow">▾</span>
             </a>
+            <div class="collapse @(isSettingsPage ? "show" : "")" id="settingsMenu">
+                <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")"
+                           href="@Url.Action("PaymentSettings", "Settings")">
+                            Payment Methods
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
         </li>
     </ul>
 

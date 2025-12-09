@@ -55,6 +55,7 @@ namespace MDUA.Facade
 
             services.AddScoped<IChatDataAccess, MDUA.DataAccess.ChatDataAccess>();
 
+            services.AddScoped<IPaymentMethodDataAccess, PaymentMethodDataAccess>();
             // Facade Layer
             services.AddServiceFacade();
 
@@ -73,6 +74,8 @@ namespace MDUA.Facade
 
             // Register Purchase Facade
             services.AddScoped<IPurchaseFacade, PurchaseFacade>();
+
+            services.AddScoped<IPaymentMethodFacade, PaymentMethodFacade>();
         }
     }
 }

@@ -6,10 +6,28 @@
     {
         <tr data-product-row-id="@p.Id">
             <td class="fw-semibold" data-product-name="@p.ProductName">@p.ProductName</td>
-            <!-- Note: CategoryName might be null if we removed the Join, handle gracefully -->
+
             <td><span class="pill-tag">@(p.CategoryName ?? "-")</span></td>
+
             <td>@p.ReorderLevel</td>
-            <td class="small text-muted">@p.Slug</td>
+
+            <td class="small">
+                @if (!string.IsNullOrEmpty(p.Slug))
+                {
+                    <a href="/product/@p.Slug"
+                       target="_blank"
+                       class="text-decoration-none"
+                       style="color: #6366f1;"
+                       title="Open /product/@p.Slug in new tab">
+                        @p.Slug <span style="font-size: 0.8em;">↗</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted">-</span>
+                }
+            </td>
+
             <td class="price-cell">
                 @if (p.ActiveDiscount != null)
                 {
@@ -37,7 +55,6 @@
             </td>
         </tr>
 
-        <!-- Drawer Row (Must be included in partial to work after search) -->
         <tr class="action-drawer-row d-none" id="drawer-@p.Id">
             <td colspan="7">
                 <div class="p-3 border rounded bg-light">

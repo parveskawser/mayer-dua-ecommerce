@@ -479,6 +479,256 @@ section {
     display: none;
 }
 
+/* =========================================
+   PAYMENT SECTION DESIGN
+   ========================================= */
+
+/* 1. Main Container */
+.payment-section {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    /* Soft shadow for depth */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f3f4f6;
+    margin-top: 25px;
+}
+
+    .payment-section h3 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 1.25rem;
+        color: #111827;
+        font-weight: 700;
+    }
+
+/* 2. Payment Option Cards Grid */
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* Individual Card */
+.payment-option {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+}
+
+    /* Hover State */
+    .payment-option:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    /* Selected State (Blue Border & Background) */
+    .payment-option.selected {
+        border-color: #2563eb; /* Primary Blue */
+        background-color: #eff6ff; /* Light Blue Tint */
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    }
+
+/* Labels & Icons */
+.payment-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.payment-option label {
+    margin: 0;
+    cursor: pointer;
+    width: 100%;
+}
+
+.payment-option span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.2;
+    display: block;
+}
+
+/* Radio Button Positioning inside Card */
+.payment-option input[type="radio"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    accent-color: #2563eb;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 3. Payment Details Area (The Toggle Section) */
+#payment-details-area {
+    background-color: #f9fafb; /* Light Gray Background */
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 4. Mode Selection (Radio List) */
+#payment-mode-selector {
+    margin-bottom: 15px;
+}
+
+    #payment-mode-selector label.small {
+        display: block;
+        margin-bottom: 10px;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+/* Flex container for radio rows */
+.d-flex.gap-3 {
+    display: flex;
+    flex-direction: column; /* Stack vertically for clarity */
+    gap: 12px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+    .form-check:hover {
+        border-color: #cbd5e1;
+    }
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    accent-color: #2563eb;
+    cursor: pointer;
+    margin-top: 0; /* Reset */
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: #111827;
+    cursor: pointer;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* 5. Manual Input Fields */
+#manual-payment-fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1d5db;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-left: 4px solid #2563eb;
+    color: #1e40af;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+#manual-payment-fields label {
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+#trx-id-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+    letter-spacing: 1px; /* Make TrxID easier to read */
+}
+
+    #trx-id-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+/* 6. Submit Button */
+.submit-btn {
+    width: 100%;
+    background-color: #2563eb; /* Brand Blue */
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+    .submit-btn:hover {
+        background-color: #1d4ed8; /* Darker Blue */
+        transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .payment-options {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    }
+}
 /* --- Form Elements --- */
 label {
     display: block;
