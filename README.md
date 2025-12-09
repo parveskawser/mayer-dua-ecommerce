@@ -22,8 +22,11 @@
       * **Custom RBAC:** Granular permissions (e.g., `Product.View`, `Order.Place`) assigned to User Groups or specific Users.
       * **Session Management:** Secure cookie-based authentication with device tracking.
   * **Admin Dashboard:**
-      * Visual analytics for Sales Trends and Order Status counts.
-
+      * Visual analytics for Sales Trends and real-time KPI tracking.
+  * **Real-Time Communication (SignalR):**
+      * **Live Support Chat:** Instant messaging channel between Customers and Admin support agents.
+      * **Persistent History:** Chat history is saved to the database (for 1 hour) via Facade/DAL, ensuring conversations are never lost even if the connection drops.
+      * **Live Message Notifications with sound:** Real-time push notifications when new message is received.
 -----
 
 ## 2\. 🧱 Solution Structure
@@ -32,7 +35,7 @@ The solution follows a strict separation of concerns using a 4-tier architecture
 
 | Project | Type | Description |
 | :--- | :--- | :--- |
-| **MDUA.Web.UI** | ASP.NET Core MVC | The presentation layer containing Controllers, Views (Razor), and Client-side scripts (jQuery/AJAX). |
+| **MDUA.Web.UI** | ASP.NET Core MVC | The presentation layer containing Hubs, Controllers, Views (Razor), and Client-side scripts (jQuery/AJAX). |
 | **MDUA.Facade** | Class Library | The **Business Logic Layer (BLL)**. It acts as the orchestrator, transforming entities and applying business rules before data storage. |
 | **MDUA.DataAccess** | Class Library | The **Data Access Layer (DAL)**. Executes raw SQL queries and Stored Procedures via ADO.NET. |
 | **MDUA.Entities** | Class Library | Contains POCO classes, DTOs, Enums, and Base Entities matching the DB schema. |
@@ -78,8 +81,8 @@ The solution follows a strict separation of concerns using a 4-tier architecture
   * **ORM:** Native ADO.NET (Custom Wrapper)
   * **Frontend:** Razor Views, jQuery, Bootstrap 5, Chart.js
   * **Authentication:** ASP.NET Core Cookie Authentication
-  * **Reporting:** SQL Server Reporting Services (SSRS) logic implied by `Order.Export` permissions.
-
+  * **Reporting:** SQL Server Reporting Services (SSRS) logic implied by `Order.Export` permissions
+  * **Real-Time:** ASP.NET Core SignalR
 -----
 
 ## 5\. 🗄️ Database Overview
@@ -92,6 +95,7 @@ The database (`AA4`) is highly normalized and logic-heavy.
   * `SalesOrderHeader` / `SalesOrderDetail`: Stores transactional data.
   * `UserPermission` / `PermissionGroup`: Handles the custom security model.
   * `AuditLog`: Stores JSON snapshots of `OldValues` and `NewValues` for every change.
+  * `ChatMessage`: Stores the chat history (SenderId, ReceiverId, MessageContent, SentAt, IsRead).
 
 ### Advanced SQL Features
 

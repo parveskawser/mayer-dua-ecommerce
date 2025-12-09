@@ -22,22 +22,36 @@ namespace MDUA.Web.UI.Controllers
 
         }
 
+
+
         [HttpGet]
+
         public IActionResult GetOrderStatus([FromQuery] string orderId)
+
         {
+
             if (string.IsNullOrEmpty(orderId))
+
             {
+
                 return BadRequest(new { message = "Order ID is required." });
+
             }
 
             try
+
             {
+
                 // --- 1. Facade Call ---
+
                 var receiptLines = _orderFacade.GetOrderReceiptByOnlineId(orderId);
 
                 if (receiptLines == null || !receiptLines.Any())
+
                 {
+
                     return NotFound(new { message = $"Order {orderId} not found.", orderFound = false });
+
                 }
 
                 // --- 2. Robust Data Extraction and Casting ---
@@ -45,25 +59,46 @@ namespace MDUA.Web.UI.Controllers
                 var headerData = (IDictionary<string, object>)receiptLines.First();
 
                 // Helper function for safer decimal retrieval (Handles DBNull and casting errors)
+
                 Func<string, decimal> GetDecimal = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                     ? Convert.ToDecimal(val, CultureInfo.InvariantCulture) : 0M;
 
                 // Helper function for safer string retrieval
+
                 Func<string, string> GetString = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                     ? val.ToString() : string.Empty;
 
                 // Helper function for safer DateTime retrieval
+
                 Func<string, DateTime> GetDateTime = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val is DateTime dt ? dt : DateTime.MinValue;
 
 
                 // --- Extract Data Using Helpers ---
+
                 string retrievedOrderId = GetString("OnlineOrderId") ?? orderId;
-                string orderStatus = GetString("OrderStatus");
+
+                string orderStatusRaw = GetString("OrderStatus")?.ToLower()?.Trim();
+
+                string orderStatus = orderStatusRaw switch
+
+                {
+
+                    "draft" => "Pending",
+
+                    _ => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(orderStatusRaw ?? "Unknown")
+
+                };
 
                 decimal netAmount = GetDecimal("NetAmount");
+
                 decimal discountAmount = GetDecimal("DiscountAmount");
 
                 string deliveryDivision = GetString("Divison").ToLower();
@@ -71,92 +106,148 @@ namespace MDUA.Web.UI.Controllers
                 DateTime orderDate = GetDateTime("OrderDate");
 
                 // --- 3. Delivery and Total Calculation ---
+
                 // Inside GetOrderStatus:
+
                 // ... (after DateTime orderDate = GetDateTime("OrderDate");)
 
                 // --- 3. Delivery and Total Calculation ---
 
                 const decimal DHAKA_CHARGE = 50M;
+
                 const decimal OUTSIDE_CHARGE = 100M;
+
                 const int DHAKA_DAYS = 3;
+
                 const int OUTSIDE_DAYS = 5;
 
                 decimal deliveryCharge = OUTSIDE_CHARGE;
+
                 int deliveryDays = OUTSIDE_DAYS;
 
                 // Determine charge and days based on Division
+
                 if (deliveryDivision.Contains("dhaka"))
+
                 {
+
                     deliveryCharge = DHAKA_CHARGE;
+
                     deliveryDays = DHAKA_DAYS;
+
                 }
 
                 string estimatedDelivery = "N/A";
+
                 string formattedOrderDate = "N/A";
 
                 if (orderDate != DateTime.MinValue)
+
                 {
+
                     // The date is valid, calculate both outputs
+
                     estimatedDelivery = orderDate.AddDays(deliveryDays).ToString("yyyy-MM-dd");
+
                     formattedOrderDate = orderDate.ToString("yyyy-MM-dd HH:mm:ss");
+
                 }
 
                 decimal finalGrandTotal = netAmount + deliveryCharge;
 
                 // --- 4. Process Line Items ---
+
                 var lineItems = receiptLines.Select(line =>
+
                 {
+
                     var lineDict = (IDictionary<string, object>)line;
 
                     // Helper for decimal within line item
+
                     Func<string, decimal> GetLineDecimal = (key) =>
+
                         lineDict.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                         ? Convert.ToDecimal(val, CultureInfo.InvariantCulture) : 0M;
 
                     // Helper for string within line item
+
                     Func<string, string> GetLineString = (key) =>
+
                         lineDict.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                         ? val.ToString() : string.Empty;
 
                     return new
+
                     {
+
                         productName = GetLineString("ProductName"),
+
                         qty = lineDict.TryGetValue("OrderQuantity", out var qty) && qty != null ? Convert.ToInt32(qty) : 0,
+
                         price = GetLineDecimal("UnitPrice"),
+
                         lineTotal = GetLineDecimal("Price")
+
                     };
+
                 }).ToList();
 
 
                 // --- 5. Prepare the final JSON response ---
+
                 var response = new
+
                 {
+
                     orderFound = true,
+
                     orderId = retrievedOrderId,
+
                     status = orderStatus,
+
                     grandTotal = finalGrandTotal,
+
                     estimatedDelivery = estimatedDelivery,
+
                     deliveryCharge = deliveryCharge,
+
                     discountAmount = discountAmount,
+
                     netAmount = netAmount,
+
                     formattedOrderDate = formattedOrderDate,
 
                     customerName = GetString("CustomerName"),
+
                     customerAddress = GetString("CustomerAddress"),
+
                     lineItems = lineItems
+
                 };
 
                 return Ok(response);
+
             }
+
             catch (Exception ex)
+
             {
+
                 // 🛑 Log the exception (ex) here to see the actual error (e.g., InvalidCastException) 🛑
+
                 // Example logging (replace with your actual logger):
+
                 // _logger.LogError(ex, "Failed to retrieve order status for {OrderId}", orderId);
 
                 return StatusCode(500, new { message = "Internal server error during tracking lookup. See server logs for details." });
+
             }
+
         }
+
 
 
 

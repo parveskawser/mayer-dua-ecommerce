@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Inventory Status";
     Layout = "_AdminLayout";
-    // Ensure vendors are available for the Request Modal
     var vendors = ViewBag.Vendors as List<MDUA.Entities.Vendor>;
 }
 
@@ -10,87 +9,89 @@
     <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-0 text-dark">Inventory Status</h2>
-        <div class="text-muted small">Monitor stock levels and reorder items</div>
+<div class="inventory-wrapper">
+
+    <div class="inventory-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">Inventory Status</h2>
+                <div class="text-muted small">Monitor stock levels and reorder items</div>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="glass-card p-0 overflow-hidden">
-    <div class="table-responsive">
-        <table class="table mb-0 align-middle">
-            <thead class="bg-light">
-                <tr>
-                    <th class="ps-4" style="width: 40%">Product</th>
-                    <th class="text-center">Total Variants</th>
-                    <th class="text-center">Total Stock</th>
-                    <th class="text-end pe-4">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    // Group by ProductName using LINQ
-                    var groups = ((IEnumerable<dynamic>)Model).GroupBy(x => x.ProductName);
+    <div class="inventory-scroll-container">
 
-                    foreach (var group in groups)
+        <div class="table-responsive-lock">
+            <table class="table mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4" style="width: 40%">Product</th>
+                        <th class="text-center">Total Variants</th>
+                        <th class="text-center">Total Stock</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        var productId = Guid.NewGuid(); // Unique ID for collapse
-                        var totalStock = group.Sum(x => (int)x.CurrentStock);
-                        var variantCount = group.Count();
+                        var groups = ((IEnumerable<dynamic>)Model).GroupBy(x => x.ProductName);
 
-                        <tr class="bg-white border-bottom">
-                            <td class="ps-4">
-                                <button class="btn btn-link text-decoration-none fw-bold text-dark p-0 d-flex align-items-center"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#collapse-@productId">
-                                    <span class="me-2">▶</span> @group.Key
-                                </button>
-                            </td>
-                            <td class="text-center"><span class="badge bg-light text-dark border">@variantCount variants</span></td>
+                        foreach (var group in groups)
+                        {
+                            var productId = Guid.NewGuid();
+                            var totalStock = group.Sum(x => (int)x.CurrentStock);
+                            var variantCount = group.Count();
 
-                            <td class="text-center fw-bold text-muted group-total-stock">@totalStock</td>
+                            <tr class="bg-white border-bottom">
+                                <td class="ps-4">
+                                    <button class="btn btn-link text-decoration-none fw-bold text-dark p-0 d-flex align-items-center"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-@productId">
+                                        <span class="me-2">▶</span> @group.Key
+                                    </button>
+                                </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@variantCount variants</span></td>
+                                <td class="text-center fw-bold text-muted group-total-stock">@totalStock</td>
+                                <td class="text-end pe-4">
+                                    <small class="text-muted" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#collapse-@productId">
+                                        Click to view
+                                    </small>
+                                </td>
+                            </tr>
 
-                            <td class="text-end pe-4">
-                                <small class="text-muted" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#collapse-@productId">
-                                    Click to view
-                                </small>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="4" class="p-0 border-0">
-                                <div class="collapse bg-light" id="collapse-@productId">
-                                    <table class="table table-sm table-borderless mb-0">
-                                        <thead class="text-muted small border-bottom">
-                                            <tr>
-                                                <th class="ps-5">Variant Name</th>
-                                                <th class="text-center">Current Stock</th>
-                                                <th class="text-center">Reorder Level</th>
-                                                <th class="text-end pe-5">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var variant in group)
-                                            {
-                                                // Renders the _InventoryRow.cshtml Partial View
-                                                <partial name="_InventoryRow" model="variant" />
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="4" class="p-0 border-0">
+                                    <div class="collapse bg-light" id="collapse-@productId">
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <thead class="text-muted small border-bottom">
+                                                <tr>
+                                                    <th class="ps-5">Variant Name</th>
+                                                    <th class="text-center">Current Stock</th>
+                                                    <th class="text-center">Reorder Level</th>
+                                                    <th class="text-end pe-5">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var variant in group)
+                                                {
+                                                    <partial name="_InventoryRow" model="variant" />
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-                else
-                {
-                    <tr><td colspan="4" class="text-center py-5 text-muted">No inventory items found.</td></tr>
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        <tr><td colspan="4" class="text-center py-5 text-muted">No inventory items found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

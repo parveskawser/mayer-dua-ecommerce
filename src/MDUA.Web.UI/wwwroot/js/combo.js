@@ -951,11 +951,27 @@ $(document).ready(function () {
     
     if (!chatSessionId) {
         // Create new session
-        chatSessionId = crypto.randomUUID();
+        //chatSessionId = crypto.randomUUID()
+        chatSessionId = generateUUID();
         localStorage.setItem("chatSessionId", chatSessionId);
         localStorage.setItem("chatSessionTimestamp", new Date().getTime()); // Save start time
     }
 
+    function generateUUID() {
+        var d = new Date().getTime();
+        var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16;
+            if (d > 0) {
+                r = (d + r) % 16 | 0;
+                d = Math.floor(d / 16);
+            } else {
+                r = (d2 + r) % 16 | 0;
+                d2 = Math.floor(d2 / 16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
     // --- 2. LOAD HISTORY ON REFRESH ---
     function loadChatHistory() {
         $.get('/chat/guest-history?sessionGuid=' + chatSessionId, function (messages) {
@@ -1137,5 +1153,9 @@ $(document).ready(function () {
         $('#chat-name-screen').hide();
         $('#chat-messages-list').css('display', 'flex');
         $('#chat-footer').css('display', 'flex');
+    }
+
+    if (chatSessionId) {
+        initSignalR();
     }
 });

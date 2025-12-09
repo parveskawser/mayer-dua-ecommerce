@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Create Bulk Order";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-
     var vendors = ViewBag.Vendors as List<MDUA.Entities.Vendor>;
 }
 
@@ -10,80 +9,33 @@
     <link href="~/css/bulk-order.css" rel="stylesheet" />
 }
 
-<div class="container-fluid p-4">
-    <div class="row">
+<div class="bulk-wrapper">
 
-        <div class="col-md-4 order-md-2 mb-4">
-            <div class="card shadow-sm sticky-top sticky-panel">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">📦 Order Details</h5>
-                </div>
-                <div class="card-body">
-                    <form asp-action="CreateBulkOrder" method="post" id="bulkOrderForm">
+    <div class="product-pane">
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select Vendor</label>
-                            <select name="VendorId" class="form-select" required>
-                                <option value="">-- Choose Vendor --</option>
-                                @if (vendors != null)
-                                {
-                                    foreach (var v in vendors)
-                                    {
-                                        <option value="@v.Id">@v.VendorName</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Agreement / Ref No.</label>
-                            <input type="text" name="AgreementNumber" class="form-control" placeholder="e.g. BLK-2025-001" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Title (Optional)</label>
-                            <input type="text" name="Title" class="form-control" placeholder="e.g. Winter Restock" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Remarks</label>
-                            <textarea name="Remarks" class="form-control" rows="2"></textarea>
-                        </div>
-
-                        <hr />
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                ✅ Confirm Order
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        <div class="product-pane-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="m-0">Select Products <small class="text-muted fs-6">(Sorted by Lowest Stock)</small></h4>
             </div>
-        </div>
-
-        <div class="col-md-8 order-md-1">
-            <h4 class="mb-4">Select Products <small class="text-muted fs-6">(Sorted by Lowest Stock)</small></h4>
-
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger">@TempData["Error"]</div>
+                <div class="alert alert-danger mt-2 py-2">@TempData["Error"]</div>
             }
+        </div>
 
+        <div class="product-scroll-area">
             @if (Model != null)
             {
                 foreach (var group in Model)
                 {
-                    <div class="card mb-3 shadow-sm border-start border-5 @(group.IsCritical ? "border-danger" : "border-success")">
+                    <div class="card shadow-sm border-start border-5 @(group.IsCritical ? "border-danger" : "border-success")">
                         <div class="card-header bg-white d-flex align-items-center justify-content-between">
-
                             <div class="form-check">
                                 <input class="form-check-input product-checkbox" type="checkbox" id="@group.UiId">
                                 <label class="form-check-label fw-bold fs-5 ms-2" for="@group.UiId">
                                     @group.ProductName
                                 </label>
                             </div>
-
                             <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@group.UiId">
                                 Show Variants ▼
                             </button>
@@ -140,6 +92,54 @@
                     </div>
                 }
             }
+        </div>
+    </div>
+
+    <div class="sidebar-pane">
+        <div class="bg-primary text-white p-3">
+            <h5 class="mb-0">📦 Order Details</h5>
+        </div>
+
+        <div class="sidebar-content">
+            <form asp-action="CreateBulkOrder" method="post" id="bulkOrderForm">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select Vendor</label>
+                    <select name="VendorId" class="form-select" required>
+                        <option value="">-- Choose Vendor --</option>
+                        @if (vendors != null)
+                        {
+                            foreach (var v in vendors)
+                            {
+                                <option value="@v.Id">@v.VendorName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Agreement / Ref No.</label>
+                    <input type="text" name="AgreementNumber" class="form-control" placeholder="e.g. BLK-2025-001" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Title (Optional)</label>
+                    <input type="text" name="Title" class="form-control" placeholder="e.g. Winter Restock" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Remarks</label>
+                    <textarea name="Remarks" class="form-control" rows="2"></textarea>
+                </div>
+
+                <hr />
+
+                <div class="d-grid pb-5">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        ✅ Confirm Order
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

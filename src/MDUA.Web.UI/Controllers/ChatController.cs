@@ -16,14 +16,19 @@ namespace MDUA.Web.UI.Controllers
         }
         [HttpGet]
         [Route("chat/guest-history")]
-        [AllowAnonymous] // 🔓 allow guests to access this
+        [AllowAnonymous]
         public IActionResult GetGuestHistory(string sessionGuid)
         {
             if (!Guid.TryParse(sessionGuid, out Guid guid)) return BadRequest();
 
             // 1. Find the session ID using the GUID
             var session = _chatFacade.GetSessionByGuid(guid);
-            if (session == null) return NotFound();
+
+            // ✅ FIX: If session doesn't exist (New or Expired User), return Empty List, NOT 404
+            if (session == null)
+            {
+                return Ok(new List<object>());
+            }
 
             // 2. Get messages
             var history = _chatFacade.GetChatHistory(session.Id);

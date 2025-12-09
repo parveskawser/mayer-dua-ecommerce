@@ -1,77 +1,60 @@
 ﻿/* --- LAYOUT LOCK (Inventory Page) --- */
 
-/* 1. Nuclear Option: Disable Browser Scroll */
-html, body {
-    height: 100% !important;
-    width: 100% !important;
+/* 1. Disable Window Scroll */
+/* 1. Lock Body AND common Admin Template Wrappers */
+html, body, .main-panel, .content-wrapper, .wrapper, .container-scroller {
+    height: 100vh !important;
     overflow: hidden !important;
-    margin: 0;
-    padding: 0;
 }
 
-/* 2. Main Wrapper: Locks the height */
+/* 2. Your Inventory Wrapper */
 .inventory-wrapper {
-    /* Adjust '85px' based on your Top Navbar height */
+    /* Adjust margin to clear your specific top navbar */
+    /* Strict height calculation to prevent overflow */
+    /* 100vh minus Top Margin (4rem/64px) minus Bottom Buffer (20px) */
     height: calc(100vh - 120px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    position: relative;
+    padding: 0 1.5rem;
 }
 
-/* 3. Header Section (Title) */
+/* 3. Header Section */
 .inventory-header {
-    flex: 0 0 auto; /* Fixed height */
+    flex: 0 0 auto; /* Don't shrink/grow */
     padding-bottom: 1rem;
     padding-top: 0.5rem;
     z-index: 50;
-    /* Glass Background so scrolled content doesn't bleed through */
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-    margin-bottom: 1rem;
+    background: transparent; /* Transparent so it blends */
 }
 
-/* 4. Table Container (The Glass Card) */
+/* 4. The Glass Card Container */
 .inventory-scroll-container {
-    flex: 1; /* Fills remaining space */
+    flex: 1; /* Fills remaining height */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent card from scrolling */
+    overflow: hidden;
+    /* Move the glass effect here if you want the whole table area glassed */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
 }
 
 /* 5. The Actual Scrollable Area */
 .table-responsive-lock {
-    flex: 1; /* Fill the glass card */
-    overflow-y: auto; /* Vertical scroll ONLY here */
-    overflow-x: auto; /* Horizontal scroll if needed */
-    padding-bottom: 20px;
+    flex: 1;
+    overflow-y: auto; /* Scroll inside the card */
+    overflow-x: hidden;
 }
 
-/* 6. Sticky Table Header */
+/* 6. Sticky Table Header (Inside the scroll area) */
 .table thead th {
     position: sticky;
     top: 0;
-    background-color: #f8f9fa; /* Match bg-light */
+    background-color: #f8f9fa;
     z-index: 10;
     box-shadow: 0 1px 0 #dee2e6;
 }
 
-/* Optional: Custom Scrollbar */
-.table-responsive-lock::-webkit-scrollbar {
-    width: 6px;
-}
-
-.table-responsive-lock::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.table-responsive-lock::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
-
-    .table-responsive-lock::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
+/* Remove .sticky-header entirely - it conflicts with this layout */

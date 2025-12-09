@@ -1,207 +1,147 @@
-﻿/* ========== DESKTOP STYLES (768px and above) ========== */
-@media (min-width: 768px) {
-    /* Sticky Sidebar behavior for desktop */
-    .sticky-panel {
-        position: sticky;
-        top: 20px;
-        z-index: 100;
-    }
+﻿/* ========== 1. GLOBAL LAYOUT LOCK ========== */
+/* Stop the whole page from scrolling */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
 }
 
-/* ========== MOBILE STYLES (below 768px) ========== */
-@media (max-width: 767px) {
-    /* Remove sticky behavior on mobile */
-    .sticky-panel {
-        position: relative;
-        top: auto;
-        z-index: auto;
-    }
-
-    /* Order Details appears AFTER product selection on mobile */
-    .order-md-2 {
-        order: 2 !important;
-    }
-
-    .order-md-1 {
-        order: 1 !important;
-    }
+/* ========== 2. MAIN WRAPPER (The Fix) ========== */
+.bulk-wrapper {
+    /* Adjust '80px' if you see a double scrollbar (it accounts for your Navbar height) */
+    height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: row; /* Side-by-side layout */
+    overflow: hidden; /* Contains everything inside */
+    background-color: #f8f9fa;
 }
 
-/* ========== COMMON STYLES FOR ALL DEVICES ========== */
+/* ========== 3. LEFT PANE: PRODUCT LIST ========== */
+.product-pane {
+    flex: 1; /* Takes all remaining width */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 1rem; /* Reduced padding for tighter fit */
+}
 
-/* Table styling adjustments */
+/* The Fixed Header inside the Product Pane */
+.product-pane-header {
+    flex: 0 0 auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+}
+
+/* The Scrollable Area for Product Cards */
+.product-scroll-area {
+    flex: 1;
+    overflow-y: auto; /* SCROLLS HERE */
+    overflow-x: hidden;
+    padding-right: 5px;
+    padding-bottom: 50px;
+}
+
+    /* Custom Scrollbar */
+    .product-scroll-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .product-scroll-area::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+/* ========== 4. RIGHT PANE: SIDEBAR FORM (UPDATED) ========== */
+.sidebar-pane {
+    width: 380px; /* Fixed width for the form */
+    background: #ffffff;
+    border-left: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Scrollable if form gets too long */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.03);
+    z-index: 50;
+    /* --- NEW CHANGES --- */
+    /* 1. Move the sidebar down by 30px */
+    margin-top: 60px;
+    /* 2. Subtract that margin from height so it doesn't overflow */
+    height: calc(100% - 30px);
+    /* Optional: Add a border and rounded corner for a cleaner look */
+    border-top: 1px solid #dee2e6;
+    border-top-left-radius: 8px;
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+/* ========== 5. KEEPING YOUR EXISTING STYLES ========== */
+.card {
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+}
+
+    .card.border-start {
+        border-left-width: 5px !important;
+    }
+
+    .card.border-danger {
+        border-left-color: #f8b4b4 !important;
+    }
+
+    .card.border-success {
+        border-left-color: #b4e4b4 !important;
+    }
+
 .table-v-middle td {
     vertical-align: middle;
 }
 
-/* Variant row transitions */
 .variant-row {
     transition: background-color 0.2s;
 }
 
-.variant-row:hover {
-    background-color: #f8f9fa;
-}
+    .variant-row:hover {
+        background-color: #f8f9fa;
+    }
 
-/* Badge spacing */
 .badge-stock {
     margin-left: 8px;
     font-size: 0.75em;
 }
 
-/* Force the backdrop to be lower */
-.modal-backdrop {
-    z-index: 1040 !important;
-}
-
-/* Force the modal dialog to be higher */
-.modal-content, .modal-dialog {
-    z-index: 1100 !important;
-}
-
-.btn-xs {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.75rem;
-    border-radius: 0.2rem;
-}
-
-.receive-form-row {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.receive-form-row td {
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* FIX: Prevent collapse content from overflowing the card */
-.card {
-    overflow: hidden;
-}
-
-/* Ensure the collapse div respects card boundaries */
-.collapse {
-    overflow: hidden;
-}
-
-/* Make sure table doesn't overflow - no horizontal scroll on desktop */
-.card-body.p-0 {
-    overflow-x: hidden;
-}
-
-/* Enable horizontal scroll on mobile */
-@media (max-width: 767px) {
-    .card-body.p-0 {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+/* ========== 6. MOBILE RESPONSIVENESS ========== */
+@media (max-width: 991px) {
+    html, body {
+        overflow: auto !important;
+        height: auto !important;
     }
 
-    /* Allow table to be wider on mobile */
-    .table {
-        min-width: 600px;
+    .bulk-wrapper {
+        height: auto;
+        flex-direction: column-reverse;
+        display: block;
     }
-}
+    /* Reset margin and height on mobile */
+    .sidebar-pane {
+        width: 100%;
+        height: auto;
+        margin-top: 0;
+        border-left: none;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 0;
+    }
 
-/* Make table layout fixed to prevent overflow */
-.table {
-    table-layout: auto;
-    width: 100%;
-}
+    .product-pane {
+        height: auto;
+        overflow: visible;
+    }
 
-/* Allow text to wrap in table cells - but not headers */
-.table td {
-    word-wrap: break-word;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Keep table headers in single line */
-.table th {
-    white-space: nowrap;
-    font-size: 0.75rem;
-    padding: 0.75rem 0.5rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-/* Add proper spacing between header text */
-.table thead th {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-}
-
-/* Adjust column widths for better fit */
-.table thead th:first-child {
-    width: 60px;
-    text-align: center;
-}
-
-.table thead th:nth-child(3) {
-    width: 140px;
-    text-align: center;
-}
-
-.table thead th:nth-child(4) {
-    width: 140px;
-}
-
-/* Variant name column takes remaining space */
-.table thead th:nth-child(2) {
-    width: auto;
-    max-width: none;
-}
-
-/* Remove ellipsis from checkboxes */
-.table td:first-child {
-    text-overflow: clip;
-    overflow: visible;
-}
-
-/* Ensure variant text shows properly */
-.table td:nth-child(2) {
-    max-width: 400px;
-}
-
-/* Ensure collapsible content stays within card */
-.card .collapse .card-body {
-    max-width: 100%;
-}
-
-/* Make table responsive within the card - no scroll */
-.table {
-    margin-bottom: 0;
-    table-layout: fixed;
-    width: 100%;
-}
-
-/* Additional fix for border styling - lighter borders */
-.card.border-start {
-    border-left-width: 5px !important;
-    border-top: 1px solid #e9ecef !important;
-    border-right: 1px solid #e9ecef !important;
-    border-bottom: 1px solid #e9ecef !important;
-}
-
-.card.border-danger {
-    border-left-color: #f8b4b4 !important; /* Light red */
-}
-
-.card.border-success {
-    border-left-color: #b4e4b4 !important; /* Light green */
-}
-
-/* Make card header border lighter */
-.card-header {
-    border-bottom: 1px solid #e9ecef !important;
+    .product-scroll-area {
+        overflow: visible;
+    }
 }
