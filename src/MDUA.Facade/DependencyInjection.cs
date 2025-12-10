@@ -27,6 +27,7 @@ namespace MDUA.Facade
             services.AddScoped<IProductDiscountDataAccess, ProductDiscountDataAccess>();
             services.AddScoped<IProductCategoryDataAccess, ProductCategoryDataAccess>();
             services.AddScoped<IProductAttributeDataAccess, ProductAttributeDataAccess>();
+            services.AddScoped<IProductVideoDataAccess, ProductVideoDataAccess>();
 
             // Variant & Stock
             services.AddScoped<IVariantImageDataAccess, VariantImageDataAccess>();
@@ -56,6 +57,9 @@ namespace MDUA.Facade
             services.AddScoped<IChatDataAccess, MDUA.DataAccess.ChatDataAccess>();
 
             services.AddScoped<IPaymentMethodDataAccess, PaymentMethodDataAccess>();
+
+            services.AddScoped<ICompanyPaymentMethodDataAccess, CompanyPaymentMethodDataAccess>();
+
             // Facade Layer
             services.AddServiceFacade();
 
@@ -72,10 +76,12 @@ namespace MDUA.Facade
             services.AddScoped<IChatFacade, ChatFacade>();
 
 
-            // Register Purchase Facade
             services.AddScoped<IPurchaseFacade, PurchaseFacade>();
 
             services.AddScoped<IPaymentMethodFacade, PaymentMethodFacade>();
+
+            services.AddScoped<ISettingsFacade, SettingsFacade>();
+
         }
     }
 }

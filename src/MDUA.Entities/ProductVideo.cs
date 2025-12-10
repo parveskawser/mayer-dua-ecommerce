@@ -10,6 +10,6 @@ namespace MDUA.Entities
 {
 	public partial class ProductVideo 
 	{
-		
-	}
+        public List<ProductVideo> Videos { get; set; }
+    }
 }

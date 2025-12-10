@@ -66,98 +66,51 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // 2. PAYMENT METHOD UI LOGIC (UPDATED)
+    // 2. PAYMENT METHOD UI LOGIC (SIMPLIFIED)
     // ==================================================
 
-    // 1. Handle clicking a Payment Method (The big icons)
+    // 1. Handle clicking a Payment Method Card
     $('.payment-option').on('click', function () {
+        // Visual Selection
         $('.payment-option').removeClass('selected');
         $(this).addClass('selected');
+
+        // Check the hidden radio button so form submission works
         $(this).find('input[type="radio"]').prop('checked', true);
 
-        handlePaymentLogic();
+        handlePaymentUI();
     });
 
-    // 2. Handle switching between "Gateway" vs "Manual" radio buttons
-    $('input[name="paymentMode"]').on('change', function () {
-        toggleManualFields();
-        updateSubmitButtonText();
-    });
-
-    // Core Logic: Decides what to show based on DB flags
-    function handlePaymentLogic() {
+    // Core Logic: Show/Hide Input fields based on the selected card's mode
+    function handlePaymentUI() {
         const $selected = $('.payment-option.selected');
+        if ($selected.length === 0) return;
 
-        // Read DB flags (convert string "true" to boolean if needed)
-        const supportsManual = $selected.data('manual') === true || $selected.data('manual') === "true";
-        const supportsGateway = $selected.data('gateway') === true || $selected.data('gateway') === "true";
+        // Get Mode directly from the card (Manual vs Gateway)
+        const mode = $selected.data('mode');
         const instruction = $selected.find('.manual-instruction-text').val();
-
-        // Containers
         const $detailsArea = $('#payment-details-area');
-        const $modeSelector = $('#payment-mode-selector');
-        const $instructionText = $('#instruction-text');
+        const $trxInput = $('#trx-id-input');
 
-        // Reset
-        $detailsArea.hide();
-        $modeSelector.hide();
-        $('#trx-id-input').val(''); // Clear old TrxID
-
-        // LOGIC BRANCHING
-        if (supportsManual && supportsGateway) {
-            // CASE A: Hybrid (e.g., bKash) -> Show Mode Selector
-            $detailsArea.show();
-            $modeSelector.show();
-            $instructionText.text(instruction);
-
-            // Default to Gateway (easiest for user)
-            $('#mode-gateway').prop('checked', true);
-        }
-        else if (supportsManual && !supportsGateway) {
-            // CASE B: Manual Only (e.g. some custom method)
-            $detailsArea.show();
-            $modeSelector.hide();
-            $instructionText.text(instruction);
-
-            // Force Manual
-            $('#mode-manual').prop('checked', true);
-        }
-        else if (!supportsManual && supportsGateway) {
-            // CASE C: Gateway Only (e.g. Card) -> Hide details, force Gateway
-            $('#mode-gateway').prop('checked', true);
-        }
-        else {
-            // CASE D: COD -> Hide everything
-            // Just ensure paymentMode is not sending garbage
-            $('#mode-manual').prop('checked', false);
-            $('#mode-gateway').prop('checked', false);
+        if (mode === 'Manual') {
+            // Case: Manual (Send Money)
+            $detailsArea.slideDown(200);
+            $('#instruction-text').text(instruction || "Please follow the instructions.");
+            $trxInput.prop('required', true); // Make TrxID mandatory
+        } else {
+            // Case: Gateway (Secure Pay) or COD
+            $detailsArea.slideUp(200);
+            $trxInput.prop('required', false).val(''); // Clear and un-require
         }
 
-        toggleManualFields();
         updateSubmitButtonText();
     }
 
-    // Toggle the TrxID input box based on the sub-radio selection
-    function toggleManualFields() {
-        const mode = $('input[name="paymentMode"]:checked').val();
-        const $selected = $('.payment-option.selected');
-        const supportsManual = $selected.data('manual') === true || $selected.data('manual') === "true";
-
-        // Show manual fields ONLY if Manual Mode is selected AND the method supports it
-        if (mode === 'Manual' && supportsManual) {
-            $('#manual-payment-fields').slideDown(200);
-            $('#trx-id-input').prop('required', true);
-        } else {
-            $('#manual-payment-fields').slideUp(200);
-            $('#trx-id-input').prop('required', false);
-        }
-    }
-
-    // Update Button Text
+    // Update Button Text based on selection
     function updateSubmitButtonText() {
         const $selected = $('.payment-option.selected');
-        const methodCode = $selected.data('payment'); // 'cod', 'bkash', 'card'
-        const mode = $('input[name="paymentMode"]:checked').val(); // 'Gateway', 'Manual'
+        const methodCode = $selected.data('payment'); // e.g. 'cod', 'bkash'
+        const mode = $selected.data('mode');          // 'Manual', 'Gateway'
         const totalAmount = $('#receipt-grand-total').text();
         const $btn = $('#final-submit-btn');
 
@@ -173,15 +126,29 @@ $(document).ready(function () {
         }
     }
 
-    // Initialize on load (to select the first default method correctly)
-    handlePaymentLogic();
+    // Initialize on page load (to handle default selection)
+    handlePaymentUI();
 
-    // Update button text when total changes
+    // Hook into the existing total update function
     const originalUpdateTotals = updateTotals;
     updateTotals = function () {
         originalUpdateTotals();
         updateSubmitButtonText();
     };
+
+    // --- UPDATE SUBMIT HANDLER DATA ---
+    // Make sure your Submit Handler (Section 9) captures the correct mode
+    // Add this inside $('#order-form').submit(function(e) {...}) just before $.ajax
+    /*
+        const $selectedCard = $('.payment-option.selected');
+        formData.PaymentMode = $selectedCard.data('mode') || 'Gateway'; // Default to Gateway if undefined (like COD)
+        
+        if (formData.PaymentMode === 'Manual') {
+            formData.TransactionReference = $('#trx-id-input').val();
+        } else {
+            formData.TransactionReference = '';
+        }
+    */
 
     // ==================================================
     // 3. GLOBAL VARIABLES & STATE
@@ -528,7 +495,7 @@ $(document).ready(function () {
                     isEmailAutofilled = false;
                     currentCustomerEmail = null;
                 }
-            }).fail(function () {
+            }).catch(function () {
                 $('#phone-status').text("⚠ Could not verify phone").css('color', 'orange');
             });
         } else {
@@ -832,17 +799,37 @@ $(document).ready(function () {
             return;
         }
 
-        // ==========================
-        // PROCEED WITH AJAX SUBMIT
-        // ==========================
+        // --- CRITICAL FIX START ---
+        const $selectedCard = $('.payment-option.selected');
+
+        // 1. Get correct SystemCode (e.g., 'bkash', not 'bkash_manual')
+        const correctMethodCode = $selectedCard.data('payment');
+
+        // 2. Get Mode ('Manual', 'Gateway', 'Offline')
+        const mode = $selectedCard.data('mode');
+
+        // 3. Validation: Manual Mode MUST have a TrxID
+        if (mode === 'Manual') {
+            const trxId = $('#trx-id-input').val().trim();
+            if (!trxId) {
+                Swal.fire('Required', 'Please enter the Transaction ID (TrxID).', 'warning');
+                $('#trx-id-input').focus().addClass('input-error');
+                return; // Stop submission
+            }
+        }
+        // --- CRITICAL FIX END ---
+
+        // Prepare Data
         let formData = {};
-        $(this).serializeArray().forEach(function (item) {
-            formData[item.name] = item.value;
-        });
+        $(this).serializeArray().forEach(item => formData[item.name] = item.value);
 
-        // Add Payment Method (From your new logic)
-        formData.PaymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cod';
+        // Apply Correct Values
+        formData.PaymentMethod = correctMethodCode; // Fixed value
+        formData.PaymentMode = mode;                // Required for Backend Logic
 
+        if (mode === 'Manual') {
+            formData.TransactionReference = $('#trx-id-input').val();
+        }
         // Ensure numeric types
         formData.TargetCompanyId = 1;
         formData.ProductVariantId = parseInt(formData.ProductVariantId);
@@ -852,10 +839,10 @@ $(document).ready(function () {
         $btn.prop('disabled', true);
 
         // Update text based on payment
-        if (formData.PaymentMethod === 'cod') {
-            $btn.text('Processing...');
-        } else {
+        if (formData.PaymentMode === 'Gateway') {
             $btn.text('Redirecting...');
+        } else {
+            $btn.text('Processing...');
         }
 
         $.ajax({
@@ -866,7 +853,7 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     // Success Logic
-                    if (formData.PaymentMethod === 'cod') {
+                    if (formData.PaymentMethod === 'cod' || formData.PaymentMode === 'Manual') {
                         // COD Success
                         Swal.fire({
                             title: 'Success!',

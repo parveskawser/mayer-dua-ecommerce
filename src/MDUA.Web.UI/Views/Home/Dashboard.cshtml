@@ -214,8 +214,53 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+            <div class="card-low-stock">
+                <div class="header-low-stock">
+                    <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+                </div>
+
+                <div class="list-group list-group-flush">
+                    @if (Model.LowStockItems != null && Model.LowStockItems.Any())
+                    {
+                        foreach (var item in Model.LowStockItems)
+                        {
+                            <div class="low-stock-item">
+                                <div style="flex: 1; padding-right: 10px;">
+                                    <span class="item-name">@item.ProductName</span>
+                                    <div class="item-variant">
+                                        <i class="fas fa-tag" style="font-size: 0.6rem;"></i>
+                                        @(string.IsNullOrEmpty(item.VariantName) ? "Standard" : item.VariantName)
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    @if (item.StockQty == 0)
+                                    {
+                                        <span class="badge-stock badge-stock-zero">0 left</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-stock badge-stock-low">@item.StockQty left</span>
+                                    }
+                                    <div class="item-price">
+                                        Tk. @item.Price.ToString("N0")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted small">
+                            <i class="fas fa-check-circle text-success mb-2 fs-4"></i><br />
+                            All items stocked!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <!--
         <div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
             <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
             <div class="row g-3 font-monospace small">
@@ -247,7 +292,9 @@
             </div>
         </div>
 
-    </div>     <partial name="_AdminChatWidget" />
+    </div> 
+        -->
+        <partial name="_AdminChatWidget" />
 </div>
 
 @section Scripts {

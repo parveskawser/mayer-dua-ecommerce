@@ -1,0 +1,86 @@
+﻿@model List<MDUA.Entities.ProductVideo>
+@{
+    int productId = (int)ViewData["ProductId"];
+}
+
+<div class="row">
+    <div class="col-md-4 border-end">
+        <h6 class="fw-bold mb-3">Add New Video</h6>
+        <form id="form-add-video">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProductId" value="@productId" />
+
+            <div class="mb-2">
+                <label class="small text-muted">Video Title</label>
+                <input type="text" name="Title" class="form-control form-control-sm" placeholder="e.g. Product Demo" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="small text-muted">YouTube Embed URL</label>
+                <input type="url" name="VideoUrl" class="form-control form-control-sm"
+                       placeholder="https://www.youtube.com/embed/..." required />
+                <div class="form-text x-small text-muted">Must be an embed link</div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="check-is-primary" name="IsPrimary" value="true">
+                <label class="form-check-label small" for="check-is-primary">Set as Primary Video</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+                <i class="fas fa-plus me-1"></i> Add Video
+            </button>
+        </form>
+    </div>
+
+    <div class="col-md-8">
+        <h6 class="fw-bold mb-3">Existing Videos</h6>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var v in Model)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-2">
+                        <div class="d-flex align-items-center" style="gap:10px;">
+                            <div style="width: 80px; height: 45px; background: #000; border-radius: 4px; overflow: hidden;">
+                                <iframe src="@v.VideoUrl" style="width:100%; height:100%; pointer-events:none;" frameborder="0"></iframe>
+                            </div>
+
+                            <div>
+                                <div class="fw-bold small">@v.Title</div>
+                                @if (v.IsPrimary)
+                                {
+                                    <span class="badge bg-success x-small">Primary</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="btn-group btn-group-sm">
+                            @if (!v.IsPrimary)
+                            {
+                                <button class="btn btn-outline-secondary js-set-primary-video"
+                                        data-video-id="@v.Id"
+                                        data-product-id="@v.ProductId"
+                                        title="Set as Primary">
+                                    ★
+                                </button>
+                            }
+                            <button class="btn btn-outline-danger js-delete-video"
+                                    data-video-id="@v.Id"
+                                    title="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-4 small">
+                No videos added yet.
+            </div>
+        }
+    </div>
+</div>

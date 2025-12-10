@@ -241,6 +241,38 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="productVideosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-custom">
+            <div class="modal-header modal-header-custom bg-dark text-white">
+                <h5 class="modal-title">Videos: <span id="modal-video-product-name" class="text-warning"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="modal-videos-content" class="p-4">
+                    <div class="loading-spinner text-center"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteVideoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-custom border-danger">
+            <div class="modal-body text-center p-4">
+                <p class="fw-bold text-danger mb-3">Delete this video?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-confirm-del-video">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 }
 
 @section Scripts {
@@ -308,6 +340,10 @@
                 uploadVariantImage: '@Url.Action("UploadVariantImage", "Product")',
                 deleteVariantImage: '@Url.Action("DeleteVariantImage", "Product")',
                 updateVariantImageOrder: '@Url.Action("UpdateVariantImageOrder", "Product")',
+                 getVideosPartial: '@Url.Action("GetVideosPartial", "Product")',
+                addVideo: '@Url.Action("AddVideo", "Product")',
+                deleteVideo: '@Url.Action("DeleteVideo", "Product")',
+                setPrimaryVideo: '@Url.Action("SetPrimaryVideo", "Product")'
             }
         };
 

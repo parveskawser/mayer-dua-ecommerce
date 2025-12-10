@@ -12,11 +12,14 @@ namespace MDUA.Web.UI.Controllers
         private readonly IProductFacade _productFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IPaymentMethodFacade _paymentMethodFacade;
-        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade)
+        private readonly ISettingsFacade _settingsFacade;
+
+        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade, ISettingsFacade settingsFacade)
         {
             _productFacade = productFacade;
             _webHostEnvironment = webHostEnvironment;
             _paymentMethodFacade = paymentMethodFacade;
+            _settingsFacade = settingsFacade;
         }
 
         #region Products
@@ -31,13 +34,18 @@ namespace MDUA.Web.UI.Controllers
 
             if (model == null) return NotFound();
             // --- FETCH PAYMENT METHODS ---
-            // Fetch active methods, ordered by DisplayOrder
-            var paymentMethods = _paymentMethodFacade.GetAll()
-                                    .Where(x => x.IsActive)
-                                    .OrderBy(x => x.DisplayOrder)
+            var companyId = model.CompanyId; // Assuming Product entity has CompanyId
+
+            // 1. Get all settings (merged)
+            var allSettings = _settingsFacade.GetCompanyPaymentSettings(companyId);
+
+            // 2. Filter only ENABLED methods for the View
+            var enabledMethods = allSettings
+                                    .Where(x => x.IsEnabled)
+                                    .OrderBy(x => x.PaymentMethodId) // Or DisplayOrder if available in Result
                                     .ToList();
 
-            ViewBag.PaymentMethods = paymentMethods;
+            ViewBag.PaymentMethods = enabledMethods;
             return View(model);
         }
 
@@ -582,7 +590,80 @@ namespace MDUA.Web.UI.Controllers
                 value = v.Value // Or v.Name, depending on your Entity
             }));
         }
-     
+
+
+
         #endregion
+        // ... inside ProductController class ...
+
+        #region Product Videos
+
+        [HttpGet]
+        [Route("product/get-videos")]
+        public IActionResult GetVideosPartial(int productId)
+        {
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
+
+            var videos = _productFacade.GetProductVideos(productId);
+            ViewData["ProductId"] = productId;
+            return PartialView("_ProductVideosPartial", videos);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/add-video")]
+        public IActionResult AddVideo(ProductVideo video)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.AddProductVideo(video, CurrentUserName);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/delete-video")]
+        public IActionResult DeleteVideo(int id)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.DeleteProductVideo(id);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/set-primary-video")]
+        public IActionResult SetPrimaryVideo(int videoId, int productId)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.SetPrimaryProductVideo(videoId, productId, CurrentUserName);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        #endregion
+
     }
 }

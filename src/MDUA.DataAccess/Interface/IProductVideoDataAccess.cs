@@ -30,6 +30,7 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IProductVideoDataAccess : ICommonDataAccess<ProductVideo, ProductVideoList, ProductVideoBase>
-	{ 
-	}	
+	{
+        ProductVideoList GetByProductId(int productId);
+    }	
 }

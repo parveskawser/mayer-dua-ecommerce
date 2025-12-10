@@ -90,5 +90,47 @@ namespace MDUA.DataAccess
                 return result != null ? Convert.ToInt32(result) : 0;
             }
         }
+
+        public List<LowStockItem> GetLowStockVariants(int topN = 5)
+        {
+            var list = new List<LowStockItem>();
+
+            // Query joins VariantPriceStock -> ProductVariant -> Product
+            // Filters for Active items only
+            string sql = $@"
+        SELECT TOP (@TopN)
+            p.ProductName,
+            pv.VariantName,
+            vps.StockQty,
+            vps.Price
+        FROM [dbo].[VariantPriceStock] vps
+        INNER JOIN [dbo].[ProductVariant] pv ON vps.Id = pv.Id
+        INNER JOIN [dbo].[Product] p ON pv.ProductId = p.Id
+        WHERE p.IsActive = 1 AND pv.IsActive = 1
+        ORDER BY vps.StockQty ASC, p.ProductName ASC";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, pInt32("TopN", topN));
+
+                SqlDataReader reader;
+                SelectRecords(cmd, out reader); // Use your framework's execute method
+
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new LowStockItem
+                        {
+                            ProductName = reader["ProductName"].ToString(),
+                            VariantName = reader["VariantName"] != DBNull.Value ? reader["VariantName"].ToString() : "",
+                            StockQty = Convert.ToInt32(reader["StockQty"]),
+                            Price = Convert.ToDecimal(reader["Price"])
+                        });
+                    }
+                }
+            }
+            return list;
+        }
     }	
 }

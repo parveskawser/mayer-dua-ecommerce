@@ -1,21 +1,50 @@
-﻿using MDUA.Facade.Interface;
+﻿using MDUA.Facade;
+using MDUA.Facade.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace MDUA.Web.UI.Controllers
 {
+    [Authorize]
     public class SettingsController : BaseController
     {
-        private readonly IPaymentMethodFacade _paymentMethodFacade;
-       // private readonly ICompanyPaymentMethodFacade _companyPaymentMethodFacade;
+        private readonly ISettingsFacade _settingsFacade;
 
-        public SettingsController(
-            IPaymentMethodFacade paymentMethodFacade)
+        public SettingsController(ISettingsFacade settingsFacade)
         {
-            _paymentMethodFacade = paymentMethodFacade;
+            _settingsFacade = settingsFacade;
         }
-        public IActionResult Index()
+
+        [HttpGet]
+        public IActionResult PaymentSettings()
         {
-            return View();
+            // Uses the custom result class
+            var model = _settingsFacade.GetCompanyPaymentSettings(CurrentCompanyId);
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SavePaymentConfig(int methodId, bool isEnabled, bool isManual, bool isGateway, string instruction)
+        {
+            try
+            {
+                _settingsFacade.SavePaymentConfig(
+                    CurrentCompanyId,
+                    methodId,
+                    isEnabled,
+                    isManual,
+                    isGateway,
+                    instruction,
+                    CurrentUserName
+                );
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
