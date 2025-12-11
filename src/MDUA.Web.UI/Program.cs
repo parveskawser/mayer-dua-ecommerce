@@ -92,7 +92,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddDistributedMemoryCache(); // Stores session in memory
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 var app = builder.Build();
 
 // 3. Middlewares
@@ -103,7 +109,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseSession(); // 👈 THIS MUST BE HERE
 app.UseAuthentication();
 app.UseAuthorization();
 

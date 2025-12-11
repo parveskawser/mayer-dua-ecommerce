@@ -10,6 +10,8 @@ namespace MDUA.Entities
 {
     public partial class CompanyPaymentMethod : CompanyPaymentMethodBase
     {
+        [DataMember]
+        public string MethodName { get; set; }
     }
 
     public class CompanyPaymentMethodResult
@@ -29,5 +31,6 @@ namespace MDUA.Entities
         public bool IsManualEnabled { get; set; }
         public bool IsGatewayEnabled { get; set; }
         public string CustomInstruction { get; set; }
+
     }
 }

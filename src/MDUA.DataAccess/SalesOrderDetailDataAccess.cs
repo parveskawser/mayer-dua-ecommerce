@@ -12,6 +12,66 @@ namespace MDUA.DataAccess
 {
 	public partial class SalesOrderDetailDataAccess
 	{
+        public SalesOrderDetail GetFirstDetailByOrderRef(string orderRef)
+        {
+            // 1. Explicitly select the columns by name
+            string sql = @"
+        SELECT TOP 1 
+            d.Id, 
+            d.SalesOrderId,
+            d.ProductId,  -- <--- DB Column Name
+            d.Quantity
+        FROM [dbo].[SalesOrderDetail] d
+        INNER JOIN [dbo].[SalesOrderHeader] h ON d.SalesOrderId = h.Id
+        WHERE h.SalesOrderId = @OrderRef 
+           OR h.OnlineOrderId = @OrderRef 
+           OR h.DirectOrderId = @OrderRef";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                AddParameter(cmd, pNVarChar("OrderRef", 50, orderRef));
+
+                SqlDataReader reader;
+                SelectRecords(cmd, out reader);
+
+                using (reader)
+                {
+                    if (reader.Read())
+                    {
+                        var detail = new SalesOrderDetail();
+
+                        // 2. Map DB 'Id' -> C# 'Id'
+                        if (!reader.IsDBNull(reader.GetOrdinal("Id")))
+                            detail.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+
+                        // ✅ 3. CRITICAL MAP: DB 'ProductId' -> C# 'ProductVariantId'
+                        int prodIdx = reader.GetOrdinal("ProductId");
+                        if (!reader.IsDBNull(prodIdx))
+                        {
+                            detail.ProductVariantId = reader.GetInt32(prodIdx);
+                        }
+
+                        // 4. Map Quantity
+                        if (!reader.IsDBNull(reader.GetOrdinal("Quantity")))
+                            detail.Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"));
+
+                        return detail;
+                    }
+                }
+                return null;
+            }
+        }
+        // Helper (Keep this in your class)
+        private int GetReaderInt(SqlDataReader reader, string colName)
+        {
+            int ordinal = reader.GetOrdinal(colName);
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetInt32(ordinal);
+            }
+            return 0;
+        }
         public long InsertSalesOrderDetailSafe(SalesOrderDetail detail)
         {
             // ✅ FIX: Using [ProductId] based on your database schema confirmation

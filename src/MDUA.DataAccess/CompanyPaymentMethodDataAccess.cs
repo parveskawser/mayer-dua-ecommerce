@@ -13,6 +13,67 @@ namespace MDUA.DataAccess
     public partial class CompanyPaymentMethodDataAccess
     {
         // 1. GET: Custom Query using your Framework's GetSQLCommand & SelectRecords
+
+        public List<CompanyPaymentMethod> GetActiveByCompany(int companyId)
+        {
+            // ✅ FIX: Change 'MethodName' to the actual column name in your DB (likely 'Name')
+            string sql = @"
+        SELECT 
+            cpm.Id, 
+            cpm.CompanyId, 
+            cpm.PaymentMethodId, 
+            pm.Name AS MethodName,  -- <--- ALIAS IT AS 'MethodName'
+            cpm.IsActive,
+            cpm.IsManualEnabled,
+            cpm.IsGatewayEnabled
+        FROM [dbo].[CompanyPaymentMethod] cpm
+        INNER JOIN [dbo].[PaymentMethod] pm ON cpm.PaymentMethodId = pm.Id
+        WHERE cpm.CompanyId = @CompanyId AND cpm.IsActive = 1";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
+                // Note: Standard 'GetList' might fail if it doesn't know how to map 'MethodName'.
+                // If your Entity 'CompanyPaymentMethod' does not have 'MethodName' property, 
+                // you need a Custom Fill here.
+
+                return GetList_Custom(cmd);
+            }
+        }
+
+        private List<CompanyPaymentMethod> GetList_Custom(SqlCommand cmd)
+        {
+            var list = new List<CompanyPaymentMethod>();
+            SqlDataReader reader;
+
+            // ✅ FIX: Use framework helper to handle Connection.Open() automatically
+            SelectRecords(cmd, out reader);
+
+            using (reader)
+            {
+                while (reader.Read())
+                {
+                    var item = new CompanyPaymentMethod();
+
+                    // Map columns by index (matching your SQL query order)
+                    item.Id = reader.GetInt32(0);
+                    item.CompanyId = reader.GetInt32(1);
+                    item.PaymentMethodId = reader.GetInt32(2);
+                    item.MethodName = reader.GetString(3); // The joined name
+                    item.IsActive = reader.GetBoolean(4);
+                    item.IsManualEnabled = reader.GetBoolean(5);
+                    item.IsGatewayEnabled = reader.GetBoolean(6);
+
+                    // Required for BaseBusinessEntity
+                    item.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
+
+                    list.Add(item);
+                }
+            }
+            return list;
+        }
         public List<CompanyPaymentMethodResult> GetMergedSettings(int companyId)
         {
             var list = new List<CompanyPaymentMethodResult>();

@@ -452,8 +452,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
                             <button type="button" class="btn btn-outline-secondary px-4" onclick="window.location.reload()">Create Another</button>
-                            <a href="/Order/AllOrders" class="btn btn-primary px-4">View Orders List</a>
-                        </div>
+<button type="button" 
+        class="btn btn-primary px-4" 
+        onclick="window.location.href='/order/all'">
+    View Orders List
+</button>                        </div>
                       </div>
                     </div>
                   </div>

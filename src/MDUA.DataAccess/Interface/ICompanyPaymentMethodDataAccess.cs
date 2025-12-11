@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface ICompanyPaymentMethodDataAccess : ICommonDataAccess<CompanyPaymentMethod, CompanyPaymentMethodList, CompanyPaymentMethodBase>
-	{ 
-	}	
+	{
+        List<CompanyPaymentMethod> GetActiveByCompany(int companyId);
+
+    }	
 }

@@ -30,6 +30,7 @@ namespace MDUA.Entities
         [DataMember] public string Thana { get; set; }
         [DataMember] public string SubOffice { get; set; }
 
-
+        [DataMember] public string IPAddress { get; set; }
+        [DataMember] public string SessionId { get; set; }
     }
 }
