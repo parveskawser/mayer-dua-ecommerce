@@ -4,8 +4,50 @@
     ViewData["Title"] = "Product List";
 }
 
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <style>
+        /* Fix for Summernote z-index in Modals */
+        .note-modal-backdrop {
+            z-index: 1050 !important;
+        }
 
+        .note-modal {
+            z-index: 1070 !important;
+        }
+        /* Must be higher than Bootstrap modal */
+        .note-editor {
+            background: white;
+        }
 
+        /* Ensure inputs inside Summernote modal are clickable */
+        .note-modal-content {
+            position: relative;
+            z-index: 1075;
+        }
+
+        /* Bootstrap Modal Z-Index Fix */
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .modal {
+            z-index: 1050 !important;
+        }
+
+        .note-dropdown-menu {
+            max-height: 300px !important; /* Limit height */
+            overflow-y: auto !important; /* Enable scrollbar */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        /* Specific fix for the huge Color Palette */
+        .note-color-palette {
+            max-height: 200px !important;
+            overflow-y: auto !important;
+        }
+    </style>
+}
 <link rel="stylesheet" href="~/css/product-list.css" />
 <div class="fixed-layout-wrapper">
     <div class="header-section d-flex justify-content-between align-items-center mb-3">
@@ -88,7 +130,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="editProductModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content modal-custom">
                 <div class="modal-header modal-header-custom">
@@ -276,8 +318,14 @@
 }
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('focusin', function (e) {
+            if (e.target.closest(".note-modal")) {
+                e.stopImmediatePropagation();
+            }
+        }, true);
         // 1. Configure the Toast Mixin
         const Toast = Swal.mixin({
             toast: true,

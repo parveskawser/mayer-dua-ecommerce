@@ -157,15 +157,7 @@ namespace MDUA.Facade
                     }
                 }
 
-                var videos = _productVideoDataAccess.GetByProductId(product.Id);
-
-                // Find Primary or fallback to first
-                var primaryVideo = videos.FirstOrDefault(v => v.IsPrimary) ?? videos.FirstOrDefault();
-
-                if (primaryVideo != null)
-                {
-                    product.ProductVideoUrl = primaryVideo.VideoUrl;
-                }
+               
 
                 // C. Pricing Logic
                 decimal vPrice = v.VariantPrice ?? 0;
@@ -181,7 +173,15 @@ namespace MDUA.Facade
 
                 v.DiscountedPrice = Math.Max(vSellingPrice, 0);
             }
+            var videos = _productVideoDataAccess.GetByProductId(product.Id);
 
+            // Find Primary or fallback to first
+            var primaryVideo = videos.FirstOrDefault(v => v.IsPrimary) ?? videos.FirstOrDefault();
+
+            if (primaryVideo != null)
+            {
+                product.ProductVideoUrl = primaryVideo.VideoUrl;
+            }
             product.TotalStockQuantity = totalStock;
 
             // 8. Calculate Main Product Selling Price (Using Best Discount)
@@ -844,50 +844,46 @@ namespace MDUA.Facade
         }
 
         // ...
-        private string ConvertToEmbedUrl(string url)
+        public string ConvertToEmbedUrl(string url)
         {
-            if (string.IsNullOrWhiteSpace(url)) return url;
+            if (string.IsNullOrEmpty(url)) return "";
 
-            url = url.Trim();
-
-            // Already an embed link? Return as is.
+            // 1. If already correct, return it
             if (url.Contains("/embed/")) return url;
 
             string videoId = "";
 
             try
             {
-                var uri = new Uri(url);
-
-                // Case 1: Standard URL (youtube.com/watch?v=ID)
-                if (uri.Host.Contains("youtube.com"))
+                // Case A: Short Link (youtu.be/ID?si=...)
+                if (url.Contains("youtu.be/"))
                 {
-                    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-                    if (query.AllKeys.Contains("v"))
+                    var parts = url.Split(new[] { "youtu.be/" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
                     {
-                        videoId = query["v"];
+                        // Grab everything after slash, then split by '?' or '&' to remove params
+                        videoId = parts[1].Split('?')[0].Split('&')[0];
                     }
                 }
-                // Case 2: Short URL (youtu.be/ID)
-                else if (uri.Host.Contains("youtu.be"))
+                // Case B: Standard Link (youtube.com/watch?v=ID)
+                else if (url.Contains("v="))
                 {
-                    videoId = uri.AbsolutePath.Trim('/');
+                    var parts = url.Split(new[] { "v=" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
+                    {
+                        videoId = parts[1].Split('&')[0].Split('?')[0];
+                    }
                 }
             }
-            catch
-            {
-                // If URL parsing fails, just return original to avoid crashing
-                return url;
-            }
+            catch { return url; }
 
             if (!string.IsNullOrEmpty(videoId))
             {
                 return $"https://www.youtube.com/embed/{videoId}";
             }
 
-            return url; // Fallback
+            return url;
         }
-
         public long DeleteProductVideo(int videoId)
         {
             // 1. Fetch the video first to check its status

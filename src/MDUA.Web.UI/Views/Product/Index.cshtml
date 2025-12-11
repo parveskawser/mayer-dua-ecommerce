@@ -1,4 +1,5 @@
 ﻿@model MDUA.Entities.Product
+@using System.Text.RegularExpressions
 @{
     ViewData["Title"] = Model.ProductName ?? "Combo Offer";
     Layout = null;
@@ -28,7 +29,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <header class="header">
         <div class="container">
             <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
@@ -47,7 +47,9 @@
     <div class="container">
         <section class="combo-info card">
             <h1>🎉 @Model.ProductName 🎉</h1>
-            <p>@Model.Description</p>
+            <div class="product-description-content">
+                @Html.Raw(Model.Description)
+            </div>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <a href="#order" class="btn combo-btn">Order Now</a>
                 <button id="open-status-modal" class="btn status-btn">Track My Order</button>
@@ -118,7 +120,7 @@
             <section class="video-section card" style="text-align: center; padding: 20px; max-width: 800px; margin: 20px auto;">
                 <h2 style="margin-bottom: 15px;">Product Video</h2>
                 <div class="video-container" style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                    <iframe src="@productVideoUrl"
+                    <iframe src="@GetEmbedUrl(productVideoUrl)"
                             title="Product Video"
                             frameborder="0"
                             allowfullscreen
@@ -581,5 +583,24 @@
             _ => "✨"
         };
     }
-    
+    public string GetEmbedUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return "";
+
+        // 1. If already embedded, return as is
+        if (url.Contains("/embed/")) return url;
+
+        // 2. Regex to extract the Video ID from any YouTube format (Short, Long, Mobile)
+        // This specifically handles the "?si=" parameter by ignoring it
+        var regex = new Regex(@"(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^""&?\/\s]{11})", RegexOptions.IgnoreCase);
+
+        var match = regex.Match(url);
+        if (match.Success)
+        {
+            string videoId = match.Groups[1].Value;
+            return $"https://www.youtube.com/embed/{videoId}";
+        }
+
+        return url; // Fallback
+    }
 }
