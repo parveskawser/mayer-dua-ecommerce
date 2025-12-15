@@ -1,11 +1,15 @@
 ﻿/* Order Tracking & Receipt Styles 
+
    Used in: _OrderStatusModal.cshtml
+
    complements: combo.css (modal structure)
+
 */
 
 /* --- 1. Modal Extras (Not in combo.css) --- */
 
 /* Close Button Position */
+
 .close-btn {
     position: absolute;
     top: 15px;
@@ -24,6 +28,7 @@
     }
 
 /* Form Layout */
+
 #status-lookup-form {
     display: flex;
     flex-direction: column;
@@ -36,6 +41,7 @@
     }
 
 /* Missing Status Colors (combo.css has confirmed/delivered/cancelled) */
+
 .status-pending {
     background-color: #ffeeba;
     color: #856404;
@@ -53,9 +59,11 @@
 
 
 /* --- 2. RECEIPT STYLES (Required for JS output) --- */
+
 .receipt-container {
     border: 2px dashed #ddd;
     background-color: #fffbf0; /* Light yellow receipt feel */
+
     padding: 20px;
     border-radius: 12px;
     font-family: 'Courier New', Courier, monospace;
@@ -84,6 +92,7 @@
 }
 
 /* Table Styles inside Receipt */
+
 .receipt-summary-table {
     width: 100%;
     margin-top: 15px;
@@ -104,6 +113,7 @@
     }
 
 /* Line items (injected by JS loop) */
+
 .receipt-container tr td {
     font-size: 0.9rem;
     padding: 4px 0;
@@ -138,22 +148,132 @@
 }
 
 /* --- 3. Loading Spinner --- */
+
 .spinner {
     width: 40px;
     height: 40px;
     margin: 0 auto 10px;
     border: 4px solid #f3f3f3;
     border-top: 4px solid #2563eb; /* Matches --primary in combo.css */
+
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
+
     0% {
         transform: rotate(0deg);
     }
 
     100% {
         transform: rotate(360deg);
+    }
+}
+
+/* =========================================
+
+   MOBILE RESPONSIVENESS (Add to bottom)
+
+   ========================================= */
+
+@media screen and (max-width: 600px) {
+
+    /* 1. Make Modal Wider on Mobile */
+
+    #order-status-modal .modal-content {
+        width: 90%; /* Take up most of the screen width */
+
+        margin: 10% auto; /* Center vertically with safe margin */
+
+        padding: 15px; /* Reduce internal padding */
+    }
+
+    /* 2. Adjust Receipt Container */
+
+    .receipt-container {
+        padding: 15px; /* Save space */
+
+        font-size: 0.85rem; /* Slightly smaller text for fit */
+    }
+
+    .receipt-header-details p {
+        flex-direction: column; /* Stack Label and Value */
+
+        align-items: flex-start;
+        border-bottom: 1px dotted #e0e0e0;
+        padding-bottom: 4px;
+    }
+
+    /* 3. Transform Line Items Table (The Complex Part) */
+
+    /* We turn the table rows into "Cards" for better readability */
+
+    .line-items-table {
+        display: block;
+        width: 100%;
+    }
+
+        .line-items-table tbody,
+        .line-items-table tr,
+        .line-items-table td {
+            display: block; /* Make cells behave like div blocks */
+
+            width: 100%;
+            text-align: left !important; /* Force left align */
+
+            padding: 2px 0;
+            border: none;
+        }
+
+        .line-items-table tr {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #aaa;
+            padding-bottom: 10px;
+            position: relative;
+        }
+
+        /* Product Name: Bold and on top */
+
+        .line-items-table td:first-child {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #000;
+            padding-bottom: 5px;
+        }
+
+        /* Helper labels for Qty/Price/Total on mobile */
+
+        .line-items-table td.qty::before {
+            content: "Qty: ";
+            color: #777;
+        }
+
+        .line-items-table td.price::before {
+            content: "Price: ";
+            color: #777;
+        }
+
+        .line-items-table td.total::before {
+            content: "Total: ";
+            font-weight: bold;
+        }
+
+        /* Make the Total stand out at the bottom of the card */
+
+        .line-items-table td.total {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #333;
+            background-color: #eee;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+    /* 4. Adjust Summary Table */
+
+    .receipt-summary-table th,
+    .receipt-summary-table td {
+        font-size: 0.8rem;
     }
 }

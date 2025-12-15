@@ -17,16 +17,16 @@ namespace MDUA.Entities.Bases
 			Id = 0,
 			SalesOrderDetailId = 1,
 			PoReceivedId = 2,
-			ProductId = 3,
-			InOut = 4,
-			Date = 5,
-			Price = 6,
-			Quantity = 7,
-			CreatedBy = 8,
-			CreatedAt = 9,
-			UpdatedBy = 10,
-			UpdatedAt = 11,
-			Remarks = 12
+			InOut = 3,
+			Date = 4,
+			Price = 5,
+			Quantity = 6,
+			CreatedBy = 7,
+			CreatedAt = 8,
+			UpdatedBy = 9,
+			UpdatedAt = 10,
+			Remarks = 11,
+			ProductVariantId = 12
 		}
 		#endregion
 	
@@ -34,7 +34,6 @@ namespace MDUA.Entities.Bases
 		public const string Property_Id = "Id";		            
 		public const string Property_SalesOrderDetailId = "SalesOrderDetailId";		            
 		public const string Property_PoReceivedId = "PoReceivedId";		            
-		public const string Property_ProductId = "ProductId";		            
 		public const string Property_InOut = "InOut";		            
 		public const string Property_Date = "Date";		            
 		public const string Property_Price = "Price";		            
@@ -44,13 +43,13 @@ namespace MDUA.Entities.Bases
 		public const string Property_UpdatedBy = "UpdatedBy";		            
 		public const string Property_UpdatedAt = "UpdatedAt";		            
 		public const string Property_Remarks = "Remarks";		            
+		public const string Property_ProductVariantId = "ProductVariantId";		            
 		#endregion
 		
 		#region Private Data Types
 		private Int32 _Id;	            
 		private Nullable<Int32> _SalesOrderDetailId;	            
 		private Nullable<Int32> _PoReceivedId;	            
-		private Int32 _ProductId;	            
 		private String _InOut;	            
 		private DateTime _Date;	            
 		private Nullable<Decimal> _Price;	            
@@ -60,6 +59,7 @@ namespace MDUA.Entities.Bases
 		private String _UpdatedBy;	            
 		private Nullable<DateTime> _UpdatedAt;	            
 		private String _Remarks;	            
+		private Int32 _ProductVariantId;	            
 		#endregion
 		
 		#region Properties		
@@ -103,21 +103,6 @@ namespace MDUA.Entities.Bases
 				if (PropertyChanging(args))
 				{
 					_PoReceivedId = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Int32 ProductId
-		{	
-			get{ return _ProductId; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ProductId, value, _ProductId);
-				if (PropertyChanging(args))
-				{
-					_ProductId = value;
 					PropertyChanged(args);					
 				}	
 			}
@@ -258,6 +243,21 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public Int32 ProductVariantId
+		{	
+			get{ return _ProductVariantId; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ProductVariantId, value, _ProductVariantId);
+				if (PropertyChanging(args))
+				{
+					_ProductVariantId = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -268,7 +268,6 @@ namespace MDUA.Entities.Bases
 			newObj.Id = this.Id;						
 			newObj.SalesOrderDetailId = this.SalesOrderDetailId;						
 			newObj.PoReceivedId = this.PoReceivedId;						
-			newObj.ProductId = this.ProductId;						
 			newObj.InOut = this.InOut;						
 			newObj.Date = this.Date;						
 			newObj.Price = this.Price;						
@@ -278,6 +277,7 @@ namespace MDUA.Entities.Bases
 			newObj.UpdatedBy = this.UpdatedBy;						
 			newObj.UpdatedAt = this.UpdatedAt;						
 			newObj.Remarks = this.Remarks;						
+			newObj.ProductVariantId = this.ProductVariantId;						
 			
 			return newObj;
 		}
@@ -290,7 +290,6 @@ namespace MDUA.Entities.Bases
 			info.AddValue(InventoryTransactionBase.Property_Id, Id);				
 			info.AddValue(InventoryTransactionBase.Property_SalesOrderDetailId, SalesOrderDetailId);				
 			info.AddValue(InventoryTransactionBase.Property_PoReceivedId, PoReceivedId);				
-			info.AddValue(InventoryTransactionBase.Property_ProductId, ProductId);				
 			info.AddValue(InventoryTransactionBase.Property_InOut, InOut);				
 			info.AddValue(InventoryTransactionBase.Property_Date, Date);				
 			info.AddValue(InventoryTransactionBase.Property_Price, Price);				
@@ -300,6 +299,7 @@ namespace MDUA.Entities.Bases
 			info.AddValue(InventoryTransactionBase.Property_UpdatedBy, UpdatedBy);				
 			info.AddValue(InventoryTransactionBase.Property_UpdatedAt, UpdatedAt);				
 			info.AddValue(InventoryTransactionBase.Property_Remarks, Remarks);				
+			info.AddValue(InventoryTransactionBase.Property_ProductVariantId, ProductVariantId);				
 		}
 		#endregion
 

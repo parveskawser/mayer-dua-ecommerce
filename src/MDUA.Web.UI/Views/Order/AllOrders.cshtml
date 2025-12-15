@@ -3,132 +3,351 @@
     ViewData["Title"] = "All Sales Orders";
     Layout = "_AdminLayout";
 }
-<!---- new -->
+
 @section Styles {
-    <!-- Ensure orders.css contains your modal styles -->
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
 }
 
-<!-- 1. Generate Anti-Forgery Token for JS to use -->
 @Html.AntiForgeryToken()
 
-@section Scripts {
-    <script src="~/js/order-details.js"></script>
-    <script src="~/js/order-actions.js"></script>
-}
+<div class="orders-wrapper">
 
-<h2 class="fw-bold mb-3">Order List</h2>
-<div class="text-muted small mb-4">Total Orders: @(Model?.Count() ?? 0)</div>
-
-@if (ViewData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @ViewData["ErrorMessage"]
+    <div class="orders-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Order List</h2>
+            <div class="text-muted small">Total Orders: @(Model?.Count() ?? 0)</div>
+        </div>
     </div>
-}
 
-<div class="glass-card h-100 d-flex flex-column">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle products-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Order Type</th>
-                    <th>Order Date</th>
-                    <th>Net Amount</th>
-                    <th>Status</th>
-                    <th>Confirmed</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+    @if (ViewData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            @ViewData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="glass-card-fill">
+
+        <div class="table-scroll-lock">
+            <table class="table table-hover mb-0 align-middle products-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th>ID</th>
+                        <th>Order Type</th>
+                        <th>Order Date</th>
+                        <th>Net Amount</th>
+                        <th class="text-success">Paid</th>
+                        <th class="text-danger">Due</th>
+                        <th>Status</th>
+                        <th>Confirmed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
-                        string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
-                        string dateStr = order.OrderDate != DateTime.MinValue ? order.OrderDate.ToString("MMM dd, yyyy hh:mm tt") : "N/A";
-                        string createdStr = order.CreatedAt.ToString("MMM dd, yyyy hh:mm tt");
-                        string updatedStr = order.UpdatedAt.HasValue ? order.UpdatedAt.Value.ToString("MMM dd, yyyy hh:mm tt") : "-";
+                        foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                        {
+                            string collapseId = "collapse_" + order.Id;
+                            string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
+                            string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
 
-                        // Logic: Map "Draft" -> "Pending"
-                        string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
+                            string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
+                            bool isToggleDisabled = order.Status == "Cancelled" ||
+                            order.Status == "Delivered" ||
+                            order.Status == "Returned";
 
-                        string statusBadgeClass = "bg-secondary-subtle text-dark";
-                        if (displayStatus == "Confirmed") { statusBadgeClass = "bg-success text-white"; }
-                        else if (displayStatus == "Pending") { statusBadgeClass = "bg-warning text-dark"; }
+                            // ✅ REFINED LOGIC: Explicitly handle Cancelled
+                            string statusBadgeClass = "bg-secondary-subtle text-dark"; // Default
 
-                        <tr>
-                            <td class="fw-medium">@orderIdDisplay</td>
-                            <td>@orderType</td>
-                            <td class="small">@FormatDate(order.OrderDate)</td>
-                            <td>Tk. @FormatAmount(order.NetAmount)</td>
-                            <td>
-                                <span id="status-badge-@order.Id" class="badge @statusBadgeClass">
-                                    @displayStatus
-                                </span>
-                            </td>
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input confirm-toggle" type="checkbox" role="switch"
-                                           id="toggle-@order.Id"
-                                           data-id="@order.Id"
-                                           @(order.Confirmed ? "checked" : "")>
-                                    <label class="form-check-label small" for="toggle-@order.Id">
-                                        @(order.Confirmed ? "Yes" : "No")
-                                    </label>
-                                </div>
-                            </td>
-                            <td class="text-end">
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-info"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#detailsModal"
-                                        title="View Details"
-                                        data-id="@orderIdDisplay"
-                                        data-status="@displayStatus"
-                                        data-type="@orderType"
-                                        data-cust-id="@order.CompanyCustomerId"
-                                        data-addr-id="@order.AddressId"
-                                        data-total="@FormatAmount(order.TotalAmount)"
-                                        data-discount="@FormatAmount(order.DiscountAmount)"
-                                        data-net="@FormatAmount(order.NetAmount)"
-                                        data-ip="@(order.IPAddress ?? "N/A")"
-                                        data-session="@(order.SessionId ?? "N/A")"
-                                        data-created-by="@(order.CreatedBy ?? "System")"
-                                        data-created-at="@createdStr"
-                                        data-updated-by="@(order.UpdatedBy ?? "-")"
-                                        data-updated-at="@updatedStr">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
-                                </button>
-                            </td>
-                        </tr>
+                            if (order.Status == "Confirmed") statusBadgeClass = "bg-success text-white";
+                            else if (order.Status == "Pending" || order.Status == "Draft") statusBadgeClass = "bg-warning text-dark";
+                            else if (order.Status == "Cancelled") statusBadgeClass = "bg-danger text-white"; // Force Red
+                            else if (order.Status == "Delivered") statusBadgeClass = "bg-primary text-white";
+
+                            <tr class="accordion-toggle" style="cursor: pointer;"
+                                onclick="document.getElementById('btn-@order.Id').click()">
+                                <td onclick="event.stopPropagation();">
+                                    <button class="btn btn-sm btn-link text-decoration-none text-dark p-0 transition-icon"
+                                            type="button"
+                                            id="btn-@order.Id"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@collapseId">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </td>
+                                <td class="fw-bold text-primary">@orderIdDisplay</td>
+                                <td>@orderType</td>
+
+                                <td class="small">@FormatDate(order.OrderDate)</td>
+                                <td class="fw-bold">Tk. @FormatAmount(order.NetAmount)</td>
+
+                                <td class="text-success fw-bold">
+                                    @if (order.PaidAmount > 0)
+                                    {
+                                        <span>Tk. @FormatAmount(order.PaidAmount)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+
+                                <td class="text-danger fw-bold">
+                                    @if (order.DueAmount > 0)
+                                    {
+                                        <span>Tk. @FormatAmount(order.DueAmount)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Paid</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @* Added id="status-badge-@order.Id" so JS can find it *@
+                                    <span id="status-badge-@order.Id" class="badge @statusBadgeClass">@displayStatus</span>
+                                </td>                                <td onclick="event.stopPropagation();">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input confirm-toggle" type="checkbox"
+                                               id="toggle-@order.Id"
+                                               data-id="@order.Id"
+                                               @(order.Confirmed ? "checked" : "")
+                                               @(isToggleDisabled ? "disabled" : "")>  @* ✅ NEW: Apply disabled attribute *@
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="collapse bg-light shadow-sm" id="@collapseId">
+                                <td colspan="7" class="p-3 bg-light">
+                                    <div class="d-flex align-items-center gap-3 ps-3">
+                                        <span class="text-uppercase small fw-bold text-muted">Actions:</span>
+
+                                        @{
+                                            // ✅ CONSTRUCT FULL ADDRESS STRING
+                                            // Format: Country, Divison, City, Thana, SubOffice, Street, PostalCode
+                                            var addrParts = new List<string>();
+                                            if (!string.IsNullOrWhiteSpace(order.Country)) addrParts.Add(order.Country);
+                                            if (!string.IsNullOrWhiteSpace(order.Divison)) addrParts.Add(order.Divison);
+                                            if (!string.IsNullOrWhiteSpace(order.City)) addrParts.Add(order.City);
+                                            if (!string.IsNullOrWhiteSpace(order.Thana)) addrParts.Add(order.Thana);
+                                            if (!string.IsNullOrWhiteSpace(order.SubOffice)) addrParts.Add(order.SubOffice);
+                                            if (!string.IsNullOrWhiteSpace(order.Street)) addrParts.Add(order.Street);
+                                            if (!string.IsNullOrWhiteSpace(order.PostalCode)) addrParts.Add(order.PostalCode);
+
+                                            string fullAddress = string.Join(", ", addrParts);
+                                        }
+
+                                        <button type="button" class="btn btn-sm btn-white border shadow-sm"
+                                                data-bs-toggle="modal" data-bs-target="#detailsModal"
+                                                data-id="@orderIdDisplay"
+                                                data-status="@displayStatus"
+                                                data-type="@orderType"
+                                                @* --- Customer & Address IDs + Details --- *@
+                                                data-cust-id="@order.CompanyCustomerId"
+                                                data-cust-name="@order.CustomerName" @* ✅ NEW *@
+                                                data-addr-id="@(order.AddressId == 0 ? "N/A" : order.AddressId.ToString())"
+                                                data-full-addr="@fullAddress" @* ✅ NEW *@
+                                                data-total="@FormatAmount(order.TotalAmount)"
+                                                data-net="@FormatAmount(order.NetAmount)"
+                                                data-discount="@FormatAmount(order.TotalAmount - order.NetAmount)"
+                                                data-created-by="@(order.CreatedBy ?? "System")"
+                                                data-created-at="@FormatDate(order.CreatedAt)"
+                                                data-updated-by="@(order.UpdatedBy ?? "-")"
+                                                data-updated-at="@FormatDate(order.UpdatedAt)"
+                                                data-ip="@(order.IPAddress ?? "N/A")"
+                                                data-session="@(order.SessionId ?? "N/A")">
+                                            <i class="fas fa-eye text-primary me-1"></i> View Details
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-white border shadow-sm"
+                                                onclick="openAdvanceModal(this)"
+                                                data-order-id="@order.Id"
+                                                data-order-ref="@orderIdDisplay"
+                                                data-cust-id="@order.CompanyCustomerId"
+                                                data-net="@FormatRaw(order.NetAmount)"
+                                                data-paid="@FormatRaw(order.PaidAmount)"
+                                                data-delivery="@FormatRaw(order.DeliveryCharge)"
+                                                @* ✅ NEW: Passing Product Price and Discount *@
+                                                data-product-price="@FormatRaw(order.TotalAmount - order.DeliveryCharge)"
+                                                data-discount="@FormatRaw(order.DiscountAmount)">
+
+                                            <i class="fas fa-money-bill-wave text-success me-1"></i> Add Advance Payment
+                                        </button>
+                                        @if (order.Status != "Cancelled" && order.Status != "Delivered" && order.Status != "Returned" && order.Status != "Confirmed")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-white border shadow-sm text-danger"
+                                                    id="btn-cancel-@order.Id" @* ✅ NEW ID *@
+                                                    onclick="cancelOrder(@order.Id, '@orderIdDisplay')"
+                                                    title="Cancel this order">
+                                                <i class="fas fa-times-circle me-1"></i> Cancel
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
+                </tbody>
+            </table>
+
+            <style>
+                .transition-icon {
+                    transition: transform 0.2s ease;
                 }
-                else
-                {
-                    <tr><td colspan="7" class="text-center p-4 text-muted">No sales orders found.</td></tr>
+
+                [aria-expanded="true"] .transition-icon {
+                    transform: rotate(90deg);
                 }
-            </tbody>
-        </table>
+
+                .shadow-inset {
+                    box-shadow: inset 0 4px 6px -4px rgba(0,0,0,0.1);
+                }
+
+                .modal-backdrop {
+                    z-index: 1040 !important;
+                }
+
+                .modal {
+                    z-index: 1050 !important;
+                }
+
+                .modal-dialog {
+                    z-index: 1060 !important;
+                }
+            </style>
+        </div>
+    </div>
+
+</div>
+<div class="modal fade" id="advanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6 fw-bold">Add Advance Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="advanceForm">
+                    <input type="hidden" id="adv_orderId" name="OrderId" />
+                    <input type="hidden" id="adv_customerId" name="CustomerId" />
+                    <input type="hidden" id="adv_orderRef" name="TransactionReference" />
+
+                    @* ✅ NEW ROW: Product Price & Discount *@
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Product Price</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0">Tk</span>
+                                <input type="text" id="adv_productPrice" class="form-control fw-bold bg-light" readonly disabled />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Discount</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0 text-danger">- Tk</span>
+                                <input type="text" id="adv_discount" class="form-control fw-bold text-danger bg-light" readonly disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Total Payable (Inc. Delivery)</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0">Tk</span>
+                                <input type="text" id="adv_netAmount" class="form-control fw-bold bg-white" readonly />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Delivery Charge (Editable)</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0">Tk</span>
+                                <input type="number" id="adv_delivery" class="form-control fw-bold" value="0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3 p-2 bg-light rounded border mx-0">
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-0">Already Paid</label>
+                            <div class="fw-bold text-success fs-6">
+                                Tk <span id="adv_displayPaid">0.00</span>
+                                <input type="hidden" id="adv_alreadyPaid" value="0" />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-0">Current Due</label>
+                            <div class="fw-bold text-danger fs-6">
+                                Tk <span id="adv_displayCurrentDue">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Payment Method</label>
+                            <select id="adv_paymentMethod" name="PaymentMethodId" class="form-select form-select-sm" required>
+                                @if (ViewBag.PaymentMethods != null)
+                                {
+                                    foreach (var pm in ViewBag.PaymentMethods)
+                                    {
+                                        <option value="@pm.PaymentMethodId">@pm.MethodName</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="1">Cash</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Payment Type</label>
+                            <select id="adv_paymentType" name="PaymentType" class="form-select form-select-sm">
+                                <option value="Advance">Advance (Partial)</option>
+                                <option value="Sale">Sale (Full Payment)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted my-2 opacity-25">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-success">Amount Paying Now</label>
+                        <div class="input-group has-validation">
+                            <span class="input-group-text bg-success text-white">Tk</span>
+                            <input type="number" id="adv_paidAmount" name="Amount" class="form-control fw-bold fs-5" placeholder="0.00" required />
+                            <div id="adv_amountError" class="invalid-feedback fw-bold">
+                                Amount cannot exceed the Current Due.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 p-2 bg-danger-subtle rounded border border-danger-subtle d-flex justify-content-between align-items-center">
+                        <span class="text-danger fw-medium small">Balance After Payment:</span>
+                        <span class="text-danger fw-bold fs-5">Tk <span id="adv_dueAmount">0.00</span></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small">Note / Remarks</label>
+                        <textarea id="adv_note" name="Notes" class="form-control form-control-sm" rows="2" placeholder="e.g. Bkash Trx ID..."></textarea>
+                    </div>
+
+                    <button type="submit" id="adv_submitBtn" class="btn btn-success w-100 fw-medium">Save Advance Payment</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- change -->
-<!-- ✅ Added 'order-details-modal' class here so CSS works -->
-<!-- Details Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable order-details-modal">
         <div class="modal-content">
-            <!-- Header -->
             <div class="modal-header modal-header-soft">
                 <h5 class="modal-title" id="detailsModalLabel">Order <span id="m-id" class="text-primary"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body">
-                <!-- Status Section -->
                 <div class="info-section status-section">
                     <div class="section-header">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -141,8 +360,6 @@
                         <h4 id="m-status" class="mb-0"></h4>
                     </div>
                 </div>
-
-                <!-- General Information -->
                 <div class="info-section">
                     <div class="section-header">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -167,8 +384,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Financial Breakdown -->
                 <div class="info-section financial-section">
                     <div class="section-header">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -193,8 +408,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- System & Audit Info -->
                 <div class="info-section">
                     <div class="section-header">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -223,8 +436,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Technical Data -->
                 <div class="info-section">
                     <div class="section-header">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -246,14 +457,18 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Footer -->
             <div class="modal-footer modal-footer-soft">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/order-details.js" asp-append-version="true"></script>
+    <script src="~/js/order-actions.js" asp-append-version="true"></script>
+}
+
 @functions {
     public string FormatDate(DateTime? date)
     {
@@ -265,5 +480,11 @@
     {
         if (!amount.HasValue || amount.Value == 0M) return "0.00";
         return amount.Value.ToString("N2");
+    }
+
+    public string FormatRaw(decimal? amount)
+    {
+        if (!amount.HasValue) return "0";
+        return amount.Value.ToString("0.##");
     }
 }

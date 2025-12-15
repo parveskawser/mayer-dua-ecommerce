@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultimate Summer Combo | FashionHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- Modern Palette --- */
+            --primary: #2563eb; /* Modern Blue */
+            --primary-hover: #1d4ed8;
+            --accent: #f59e0b; /* Amber/Orange for urgency */
+            --text-main: #1f2937; /* Dark Gray */
+            --text-muted: #6b7280;
+            --bg-body: #f3f4f6; /* Light Gray Background */
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+            --success: #10b981;
+            --error: #ef4444;
+            /* --- Spacing & Radius --- */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --container-width: 1100px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* --- Global Reset & Typography --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Layout Wrappers --- */
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* --- Header --- */
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* --- Sections Common --- */
+        section {
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        /* --- Hero / Combo Info --- */
+        .combo-info {
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+            .combo-info h1 {
+                font-size: 2.25rem;
+                font-weight: 800;
+                margin-bottom: 0.5rem;
+                color: #111827;
+                line-height: 1.2;
+            }
+
+            .combo-info p {
+                color: var(--text-muted);
+                font-size: 1.1rem;
+                max-width: 600px;
+                margin: 0 auto 1.5rem auto;
+            }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .combo-btn {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+            .combo-btn:hover {
+                background-color: var(--primary-hover);
+                transform: translateY(-1px);
+            }
+
+        .status-btn {
+            background-color: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            margin-left: 10px;
+        }
+
+            .status-btn:hover {
+                background-color: #f9fafb;
+                border-color: #d1d5db;
+            }
+
+        /* --- Scarcity Bar --- */
+        .scarcity-section {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .stock-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 99px;
+            margin: 8px auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            border-radius: 99px;
+            transition: width 1s ease-in-out;
+        }
+
+        .hurry-text {
+            font-size: 0.875rem;
+            color: var(--error);
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* --- Price Section --- */
+        .price-section {
+            text-align: center;
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .old-price {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-left: 0.5rem;
+            font-weight: 400;
+        }
+
+        .offer-text {
+            background: #ecfdf5;
+            color: #065f46;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Images & Gallery --- */
+        .product-image img.main-img {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: var(--radius-lg);
+            display: block;
+            margin: 0 auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-gallery {
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .carousel {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: auto;
+        }
+
+            .slide.active {
+                display: block;
+            }
+
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.8);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prev {
+            left: 10px;
+        }
+
+        .next {
+            right: 10px;
+        }
+
+            .prev:hover, .next:hover {
+                background: white;
+            }
+
+        /* --- Description & Testimonials --- */
+        .description, .testimonials {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+            .description h2, .testimonials h2 {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+        .review {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .review-text {
+            font-style: italic;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .reviewer {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* =========================================
+           ORDER SECTION - FIXED LAYOUT
+           ========================================= */
+        .order-section {
+            max-width: var(--container-width);
+            margin: 2rem auto 4rem auto;
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+        }
+
+            .order-section h2 {
+                text-align: center;
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+        /* The Grid Container */
+        .order-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            grid-template-areas:
+                "billing summary"
+                "payment summary";
+            align-items: start;
+        }
+
+        /* Left Side: Form */
+        .billing {
+            grid-area: billing;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Right Side: Summary (Sticky) */
+        .order-summary {
+            grid-area: summary;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 100px;
+            align-self: flex-start;
+        }
+
+        /* Payment Method Section */
+        .payment-section {
+            grid-area: payment;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+            .payment-section h3 {
+                margin-top: 0;
+                margin-bottom: 1.5rem;
+                font-size: 1.5rem;
+                color: var(--text-main);
+                text-align: center;
+            }
+
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-option {
+            position: relative;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column; /* Stack vertically by default */
+            align-items: center;
+            justify-content: center;
+            gap: 0; /* Gap handled by image margin */
+            text-align: center;
+            min-height: 100px;
+        }
+
+            .payment-option:hover {
+                border-color: var(--primary);
+                background: #f0f9ff;
+                transform: translateY(-2px);
+            }
+
+            /* Radio Button Positioning */
+            .payment-option input[type="radio"] {
+                width: 20px;
+                height: 20px;
+                margin: 0;
+                cursor: pointer;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+
+            .payment-option label {
+                margin: 0;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0;
+            }
+
+            .payment-option.selected {
+                border-color: var(--primary);
+                background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            }
+
+        /* --- Payment Logos (Official Images) --- */
+        .payment-logo {
+            height: 35px; /* Fixed height for consistency */
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 5px; /* Space between logo and text */
+            display: block;
+        }
+
+        /* Confirm Button - In Payment Section */
+        .payment-section .submit-btn {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+        }
+
+            .payment-section .submit-btn:hover {
+                background-color: var(--primary-hover);
+            }
+
+            .payment-section .submit-btn:disabled {
+                background-color: #9ca3af;
+                cursor: not-allowed;
+            }
+
+        /* Remove old submit button from billing section */
+        .billing .submit-btn {
+            display: none;
+        }
+
+        /* --- Form Elements --- */
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+            margin-top: 1rem;
+        }
+
+        .required-star {
+            color: var(--error);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            background: #fff;
+        }
+
+            input:focus, select:focus, textarea:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+
+            input.input-error, select.input-error, textarea.input-error {
+                border-color: var(--error) !important;
+                background-color: #fef2f2;
+            }
+
+        /* --- Variant Chips --- */
+        .variant-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .variant-chip {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+            .variant-chip:hover {
+                border-color: var(--primary);
+                background: #eff6ff;
+            }
+
+            .variant-chip.selected {
+                background: var(--text-main);
+                color: white;
+                border-color: var(--text-main);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            }
+            
+            .variant-chip.disabled {
+                opacity: 0.4;
+                pointer-events: none; /* Prevents clicking */
+                background-color: #f3f4f6;
+                border-color: #e5e7eb;
+                color: #9ca3af;
+                text-decoration: line-through;
+            }
+
+        /* --- Quantity Controls --- */
+        .qty-row {
+            margin-top: 1.5rem;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quantity-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .quantity-wrapper button {
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                border: 1px solid #d1d5db;
+                background: white;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+                .quantity-wrapper button:hover {
+                    background: #f9fafb;
+                    border-color: var(--primary);
+                    color: var(--primary);
+                }
+
+        #quantity {
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0;
+        }
+
+        /* --- Receipt Table --- */
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+            .receipt-table th, .receipt-table td {
+                padding: 0.75rem 0;
+                text-align: right;
+                border-bottom: 1px dashed #e5e7eb;
+            }
+
+                .receipt-table th:first-child, .receipt-table td:first-child {
+                    text-align: left;
+                }
+
+            .receipt-table tfoot th {
+                border-top: 2px solid #374151;
+                color: #111827;
+                font-size: 1.1rem;
+                padding-top: 1rem;
+                border-bottom: none;
+            }
+
+        #order-variant-image-holder {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        /* Hide mobile image holder on Desktop */
+        #mobile-order-variant-image-holder {
+            display: none;
+        }
+
+        /* Force autofill background to match design */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: var(--text-main) !important;
+        }
+
+        /* --- Responsive Design (Mobile) --- */
+        @media (max-width: 768px) {
+            .order-container {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "billing"
+                    "summary"
+                    "payment";
+                gap: 1.5rem;
+            }
+
+            /* All sections full width */
+            .billing,
+            .order-summary,
+            .payment-section {
+                position: static;
+                width: 100%;
+            }
+
+            /* Mobile Payment Options (Horizontal Row) */
+            .payment-options {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .payment-option {
+                flex-direction: row; /* Icon Left, Text Right */
+                justify-content: flex-start;
+                padding: 1rem;
+                min-height: auto;
+            }
+
+                .payment-option input[type="radio"] {
+                    position: static; /* Radio visible inline */
+                    margin-right: 0.75rem;
+                }
+
+                .payment-option label {
+                    flex-direction: row;
+                    text-align: left;
+                    align-items: center;
+                    width: auto;
+                }
+
+            /* Mobile Payment Logo Sizing */
+            .payment-logo {
+                height: 25px; /* Smaller for mobile row */
+                margin-bottom: 0;
+                margin-right: 12px;
+            }
+
+            .combo-info h1 {
+                font-size: 1.75rem;
+            }
+
+            .price {
+                font-size: 2rem;
+            }
+
+            .billing, .order-summary, .payment-section {
+                padding: 1.5rem;
+            }
+
+            /* Mobile Variant Image Logic */
+            #mobile-order-variant-image-holder {
+                display: block;
+                background: #f9fafb;
+                padding: 1rem;
+                border-radius: var(--radius-md);
+                border: 1px solid #e5e7eb;
+                margin-bottom: 1rem;
+            }
+
+            #order-variant-image-holder {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <img src="https://placehold.co/150x50/2563eb/ffffff?text=Combo+Logo"
+                 alt="Company Logo"
+                 class="logo" />
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="combo-info card">
+            <h1>🎉 Ultimate Summer Combo Pack 🎉</h1>
+            <p>Experience the best of style and comfort with our exclusive summer collection. Limited edition items specifically curated for you.</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="#order" class="btn combo-btn">Order Now</a>
+                <button class="btn status-btn">Track My Order</button>
+            </div>
+        </section>
+
+        <section class="scarcity-section">
+            <p class="stock-text">Only 12 items left in stock!</p>
+            <div class="stock-bar">
+                <div class="stock-fill" style="width: 85%;"></div>
+            </div>
+            <p class="hurry-text">Hurry! Selling fast 🚀</p>
+        </section>
+
+        <section class="price-section">
+            <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
+                <p class="price">
+                    Tk. 1,500
+                    <span class="old-price">Tk. 2,200</span>
+                </p>
+                <p class="offer-text">💰 Cash on delivery available</p>
+            </div>
+        </section>
+
+        <section class="product-image">
+            <img src="https://placehold.co/800x600/f3f4f6/333?text=Main+Product+Image"
+                 alt="Main Product"
+                 class="combo main-img"
+                 id="main-product-img" />
+        </section>
+
+        <section class="product-gallery card">
+            <h2>Product Gallery</h2>
+            <div class="carousel">
+                <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+                <div class="slides">
+                    <img src="https://placehold.co/800x400/f3f4f6/333?text=Slide+1" class="slide active" alt="Slide 1" />
+                    <img src="https://placehold.co/800x400/e5e7eb/333?text=Slide+2" class="slide" alt="Slide 2" />
+                    <img src="https://placehold.co/800x400/d1d5db/333?text=Slide+3" class="slide" alt="Slide 3" />
+                </div>
+                <button class="next" onclick="changeSlide(1)">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="description card">
+            <h2>Product Details</h2>
+            <div class="detail-row">
+                <span class="detail-icon">🧵</span>
+                <p><strong>Fabric:</strong> 100% Premium Cotton</p>
+            </div>
+            <div class="detail-row">
+                <span class="detail-icon">🎨</span>
+                <p><strong>Color:</strong> Fade-resistant dyes</p>
+            </div>
+            <div class="detail-row">
+                <span class="detail-icon">🛡️</span>
+                <p><strong>Warranty:</strong> 6 Months Color Guarantee</p>
+            </div>
+        </section>
+
+        <section class="testimonials card">
+            <h2>What Our Customers Say</h2>
+            <div class="reviews">
+                <div class="review">
+                    <p class="review-text">"The quality is absolutely amazing for the price. Highly recommended!"</p>
+                    <p class="reviewer">– Rahim Ahmed</p>
+                </div>
+                <div class="review">
+                    <p class="review-text">"Fast delivery and the packaging was great. Will order again."</p>
+                    <p class="reviewer">– Tanvir Hasan</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="order" class="order-section">
+            <h2>Place Your Order</h2>
+            <div class="order-container">
+
+                <div class="billing">
+                    <form id="order-form">
+                        
+                        <div class="variant-selection-area">
+                            <label class="section-label">Select Color:</label>
+                            <div class="variant-chips-container" id="container-color">
+                                <div class="variant-chip selected" onclick="selectChip(this)">Black</div>
+                                <div class="variant-chip" onclick="selectChip(this)">Navy Blue</div>
+                                <div class="variant-chip" onclick="selectChip(this)">Charcoal</div>
+                            </div>
+
+                            <label class="section-label">Select Size:</label>
+                            <div class="variant-chips-container" id="container-size">
+                                <div class="variant-chip" onclick="selectChip(this)">M</div>
+                                <div class="variant-chip selected" onclick="selectChip(this)">L</div>
+                                <div class="variant-chip" onclick="selectChip(this)">XL</div>
+                            </div>
+                        </div>
+
+                        <div id="mobile-order-variant-image-holder">
+                            <img id="mobile-order-variant-image"
+                                 src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant"
+                                 alt="Selected Variant"
+                                 style="width: 100%; height: 200px; object-fit: contain;" />
+                        </div>
+
+                        <label>Phone Number <span class="required-star">*</span></label>
+                        <div class="input-group">
+                            <input type="tel" placeholder="017XXXXXXXX" required />
+                        </div>
+
+                        <label>Full Name <span class="required-star">*</span></label>
+                        <input type="text" placeholder="Your Name" required />
+
+                        <div class="address-section">
+                            <label>Street Address <span class="required-star">*</span></label>
+                            <textarea placeholder="House No, Road No, Area..." rows="2" required></textarea>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <label>District <span class="required-star">*</span></label>
+                                    <select required>
+                                        <option value="">Dhaka</option>
+                                        <option value="">Chittagong</option>
+                                        <option value="">Sylhet</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Thana <span class="required-star">*</span></label>
+                                    <select required>
+                                        <option value="">Select...</option>
+                                        <option value="">Gulshan</option>
+                                        <option value="">Mirpur</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="qty-row">
+                            <label style="margin:0;">Quantity</label>
+                            <div class="quantity-wrapper">
+                                <button type="button" onclick="updateQty(-1)">-</button>
+                                <input type="number" id="quantity" value="1" min="1" readonly />
+                                <button type="button" onclick="updateQty(1)">+</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="order-summary">
+                    <div id="order-variant-image-holder">
+                        <img id="order-variant-image"
+                             src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant"
+                             alt="Selected Variant"
+                             style="width: 100%; height: 200px; object-fit: contain;" />
+                    </div>
+
+                    <h3 style="margin-top:0;">Your Receipt</h3>
+                    <table class="receipt-table">
+                        <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="receipt-item-name">Combo Pack (L, Black)</div></td>
+                                <td id="summary-qty">1</td>
+                                <td id="summary-subtotal">Tk. 1,500</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><th colspan="2">Delivery</th><th id="receipt-delivery">Tk. 60</th></tr>
+                            <tr class="grand-total"><th colspan="2">Total</th><th id="receipt-grand-total">Tk. 1,560</th></tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="payment-section">
+                    <h3>Choose Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod" checked>
+                            <label>
+                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
+                                     alt="Cash on Delivery" class="payment-logo">
+                                <span>Cash on Delivery</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod">
+                            <label>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BKash_logo.svg/1200px-BKash_logo.svg.png"
+                                     alt="bKash" class="payment-logo">
+                                <span>bKash</span>
+                            </label>
+                        </div>
+
+                        <div class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod">
+                            <label>
+                                <div style="display: flex; gap:5px; justify-content:center;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
+                                         alt="Visa" class="payment-logo" style="width: auto; height: 15px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                                         alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
+                                </div>
+                                <span style="margin-left: 5px;">Card</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container" style="text-align: center; padding: 2rem 0; color: #666;">
+            <p>© 2024 Combo King. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Gallery Slider Logic
+        let slideIndex = 0;
+        const slides = document.querySelectorAll(".slide");
+
+        function showSlide(index) {
+            if (index >= slides.length) slideIndex = 0;
+            if (index < 0) slideIndex = slides.length - 1;
+            
+            slides.forEach(slide => slide.classList.remove("active"));
+            slides[slideIndex].classList.add("active");
+        }
+
+        function changeSlide(n) {
+            showSlide(slideIndex += n);
+        }
+
+        // Chip Selection Logic (Visual only)
+        function selectChip(el) {
+            // Find parent container
+            const container = el.parentElement;
+            // Remove 'selected' from siblings
+            const siblings = container.querySelectorAll('.variant-chip');
+            siblings.forEach(sib => sib.classList.remove('selected'));
+            // Add 'selected' to clicked element
+            el.classList.add('selected');
+        }
+
+        // Quantity Logic
+        function updateQty(n) {
+            const qtyInput = document.getElementById('quantity');
+            let currentVal = parseInt(qtyInput.value);
+            let newVal = currentVal + n;
+            if (newVal < 1) newVal = 1;
+            qtyInput.value = newVal;
+            
+            // Update summary for demo
+            document.getElementById('summary-qty').innerText = newVal;
+            document.getElementById('summary-subtotal').innerText = 'Tk. ' + (newVal * 1500).toLocaleString();
+            document.getElementById('receipt-grand-total').innerText = 'Tk. ' + ((newVal * 1500) + 60).toLocaleString();
+        }
+
+        // Payment Method Selection Logic
+        function selectPayment(el) {
+            const options = document.querySelectorAll('.payment-option');
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+                opt.querySelector('input[type="radio"]').checked = false;
+            });
+            
+            el.classList.add('selected');
+            el.querySelector('input[type="radio"]').checked = true;
+        }
+    </script>
+</body>
+</html>

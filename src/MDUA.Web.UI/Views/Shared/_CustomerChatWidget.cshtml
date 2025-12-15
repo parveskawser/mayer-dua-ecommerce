@@ -1,0 +1,392 @@
+﻿<style>
+    /* =========================================
+           1. CHAT BUBBLE & LAYOUT FIX
+           ========================================= */
+
+    /* The Container for a message (Name + Bubble) */
+    .msg-incoming, .msg-outgoing {
+        display: flex;
+        flex-direction: column;
+        max-width: 85%;
+        margin-bottom: 10px;
+        width: auto;
+    }
+
+    /* Incoming (Left) */
+    .msg-incoming {
+        align-self: flex-start;
+        align-items: flex-start; /* 🛑 CRITICAL FIX: Stops text squashing */
+    }
+
+    /* Outgoing (Right) */
+    .msg-outgoing {
+        align-self: flex-end;
+        align-items: flex-end; /* 🛑 CRITICAL FIX: Stops text squashing */
+    }
+
+    /* The Bubble Itself */
+    .chat-box .msg-bubble {
+        display: inline-block;
+        width: fit-content !important; /* 🛑 CRITICAL FIX: Snaps width to text */
+        min-width: 40px;
+        max-width: 100%;
+        /* Text Handling */
+        word-break: normal !important; /* 🛑 FIX: Prevents "hel-lo" breaking */
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+        /* Visuals */
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        position: relative;
+    }
+
+    /* Incoming Bubble Color */
+    .msg-incoming .msg-bubble {
+        background: #f1f5f9;
+        color: #1e293b;
+        border-bottom-left-radius: 2px;
+        border: 1px solid #e2e8f0;
+        text-align: left;
+    }
+
+    /* Outgoing Bubble Color */
+    .msg-outgoing .msg-bubble {
+        background: #2563eb;
+        color: white;
+        border-bottom-right-radius: 2px;
+        box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+        text-align: left;
+    }
+
+    /* Sender Name */
+    .msg-sender-name {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-bottom: 3px;
+        margin-left: 2px;
+        font-weight: 600;
+    }
+
+    /* System Message (Joined/Left) */
+    .msg-system {
+        align-self: center;
+        font-size: 0.8rem;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 5px 15px;
+        border-radius: 20px;
+        margin: 10px 0;
+        text-align: center;
+        width: fit-content;
+    }
+
+    /* =========================================
+           2. WIDGET UI (Floating Button & Box)
+           ========================================= */
+    .support-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: #2563eb; /* Default Blue */
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        cursor: pointer;
+        z-index: 10000;
+        transition: transform 0.3s;
+    }
+
+        .support-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 🛑 NEW: Active State (RED Background when open) */
+        .support-btn.active {
+            background: #ef4444 !important; /* Force Red */
+            transform: scale(1.1); /* Keep slight pop, no rotation */
+        }
+
+    .support-options-menu {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+
+        .support-options-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+    .support-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+        min-width: 160px;
+        font-family: sans-serif;
+    }
+
+        .support-option:hover {
+            transform: translateX(-5px);
+            background: #f8fafc;
+        }
+
+        .support-option.whatsapp i {
+            color: #25D366;
+            font-size: 22px;
+        }
+
+        .support-option.live-chat i {
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+    .chat-box {
+        display: none;
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 380px;
+        height: 550px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 9999;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #f3f4f6;
+        font-family: sans-serif;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chat-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .chat-body {
+        flex: 1;
+        padding: 15px;
+        background: #fff;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Welcome Screen */
+    .chat-welcome {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 30px;
+    }
+
+        .chat-welcome h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .chat-welcome p {
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .chat-welcome input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+            .chat-welcome input:focus {
+                border-color: #2563eb;
+            }
+
+        .chat-welcome button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+    /* Footer Input */
+    .chat-footer {
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #eee;
+        display: none;
+        gap: 10px;
+        align-items: center;
+    }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            background: #f8fafc;
+            font-size: 0.95rem;
+        }
+
+        .chat-footer button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+    /* Badge Style */
+    #chat-notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10001;
+    }
+
+    /* --- MOBILE ADJUSTMENTS --- */
+    /* --- MOBILE ADJUSTMENTS --- */
+    @@media (max-width: 480px) {
+        .chat-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            /* Use dvh to handle mobile address bars correctly */
+            height: 100dvh !important;
+            bottom: 0;
+            right: 0;
+            border-radius: 0;
+            z-index: 10002;
+        }
+
+        .chat-body {
+            /* Ensure messages take up available space */
+            flex: 1;
+        }
+        /* 1. Un-nested selector ensures this rule actually applies */
+        .support-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+            /* 2. HIDE the Red Button when chat is open so it doesn't block Send */
+            .support-btn.active {
+                display: none !important;
+            }
+        /* 3. Remove the 90px padding since the button is hidden */
+        .chat-footer {
+            padding-right: 15px !important;
+            padding-bottom: 20px; /* Safety for iPhone home bar */
+        }
+    }
+</style>
+<div id="support-widget-btn" class="support-btn">
+    <i class="fas fa-headset"></i>
+    <span id="chat-notification-badge">0</span>
+</div>
+<div id="support-options" class="support-options-menu">
+    <a href="https://wa.me/8801700000000" target="_blank" class="support-option whatsapp">
+        <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+    </a>
+    <div id="btn-open-live-chat" class="support-option live-chat">
+        <i class="fas fa-comments"></i><span>Live Chat</span>
+    </div>
+</div>
+<audio id="chat-notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<div id="live-chat-box" class="chat-box">
+    <div class="chat-header">
+        <div class="chat-title"><i class="fas fa-headset"></i> Customer Support</div>
+        <button id="chat-close-btn" class="chat-close">&times;</button>
+    </div>
+    <div id="chat-body" class="chat-body">
+        <div id="chat-name-screen" class="chat-welcome">
+            <h4>Welcome! 👋</h4>
+            <p>Please enter your name to start chatting.</p>
+            <input type="text" id="chat-guest-name" placeholder="Your Name" />
+            <button id="chat-start-btn">Start Conversation</button>
+            <button id="chat-skip-btn" style="background:transparent; color:#94a3b8; margin-top:15px; width:auto;">Skip for now</button>
+        </div>
+        <div id="chat-messages-list" style="display:none; flex-direction:column; gap:12px; padding-bottom: 10px;"></div>
+    </div>
+    <div class="chat-footer" id="chat-footer">
+        <input type="text" id="chat-input-field" placeholder="Type a message..." autocomplete="off">
+        <button id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+

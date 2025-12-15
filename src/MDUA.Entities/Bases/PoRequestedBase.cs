@@ -16,23 +16,23 @@ namespace MDUA.Entities.Bases
 		{
 			Id = 0,
 			VendorId = 1,
-			ProductId = 2,
-			Quantity = 3,
-			RequestDate = 4,
-			Status = 5,
-			CreatedBy = 6,
-			CreatedAt = 7,
-			UpdatedBy = 8,
-			UpdatedAt = 9,
-			Remarks = 10,
-			ReferenceNo = 11
+			Quantity = 2,
+			RequestDate = 3,
+			Status = 4,
+			CreatedBy = 5,
+			CreatedAt = 6,
+			UpdatedBy = 7,
+			UpdatedAt = 8,
+			Remarks = 9,
+			ReferenceNo = 10,
+			ProductVariantId = 11,
+			BulkPurchaseOrderId = 12
 		}
 		#endregion
 	
 		#region Constants
 		public const string Property_Id = "Id";		            
 		public const string Property_VendorId = "VendorId";		            
-		public const string Property_ProductId = "ProductId";		            
 		public const string Property_Quantity = "Quantity";		            
 		public const string Property_RequestDate = "RequestDate";		            
 		public const string Property_Status = "Status";		            
@@ -42,12 +42,13 @@ namespace MDUA.Entities.Bases
 		public const string Property_UpdatedAt = "UpdatedAt";		            
 		public const string Property_Remarks = "Remarks";		            
 		public const string Property_ReferenceNo = "ReferenceNo";		            
+		public const string Property_ProductVariantId = "ProductVariantId";		            
+		public const string Property_BulkPurchaseOrderId = "BulkPurchaseOrderId";		            
 		#endregion
 		
 		#region Private Data Types
 		private Int32 _Id;	            
 		private Int32 _VendorId;	            
-		private Int32 _ProductId;	            
 		private Int32 _Quantity;	            
 		private DateTime _RequestDate;	            
 		private String _Status;	            
@@ -57,6 +58,8 @@ namespace MDUA.Entities.Bases
 		private Nullable<DateTime> _UpdatedAt;	            
 		private String _Remarks;	            
 		private String _ReferenceNo;	            
+		private Int32 _ProductVariantId;	            
+		private Nullable<Int32> _BulkPurchaseOrderId;	            
 		#endregion
 		
 		#region Properties		
@@ -85,21 +88,6 @@ namespace MDUA.Entities.Bases
 				if (PropertyChanging(args))
 				{
 					_VendorId = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Int32 ProductId
-		{	
-			get{ return _ProductId; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ProductId, value, _ProductId);
-				if (PropertyChanging(args))
-				{
-					_ProductId = value;
 					PropertyChanged(args);					
 				}	
 			}
@@ -240,6 +228,36 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public Int32 ProductVariantId
+		{	
+			get{ return _ProductVariantId; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ProductVariantId, value, _ProductVariantId);
+				if (PropertyChanging(args))
+				{
+					_ProductVariantId = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Nullable<Int32> BulkPurchaseOrderId
+		{	
+			get{ return _BulkPurchaseOrderId; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_BulkPurchaseOrderId, value, _BulkPurchaseOrderId);
+				if (PropertyChanging(args))
+				{
+					_BulkPurchaseOrderId = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -249,7 +267,6 @@ namespace MDUA.Entities.Bases
 			base.CloneBase(newObj);
 			newObj.Id = this.Id;						
 			newObj.VendorId = this.VendorId;						
-			newObj.ProductId = this.ProductId;						
 			newObj.Quantity = this.Quantity;						
 			newObj.RequestDate = this.RequestDate;						
 			newObj.Status = this.Status;						
@@ -259,6 +276,8 @@ namespace MDUA.Entities.Bases
 			newObj.UpdatedAt = this.UpdatedAt;						
 			newObj.Remarks = this.Remarks;						
 			newObj.ReferenceNo = this.ReferenceNo;						
+			newObj.ProductVariantId = this.ProductVariantId;						
+			newObj.BulkPurchaseOrderId = this.BulkPurchaseOrderId;						
 			
 			return newObj;
 		}
@@ -270,7 +289,6 @@ namespace MDUA.Entities.Bases
 			base.GetObjectData(info, context);
 			info.AddValue(PoRequestedBase.Property_Id, Id);				
 			info.AddValue(PoRequestedBase.Property_VendorId, VendorId);				
-			info.AddValue(PoRequestedBase.Property_ProductId, ProductId);				
 			info.AddValue(PoRequestedBase.Property_Quantity, Quantity);				
 			info.AddValue(PoRequestedBase.Property_RequestDate, RequestDate);				
 			info.AddValue(PoRequestedBase.Property_Status, Status);				
@@ -280,6 +298,8 @@ namespace MDUA.Entities.Bases
 			info.AddValue(PoRequestedBase.Property_UpdatedAt, UpdatedAt);				
 			info.AddValue(PoRequestedBase.Property_Remarks, Remarks);				
 			info.AddValue(PoRequestedBase.Property_ReferenceNo, ReferenceNo);				
+			info.AddValue(PoRequestedBase.Property_ProductVariantId, ProductVariantId);				
+			info.AddValue(PoRequestedBase.Property_BulkPurchaseOrderId, BulkPurchaseOrderId);				
 		}
 		#endregion
 

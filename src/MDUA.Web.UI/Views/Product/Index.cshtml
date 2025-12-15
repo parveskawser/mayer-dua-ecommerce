@@ -1,4 +1,5 @@
 ﻿@model MDUA.Entities.Product
+@using System.Text.RegularExpressions
 @{
     ViewData["Title"] = Model.ProductName ?? "Combo Offer";
     Layout = null;
@@ -10,7 +11,12 @@
     var primaryImageObject = Model.Images?.FirstOrDefault(i => i.IsPrimary) ?? Model.Images?.FirstOrDefault();
     string mainImageUrl = (primaryImageObject != null && !string.IsNullOrEmpty(primaryImageObject.ImageUrl))
         ? primaryImageObject.ImageUrl
-        : "/images/default-product.jpg";
+        : null;
+    string productVideoUrl = Model.ProductVideoUrl;
+    var galleryImages = Model.Images?
+         .Where(i => !string.IsNullOrEmpty(i.ImageUrl) && i.ImageUrl != mainImageUrl)
+         .ToList();
+
 }
 
 <!DOCTYPE html>
@@ -23,7 +29,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <header class="header">
         <div class="container">
             <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
@@ -32,11 +37,19 @@
                  onerror="this.onerror=null; this.src='/images/logo.jpg';" />
         </div>
     </header>
-
+@* <div class="whatsapp-float" 
+     onclick="window.open('https://wa.me/8801780620311', '_blank')" 
+     title="WhatsApp Chat">
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+    </svg>
+</div>    *@
     <div class="container">
         <section class="combo-info card">
             <h1>🎉 @Model.ProductName 🎉</h1>
-            <p>@Model.Description</p>
+            <div class="product-description-content">
+                @Html.Raw(Model.Description)
+            </div>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <a href="#order" class="btn combo-btn">Order Now</a>
                 <button id="open-status-modal" class="btn status-btn">Track My Order</button>
@@ -55,59 +68,74 @@
             <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
                 <p class="price">
                     Tk. @Model.SellingPrice.ToString("N0")
-                    <span class="old-price">Tk. @basePrice.ToString("N0")</span>
+
+                    @* Only show the old cut price if it is higher than the selling price *@
+                    @if (basePrice > Model.SellingPrice)
+                    {
+                        <span class="old-price">Tk. @basePrice.ToString("N0")</span>
+                    }
                 </p>
                 <p class="offer-text">💰 Cash on delivery available</p>
             </div>
         </section>
+        @if (!string.IsNullOrEmpty(mainImageUrl))
+        {
+            <section class="product-image">
+                <img src="@Url.Content($"~{mainImageUrl}")"
+                     alt="@Model.ProductName"
+                     class="combo main-img"
+                     id="main-product-img"
+                     loading="eager"
+                     onerror="this.closest('.product-image').style.display='none'" />
+            </section>
+        }
+        @if (galleryImages != null && galleryImages.Count > 0)
+        {
+            <section class="product-gallery card">
+                <h2>Product Gallery</h2>
+                <div class="carousel">
+                    <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
 
-        <section class="product-image">
-            <img src="@Url.Content($"~{mainImageUrl}")"
-                 alt="@Model.ProductName"
-                 class="combo main-img"
-                 id="main-product-img"
-                 loading="eager" />
-        </section>
+                    <div class="slides">
+                        @foreach (var img in galleryImages)
+                        {
+                            string slideImg = FixPath(img.ImageUrl);
 
-        <section class="product-gallery card">
-            <h2>Product Gallery</h2>
-            <div class="carousel">
-                <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
-                <div class="slides">
-                    @if (Model.Images != null && Model.Images.Count > 0)
-                    {
-                        var galleryImages = Model.Images.Where(i => mainImageUrl == null || i.ImageUrl != mainImageUrl).ToList();
-                        if (galleryImages.Any())
-                        {
-                            foreach (var img in galleryImages)
-                            {
-                                string slideImg = FixPath(img.ImageUrl);
-                                <img src="@Url.Content($"~{slideImg}")"
-                                     alt="@Model.ProductName Gallery"
-                                     class="slide"
-                                     loading="lazy"
-                                     onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
-                            }
+                            <img src="@Url.Content($"~{slideImg}")"
+                                 alt="@Model.ProductName Gallery"
+                                 class="slide"
+                                 loading="lazy"
+                                 @* If this specific image fails, hide it immediately *@
+                                 onerror="this.style.display='none'" />
                         }
-                        else
-                        {
-                            <img src="@Url.Content($"~{mainImageUrl}")" class="slide" />
-                        }
-                    }
-                    else
-                    {
-                        <img src="~/images/default-product.jpg" alt="No gallery images" class="slide" />
-                    }
+                    </div>
+
+                    <button class="next" onclick="changeSlide(1)">&#10095;</button>
                 </div>
-                <button class="next" onclick="changeSlide(1)">&#10095;</button>
-            </div>
-        </section>
+            </section>
+        }
+        @* YOUTUBE VIDEO SECTION *@
+        @if (!string.IsNullOrEmpty(productVideoUrl))
+        {
+            <section class="video-section card" style="text-align: center; padding: 20px; max-width: 800px; margin: 20px auto;">
+                <h2 style="margin-bottom: 15px;">Product Video</h2>
+                <div class="video-container" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                    <iframe src="@GetEmbedUrl(productVideoUrl)"
+                            title="Product Video"
+                            frameborder="0"
+                            allowfullscreen
+                            style="width: 100%; height: 350px; border-radius: 8px;">
+                    </iframe>
+                </div>
+            </section>
+        }
 
-        <section class="description card">
-            <h2>Product Details</h2>
-            @if (Model.Specifications != null && Model.Specifications.Count > 0)
-            {
-                foreach (var spec in Model.Specifications)
+        @* Check if Specifications exists and has items. If not, the whole section is skipped. *@
+        @if (Model.Specifications != null && Model.Specifications.Count > 0)
+        {
+            <section class="description card">
+                <h2>Product Details</h2>
+                @foreach (var spec in Model.Specifications)
                 {
                     <div class="detail-row">
                         <span class="detail-icon">@GetAttributeIcon(spec.Key)</span>
@@ -117,32 +145,23 @@
                         </p>
                     </div>
                 }
-            }
-            else
-            {
-                <p style="text-align:center; color:#666;">No specific details available.</p>
-            }
-        </section>
-
-        <section class="testimonials card">
-            <h2>What Our Customers Say</h2>
-            <div class="reviews">
-                @if (Model.Reviews != null && Model.Reviews.Count > 0)
-                {
-                    foreach (var review in Model.Reviews)
+            </section>
+        }
+        @if (Model.Reviews != null && Model.Reviews.Count > 0)
+        {
+            <section class="testimonials card">
+                <h2>What Our Customers Say</h2>
+                <div class="reviews">
+                    @foreach (var review in Model.Reviews)
                     {
                         <div class="review">
                             <p class="review-text">"@review.ReviewText"</p>
                             <p class="reviewer">– @review.CustomerName</p>
                         </div>
                     }
-                }
-                else
-                {
-                    <p class="text-center text-muted">No reviews yet.</p>
-                }
-            </div>
-        </section>
+                </div>
+            </section>
+        }
 
         <section id="order" class="order-section">
             <h2>Place Your Order</h2>
@@ -164,10 +183,7 @@
                                         dynamicAttributes[spec.Key] = spec.Value;
                                     }
                                 }
-                                if (Model.AvailableSizes != null && Model.AvailableSizes.Any() && !dynamicAttributes.ContainsKey("Size"))
-                                {
-                                    dynamicAttributes["Size"] = Model.AvailableSizes;
-                                }
+
                             }
 
                             @if (dynamicAttributes.Any())
@@ -202,7 +218,7 @@
                                  src="@FixPath(mainImageUrl)"
                                  alt="Selected Variant"
                                  style="width: 100%; height: 200px; object-fit: contain;"
-                                 onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                                 onerror="this.style.display='none'" />
                         </div>
 
 
@@ -283,7 +299,7 @@
                              src="@FixPath(mainImageUrl)"
                              alt="Selected Variant"
                              style="width: 100%; height: 200px; object-fit: contain;"
-                             onerror="this.onerror=null; this.src='/images/default-product.jpg';" />
+                             onerror="this.style.display='none'" />
                     </div>
 
                     <h3 style="margin-top:0;">Your Receipt</h3>
@@ -304,45 +320,131 @@
                 </div>
 
                 <!-- PAYMENT METHOD SECTION (BELOW receipt on both mobile & desktop) -->
-                <div class="payment-section">
-                    <h3>Choose Payment Method</h3>
+               <div class="payment-section">
+    <h3>Choose Payment Method</h3>
+
                     <div class="payment-options">
-                        <div class="payment-option selected" data-payment="cod">
-                            <input type="radio" name="paymentMethod" id="payment-cod" value="cod" checked>
-                            <label for="payment-cod">
-                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
-                                     alt="Cash on Delivery" class="payment-logo">
-                                <span>Cash on Delivery</span>
-                            </label>
-                        </div>
+                        @{
+                            var paymentMethods = ViewBag.PaymentMethods as List<MDUA.Entities.CompanyPaymentMethodResult>;
+                            int cardCounter = 0; // Track actual rendered cards for selection logic
+                        }
 
-                        <div class="payment-option" data-payment="bkash">
-                            <input type="radio" name="paymentMethod" id="payment-bkash" value="bkash">
-                            <label for="payment-bkash">
-                                <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
-                                     alt="bKash" class="payment-logo">
-                                <span>bKash</span>
-                            </label>
-                        </div>
+                        @if (paymentMethods != null && paymentMethods.Any())
+                        {
+                            for (int i = 0; i < paymentMethods.Count; i++)
+                            {
+                                var pm = paymentMethods[i];
+                                bool hasRenderedAny = false;
 
-                        <div class="payment-option" data-payment="card">
-                            <input type="radio" name="paymentMethod" id="payment-card" value="card">
-                            <label for="payment-card">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
-                                     alt="Card" class="payment-logo" style="width: auto; height: 15px; margin-right: 5px;">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                                     alt="Card" class="payment-logo" style="width: auto; height: 20px;">
-                                <span style="margin-left: 10px;">Card</span>
-                            </label>
-                        </div>
+                                // --- 1. MANUAL MODE CARD ---
+                                if (pm.IsManualEnabled)
+                                {
+                                    var isHybrid = pm.GlobalSupportsGateway && pm.GlobalSupportsManual;
+                                    var uniqueId = isHybrid ? $"{pm.SystemCode}_manual" : pm.SystemCode;
+                                    var displayName = isHybrid ? $"{pm.MethodName} (Send Money)" : pm.MethodName;
+                                    var isSelected = (cardCounter == 0);
+
+                                    <div class="payment-option @(isSelected ? "selected" : "")"
+                                         data-payment="@pm.SystemCode"
+                                         data-mode="Manual">
+
+                                        <input type="radio" name="paymentMethod" id="opt-@uniqueId" value="@uniqueId" @(isSelected ? "checked" : "")>
+
+                                        <label for="opt-@uniqueId">
+                                            <img src="@pm.LogoUrl" alt="@displayName" class="payment-logo"
+                                                 style="@(pm.SystemCode == "card" ? "width: auto; height: 15px; margin-right: 5px;" : "")">
+                                            <span>@displayName</span>
+                                        </label>
+
+                                        <input type="hidden" class="manual-instruction-text" value="@pm.CustomInstruction" />
+                                    </div>
+
+                                    hasRenderedAny = true;
+                                    cardCounter++;
+                                }
+
+                                // --- 2. GATEWAY MODE CARD ---
+                                if (pm.IsGatewayEnabled)
+                                {
+                                    var isHybrid = pm.GlobalSupportsGateway && pm.GlobalSupportsManual;
+                                    var uniqueId = isHybrid ? $"{pm.SystemCode}_gateway" : pm.SystemCode;
+                                    var displayName = isHybrid ? $"{pm.MethodName} (Secure Pay)" : pm.MethodName;
+                                    var isSelected = (cardCounter == 0);
+
+                                    <div class="payment-option @(isSelected ? "selected" : "")"
+                                         data-payment="@pm.SystemCode"
+                                         data-mode="Gateway">
+
+                                        <input type="radio" name="paymentMethod" id="opt-@uniqueId" value="@uniqueId" @(isSelected ? "checked" : "")>
+
+                                        <label for="opt-@uniqueId">
+                                            <img src="@pm.LogoUrl" alt="@displayName" class="payment-logo"
+                                                 style="@(pm.SystemCode == "card" ? "width: auto; height: 15px; margin-right: 5px;" : "")">
+
+                                            @if (pm.SystemCode == "card")
+                                            {
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
+                                                <span style="margin-left: 10px;">@displayName</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@displayName</span>
+                                            }
+                                        </label>
+                                    </div>
+
+                                    hasRenderedAny = true;
+                                    cardCounter++;
+                                }
+
+                                // --- 3. FALLBACK: SIMPLE/OFFLINE CARD (Fix for COD) ---
+                                // If it hasn't rendered as Manual or Gateway, but is Enabled (Active), show standard card.
+                                if (!hasRenderedAny && pm.IsEnabled)
+                                {
+                                    var isSelected = (cardCounter == 0);
+                                    <div class="payment-option @(isSelected ? "selected" : "")"
+                                         data-payment="@pm.SystemCode"
+                                         data-mode="Offline">
+                                        <input type="radio" name="paymentMethod" id="opt-@pm.SystemCode" value="@pm.SystemCode" @(isSelected ? "checked" : "")>
+
+                                        <label for="opt-@pm.SystemCode">
+                                            <img src="@pm.LogoUrl" alt="@pm.MethodName" class="payment-logo">
+                                            <span>@pm.MethodName</span>
+                                        </label>
+                                    </div>
+                                    cardCounter++;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning text-center w-100">
+                                No payment methods available.
+                            </div>
+                        }
                     </div>
-                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
-                </div>
+    <div id="payment-details-area" class="mt-3 p-3 border rounded bg-light" style="display:none;">
+        <div id="manual-payment-fields">
+            <div class="alert alert-info py-2 small mb-2">
+                <i class="fas fa-info-circle me-1"></i> 
+                <span id="instruction-text"></span>
+            </div>
+            
+            <label class="small fw-bold">Transaction ID (TrxID) <span class="text-danger">*</span></label>
+            <input type="text" name="TransactionReference" id="trx-id-input" 
+                   class="form-control form-control-sm" placeholder="e.g. 8H7FA..." maxlength="20">
+        </div>
+    </div>
 
-                
+    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">
+        Confirm Order
+    </button>
+</div>
+                @Html.Partial("_CustomerChatWidget")
             </div>
         </section>
     </div>
+
     <footer>
         <p>© @DateTime.Now.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
     </footer>
@@ -408,24 +510,36 @@
                        }
                }
            ];
+
+        // 1. Listen for the scroll event
+
+        // 2. Define the function called by onclick="scrollToTop()"
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
     </script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   @*   <environment include="Development">
         <script src="~/js/combo.js"></script>
     </environment> *@
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
         <script src="~/js/combo.js" asp-append-version="true"></script>
     <script src="~/js/order-track.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </body>
 </html>
 
 @functions {
     public string FixPath(string path)
     {
-        if (string.IsNullOrEmpty(path)) return "/images/default-product.webp";
+        // Change this line to return empty string or null
+        if (string.IsNullOrEmpty(path)) return "";
+
         string fixedPath = path.Replace("\\", "/");
         if (!fixedPath.StartsWith("/")) fixedPath = "/" + fixedPath;
         return fixedPath;
@@ -468,5 +582,25 @@
             "display" or "screen" => "📱",
             _ => "✨"
         };
+    }
+    public string GetEmbedUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return "";
+
+        // 1. If already embedded, return as is
+        if (url.Contains("/embed/")) return url;
+
+        // 2. Regex to extract the Video ID from any YouTube format (Short, Long, Mobile)
+        // This specifically handles the "?si=" parameter by ignoring it
+        var regex = new Regex(@"(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^""&?\/\s]{11})", RegexOptions.IgnoreCase);
+
+        var match = regex.Match(url);
+        if (match.Success)
+        {
+            string videoId = match.Groups[1].Value;
+            return $"https://www.youtube.com/embed/{videoId}";
+        }
+
+        return url; // Fallback
     }
 }

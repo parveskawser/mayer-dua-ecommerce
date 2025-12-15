@@ -1,0 +1,27 @@
+.fixed-page-title {
+    /* Fixed Positioning */
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%; /* Forces it to span the full screen width */
+
+    /* Layering & Visuals */
+    z-index: 1; /* High value ensures it stays on top of everything */
+    background-color: #ffffff; /* Prevents transparency */
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Optional: adds a nice drop shadow */
+
+    /* Spacing / Alignment */
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 25px; /* Replaces your inline margin-left */
+}
+
+/* IMPORTANT: 
+   Since the header is now fixed, the rest of your page will jump up.
+   You need to push the page content down. Add this class to your 
+   main container or body tag.
+*/
+.page-content-offset {
+    padding-top: 100px; /* Adjust this value to match the height of your header */
+}

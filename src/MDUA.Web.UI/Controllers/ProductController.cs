@@ -11,26 +11,41 @@ namespace MDUA.Web.UI.Controllers
     {
         private readonly IProductFacade _productFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IPaymentMethodFacade _paymentMethodFacade;
+        private readonly ISettingsFacade _settingsFacade;
 
-        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment)
+        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade, ISettingsFacade settingsFacade)
         {
             _productFacade = productFacade;
             _webHostEnvironment = webHostEnvironment;
+            _paymentMethodFacade = paymentMethodFacade;
+            _settingsFacade = settingsFacade;
         }
 
         #region Products
-
+        [AllowAnonymous]
         [Route("product/{slug}")]
         public IActionResult Index(string slug)
         {
-            // Permission Check
 
             if (string.IsNullOrWhiteSpace(slug)) return BadRequest();
 
             Product model = _productFacade.GetProductDetailsForWebBySlug(slug);
 
             if (model == null) return NotFound();
+            // --- FETCH PAYMENT METHODS ---
+            var companyId = model.CompanyId; // Assuming Product entity has CompanyId
 
+            // 1. Get all settings (merged)
+            var allSettings = _settingsFacade.GetCompanyPaymentSettings(companyId);
+
+            // 2. Filter only ENABLED methods for the View
+            var enabledMethods = allSettings
+                                    .Where(x => x.IsEnabled)
+                                    .OrderBy(x => x.PaymentMethodId) // Or DisplayOrder if available in Result
+                                    .ToList();
+
+            ViewBag.PaymentMethods = enabledMethods;
             return View(model);
         }
 
@@ -53,7 +68,13 @@ namespace MDUA.Web.UI.Controllers
         {
             // Permission Check
             if (!HasPermission("Product.Add")) return HandleAccessDenied();
-
+            if (product.Attributes != null)
+            {
+                // Remove attributes where AttributeId is 0 (invalid/unselected)
+                product.Attributes = product.Attributes
+                    .Where(a => a.AttributeId > 0)
+                    .ToList();
+            }
             if (string.IsNullOrWhiteSpace(product.Slug))
                 product.Slug = GenerateSlug(product.ProductName);
             else
@@ -72,27 +93,65 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [Route("product/all")]
-        public IActionResult AllProducts()
+        [HttpGet]
+        public IActionResult AllProducts(string search)
         {
-            // Permission Check
+            // 1. Permission Check (Kept from your existing code)
             if (!HasPermission("Product.View")) return HandleAccessDenied();
 
-            var products = _productFacade.GetAllProductsWithCategory();
+            IEnumerable<Product> products;
+
+            // 2. Pass the search term back to the View (so the input box remembers it)
+            ViewData["CurrentSearch"] = search;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // 3. If a search term exists, use the Search method
+                // Note: Ensure _productFacade.SearchProducts(search) is implemented in your Facade
+                products = _productFacade.SearchProducts(search);
+            }
+            else
+            {
+                // 4. Default: Show all products (Your existing method)
+                products = _productFacade.GetAllProductsWithCategory();
+            }
+
             return View(products);
         }
 
+        // Add this inside your ProductController class
         [HttpGet]
-        [Route("product/get-attribute-values")]
-        public IActionResult GetAttributeValues(int attributeId)
+        [Route("product/check-slug")]
+        public IActionResult CheckSlugAvailability(string slug)
         {
-            // Permission Check 
-            if (!HasPermission("Product.View")) return HandleAccessDenied();
+            if (string.IsNullOrWhiteSpace(slug)) return Json(new { exists = false });
 
-            var values = _productFacade.GetAttributeValues(attributeId);
-            var result = values.Select(v => new { id = v.Id, value = v.Value }).ToList();
-            return new JsonResult(result);
+            // Reuse your existing facade method
+            var product = _productFacade.GetProductDetailsForWebBySlug(slug);
+
+            return Json(new { exists = product != null });
         }
 
+        [HttpGet]
+        [Route("product/search-ajax")] // This defines the URL as /product/search-ajax
+        public IActionResult SearchProductsAjax(string query)
+        {
+            IEnumerable<Product> model;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                // If search is empty, return default top 5
+                model = _productFacade.GetAllProductsWithCategory();
+            }
+            else
+            {
+                // Perform Search
+                model = _productFacade.SearchProducts(query);
+            }
+
+            // This returns ONLY the table rows to the JavaScript
+            return PartialView("_ProductTableRows", model);
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("product/toggle-status")]
@@ -228,6 +287,7 @@ namespace MDUA.Web.UI.Controllers
             long result = _productFacade.AddVariantToExistingProduct(newVariant);
             return Json(new { success = result > 0, message = result > 0 ? "" : "Failed to add variant." });
         }
+
 
         #endregion
 
@@ -512,8 +572,98 @@ namespace MDUA.Web.UI.Controllers
             return str;
         }
 
+        [HttpGet]
+        [Route("product/get-attribute-values")]
+        public IActionResult GetAttributeValues(int attributeId)
+        {
+            // Optional: Add permission check if needed
+            // if (!HasPermission("Product.Add")) return HandleAccessDenied();
 
-     
+            // Fetch data from your Facade
+            var values = _productFacade.GetAttributeValues(attributeId);
+
+            // Return as JSON. 
+            // We project to an anonymous object to ensure the JS receives 'id' and 'value'
+            // exactly as the script expects (lowercase).
+            return Json(values.Select(v => new { 
+                id = v.Id, 
+                value = v.Value // Or v.Name, depending on your Entity
+            }));
+        }
+
+
+
         #endregion
+        // ... inside ProductController class ...
+
+        #region Product Videos
+
+        [HttpGet]
+        [Route("product/get-videos")]
+        public IActionResult GetVideosPartial(int productId)
+        {
+            if (!HasPermission("Product.View")) return HandleAccessDenied();
+
+            var videos = _productFacade.GetProductVideos(productId);
+            ViewData["ProductId"] = productId;
+            return PartialView("_ProductVideosPartial", videos);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/add-video")]
+        public IActionResult AddVideo(ProductVideo video)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.AddProductVideo(video, CurrentUserName);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/delete-video")]
+        public IActionResult DeleteVideo(int id)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.DeleteProductVideo(id);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("product/set-primary-video")]
+        public IActionResult SetPrimaryVideo(int videoId, int productId)
+        {
+            if (!HasPermission("Product.Edit")) return HandleAccessDenied();
+
+            try
+            {
+                _productFacade.SetPrimaryProductVideo(videoId, productId, CurrentUserName);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        #endregion
+
     }
 }

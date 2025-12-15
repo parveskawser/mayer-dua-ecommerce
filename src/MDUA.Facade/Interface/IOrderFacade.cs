@@ -26,6 +26,9 @@ namespace MDUA.Facade.Interface
         List<SalesOrderHeader> GetRecentOrders(); //new
         List<ChartDataPoint> GetSalesTrend(); //new
         List<ChartDataPoint> GetOrderStatusCounts(); //new
+        void UpdateDeliveryStatus(int deliveryId, string newStatus);
+
+        void UpdateOrderStatus(int orderId, string newStatus);
 
     }
 }

@@ -149,9 +149,10 @@ namespace MDUA.Framework.DataAccess
         /// </summary>
         /// <param name="iso"></param>
         /// <returns></returns>
-        public static SqlTransaction BeginTransaction(IsolationLevel iso)
+        public static SqlTransaction BeginTransaction(string connectionString, IsolationLevel iso)
         {
-            SqlConnection conn = new SqlConnection(ConfigurationBlock.ConnectionString);
+            // CHANGE: Use the passed connection string instead of the static ConfigurationBlock
+            SqlConnection conn = new SqlConnection(connectionString);
 
             try
             {
@@ -164,16 +165,15 @@ namespace MDUA.Framework.DataAccess
 
             return conn.BeginTransaction(iso);
         }
-
         /// <summary>
         /// Start a transaction with default Isolation Level
         /// </summary>
         /// <returns></returns>
-        public static SqlTransaction BeginTransaction()
+        public static SqlTransaction BeginTransaction(string connectionString)
         {
-            return BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
+            // CHANGE: Pass the connection string along
+            return BeginTransaction(connectionString, System.Data.IsolationLevel.ReadUncommitted);
         }
-
         /// <summary>
         /// Ends a transaction either commits or rollsback depending upon the success parameter
         /// </summary>

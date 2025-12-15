@@ -80,20 +80,20 @@ section {
     margin-top: 2rem;
 }
 
-    .combo-info h1 {
-        font-size: 2.25rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        color: #111827;
-        line-height: 1.2;
-    }
+.combo-info h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #111827;
+    line-height: 1.2;
+}
 
-    .combo-info p {
-        color: var(--text-muted);
-        font-size: 1.1rem;
-        max-width: 600px;
-        margin: 0 auto 1.5rem auto;
-    }
+.combo-info p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 1.5rem auto;
+}
 
 .btn {
     display: inline-flex;
@@ -114,10 +114,10 @@ section {
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
 }
 
-    .combo-btn:hover {
-        background-color: var(--primary-hover);
-        transform: translateY(-1px);
-    }
+.combo-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
 
 .status-btn {
     background-color: white;
@@ -126,10 +126,10 @@ section {
     margin-left: 10px;
 }
 
-    .status-btn:hover {
-        background-color: #f9fafb;
-        border-color: #d1d5db;
-    }
+.status-btn:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
 
 /* --- Scarcity Bar --- */
 .scarcity-section {
@@ -233,9 +233,9 @@ section {
     height: auto;
 }
 
-    .slide.active {
-        display: block;
-    }
+.slide.active {
+    display: block;
+}
 
 .prev, .next {
     position: absolute;
@@ -263,9 +263,9 @@ section {
     right: 10px;
 }
 
-    .prev:hover, .next:hover {
-        background: white;
-    }
+.prev:hover, .next:hover {
+    background: white;
+}
 
 /* --- Description & Testimonials --- */
 .description, .testimonials {
@@ -273,10 +273,10 @@ section {
     margin: 2rem auto;
 }
 
-    .description h2, .testimonials h2 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
+.description h2, .testimonials h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
 
 .detail-row {
     display: flex;
@@ -286,9 +286,9 @@ section {
     border-bottom: 1px solid var(--border-color);
 }
 
-    .detail-row:last-child {
-        border-bottom: none;
-    }
+.detail-row:last-child {
+    border-bottom: none;
+}
 
 .review {
     background: #f9fafb;
@@ -322,11 +322,11 @@ section {
     box-shadow: none;
 }
 
-    .order-section h2 {
-        text-align: center;
-        font-size: 2rem;
-        margin-bottom: 2rem;
-    }
+.order-section h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
 
 /* The Grid Container */
 .order-container {
@@ -372,13 +372,13 @@ section {
     border: 1px solid var(--border-color);
 }
 
-    .payment-section h3 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-        color: var(--text-main);
-        text-align: center;
-    }
+.payment-section h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    text-align: center;
+}
 
 .payment-options {
     display: grid;
@@ -404,41 +404,41 @@ section {
     min-height: 100px;
 }
 
-    .payment-option:hover {
-        border-color: var(--primary);
-        background: #f0f9ff;
-        transform: translateY(-2px);
-    }
+.payment-option:hover {
+    border-color: var(--primary);
+    background: #f0f9ff;
+    transform: translateY(-2px);
+}
 
-    /* Radio Button Positioning */
-    .payment-option input[type="radio"] {
-        width: 20px;
-        height: 20px;
-        margin: 0;
-        cursor: pointer;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
+/* Radio Button Positioning */
+.payment-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
 
-    .payment-option label {
-        margin: 0;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.95rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        width: 100%;
-        padding: 0;
-    }
+.payment-option label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0;
+}
 
-    .payment-option.selected {
-        border-color: var(--primary);
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
+.payment-option.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
 
 /* --- Payment Logos (Official Images) --- */
 .payment-logo {
@@ -465,20 +465,270 @@ section {
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
 }
 
-    .payment-section .submit-btn:hover {
-        background-color: var(--primary-hover);
-    }
+.payment-section .submit-btn:hover {
+    background-color: var(--primary-hover);
+}
 
-    .payment-section .submit-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
+.payment-section .submit-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
 
 /* Remove old submit button from billing section */
 .billing .submit-btn {
     display: none;
 }
 
+/* =========================================
+   PAYMENT SECTION DESIGN
+   ========================================= */
+
+/* 1. Main Container */
+.payment-section {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    /* Soft shadow for depth */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f3f4f6;
+    margin-top: 25px;
+}
+
+    .payment-section h3 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 1.25rem;
+        color: #111827;
+        font-weight: 700;
+    }
+
+/* 2. Payment Option Cards Grid */
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* Individual Card */
+.payment-option {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+}
+
+    /* Hover State */
+    .payment-option:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    /* Selected State (Blue Border & Background) */
+    .payment-option.selected {
+        border-color: #2563eb; /* Primary Blue */
+        background-color: #eff6ff; /* Light Blue Tint */
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    }
+
+/* Labels & Icons */
+.payment-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.payment-option label {
+    margin: 0;
+    cursor: pointer;
+    width: 100%;
+}
+
+.payment-option span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.2;
+    display: block;
+}
+
+/* Radio Button Positioning inside Card */
+.payment-option input[type="radio"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    accent-color: #2563eb;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 3. Payment Details Area (The Toggle Section) */
+#payment-details-area {
+    background-color: #f9fafb; /* Light Gray Background */
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 4. Mode Selection (Radio List) */
+#payment-mode-selector {
+    margin-bottom: 15px;
+}
+
+    #payment-mode-selector label.small {
+        display: block;
+        margin-bottom: 10px;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+/* Flex container for radio rows */
+.d-flex.gap-3 {
+    display: flex;
+    flex-direction: column; /* Stack vertically for clarity */
+    gap: 12px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+    .form-check:hover {
+        border-color: #cbd5e1;
+    }
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    accent-color: #2563eb;
+    cursor: pointer;
+    margin-top: 0; /* Reset */
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: #111827;
+    cursor: pointer;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* 5. Manual Input Fields */
+#manual-payment-fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1d5db;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-left: 4px solid #2563eb;
+    color: #1e40af;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+#manual-payment-fields label {
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+#trx-id-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+    letter-spacing: 1px; /* Make TrxID easier to read */
+}
+
+    #trx-id-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+/* 6. Submit Button */
+.submit-btn {
+    width: 100%;
+    background-color: #2563eb; /* Brand Blue */
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+    .submit-btn:hover {
+        background-color: #1d4ed8; /* Darker Blue */
+        transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .payment-options {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    }
+}
 /* --- Form Elements --- */
 label {
     display: block;
@@ -504,16 +754,16 @@ input, select, textarea {
     background: #fff;
 }
 
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
 
-    input.input-error, select.input-error, textarea.input-error {
-        border-color: var(--error) !important;
-        background-color: #fef2f2;
-    }
+input.input-error, select.input-error, textarea.input-error {
+    border-color: var(--error) !important;
+    background-color: #fef2f2;
+}
 
 /* --- Variant Chips --- */
 .variant-chips-container {
@@ -535,17 +785,17 @@ input, select, textarea {
     user-select: none;
 }
 
-    .variant-chip:hover {
-        border-color: var(--primary);
-        background: #eff6ff;
-    }
+.variant-chip:hover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
 
-    .variant-chip.selected {
-        background: var(--text-main);
-        color: white;
-        border-color: var(--text-main);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
+.variant-chip.selected {
+    background: var(--text-main);
+    color: white;
+    border-color: var(--text-main);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
 
 /* --- Quantity Controls --- */
 .qty-row {
@@ -564,25 +814,25 @@ input, select, textarea {
     gap: 0.5rem;
 }
 
-    .quantity-wrapper button {
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background: white;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+.quantity-wrapper button {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .quantity-wrapper button:hover {
-            background: #f9fafb;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
+.quantity-wrapper button:hover {
+    background: #f9fafb;
+    border-color: var(--primary);
+    color: var(--primary);
+}
 
 #quantity {
     width: 50px;
@@ -609,23 +859,23 @@ input, select, textarea {
     margin-top: 1.5rem;
 }
 
-    .receipt-table th, .receipt-table td {
-        padding: 0.75rem 0;
-        text-align: right;
-        border-bottom: 1px dashed #e5e7eb;
-    }
+.receipt-table th, .receipt-table td {
+    padding: 0.75rem 0;
+    text-align: right;
+    border-bottom: 1px dashed #e5e7eb;
+}
 
-        .receipt-table th:first-child, .receipt-table td:first-child {
-            text-align: left;
-        }
+.receipt-table th:first-child, .receipt-table td:first-child {
+    text-align: left;
+}
 
-    .receipt-table tfoot th {
-        border-top: 2px solid #374151;
-        color: #111827;
-        font-size: 1.1rem;
-        padding-top: 1rem;
-        border-bottom: none;
-    }
+.receipt-table tfoot th {
+    border-top: 2px solid #374151;
+    color: #111827;
+    font-size: 1.1rem;
+    padding-top: 1rem;
+    border-bottom: none;
+}
 
 #order-variant-image-holder {
     background: #f9fafb;
@@ -724,17 +974,17 @@ input:-webkit-autofill:active {
         min-height: auto;
     }
 
-        .payment-option input[type="radio"] {
-            position: static; /* Radio visible inline */
-            margin-right: 0.75rem;
-        }
+    .payment-option input[type="radio"] {
+        position: static; /* Radio visible inline */
+        margin-right: 0.75rem;
+    }
 
-        .payment-option label {
-            flex-direction: row;
-            text-align: left;
-            align-items: center;
-            width: auto;
-        }
+    .payment-option label {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        width: auto;
+    }
 
     /* Mobile Payment Logo Sizing */
     .payment-logo {
@@ -769,3 +1019,47 @@ input:-webkit-autofill:active {
         display: none;
     }
 }
+
+
+/* Centers the Title */
+.video-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Centers the Video Player */
+.video-container {
+    display: flex;
+    position: center;
+    justify-content: center; /* This centers the iframe horizontally */
+    align-items: center;
+    width: 100%;
+}
+
+    /*Sets the Size of the Video */
+    .video-container iframe {
+        width: 60%; /* Your requested width */
+        height: 300px; /* Your requested height */
+        border-radius: 8px; /* Optional: Makes corners rounded */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Optional: Adds a subtle shadow */
+    }
+
+/* MOBILE FIX: On phones, 60% is too small, so we make it 95% */
+@media (max-width: 768px) {
+    .video-container iframe {
+        width: 95%;
+        height: 250px; /* Slightly smaller height for mobile */
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0; /* Adds vertical spacing */
+    width: 100%; /* Ensures it spans the full width of the page */
+}
+
+    /* Optional: Removes default margins from the paragraph for better spacing */
+    footer p {
+        margin: 0;
+    }
+

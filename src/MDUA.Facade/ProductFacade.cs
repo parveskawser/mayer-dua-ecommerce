@@ -25,7 +25,10 @@ namespace MDUA.Facade
         private readonly IVariantPriceStockDataAccess _variantPriceStockDataAccess;
         private readonly IVariantImageDataAccess _variantImageDataAccess;
         private readonly ICompanyDataAccess _companyDataAccess;
+        private readonly IProductVideoDataAccess _productVideoDataAccess;
+        private readonly IGlobalSettingDataAccess _globalSettingDataAccess;
         private static readonly List<string> _sizeSortOrder = new List<string>
+
         {
             "XXXS", "XXS", "XS", "S", "M", "L", "XL", "XXL", "2XL", "XXXL", "3XL", "4XL", "5XL"
         };
@@ -41,7 +44,9 @@ namespace MDUA.Facade
             IProductAttributeDataAccess productAttributeDataAccess,
             IVariantPriceStockDataAccess variantPriceStockDataAccess,
             IVariantImageDataAccess variantImageDataAccess,
-            ICompanyDataAccess companyDataAccess)
+            ICompanyDataAccess companyDataAccess,
+            IGlobalSettingDataAccess globalSettingDataAccess,
+            IProductVideoDataAccess productVideoDataAccess)
         {
             _ProductDataAccess = productDataAccess;
             _ProductImageDataAccess = productImageDataAccess;
@@ -54,7 +59,8 @@ namespace MDUA.Facade
             _variantPriceStockDataAccess = variantPriceStockDataAccess;
             _variantImageDataAccess = variantImageDataAccess;
             _companyDataAccess = companyDataAccess;
-
+            _globalSettingDataAccess = globalSettingDataAccess;
+            _productVideoDataAccess = productVideoDataAccess;
         }
 
         #region Common Implementation
@@ -154,6 +160,8 @@ namespace MDUA.Facade
                     }
                 }
 
+               
+
                 // C. Pricing Logic
                 decimal vPrice = v.VariantPrice ?? 0;
                 decimal vSellingPrice = vPrice;
@@ -168,7 +176,15 @@ namespace MDUA.Facade
 
                 v.DiscountedPrice = Math.Max(vSellingPrice, 0);
             }
+            var videos = _productVideoDataAccess.GetByProductId(product.Id);
 
+            // Find Primary or fallback to first
+            var primaryVideo = videos.FirstOrDefault(v => v.IsPrimary) ?? videos.FirstOrDefault();
+
+            if (primaryVideo != null)
+            {
+                product.ProductVideoUrl = primaryVideo.VideoUrl;
+            }
             product.TotalStockQuantity = totalStock;
 
             // 8. Calculate Main Product Selling Price (Using Best Discount)
@@ -209,10 +225,20 @@ namespace MDUA.Facade
                 product.CompanyLogoUrl = "/images/logo.jpg";
             }
 
+            string dhakaStr = _globalSettingDataAccess.GetValue(product.CompanyId, "DeliveryCharge_Dhaka");
+            string outsideStr = _globalSettingDataAccess.GetValue(product.CompanyId, "DeliveryCharge_Outside");
+
+            int.TryParse(dhakaStr, out int dhakaCharge);
+            int.TryParse(outsideStr, out int outsideCharge);
+
+            // Fallback defaults if DB is empty
+            if (dhakaCharge == 0) dhakaCharge = 60;
+            if (outsideCharge == 0) outsideCharge = 120;
+
             product.DeliveryCharges = new Dictionary<string, int>
     {
-        { "dhaka", 50 },
-        { "outside", 100 }
+        { "dhaka", dhakaCharge },
+        { "outside", outsideCharge }
     };
 
             return product;
@@ -743,6 +769,193 @@ namespace MDUA.Facade
                 _variantImageDataAccess.Update(img);
             }
         }
+
+        public ProductList SearchProducts(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return new ProductList();
+            }
+            return _ProductDataAccess.SearchProducts(searchTerm);
+        }
         #endregion
+
+        // ... inside ProductFacade class ...
+
+        // =========================================================
+        // VIDEO MANAGEMENT REGION
+        // =========================================================
+        public List<ProductVideo> GetProductVideos(int productId)
+        {
+            // Get list ordered by SortOrder
+            return _productVideoDataAccess.GetByProductId(productId)
+                                          .OrderBy(v => v.SortOrder)
+                                          .ToList();
+        }
+
+        public long AddProductVideo(ProductVideo video, string username)
+        {
+            // 1. Convert URL
+            video.VideoUrl = ConvertToEmbedUrl(video.VideoUrl);
+
+            // 2. Audit Fields
+            video.CreatedBy = username;
+            video.CreatedAt = DateTime.Now;
+
+            // ✅ FIX: Set UpdatedAt to prevent "SqlDateTime overflow" error (0001-01-01)
+            // Your Stored Procedure inserts this column, so it must be valid.
+            video.UpdatedBy = username;
+            video.UpdatedAt = DateTime.Now;
+
+            // ✅ FIX: Ensure ThumbnailUrl isn't null if DB expects a string
+            if (string.IsNullOrEmpty(video.ThumbnailUrl)) video.ThumbnailUrl = "";
+
+            // 3. Fetch Existing Videos to check state
+            var existingVideos = _productVideoDataAccess.GetByProductId(video.ProductId);
+
+            // 4. Logic: Auto-Calculate SortOrder (Max + 1)
+            if (existingVideos != null && existingVideos.Count > 0)
+            {
+                video.SortOrder = existingVideos.Max(v => v.SortOrder) + 1;
+            }
+            else
+            {
+                video.SortOrder = 1; // First video starts at 1
+            }
+
+            // 5. Logic: Handle "IsPrimary"
+            bool isFirstVideo = (existingVideos == null || existingVideos.Count == 0);
+
+            if (isFirstVideo)
+            {
+                // Force Primary if it's the first video ever
+                video.IsPrimary = true;
+            }
+            else if (video.IsPrimary)
+            {
+                // If user manually checked "Set as Primary" for a NEW video,
+                // we must UNSET the existing primary video first.
+                var currentPrimary = existingVideos.FirstOrDefault(v => v.IsPrimary);
+                if (currentPrimary != null)
+                {
+                    currentPrimary.IsPrimary = false;
+                    currentPrimary.UpdatedBy = username;
+                    currentPrimary.UpdatedAt = DateTime.Now;
+                    _productVideoDataAccess.Update(currentPrimary);
+                }
+            }
+
+            return _productVideoDataAccess.Insert(video);
+        }
+
+        // ... inside the class ...
+
+        public List<LowStockItem> GetLowStockVariants(int topN)
+        {
+            // _variantPriceStockDataAccess is already injected in your constructor
+            return _variantPriceStockDataAccess.GetLowStockVariants(topN);
+        }
+
+        // ...
+        public string ConvertToEmbedUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return "";
+
+            // 1. If already correct, return it
+            if (url.Contains("/embed/")) return url;
+
+            string videoId = "";
+
+            try
+            {
+                // Case A: Short Link (youtu.be/ID?si=...)
+                if (url.Contains("youtu.be/"))
+                {
+                    var parts = url.Split(new[] { "youtu.be/" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
+                    {
+                        // Grab everything after slash, then split by '?' or '&' to remove params
+                        videoId = parts[1].Split('?')[0].Split('&')[0];
+                    }
+                }
+                // Case B: Standard Link (youtube.com/watch?v=ID)
+                else if (url.Contains("v="))
+                {
+                    var parts = url.Split(new[] { "v=" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
+                    {
+                        videoId = parts[1].Split('&')[0].Split('?')[0];
+                    }
+                }
+            }
+            catch { return url; }
+
+            if (!string.IsNullOrEmpty(videoId))
+            {
+                return $"https://www.youtube.com/embed/{videoId}";
+            }
+
+            return url;
+        }
+        public long DeleteProductVideo(int videoId)
+        {
+            // 1. Fetch the video first to check its status
+            var videoToDelete = _productVideoDataAccess.Get(videoId);
+
+            // Safety check: if video doesn't exist, stop
+            if (videoToDelete == null) return 0;
+
+            // 2. Logic: If we are deleting the PRIMARY video...
+            if (videoToDelete.IsPrimary)
+            {
+                // Fetch all videos for this product
+                var allVideos = _productVideoDataAccess.GetByProductId(videoToDelete.ProductId);
+
+                // Find the "Next Best" video:
+                // - Exclude the one we are deleting
+                // - Order by SortOrder (ascending) so the next one in the list takes over
+                var nextPrimary = allVideos
+                                    .Where(v => v.Id != videoId)
+                                    .OrderBy(v => v.SortOrder)
+                                    .ThenBy(v => v.Id)
+                                    .FirstOrDefault();
+
+                // If a candidate exists, promote it
+                if (nextPrimary != null)
+                {
+                    nextPrimary.IsPrimary = true;
+                    nextPrimary.UpdatedAt = DateTime.Now;
+                    // Note: We don't have the username passed to this method signature, 
+                    // but since it's an auto-system action, null/empty UpdatedBy is often acceptable.
+
+                    _productVideoDataAccess.Update(nextPrimary);
+                }
+            }
+
+            // 3. Finally, delete the target video
+            return _productVideoDataAccess.Delete(videoId);
+        }
+        public void SetPrimaryProductVideo(int videoId, int productId, string username)
+        {
+            // 1. Get all videos
+            var allVideos = _productVideoDataAccess.GetByProductId(productId);
+
+            // 2. Loop and update to ensure ONLY ONE is primary
+            foreach (var v in allVideos)
+            {
+                // Determine if this is the chosen one
+                bool shouldBePrimary = (v.Id == videoId);
+
+                // Only update the database if the status is actually changing
+                if (v.IsPrimary != shouldBePrimary)
+                {
+                    v.IsPrimary = shouldBePrimary;
+                    v.UpdatedBy = username;
+                    v.UpdatedAt = DateTime.Now;
+
+                    _productVideoDataAccess.Update(v);
+                }
+            }
+        }
     }
 }

@@ -272,3 +272,228 @@
 }
 
 
+/* --- 1. PAGE LOCK (NUCLEAR OPTION) --- */
+/* This forces the browser window to NEVER scroll */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- 2. LAYOUT STRUCTURE --- */
+.dashboard-wrapper {
+    /* CALCULATION: 100vh - (Navbar Height + Footer/Padding). 
+       Try increasing '80px' to '100px' or '120px' if you still see a double scrollbar. 
+    */
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevents wrapper itself from scrolling */
+    position: relative;
+}
+
+.dashboard-header {
+    flex: 0 0 auto; /* Keeps header fixed height */
+    z-index: 50;
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
+    /* VISUAL FIX: Add background so scrolled content doesn't show through */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    margin-bottom: 1rem;
+}
+
+.dashboard-scroll-content {
+    flex: 1; /* Fills remaining space */
+    overflow-y: auto; /* The ONLY place scrolling happens */
+    overflow-x: hidden;
+    padding-bottom: 50px; /* Space for scrolling bottom */
+    padding-right: 5px;
+}
+
+/* --- 3. COMPONENTS --- */
+
+/* Base Glass Card - REMOVED global height: 100% to fix layout issues */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* KPI Cards */
+.kpi-card {
+    border: 1px solid #bfdbfe; /* Default Light Blue */
+    min-height: 120px;
+    justify-content: center;
+}
+
+/* Chart/Order Cards Specifics */
+.card-orders {
+    border: 1px solid #bfdbfe !important;
+}
+
+.card-products {
+    border: 1px solid #a7f3d0 !important;
+}
+
+/* Custom Scrollbar for dashboard content */
+.dashboard-scroll-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-scroll-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dashboard-scroll-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+
+/* Header Chat Dropdown Styles */
+#header-msg-dropdown {
+    animation: fadeIn 0.2s ease-in-out;
+    border-radius: 12px;
+}
+
+.header-chat-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .header-chat-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .header-chat-item:last-child {
+        border-bottom: none;
+    }
+
+.chat-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #e0f2fe;
+    color: #0284c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* --- LOW STOCK CARD (Combo King Style) --- */
+.card-low-stock {
+    background: #ffffff;
+    border: 1px solid #fee2e2; /* Light Red Border */
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.header-low-stock {
+    background-color: #fef2f2; /* Very pale red bg */
+    padding: 12px 20px;
+    border-bottom: 1px solid #fee2e2;
+    color: #dc2626; /* Deep Red Text */
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* List Item Styling */
+.low-stock-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: background 0.2s;
+}
+
+    .low-stock-item:last-child {
+        border-bottom: none;
+    }
+
+    .low-stock-item:hover {
+        background-color: #f9fafb;
+    }
+
+/* Typography */
+.item-name {
+    font-weight: 700;
+    color: #1f2937; /* Dark Gray/Black */
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.item-variant {
+    font-size: 0.75rem;
+    color: #6b7280; /* Muted Gray */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Badges (Pills) */
+.badge-stock {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 99px; /* Pill shape */
+    color: white;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.badge-stock-zero {
+    background-color: #ef4444; /* Bright Red */
+}
+
+.badge-stock-low {
+    background-color: #eab308; /* Mustard Yellow */
+    color: white;
+}
+
+.item-price {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}

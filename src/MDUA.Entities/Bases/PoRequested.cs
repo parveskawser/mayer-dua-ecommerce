@@ -13,17 +13,30 @@ namespace MDUA.Entities
 	public partial class PoRequested : PoRequestedBase
 	{
 		#region Exernal Properties
-		private Product _ProductIdObject = null;
+		private BulkPurchaseOrder _BulkPurchaseOrderIdObject = null;
 		
 		/// <summary>
-		/// Gets or sets the source <see cref="Product"/>.
+		/// Gets or sets the source <see cref="BulkPurchaseOrder"/>.
 		/// </summary>
-		/// <value>The source Product for _ProductIdObject.</value>
+		/// <value>The source BulkPurchaseOrder for _BulkPurchaseOrderIdObject.</value>
 		[DataMember]
-		public Product ProductIdObject
+		public BulkPurchaseOrder BulkPurchaseOrderIdObject
       	{
-            get { return this._ProductIdObject; }
-            set { this._ProductIdObject = value; }
+            get { return this._BulkPurchaseOrderIdObject; }
+            set { this._BulkPurchaseOrderIdObject = value; }
+      	}
+		
+		private ProductVariant _ProductVariantIdObject = null;
+		
+		/// <summary>
+		/// Gets or sets the source <see cref="ProductVariant"/>.
+		/// </summary>
+		/// <value>The source ProductVariant for _ProductVariantIdObject.</value>
+		[DataMember]
+		public ProductVariant ProductVariantIdObject
+      	{
+            get { return this._ProductVariantIdObject; }
+            set { this._ProductVariantIdObject = value; }
       	}
 		
 		private Vendor _VendorIdObject = null;

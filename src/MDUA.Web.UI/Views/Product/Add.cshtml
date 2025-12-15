@@ -1,13 +1,37 @@
 ﻿@model dynamic
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Add Product";
+Layout = "_AdminLayout";
+ViewData["Title"] = "Add Product";
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-product.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <style>
+        /* Custom tweak for Summernote to match your glass/white theme */
+        .note-editor {
+            border-radius: 8px !important;
+            border-color: #dee2e6 !important;
+            background: #fff;
+        }
 
+        .note-toolbar {
+            border-radius: 8px 8px 0 0 !important;
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #dee2e6 !important;
+        }
+
+        .note-modal-footer {
+            height: auto !important; /* Fix for Bootstrap 5 modal height conflict */
+        }
+    </style>
+}
 <div class="d-flex justify-content-between align-items-center mb-4">
+    
     <div>
-        <h2 class="fw-bold mb-0">Add Product</h2>
-        <div class="text-muted small">Create a new item in your catalog</div>
+        <div class="fixed-page-title">
+            <h2 class="fw-bold mb-0 text-dark" style="margin-left: 25px;">Add Product</h2>
+            <div class="text-muted small" style="margin-left: 25px;">Create a new item in your catalog</div>
+        </div>
     </div>
     <a href="@Url.Action("AllProducts", "Product")" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
         &larr; Back to List
@@ -23,7 +47,6 @@
             <!-- LEFT COLUMN: Main Information -->
             <div class="col-lg-8">
                 <div class="glass-card p-4 h-100">
-                    <h6 class="text-uppercase text-muted small fw-bold mb-4 border-bottom pb-2">Product Details</h6>
 
                     <!-- Product Name -->
                     <div class="mb-4">
@@ -34,7 +57,7 @@
                     <!-- Description -->
                     <div class="mb-4">
                         <label class="form-label fw-bold small">Description</label>
-                        <textarea name="Description" class="form-control form-control-modal" rows="6" placeholder="Enter full product description..."></textarea>
+                        <textarea id="summernote" name="Description" required></textarea>
                     </div>
 
                     <!-- Pricing & Inventory Grid -->
@@ -52,9 +75,22 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold small">Slug (Unique URL)</label>
-                            <input type="text" name="Slug" class="form-control form-control-modal" placeholder="product-name-slug" required />
+
+                            <input type="text"
+                                   id="slugInput"
+                                   name="Slug"
+                                   class="form-control form-control-modal"
+                                   placeholder="product-name-slug"
+                                   required />
+
+                            <div id="slug-error" class="text-danger small mt-1 fw-bold" style="display:none;">
+                                ⚠️ This slug is already taken. Please choose another.
+                            </div>
+
                             <div class="form-text small">Leave empty to auto-generate from name.</div>
                         </div>
+
+
                     </div>
                 </div>
             </div>
@@ -81,10 +117,10 @@
                             <option value="">-- Select Category --</option>
                             @if (Model.Categories != null)
                             {
-                                foreach (var c in Model.Categories)
-                                {
-                                    <option value="@c.Id">@c.Name</option>
-                                }
+                            foreach (var c in Model.Categories)
+                            {
+                            <option value="@c.Id">@c.Name</option>
+                            }
                             }
                         </select>
                     </div>
@@ -101,10 +137,10 @@
                                 <option value="">-- Select Attribute --</option>
                                 @if (Model.Attributes != null)
                                 {
-                                    foreach (var a in Model.Attributes)
-                                    {
-                                        <option value="@a.Id">@a.Name</option>
-                                    }
+                                foreach (var a in Model.Attributes)
+                                {
+                                <option value="@a.Id">@a.Name</option>
+                                }
                                 }
                             </select>
                             <div class="attribute-values-container bg-white rounded border p-2 small"></div>
@@ -122,7 +158,9 @@
 
                     <!-- Actions -->
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger fw-bold shadow-sm">Create Product</button>
+                        <button type="submit" id="btn-save-product" class="btn btn-danger fw-bold shadow-sm">
+                            Create Product
+                        </button>
                         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-light text-muted">Cancel</a>
                     </div>
                 </div>
@@ -132,16 +170,46 @@
 </div>
 
 @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
     <script>
-        window.productConfig = {
-            urls: {
-                getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
-                getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
-                addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
-                getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
-                addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")'
-            }
-        };
-    </script>
-    <script src="~/js/product.js"></script>
+               $(document).ready(function() {
+                // ✅ 4. INITIALIZE EDITOR
+                $('#summernote').summernote({
+                    placeholder: 'Write detailed product description here...',
+                    tabsize: 2,
+                    height: 250,
+
+                    // ✅ CRITICAL FIX: Moves modals to body to prevent "Black Drop" freeze
+                    dialogsInBody: true,
+
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ],
+                    callbacks: {
+                        onPaste: function (e) {
+                            var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+                            e.preventDefault();
+                            document.execCommand('insertText', false, bufferText);
+                        }
+                    }
+                });
+            });
+    window.productConfig = {
+        urls: {
+            getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
+            getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
+            addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
+            getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
+            addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")'
+        }
+    };
+</script>
+<script src="~/js/product.js"></script>
 }

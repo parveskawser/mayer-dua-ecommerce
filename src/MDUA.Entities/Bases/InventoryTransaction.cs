@@ -26,17 +26,17 @@ namespace MDUA.Entities
             set { this._PoReceivedIdObject = value; }
       	}
 		
-		private Product _ProductIdObject = null;
+		private ProductVariant _ProductVariantIdObject = null;
 		
 		/// <summary>
-		/// Gets or sets the source <see cref="Product"/>.
+		/// Gets or sets the source <see cref="ProductVariant"/>.
 		/// </summary>
-		/// <value>The source Product for _ProductIdObject.</value>
+		/// <value>The source ProductVariant for _ProductVariantIdObject.</value>
 		[DataMember]
-		public Product ProductIdObject
+		public ProductVariant ProductVariantIdObject
       	{
-            get { return this._ProductIdObject; }
-            set { this._ProductIdObject = value; }
+            get { return this._ProductVariantIdObject; }
+            set { this._ProductVariantIdObject = value; }
       	}
 		
 		private SalesOrderDetail _SalesOrderDetailIdObject = null;
