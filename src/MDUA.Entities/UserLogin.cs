@@ -34,6 +34,6 @@ namespace MDUA.Entities
         public List<SalesOrderHeader> RecentOrders { get; set; } = new List<SalesOrderHeader>(); //new
         public List<ChartDataPoint> SalesTrend { get; set; } = new List<ChartDataPoint>(); //new
         public List<ChartDataPoint> OrderStatusCounts { get; set; } = new List<ChartDataPoint>(); //new
-
+        public List<LowStockItem> LowStockItems { get; set; }
     }
 }

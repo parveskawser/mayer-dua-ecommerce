@@ -20,7 +20,7 @@ namespace MDUA.Facade
         private readonly IPermissionDataAccess _permissionDataAccess;
         private readonly IPermissionGroupMapDataAccess _IPermissionGroupMapDataAccess;
         private readonly IPermissionGroupDataAccess _permissionGroupDataAccess;
-
+        private readonly IUserSessionDataAccess _userSessionDataAccess;
 
 
         public UserLoginFacade(
@@ -28,14 +28,16 @@ namespace MDUA.Facade
             IUserPermissionDataAccess userPermissionDataAccess,
             IPermissionDataAccess permissionDataAccess,
             IPermissionGroupMapDataAccess permissionGroupMapDataAccess,
-                IPermissionGroupDataAccess permissionGroupDataAccess) // new
+            IUserSessionDataAccess userSessionDataAccess,
+                IPermissionGroupDataAccess permissionGroupDataAccess) 
 
         {
             _UserLoginDataAccess = userLoginDataAccess;
             _userPermissionDataAccess = userPermissionDataAccess;
             _permissionDataAccess = permissionDataAccess;
             _IPermissionGroupMapDataAccess = permissionGroupMapDataAccess;
-                _permissionGroupDataAccess = permissionGroupDataAccess; // assign
+                _permissionGroupDataAccess = permissionGroupDataAccess;
+            _userSessionDataAccess = userSessionDataAccess; 
 
         }
 
@@ -273,6 +275,53 @@ namespace MDUA.Facade
             return _permissionDataAccess.GetByIds(allPermissionIds)
                                         .Select(p => p.Name) // Get the Permission Name
                                         .ToList();
+        }
+
+
+
+        //  Create a session in SQL when user logs in
+        public Guid CreateUserSession(int userId, string ipAddress, string deviceInfo)
+        {
+            Guid sessionKey = Guid.NewGuid();
+
+            var session = new UserSessionBase
+            {
+                SessionKey = sessionKey,
+                UserId = userId,
+                IPAddress = ipAddress,
+                DeviceInfo = deviceInfo,
+                CreatedAt = DateTime.Now,
+                LastActiveAt = DateTime.Now,
+                IsActive = true
+            };
+
+            _userSessionDataAccess.Insert(session);
+            return sessionKey;
+        }
+
+        //  Check if session is valid (runs on every request)
+        public bool IsSessionValid(Guid sessionKey)
+        {
+           
+            // NOTE: In a high-traffic real app, you might want a specialized "GetBySessionKey" SP for speed.
+            var list = _userSessionDataAccess.GetByQuery($"SessionKey = '{sessionKey}' AND IsActive = 1");
+
+            if (list != null && list.Count > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void InvalidateSession(Guid sessionKey)
+        {
+            var list = _userSessionDataAccess.GetByQuery($"SessionKey = '{sessionKey}'");
+            if (list != null && list.Count > 0)
+            {
+                var session = list[0];
+                session.IsActive = false;
+                _userSessionDataAccess.Update(session);
+            }
         }
 
         #endregion

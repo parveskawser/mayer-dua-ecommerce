@@ -43,5 +43,11 @@ namespace MDUA.DataAccess.Interface
         List<SalesOrderHeader> GetRecentOrders(int count = 5); //new
         List<ChartDataPoint> GetSalesTrend(int months = 6); //new
         List<ChartDataPoint> GetOrderStatusCounts(); //new
+
+        void UpdateNetAmountSafe(int orderId, decimal newNetAmount);
+        //  void UpdatePaymentInfoSafe(int orderId, decimal paidAmount, decimal dueAmount);
+        void UpdateTotalAmountSafe(int orderId, decimal newTotalAmount);
+
+        decimal GetProductTotalFromDetails(int orderId);
     }
 }

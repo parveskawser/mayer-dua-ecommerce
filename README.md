@@ -1,185 +1,170 @@
-# Mayer-Dua E‑Commerce (MDUA)
+# MDUA - Enterprise E-Commerce & Inventory Management System
 
-Single-page E‑Commerce application where customers can view a product, choose variants (size, color, type), see dynamic pricing, and place an order directly from the same page. Orders are stored in the backend for further processing, and admins can manage products for multiple companies.
+**MDUA** is a robust, N-Layered ASP.NET Core application designed for comprehensive e-commerce management. It features a custom-built architecture handling everything from complex product variants and inventory tracking to direct sales, order processing, and granular role-based security.
 
----
+-----
 
-## 🛍️ Key Features
+## 1\. 🛍️ Key Features
 
-### Customer (Single Product Page)
-- View product details (title, description, images, base price).
-- Select product variants (e.g., size, color, package).
-- Dynamic price update based on selected variant and quantity.
-- Simple one-page checkout:
-  - Customer info (name, phone, address, email).
-  - Variant & quantity selection.
-- Place order without leaving the page.
-- Success / failure confirmation after order placement.
+  * **Advanced Product Management:**
+      * Support for **Product Variants** (Size, Color, Storage, etc.) generated via dynamic Attributes.
+      * **Inventory Tracking:** Real-time stock management with `VariantPriceStock` logic.
+      * **Discount Engine:** Supports Flat and Percentage-based discounts with effective date ranges.
+      * **Media Management:** Multiple images per product and variant.
+  * **Order Processing System:**
+      * **Dual Channel Support:** Handles both **Online Orders** (generated via web) and **Direct Orders** (POS/Admin entry).
+      * **Order Tracking:** Public-facing order tracking via Order ID/Phone Number.
+      * **Automated Calculations:** Dynamic calculation of Delivery Charges (Inside/Outside Dhaka) and Discounts.
+  * **Financial & Accounting:**
+      * **Journal Entries:** Automated Double-Entry bookkeeping for payments and purchases.
+      * **Audit Logging:** Comprehensive database-level tracking of every Insert, Update, and Delete operation via Triggers.
+  * **Security & Access Control:**
+      * **Custom RBAC:** Granular permissions (e.g., `Product.View`, `Order.Place`) assigned to User Groups or specific Users.
+      * **Session Management:** Secure cookie-based authentication with device tracking.
+  * **Admin Dashboard:**
+      * Visual analytics for Sales Trends and Order Status counts.
 
-### Admin (Back Office)
-- Manage companies:
-  - Create, edit, activate / deactivate companies.
-- Manage products per company:
-  - Create products and upload images.
-  - Configure base price and description.
-- Manage product variants:
-  - Add variants with SKU, additional price, and stock.
-- Manage orders:
-  - View order list (filter by date, company, status).
-  - View order details (customer, items, totals).
-  - Update order status (Pending, Processing, Shipped, Completed, Cancelled).
+-----
 
----
+## 2\. 🧱 Solution Structure
 
-## 🧱 Solution Structure
+The solution follows a strict separation of concerns using a 4-tier architecture:
 
-The solution uses a multi-layer architecture with custom ADO.NET for data access.
+| Project | Type | Description |
+| :--- | :--- | :--- |
+| **MDUA.Web.UI** | ASP.NET Core MVC | The presentation layer containing Controllers, Views (Razor), and Client-side scripts (jQuery/AJAX). |
+| **MDUA.Facade** | Class Library | The **Business Logic Layer (BLL)**. It acts as the orchestrator, transforming entities and applying business rules before data storage. |
+| **MDUA.DataAccess** | Class Library | The **Data Access Layer (DAL)**. Executes raw SQL queries and Stored Procedures via ADO.NET. |
+| **MDUA.Entities** | Class Library | Contains POCO classes, DTOs, Enums, and Base Entities matching the DB schema. |
+| **MDUA.Framework** | Class Library | Infrastructure layer containing `BaseDataAccess` (SQL Wrapper), Encryption helpers, and custom Exception handling. |
 
-```text
-src/
- ├─ MDUA.DataAccess   → Data access layer (ADO.NET repositories, SQL operations)
- ├─ MDUA.Entities     → Domain entities / POCO classes
- ├─ MDUA.Facade       → Application / facade layer (services exposed to Web.UI)
- ├─ MDUA.Framework    → Core business logic, utilities, common helpers
- └─ MDUA.Web.UI       → Web layer (ASP.NET Core 9.0 MVC / Razor UI)
-```
+-----
 
-### Layer Responsibilities
+## 3\. Layer Responsibilities
 
-#### `MDUA.Web.UI` (Presentation Layer)
-- ASP.NET Core 9.0 web project.
-- Contains Controllers, Razor Views/Pages, ViewModels.
-- Renders:
-  - Customer-facing single product page.
-  - Admin pages for products, companies, and orders.
-- Calls the **Facade** layer (services) instead of direct database access.
+### 🖥️ Web UI Layer (`MDUA.Web.UI`)
 
-#### `MDUA.Facade` (Application / Service Layer)
-- Exposes high-level operations for the UI, e.g.:
-  - `PlaceOrder`, `GetSingleProduct`, `GetProductVariants`, `GetOrdersForAdmin`.
-- Orchestrates business workflows:
-  - Validates input using Framework logic.
-  - Calls **DataAccess** repositories via **Framework** services.
-- Acts as a clean boundary between UI and inner layers.
+  * **Controllers:** Thin controllers (e.g., `OrderController`, `ProductController`) that inject Facade interfaces.
+  * **Views:** Razor views using Partial Views for modularity (e.g., `_ProductVariantsPartial.cshtml`, `_CustomerDetailsPartial.cshtml`).
+  * **Client-Side:** Heavy use of **jQuery** and **AJAX** in `wwwroot/js` (e.g., `admin-order.js`) to handle dynamic form submissions without page reloads.
 
-#### `MDUA.Framework` (Core Business Logic & Utilities)
-- Contains shared business rules, utilities, and cross-cutting helpers, such as:
-  - Price calculation logic (base price + variant + quantity).
-  - Order status transitions.
-  - Validation helpers, logging helpers, etc. (as needed).
-- Uses **Entities** for domain models and **DataAccess** for persistence.
-- Keeps domain logic centralized and reusable.
+### 🧠 Facade Layer (`MDUA.Facade`)
 
-#### `MDUA.Entities` (Domain Model)
-- Contains all POCO/entity classes, for example:
-  - `Company`, `Product`, `ProductVariant`
-  - `Customer`, `Order`, `OrderItem`
-- Pure C# classes without UI or database-specific code.
-- Used across all layers to represent core business data.
+  * **The Brain:** Contains the core business logic.
+  * **Responsibilities:**
+      * Orchestrating multiple DA calls (e.g., `ProductFacade.AddProduct` saves the Product, then Attributes, then Variants, then Stock).
+      * Calculations: `GetBestDiscount()` logic resides here to determine the lowest price based on active promotions.
+      * Data Transformation: Converts raw DB entities into ViewModels (`UserLoginResult`, `ProductResult`).
 
-#### `MDUA.DataAccess` (Data Layer – Custom ADO.NET)
-- Encapsulates all database operations using ADO.NET:
-  - `SqlConnection`, `SqlCommand`, `SqlDataReader`, transactions, etc.
-- Implements repository classes/interfaces, e.g.:
-  - `ProductRepository`, `OrderRepository`, `CompanyRepository`, `VariantRepository`.
-- Reads connection string from configuration (provided by Web.UI / Framework).
-- Maps data rows to **Entities** and returns them to **Framework/Facade**.
+### 💾 Data Access Layer (`MDUA.DataAccess`)
 
----
+  * **The Muscle:** Direct interaction with Microsoft SQL Server.
+  * **Pattern:** Extends `BaseDataAccess` (from Framework) to utilize helper methods like `SelectRecords`, `InsertRecord`, `GetSQLCommand`.
+  * **Implementation:** Uses **ADO.NET** (SqlDataReader, SqlCommand) instead of Entity Framework for performance and fine-tuned control.
+  * **Partial Classes:** Classes like `ProductDataAccess` are often split to organize huge query sets.
 
-## 🛠️ Tech Stack
+### ⚙️ Framework Layer (`MDUA.Framework`)
 
-- **Backend Framework**: ASP.NET Core 9.0
-- **Language**: C#
-- **Database**: Microsoft SQL Server
-- **Data Access**: Custom ADO.NET (no Entity Framework)
-- **Architecture**: Multi-layer / n-tier
-- **Frontend**: Razor Views (or MVC Views) with HTML, CSS, JS (Bootstrap optional)
+  * **BaseDataAccess:** A custom abstract base class that wraps `SqlConnection` and `SqlTransaction`. It handles parameter mapping (`AddParameter`, `pInt32`), connection opening/closing, and transaction rollbacks.
+  * **Utilities:** Contains `Encryptor` for password hashing and `OTPGenerator`.
 
----
+-----
 
-## 🗄️ Database Overview
+## 4\. 🛠️ Tech Stack
 
-Core suggested tables:
+  * **Framework:** .NET 6 / .NET 7 (ASP.NET Core)
+  * **Language:** C\#
+  * **Database:** Microsoft SQL Server (2016+)
+  * **ORM:** Native ADO.NET (Custom Wrapper)
+  * **Frontend:** Razor Views, jQuery, Bootstrap 5, Chart.js
+  * **Authentication:** ASP.NET Core Cookie Authentication
+  * **Reporting:** SQL Server Reporting Services (SSRS) logic implied by `Order.Export` permissions.
 
-- `Companies`
-- `Products`
-- `ProductVariants`
-- `Customers`
-- `Orders`
-- `OrderItems`
+-----
 
-Each order links to a customer, company, product, and product variant, and stores quantity, unit price, and totals.
+## 5\. 🗄️ Database Overview
 
----
+The database (`AA4`) is highly normalized and logic-heavy.
 
-## ⚙️ Getting Started
+### Key Tables
 
-### 1. Requirements
+  * `Product` / `ProductVariant` / `VariantPriceStock`: Handles the complex E-commerce inventory model.
+  * `SalesOrderHeader` / `SalesOrderDetail`: Stores transactional data.
+  * `UserPermission` / `PermissionGroup`: Handles the custom security model.
+  * `AuditLog`: Stores JSON snapshots of `OldValues` and `NewValues` for every change.
 
-- .NET SDK 9.0
-- SQL Server
-- Visual Studio / VS Code
+### Advanced SQL Features
 
-### 2. Database Setup
+  * **Stored Procedures:** Heavy usage for CRUD operations (e.g., `InsertSalesOrderHeader`, `GetProductDetails`).
+  * **Triggers:**
+      * `TR_Product_Audit`, `TR_SOH_Audit`: Automatically logs changes to the `AuditLog` table.
+      * `trg_ReduceStockOnOrder`: Automatically decrements `VariantPriceStock` when a `SalesOrderDetail` is inserted.
+      * `trg_UpdateProfitAmount`: Automatically calculates profit based on UnitPrice vs AverageCost.
+  * **Views:** Used for reporting (e.g., `vUnbalancedJournalEntries`).
 
-1. Create database:
-   ```sql
-   CREATE DATABASE MDUA;
-   ```
-2. Run/create the tables according to the schema (e.g., `/db/scripts/initial.sql`).
+-----
 
-### 3. Configure Connection String
+## 6\. ⚙️ Getting Started
 
-In `MDUA.Web.UI/appsettings.json` (example):
+### Prerequisites
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=MDUA;User Id=YOUR_USER;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
-  }
-}
-```
+  * Visual Studio 2022
+  * SQL Server Management Studio (SSMS)
+  * .NET SDK (6.0 or later)
 
-The `MDUA.DataAccess` layer will use this connection string via configuration/DI.
+### Installation Steps
 
-### 4. Build & Run
+1.  **Clone the Repository**
 
-From the solution root:
+    ```bash
+    git clone https://github.com/tamimahamed26/dua-private-.git
+    ```
 
-```bash
-dotnet restore
-dotnet build
-dotnet run --project src/MDUA.Web.UI
-```
+2.  **Database Setup**
 
-Open the URL shown in the console (e.g. `https://localhost:5001`).
+      * Open `resource/script 2.sql` in SSMS.
+      * Execute the script to create the `AA4` database, tables, stored procedures, and populate initial seed data (Admin user, Permissions, Locations).
 
----
+3.  **Configure Connection**
 
-## 🔄 Order Flow (End-to-End)
+      * Open `src/MDUA.Web.UI/appsettings.json`.
+      * Update the `DefaultConnection` string to point to your local SQL Server instance.
 
-1. **Admin** configures companies, products, and variants.
-2. **Customer** opens the single product page, selects variant & quantity, enters details, and submits the order.
-3. **MDUA.Web.UI** sends the request to the **MDUA.Facade** services.
-4. **MDUA.Facade** validates & orchestrates logic using **MDUA.Framework**.
-5. **MDUA.Framework** uses **MDUA.DataAccess** to create customer, order, and order items in the database.
-6. Admin can later view and process the order from the admin interface.
+4.  **Build & Run**
 
----
+      * Open `src/MDUA.sln` in Visual Studio.
+      * Set `MDUA.Web.UI` as the Startup Project.
+      * Press `F5` to run.
 
-## 🔮 Future Enhancements
+5.  **Default Login**
 
-- Multiple product listing page.
-- Coupon / discount support.
-- Payment gateway integration (bKash, SSLCommerz, etc.).
-- Email/SMS notifications.
-- Role-based admin (Super Admin, Company Admin, Staff).
+      * **Username:** `admin`
+      * **Password:** `Admin@123`
 
----
+-----
 
-## 🤝 Contribution
+## 7\. 🔄 Feature Flow (End-to-End)
 
-- Follow the existing layer boundaries (no UI ↔ DB direct calls).
-- Add new features via Facade & Framework services.
-- Use Entities for all domain structures and DataAccess only for persistence logic.
+### Scenario: Placing a Direct Order (Admin Panel)
+
+1.  **UI:** Admin navigates to `Order/Add`. The page loads products via `OrderFacade.GetProductVariantsForAdmin()`.
+2.  **Action:** Admin selects a customer (AJAX autofill via `OrderController/CheckCustomer`), adds items, and clicks "Place Order".
+3.  **JavaScript:** `admin-order.js` collects the cart data and POSTs JSON to `OrderController.PlaceDirectOrder`.
+4.  **Facade:** `OrderFacade.PlaceAdminOrder` is called.
+      * It creates a `SalesOrderHeader` object.
+      * It iterates through items to create `SalesOrderDetail` objects.
+5.  **DataAccess:**
+      * `BaseDataAccess.BeginTransaction()` starts a SQL Transaction.
+      * `SalesOrderHeaderDataAccess` inserts the header and returns the new `Id`.
+      * `SalesOrderDetailDataAccess` inserts items linked to that `Id`.
+6.  **Database Trigger:** The `trg_ReduceStockOnOrder` trigger fires in SQL, immediately reducing the `StockQty` in the `VariantPriceStock` table.
+7.  **Completion:** Transaction commits. Success response sent to UI. Invoice is ready for print.
+
+-----
+
+## 8\. 🔮 Future Enhancements
+
+  * **API Layer:** Exposing `MDUA.Facade` via a Web API project for mobile app integration.
+  * **Payment Gateway:** Integration with SSLCommerz or Stripe for automated online payments (currently handles manual payments/ledgers).
+  * **Dockerization:** Adding `Dockerfile` for containerized deployment.
+  * **Inventory Forecasting:** Utilizing the `ProductInventory` history for sales prediction.

@@ -16,6 +16,9 @@ namespace MDUA.Entities
         // ✅ Issue 5 Fix: All Address Columns
         [DataMember] public string Street { get; set; }
         [DataMember] public string City { get; set; } // Mapped to District dropdown
+
+        [DataMember]
+        public decimal DeliveryCharge { get; set; }
         [DataMember] public string Divison { get; set; }
         [DataMember] public string PostalCode { get; set; }
         [DataMember] public string ZipCode { get; set; } // Often same as Postal, but we'll handle both
@@ -30,6 +33,17 @@ namespace MDUA.Entities
         [DataMember] public string Thana { get; set; }
         [DataMember] public string SubOffice { get; set; }
 
+        [DataMember] public string IPAddress { get; set; }
+        [DataMember] public string SessionId { get; set; }
+
+        [DataMember]
+        public decimal PaidAmount { get; set; }
+
+        [DataMember]
+        public decimal DueAmount { get; set; }
+
+        [DataMember]
+        public decimal ActualLogisticsCost { get; set; } 
 
     }
 }

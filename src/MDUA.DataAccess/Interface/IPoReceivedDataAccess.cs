@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IPoReceivedDataAccess : ICommonDataAccess<PoReceived, PoReceivedList, PoReceivedBase>
-	{ 
-	}	
+	{
+        int Insert(int poReqId, int qty, decimal price, string invoice, string remarks, SqlTransaction transaction);
+
+    }
 }

@@ -4,35 +4,41 @@
 @using System.Security.Claims
 @using MDUA.Facade.Interface
 @inject ICompanyFacade CompanyFacade
-@{
-    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
-    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
 
-    // Check if we are in any Product related page to keep menu open
-    bool isProductPage = currentController == "Product";
-    bool isCustomerPage = currentController == "Customer";
-    bool isOrderPage = currentController == "Order";
+    @{
+        string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+        string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
 
-    //new
-    string companyName = "MDUA Admin"; // Default
-    string companyLogo = null;
+        // Check if we are in any Product related page to keep menu open
+        bool isProductPage = currentController == "Product";
 
-    // 1. Get Company ID from User Claims
-    var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+        // --- NEW: Check for Inventory (Purchase Controller) ---
+        bool isInventoryPage = currentController == "Purchase";
+        // -----------------------------------------------------
 
-    // 2. Fetch Data if ID exists
-    if (int.TryParse(companyIdClaim, out int companyId))
-    {
-        var company = CompanyFacade.Get(companyId);
-        if (company != null)
+        bool isCustomerPage = currentController == "Customer";
+        bool isOrderPage = currentController == "Order";
+
+        //new
+        string companyName = "MDUA Admin"; // Default
+        string companyLogo = null;
+
+        // 1. Get Company ID from User Claims
+        var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+        // 2. Fetch Data if ID exists
+        if (int.TryParse(companyIdClaim, out int companyId))
         {
-            companyName = company.CompanyName;
-            companyLogo = company.LogoImg;
+            var company = CompanyFacade.Get(companyId);
+            if (company != null)
+            {
+                companyName = company.CompanyName;
+                companyLogo = company.LogoImg;
+            }
         }
+
+    bool isSettingsPage = currentController == "Settings";
     }
-
-}
-
 <div class="sidebar glass-panel d-flex flex-column h-100">
     <!-- Brand -->
     <div class="d-flex align-items-center mb-4 ps-2 pt-2">
@@ -90,8 +96,7 @@
                href="#productsMenu"
                role="button"
                aria-expanded="@(isProductPage ? "true" : "false")"
-               aria-controls="productsMenu">
-                <span>
+               aria-controls="productsMenu"> <span>
                     <span>📦</span> Products
                 </span>
                 <span class="dropdown-arrow">▾</span>
@@ -100,25 +105,58 @@
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm @(currentAction == "AllProducts" ? "active" : "")"
-                           href="@Url.Action("AllProducts", "Product")">
-                            Product List
+                           href="@Url.Action("AllProducts", "Product")"> Product List
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")"
-                           href="@Url.Action("Add", "Product")">
-                            Add Product
+                           href="@Url.Action("Add", "Product")"> Add Product
                         </a>
                     </li>
                 </ul>
             </div>
         </li>
+        <!--  Inventory -->
+        <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center @(isInventoryPage ? "active-parent" : "collapsed")"
+               data-bs-toggle="collapse"
+               href="#inventoryMenu"
+               role="button"
+               aria-expanded="@(isInventoryPage ? "true" : "false")"
+               aria-controls="inventoryMenu">
+                <span>
+                    <span>🏭</span> Inventory
+                </span>
+                <span class="dropdown-arrow">▾</span>
+            </a>
+            <div class="collapse @(isInventoryPage ? "show" : "")" id="inventoryMenu">
+                <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "StockStatus" ? "active" : "")"
+                           href="@Url.Action("StockStatus", "Purchase")"> Stock
+                        </a>
+                    </li>        
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "BulkOrder" ? "active" : "")"
+                           href="@Url.Action("BulkOrder", "Purchase")"> Bulk Order
+                        </a>
+                    </li>
 
+
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "BulkOrderReceivedList" ? "active" : "")"
+                           href="@Url.Action("BulkOrderReceivedList", "Purchase")">
+                            Bulk Order Receive
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        
         <!-- Customers Link -->
         <li class="nav-item">
             <a class="nav-link @(isCustomerPage ? "active" : "")" href="@Url.Action("CustomerList", "Customer")">
-                <span>👥</span> Customers
-            </a>
+                <span>👥</span> Customers </a>
         </li>
 
         <!-- Orders Dropdown (The primary focus block) -->
@@ -154,9 +192,29 @@
 
         <!-- Settings Link -->
         <li class="nav-item">
-            <a class="nav-link" href="#">
-                <span>⚙️</span> Settings
+            <a class="nav-link d-flex justify-content-between align-items-center @(isSettingsPage ? "active-parent" : "collapsed")"
+               data-bs-toggle="collapse"
+               href="#settingsMenu"
+               role="button"
+               aria-expanded="@(isSettingsPage ? "true" : "false")"
+               aria-controls="settingsMenu">
+                <span>
+                    <span>⚙️</span> Settings
+                </span>
+                <span class="dropdown-arrow">▾</span>
             </a>
+            <div class="collapse @(isSettingsPage ? "show" : "")" id="settingsMenu">
+                <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")"
+                           href="@Url.Action("PaymentSettings", "Settings")">
+                            Payment Methods
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
         </li>
     </ul>
 

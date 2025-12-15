@@ -14,8 +14,8 @@ namespace MDUA.DataAccess
 	{
         public long InsertSalesOrderHeaderSafe(SalesOrderHeader order)
         {
-            // ✅ BULLETPROOF METHOD: Inline SQL
-            // We insert and immediately select the new ID.
+            // ✅ We insert TotalAmount (Products + Delivery). 
+            // DB automatically calculates NetAmount = TotalAmount - DiscountAmount.
             string SQLQuery = @"
                 INSERT INTO [dbo].[SalesOrderHeader]
                 ([CompanyCustomerId], [AddressId], [SalesChannelId], [OrderDate], 
@@ -34,41 +34,65 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pInt32("AddressId", order.AddressId));
                 AddParameter(cmd, pInt32("SalesChannelId", order.SalesChannelId));
                 AddParameter(cmd, pDateTime("OrderDate", order.OrderDate));
+
+                // ✅ TotalAmount includes Delivery Charge
                 AddParameter(cmd, pDecimal("TotalAmount", order.TotalAmount));
                 AddParameter(cmd, pDecimal("DiscountAmount", order.DiscountAmount));
+
+                // ❌ NetAmount is computed in DB, so we don't insert it.
 
                 AddParameter(cmd, pNVarChar("Status", 30, order.Status));
                 AddParameter(cmd, pBool("IsActive", order.IsActive));
                 AddParameter(cmd, pBool("Confirmed", order.Confirmed));
-
                 AddParameter(cmd, pNVarChar("CreatedBy", 100, order.CreatedBy));
                 AddParameter(cmd, pDateTime("CreatedAt", order.CreatedAt));
                 AddParameter(cmd, pNVarChar("UpdatedBy", 100, null));
                 AddParameter(cmd, pDateTime("UpdatedAt", null));
-
-                // Optional fields (handle nulls)
                 AddParameter(cmd, pNVarChar("SessionId", 100, order.SessionId ?? ""));
                 AddParameter(cmd, pVarChar("IPAddress", 45, order.IPAddress ?? ""));
 
-                // ✅ Execute and Get ID
                 SqlDataReader reader;
                 SelectRecords(cmd, out reader);
-
                 int newId = 0;
                 using (reader)
                 {
-                    if (reader.Read() && !reader.IsDBNull(0))
-                    {
-                        newId = reader.GetInt32(0);
-                    }
+                    if (reader.Read() && !reader.IsDBNull(0)) newId = reader.GetInt32(0);
                     reader.Close();
                 }
-
                 return newId;
             }
         }
 
+        public void UpdateTotalAmountSafe(int orderId, decimal newTotalAmount)
+        {
+            string SQLQuery = @"
+                UPDATE [dbo].[SalesOrderHeader] 
+                SET [TotalAmount] = @Total, 
+                    [UpdatedAt] = GETDATE() 
+                WHERE [Id] = @Id";
 
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+                AddParameter(cmd, pDecimal("Total", newTotalAmount));
+
+                // ✅ FIX: Use the safe helper method 'ExecuteCommand' from BaseDataAccess.
+                // It automatically checks if a Transaction is active and keeps the connection open if needed.
+                ExecuteCommand(cmd);
+            }
+        }
+        public decimal GetProductTotalFromDetails(int orderId)
+        {
+            // Sums (UnitPrice * Quantity) for all items in this order
+            string SQLQuery = "SELECT ISNULL(SUM(UnitPrice * Quantity), 0) FROM SalesOrderDetail WHERE SalesOrderId = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+                object result = SelectScaler(cmd);
+                return result != null && result != DBNull.Value ? Convert.ToDecimal(result) : 0m;
+            }
+        }
         public SalesOrderHeaderList GetOrdersByCompanyCustomer(int customerId)
         {
             // ✅ FINAL FIX: Explicitly select ONLY non-computed columns 
@@ -196,82 +220,115 @@ namespace MDUA.DataAccess
 
         public SalesOrderHeaderList GetAllSalesOrderHeaders()
         {
-            // 1. Define the query explicitly. We select columns by name to be 100% sure of the data types.
+            // ✅ UPDATED QUERY: Joins Customer & Address to fetch full details efficiently
             const string SQLQuery = @"
-                SELECT 
-                    [Id], 
-                    [CompanyCustomerId], 
-                    [AddressId], 
-                    [SalesChannelId], 
-                    [OnlineOrderId], 
-                    [DirectOrderId], 
-                    [OrderDate], 
-                    [TotalAmount], 
-                    [DiscountAmount], 
-                    [NetAmount], 
-                    [SessionId], 
-                    [IPAddress], 
-                    [Status], 
-                    [IsActive], 
-                    [Confirmed], 
-                    [CreatedBy], 
-                    [CreatedAt], 
-                    [UpdatedBy], 
-                    [UpdatedAt], 
-                    [SalesOrderId]
-                FROM [dbo].[SalesOrderHeader]
-                ORDER BY [OrderDate] DESC";
+    SELECT 
+        soh.[Id], 
+        soh.[CompanyCustomerId], 
+        soh.[AddressId], 
+        soh.[SalesChannelId], 
+        soh.[OnlineOrderId], 
+        soh.[DirectOrderId], 
+        soh.[OrderDate], 
+        soh.[TotalAmount], 
+        soh.[DiscountAmount], 
+        soh.[NetAmount], 
+        soh.[SessionId], 
+        soh.[IPAddress], 
+        soh.[Status], 
+        soh.[IsActive], 
+        soh.[Confirmed], 
+        soh.[CreatedBy], 
+        soh.[CreatedAt], 
+        soh.[UpdatedBy], 
+        soh.[UpdatedAt], 
+        soh.[SalesOrderId],
+        
+        -- ✅ FETCH ADDRESS DETAILS
+        ISNULL(a.[Street], '') AS Street,
+        ISNULL(a.[City], '') AS City,
+        ISNULL(a.[Divison], '') AS Divison,
+        ISNULL(a.[Thana], '') AS Thana,
+        ISNULL(a.[SubOffice], '') AS SubOffice,
+        ISNULL(a.[PostalCode], '') AS PostalCode,
+        ISNULL(a.[Country], 'Bangladesh') AS Country,
 
-            // 2. Execute the Inline Query
+        -- ✅ FETCH CUSTOMER NAME
+        ISNULL(c.[CustomerName], 'Guest') AS CustomerName,
+        ISNULL(c.[Phone], '') AS CustomerPhone,
+        ISNULL(c.[Email], '') AS CustomerEmail,
+
+        -- Payment Stats
+        ISNULL((
+            SELECT SUM(cp.Amount) 
+            FROM CustomerPayment cp 
+            WHERE cp.TransactionReference = soh.SalesOrderId
+        ), 0) AS PaidAmount,
+
+        (soh.[NetAmount] - ISNULL((
+            SELECT SUM(cp.Amount) 
+            FROM CustomerPayment cp 
+            WHERE cp.TransactionReference = soh.SalesOrderId
+        ), 0)) AS DueAmount
+
+    FROM [dbo].[SalesOrderHeader] soh
+    LEFT JOIN [dbo].[Address] a ON soh.AddressId = a.Id
+    LEFT JOIN [dbo].[CompanyCustomer] cc ON soh.CompanyCustomerId = cc.Id
+    LEFT JOIN [dbo].[Customer] c ON cc.CustomerId = c.Id
+    ORDER BY soh.[OrderDate] DESC";
+
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
                 SqlDataReader reader;
                 SelectRecords(cmd, out reader);
-
                 SalesOrderHeaderList list = new SalesOrderHeaderList();
 
                 using (reader)
                 {
                     while (reader.Read())
                     {
-                        // 3. Manually map the row. 
-                        // Since we wrote the SELECT above, we know the EXACT index of every column.
                         SalesOrderHeader order = new SalesOrderHeader();
+                        int i = 0;
 
-                        int i = 0; // Start index
-
-                        order.Id = reader.GetInt32(i++); // Index 0
+                        // 1. Base Fields (Indices 0-19)
+                        order.Id = reader.GetInt32(i++);
                         order.CompanyCustomerId = reader.GetInt32(i++);
                         order.AddressId = reader.GetInt32(i++);
                         order.SalesChannelId = reader.GetInt32(i++);
-
-                        // Strings (Handle Nulls)
                         order.OnlineOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
                         order.DirectOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-
-                        // 🛑 CORE DATE & DECIMALS (Guaranteed correct by query order) 🛑
-                        order.OrderDate = reader.GetDateTime(i++); // Index 6
-                        order.TotalAmount = reader.GetDecimal(i++); // Index 7
-                        order.DiscountAmount = reader.GetDecimal(i++); // Index 8
-                        order.NetAmount = reader.GetDecimal(i++); // Index 9
-
-                        // More Strings
+                        order.OrderDate = reader.GetDateTime(i++);
+                        order.TotalAmount = reader.GetDecimal(i++);
+                        order.DiscountAmount = reader.GetDecimal(i++);
+                        order.NetAmount = reader.GetDecimal(i++);
                         order.SessionId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
                         order.IPAddress = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.Status = reader.GetString(i++); // Index 12
-
-                        // Booleans
+                        order.Status = reader.GetString(i++);
                         order.IsActive = reader.GetBoolean(i++);
                         order.Confirmed = reader.GetBoolean(i++);
-
-                        // Audit
                         order.CreatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
                         order.CreatedAt = reader.GetDateTime(i++);
                         order.UpdatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
                         order.UpdatedAt = reader.IsDBNull(i) ? (DateTime?)null : reader.GetDateTime(i); i++;
-
-                        // Computed SalesOrderId
                         order.SalesOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+
+                        // 2. ✅ Address Mapping
+                        order.Street = reader.GetString(i++);
+                        order.City = reader.GetString(i++);
+                        order.Divison = reader.GetString(i++);
+                        order.Thana = reader.GetString(i++);
+                        order.SubOffice = reader.GetString(i++);
+                        order.PostalCode = reader.GetString(i++);
+                        order.Country = reader.GetString(i++);
+
+                        // 3. ✅ Customer Mapping
+                        order.CustomerName = reader.GetString(i++);
+                        order.CustomerPhone = reader.GetString(i++);
+                        order.CustomerEmail = reader.GetString(i++);
+
+                        // 4. Financials
+                        order.PaidAmount = reader.GetDecimal(i++);
+                        order.DueAmount = reader.GetDecimal(i++);
 
                         order.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
                         list.Add(order);
@@ -280,9 +337,7 @@ namespace MDUA.DataAccess
                 }
                 return list;
             }
-        }
-
-
+        }       
         //new
         public void UpdateStatusSafe(int orderId, string status, bool confirmed)
         {
@@ -565,6 +620,27 @@ namespace MDUA.DataAccess
                 cmd.Connection.Close();
             }
             return list;
+        }
+
+
+        public void UpdateNetAmountSafe(int orderId, decimal newNetAmount)
+        {
+            // This query updates the NetAmount and the UpdatedAt timestamp
+            string SQLQuery = @"
+        UPDATE [dbo].[SalesOrderHeader] 
+        SET [NetAmount] = @Net, 
+            [UpdatedAt] = GETDATE() 
+        WHERE [Id] = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+                AddParameter(cmd, pDecimal("Net", newNetAmount));
+
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                cmd.ExecuteNonQuery();
+                cmd.Connection.Close();
+            }
         }
     }
     }

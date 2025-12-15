@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <Target Name="MyPostBuild" AfterTargets="Build">
-  <Exec Command="npm run build:js" />
 </Target>
 
   <ItemGroup>

@@ -1,5 +1,34 @@
-﻿$(document).ready(function () {
+﻿
 
+$(document).ready(function () {
+
+    // Expand / collapse action drawer
+    $(document).on("click", ".js-expand-actions", function () {
+        const id = $(this).data("product-id");
+        const drawer = $("#drawer-" + id);
+        const $thisButton = $(this);
+
+        // 1. Reset all other buttons
+        $(".js-expand-actions").not($thisButton).removeClass("btn-primary text-white").addClass("btn-manage");
+        $(".js-expand-actions").not($thisButton).find("span").html("&#9660;"); // Reset arrow down
+
+        // 2. Close other drawers
+        $(".action-drawer-row").not(drawer).addClass("d-none");
+
+        // 3. Toggle this drawer
+        drawer.toggleClass("d-none");
+
+        // 4. Toggle Button Style
+        if (drawer.hasClass("d-none")) {
+            // Closed state
+            $thisButton.removeClass("btn-primary text-white").addClass("btn-manage");
+            $thisButton.find("span").html("&#9660;"); // Arrow Down
+        } else {
+            // Open state
+            $thisButton.removeClass("btn-manage").addClass("btn-primary text-white");
+            $thisButton.find("span").html("&#9650;"); // Arrow Up
+        }
+    });
     // ============================================================
     // 1. GLOBAL CONFIGURATION & VARIABLES
     // ============================================================
@@ -250,12 +279,16 @@
     // ============================================================
 
     // 1. View Variants Button
+    // 1. View Variants Button
     $('.btn-view-variants').on('click', function () {
         var productId = $(this).data('product-id');
-        var productName = $(this).closest('tr').find('td[data-product-name]').data('product-name');
+        var productName = $(this).data('product-name');
 
         $('#modal-product-name').text(productName);
         $('#modal-variants-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productVariantsModal').modal('show');
 
         $.get(urls.getVariantsPartial, { productId: productId }, function (data) {
             $('#modal-variants-content').html(data);
@@ -292,13 +325,19 @@
     });
 
     // 3. View Details
+    // 3. View Details
     $('.js-view-details').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
-        let productName = $button.closest('tr').find('td[data-product-name]').data('product-name');
+
+        // [FIX] Get name directly from button (requires HTML update above)
+        let productName = $button.data('product-name');
 
         $('#productDetailsModalLabel').text("Details for " + productName);
         $('#modal-details-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productDetailsModal').modal('show');
 
         $.get(urls.getProductDetailsPartial, { productId: productId }, function (data) {
             $('#modal-details-content').html(data);
@@ -308,12 +347,17 @@
     });
 
     // 4. Edit Product (Main)
+    // 4. Edit Product (Main)
     $('.js-edit-product').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
         let productName = $button.data('product-name');
+
         $('#editProductModalLabel').text("Edit: " + productName);
         $('#modal-edit-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#editProductModal').modal('show');
 
         $.get(urls.getEditPartial, { productId: productId }, function (data) {
             $('#modal-edit-content').html(data);
@@ -326,8 +370,12 @@
     $('.js-delete-product').on('click', function () {
         let productId = $(this).data('product-id');
         let productName = $(this).data('product-name');
+
         $('#modal-delete-product-name').text(productName);
         $('#confirm-delete-button').data('product-id', productId);
+
+        // [FIX] Open the modal!
+        $('#deleteProductModal').modal('show');
     });
 
     // Checkbox Logic for Delete
@@ -356,10 +404,34 @@
             success: function (data) {
                 if (data.success) {
                     $('#deleteProductModal').modal('hide');
-                    $('tr[data-product-row-id="' + productId + '"]').fadeOut(500, function () { $(this).remove(); });
-                } else { alert('Error: ' + data.message); }
+                    // 1. Remove the row from the table smoothly
+                    const $targetRows = $(`tr[data-product-row-id="${productId}"], #drawer-${productId}`);
+
+                    // Fade out and remove both
+                    $targetRows.fadeOut(300, function () {
+                        $(this).remove();
+                    });
+
+                    // 2. FIRE THE TOAST (Success)
+                    window.Toast.fire({
+                        icon: 'success',
+                        title: 'Product deleted successfully!'
+                    });
+
+                } else {
+                    // FIRE THE TOAST (Error)
+                    window.Toast.fire({
+                        icon: 'error',
+                        title: res.message || 'Failed to delete product.'
+                    });
+                }
             },
-            complete: function () { $button.prop('disabled', false).text('Delete Product'); }
+            error: function () {
+                window.Toast.fire({
+                    icon: 'error',
+                    title: 'Something went wrong.'
+                });
+            }
         });
     });
 
@@ -545,11 +617,16 @@
     // ============================================================
 
     // 1. Open Modal
+    // 1. Open Modal (Discounts)
     $('.js-manage-discounts').on('click', function () {
         let productId = $(this).data('product-id');
         let name = $(this).data('product-name');
+
         $('#modal-discount-product-name').text(name);
         $('#modal-discounts-content').html('<div class="loading-spinner"></div>');
+
+        // [FIX] Open the modal!
+        $('#productDiscountsModal').modal('show');
 
         $.get(urls.getDiscounts, { productId: productId }, function (html) {
             $('#modal-discounts-content').html(html);
@@ -679,7 +756,152 @@
             });
         }
     });
+    //video
 
+
+    // ============================================================
+    // 10. MANAGE VIDEOS (Video Logic)
+    // ============================================================
+
+    // A. Open Modal
+    $(document).on('click', '.js-manage-videos', function () {
+        const productId = $(this).data('product-id');
+        const productName = $(this).data('product-name');
+
+        // 1. Set Title
+        $('#modal-video-product-name').text(productName);
+
+        // 2. Initialize and Show Modal using jQuery (Matches your other modals)
+        $('#productVideosModal').modal('show');
+
+        // 3. Load Content
+        loadVideos(productId);
+    });
+
+    // Helper Function to Load Videos
+    function loadVideos(productId) {
+        const container = $('#modal-videos-content');
+        container.html('<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>');
+
+        // Use the URL from your config
+        $.get(window.productConfig.urls.getVideosPartial, { productId: productId })
+            .done(function (html) {
+                container.html(html);
+            })
+            .fail(function () {
+                container.html('<div class="text-danger text-center">Failed to load videos.</div>');
+            });
+    }
+
+    // B. Add Video (Submit Form)
+    // Note: Since the form is loaded via AJAX, we use delegation on 'body' or 'document'
+    $(document).on('submit', '#form-add-video', function (e) {
+        e.preventDefault();
+        const form = $(this);
+        const btn = form.find('button[type="submit"]');
+        const productId = form.find('input[name="ProductId"]').val();
+
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Adding...');
+
+        $.post(window.productConfig.urls.addVideo, form.serialize())
+            .done(function (res) {
+                if (res.success) {
+                    window.Toast.fire({ icon: 'success', title: 'Video added' });
+                    loadVideos(productId); // Reload list to show new video
+                } else {
+                    window.Toast.fire({ icon: 'error', title: res.message });
+                    btn.prop('disabled', false).text('Add Video');
+                }
+            })
+            .fail(function () {
+                window.Toast.fire({ icon: 'error', title: 'Server Error' });
+                btn.prop('disabled', false).text('Add Video');
+            });
+    });
+
+    // ============================================================
+    // C. Delete Video - Logic Update
+    // ============================================================
+
+    let videoIdToDelete = 0;
+    // GOOD: Use jQuery to maintain one instance
+    // ============================================================
+    // C. Delete Video (Swal Version - Fixes Black Drop Issue)
+    // ============================================================
+
+    $(document).on('click', '.js-delete-video', function () {
+        const videoId = $(this).data('video-id');
+        // Get ProductId from the open form to refresh the list later
+        const productId = $('#form-add-video input[name="ProductId"]').val();
+
+        Swal.fire({
+            title: 'Delete this video?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545', // Red
+            cancelButtonColor: '#6c757d', // Grey
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.showLoading();
+
+                $.ajax({
+                    url: window.productConfig.urls.deleteVideo,
+                    type: 'POST',
+                    headers: { 'RequestVerificationToken': token },
+                    data: { id: videoId },
+                    success: function (res) {
+                        if (res.success) {
+                            window.Toast.fire({ icon: 'success', title: 'Video deleted' });
+                            loadVideos(productId); // Refresh the list
+                        } else {
+                            window.Toast.fire({ icon: 'error', title: res.message });
+                        }
+                    },
+                    error: function () {
+                        window.Toast.fire({ icon: 'error', title: 'Server Error' });
+                    }
+                });
+            }
+        });
+    });
+
+    // Note: You can now remove the $('#btn-confirm-del-video').click(...) block
+    // and the <div id="deleteVideoModal"> from your HTML if you want to clean up.
+
+    // E. Set Primary Video
+    // D. Set Primary Video
+    $(document).on('click', '.js-set-primary-video', function () {
+        const btn = $(this);
+        const originalHtml = btn.html();
+        btn.prop('disabled', true).html('...');
+
+        const videoId = btn.data('video-id');
+        const productId = btn.data('product-id');
+
+        // ✅ FIX: Use $.ajax
+        $.ajax({
+            url: window.productConfig.urls.setPrimaryVideo,
+            type: 'POST',
+            headers: { 'RequestVerificationToken': token },
+            data: { videoId: videoId, productId: productId },
+            success: function (res) {
+                if (res.success) {
+                    window.Toast.fire({ icon: 'success', title: 'Primary video updated' });
+                    loadVideos(productId);
+                } else {
+                    window.Toast.fire({ icon: 'error', title: res.message });
+                    btn.prop('disabled', false).html(originalHtml);
+                }
+            },
+            error: function () {
+                window.Toast.fire({ icon: 'error', title: 'Server Error' });
+                btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
     // ============================================================
     // 8. PRODUCT IMAGE LOGIC (Cropper.js)
     // ============================================================
@@ -974,5 +1196,6 @@
             }
         });
     });
+    
 
 }); // End of Document Ready
