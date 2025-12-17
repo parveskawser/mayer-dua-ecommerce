@@ -183,8 +183,7 @@ $(document).ready(function () {
     // ==================================================
     // 4. AUTO-SELECT FIRST VARIANT IF ONLY ONE EXISTS
     // ==================================================
-    const variants = window.productVariants || [];
-
+    const variants = (window.productVariants || []).filter(v => v);
     if (variants.length === 1) {
         const singleVariant = variants[0];
         applyVariantData(singleVariant);
@@ -200,84 +199,50 @@ $(document).ready(function () {
     // 5. DYNAMIC ATTRIBUTE SELECTION LOGIC (WITH CASCADING)
     // ==================================================
 
+    // 1. Updated Click Listener (Force String Type)
     $(document).on('click', '.variant-chip', function () {
         let $el = $(this);
         let attributeName = $el.data('attribute');
-        let attributeValue = $el.data('value');
 
-        // 1. Toggle Selection
+        // ✅ FIX 3: Use .attr() to get the raw string value (prevents "40" becoming number 40)
+        let attributeValue = $el.attr('data-value');
+
         if ($el.hasClass('selected')) {
             $el.removeClass('selected');
             delete selectedAttributes[attributeName];
         } else {
-            // Remove 'selected' from other chips in the same row
             $(`.variant-chip[data-attribute='${attributeName}']`).removeClass('selected');
             $el.addClass('selected');
             selectedAttributes[attributeName] = attributeValue;
         }
 
-        // 2. Update Availability of OTHER options based on this new selection
         updateAttributeAvailability();
-
-        // 3. Try to find the matching variant
         findAndApplyVariant();
     });
 
-    // --- NEW CASCADING LOGIC FUNCTION ---
-    function updateAttributeAvailability() {
-        $('.variant-chip').each(function () {
-            const $chip = $(this);
-            const chipAttribute = $chip.data('attribute');
-            const chipValue = $chip.data('value');
-
-            // Skip if this specific chip is already selected (always keep selected items enabled)
-            if ($chip.hasClass('selected')) {
-                $chip.removeClass('disabled');
-                return;
-            }
-
-            // Create a "Test Scenario"
-            const testSelection = { ...selectedAttributes };
-
-            // Allow switching values within the same attribute group
-            delete testSelection[chipAttribute];
-            testSelection[chipAttribute] = chipValue;
-
-            // Check if ANY variant matches this test scenario
-            const isCompatible = variants.some(v => {
-                for (const [key, val] of Object.entries(testSelection)) {
-                    if (!v.attributes || v.attributes[key] !== val) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            // Apply visual state
-            if (isCompatible) {
-                $chip.removeClass('disabled');
-            } else {
-                $chip.addClass('disabled');
-            }
-        });
-    }
-
-    // Call once on load to initialize states
-    updateAttributeAvailability();
-
+    // 2. Updated Match Logic (Safety Checks & Loose Equality)
     function findAndApplyVariant() {
         $('#selected-variant-id').val('');
 
-        const matchedVariant = variants.find(v => {
+        // ✅ FIX 4: Filter out undefined slots just in case
+        const safeVariants = (window.productVariants || []).filter(v => v);
+
+        const matchedVariant = safeVariants.find(v => {
+            if (!v.attributes) return false;
+
             const variantKeys = Object.keys(v.attributes);
             const selectedKeys = Object.keys(selectedAttributes);
 
-            // 1. STRICT COUNT CHECK
+            // A. Count Check
             if (variantKeys.length !== selectedKeys.length) return false;
 
-            // 2. STRICT VALUE CHECK
+            // B. Value Check (String Comparison)
             for (let key of selectedKeys) {
-                if (!v.attributes.hasOwnProperty(key) || v.attributes[key] !== selectedAttributes[key]) {
+                // Ensure the variant has the key
+                if (!v.attributes.hasOwnProperty(key)) return false;
+
+                // Compare as Strings to fix Type Mismatch
+                if (String(v.attributes[key]).trim() !== String(selectedAttributes[key]).trim()) {
                     return false;
                 }
             }
@@ -293,9 +258,83 @@ $(document).ready(function () {
         } else {
             handleNoMatch();
         }
-    }
+    }    // --- NEW CASCADING LOGIC FUNCTION ---
+    function updateAttributeAvailability() {
+        $('.variant-chip').each(function () {
+            const $chip = $(this);
+            const chipAttribute = $chip.data('attribute');
 
-    function applyVariantData(variant) {
+            // CHANGE: Use .attr() to ensure String comparison
+            const chipValue = $chip.attr('data-value');
+
+            // Skip if this specific chip is already selected
+            if ($chip.hasClass('selected')) {
+                $chip.removeClass('disabled');
+                return;
+            }
+
+            // Create a "Test Scenario"
+            const testSelection = { ...selectedAttributes };
+
+            // Allow switching values within the same attribute group
+            delete testSelection[chipAttribute];
+            testSelection[chipAttribute] = chipValue;
+
+            // Check if ANY variant matches this test scenario
+            const isCompatible = variants.some(v => {
+                for (const [key, val] of Object.entries(testSelection)) {
+                    // CHANGE: Convert both sides to String() before comparing
+                    if (!v.attributes || String(v.attributes[key]) !== String(val)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // Apply visual state
+            if (isCompatible) {
+                $chip.removeClass('disabled');
+            } else {
+                $chip.addClass('disabled');
+            }
+        });
+    }
+    // Call once on load to initialize states
+    updateAttributeAvailability();
+
+    function findAndApplyVariant() {
+        $('#selected-variant-id').val('');
+
+        const matchedVariant = variants.find(v => {
+            // ✅ FIX: Safety check for undefined variants
+            if (!v || !v.attributes) return false;
+
+            const variantKeys = Object.keys(v.attributes);
+            const selectedKeys = Object.keys(selectedAttributes);
+
+            // 1. STRICT COUNT CHECK
+            if (variantKeys.length !== selectedKeys.length) return false;
+
+            // 2. STRICT VALUE CHECK
+            for (let key of selectedKeys) {
+                // Convert both sides to String to match "100" (JSON) with "100" (HTML)
+                if (!v.attributes.hasOwnProperty(key) || String(v.attributes[key]) !== String(selectedAttributes[key])) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (matchedVariant) {
+            if (Object.keys(selectedAttributes).length > 0) {
+                applyVariantData(matchedVariant);
+            } else {
+                resetToDefault();
+            }
+        } else {
+            handleNoMatch();
+        }
+    } function applyVariantData(variant) {
         $('#selected-variant-id').val(variant.id);
         currentVariantPrice = variant.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
@@ -1015,7 +1054,7 @@ $(document).ready(function () {
 
     function checkSessionExpiry() {
         const now = new Date().getTime();
-        
+
         // If expired or no timestamp, clear session
         if (sessionTimestamp && (now - sessionTimestamp > ONE_HOUR)) {
             console.log("⚠️ Session expired. Starting fresh.");
@@ -1029,7 +1068,7 @@ $(document).ready(function () {
 
     // Initialize Session
     checkSessionExpiry();
-    
+
     if (!chatSessionId) {
         // Create new session
         //chatSessionId = crypto.randomUUID()
@@ -1065,9 +1104,9 @@ $(document).ready(function () {
                     let senderName = m.isFromAdmin ? (m.senderName || "Support") : "You";
                     appendCustomerMessage(senderName, m.messageText, type);
                 });
-                
+
                 // If there is history, assume user is "logged in"
-                if(!chatUserName) {
+                if (!chatUserName) {
                     // Try to guess or just set state to active without name if history exists
                     showChatInterface();
                 }
@@ -1080,7 +1119,7 @@ $(document).ready(function () {
 
     // --- 3. SignalR Connection Logic ---
     function initSignalR() {
-        if (chatConnection) return; 
+        if (chatConnection) return;
 
         // Initialize Builder
         chatConnection = new signalR.HubConnectionBuilder()
@@ -1092,14 +1131,14 @@ $(document).ready(function () {
         chatConnection.on("ReceiveReply", function (adminName, message) {
             // Update Timestamp on activity to keep session alive
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
-            
+
             // 🔔 Sound
             var audio = document.getElementById("chat-notification-sound");
             if (audio) { audio.play().catch(e => console.log("Audio blocked")); }
 
             // UI
             appendCustomerMessage(adminName, message, 'incoming');
-            
+
             if (!$('#live-chat-box').is(':visible')) {
                 $('#support-widget-btn').addClass('active');
             }
@@ -1142,7 +1181,7 @@ $(document).ready(function () {
 
     function sendCustomerMessage() {
         const msg = $('#chat-input-field').val().trim();
-        const currentName = chatUserName || "Guest"; 
+        const currentName = chatUserName || "Guest";
 
         if (msg) {
             // Refresh timestamp
@@ -1153,7 +1192,7 @@ $(document).ready(function () {
             $('#chat-input-field').val('');
 
             // 2. Send to Server
-            if(chatConnection) {
+            if (chatConnection) {
                 chatConnection.invoke("SendMessageToAdmin", currentName, msg, chatSessionId)
                     .catch(err => console.error(err));
             }
@@ -1185,7 +1224,7 @@ $(document).ready(function () {
 
     $('#btn-open-live-chat').click(function () {
         $('#support-options').removeClass('show');
-        
+
         // Ensure Main Button stays Red/X
         const mainBtn = $('#support-widget-btn');
         mainBtn.addClass('active');

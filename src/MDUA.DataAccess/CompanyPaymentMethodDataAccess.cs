@@ -155,7 +155,7 @@ namespace MDUA.DataAccess
                 existingRecord.IsGatewayEnabled = isGateway;
                 existingRecord.CustomInstruction = instruction;
                 existingRecord.UpdatedBy = username;
-                existingRecord.UpdatedAt = DateTime.Now;
+                existingRecord.UpdatedAt = DateTime.UtcNow;
 
                 this.Update(existingRecord);
             }
@@ -171,7 +171,7 @@ namespace MDUA.DataAccess
                     IsGatewayEnabled = isGateway,
                     CustomInstruction = instruction,
                     CreatedBy = username,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 this.Insert(newRecord);

@@ -49,7 +49,9 @@
                                             <th style="width: 50px;" class="text-center">Select</th>
                                             <th>Variant</th>
                                             <th class="text-center">Current Stock</th>
-                                            <th style="width: 150px;">Order Qty</th>
+                                            <th style="width: 150px;">
+                                                Order Qty <span class="text-danger">*</span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -66,11 +68,17 @@
                                                            data-parent="@group.UiId">
                                                 </td>
                                                 <td>
-                                                    @variant.VariantName
-                                                    @if (isLow)
-                                                    {
-                                                        <span class="badge bg-danger badge-stock">Low Stock</span>
-                                                    }
+                                                    <div class="variant-flex-wrapper">
+
+                                                        <div class="variant-name-truncate" title="@variant.VariantName">
+                                                            @variant.VariantName
+                                                        </div>
+
+                                                        @if (isLow)
+                                                        {
+                                                            <span class="badge bg-danger badge-stock">Low Stock</span>
+                                                        }
+                                                    </div>
                                                 </td>
                                                 <td class="text-center fw-bold">
                                                     @variant.CurrentStock
@@ -104,7 +112,7 @@
             <form asp-action="CreateBulkOrder" method="post" id="bulkOrderForm">
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Select Vendor</label>
+                    <label class="form-label fw-bold">Select Vendor <span class="text-danger">*</span></label>
                     <select name="VendorId" class="form-select" required>
                         <option value="">-- Choose Vendor --</option>
                         @if (vendors != null)
@@ -118,12 +126,12 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Agreement / Ref No.</label>
+                    <label class="form-label">Agreement / Ref No. <span class="text-danger">*</span></label>
                     <input type="text" name="AgreementNumber" class="form-control" placeholder="e.g. BLK-2025-001" required />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Title (Optional)</label>
+                    <label class="form-label">Title</label>
                     <input type="text" name="Title" class="form-control" placeholder="e.g. Winter Restock" />
                 </div>
 

@@ -49,5 +49,11 @@ namespace MDUA.DataAccess.Interface
         void UpdateTotalAmountSafe(int orderId, decimal newTotalAmount);
 
         decimal GetProductTotalFromDetails(int orderId);
+
+        void UpdateOrderDeliveryCharge(int orderId, decimal newDeliveryCharge);
+
+        SalesOrderHeader GetBySalesOrderRef(string salesOrderRef);
+
+
     }
 }

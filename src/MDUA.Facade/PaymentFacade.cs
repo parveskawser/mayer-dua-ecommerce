@@ -52,72 +52,90 @@ namespace MDUA.Facade
 
             try
             {
-                var salesDa = new SalesOrderDetailDataAccess(transaction);
+                var salesDetailDa = new SalesOrderDetailDataAccess(transaction);
                 var invDa = new InventoryTransactionDataAccess(transaction);
-                var custPayDa = new CustomerPaymentDataAccess(transaction);
-
-                // ✅ NEW: Initialize Order Header DA for update
+                var paymentDa = new CustomerPaymentDataAccess(transaction);
                 var orderDa = new SalesOrderHeaderDataAccess(transaction);
 
-                // --- Business Logic ---
+                // =====================================================
+                // 1. FETCH ORDER HEADER (BY SALES ORDER REF)
+                // =====================================================
+                var orderHeader = orderDa.GetBySalesOrderRef(payment.TransactionReference);
+                if (orderHeader == null)
+                    throw new Exception("Invalid order reference.");
 
-                // 1. Get Order Detail to link Inventory & find Order ID
-                var orderDetail = salesDa.GetFirstDetailByOrderRef(payment.TransactionReference);
-                int? invTrxId = null;
+                // =====================================================
+                // 2. CALCULATE CURRENT DUE (DB TRUTH)
+                // =====================================================
+                decimal alreadyPaid = paymentDa.GetTotalPaidByOrderRef(payment.TransactionReference);
+                decimal netAmount = (decimal)orderHeader.NetAmount;
+                decimal dueAmount = netAmount - alreadyPaid;
 
-                if (orderDetail != null)
+                // ❌ FULLY PAID
+                if (dueAmount <= 0)
+                    throw new Exception("Order is already fully paid. Payment not allowed.");
+
+                // ❌ OVERPAYMENT
+                if (payment.Amount > dueAmount)
+                    throw new Exception($"Payment exceeds due amount. Due: {dueAmount}");
+
+                // =====================================================
+                // 3. UPDATE DELIVERY (OPTIONAL)
+                // =====================================================
+                if (deliveryCharge.HasValue)
                 {
-                    // 2. ✅ Update Delivery Charge & Total Amount Logic
-                    if (deliveryCharge.HasValue)
-                    {
-                        int orderId = orderDetail.SalesOrderId; // FK from detail
+                    orderDa.UpdateOrderDeliveryCharge(orderHeader.Id, deliveryCharge.Value);
 
-                        // A. Calculate Product Cost (Sum of all lines)
-                        // Note: Using orderDA with the ACTIVE transaction
-                        decimal productTotal = orderDa.GetProductTotalFromDetails(orderId);
+                    // Recalculate due AFTER delivery update
+                    orderHeader = orderDa.GetBySalesOrderRef(payment.TransactionReference);
+                    netAmount = (decimal)orderHeader.NetAmount;
+                    dueAmount = netAmount - alreadyPaid;
 
-                        // B. New Total = Product Cost + New Delivery
-                        decimal newTotalAmount = productTotal + deliveryCharge.Value;
-
-                        // C. Update DB
-                        orderDa.UpdateTotalAmountSafe(orderId, newTotalAmount);
-                    }
-
-                    // 3. Inventory Transaction Logic (Existing)
-                    if (orderDetail.ProductVariantId > 0)
-                    {
-                        var invTrx = new InventoryTransaction
-                        {
-                            SalesOrderDetailId = orderDetail.Id,
-                            InOut = "IN",
-                            Date = DateTime.Now,
-                            Price = payment.Amount,
-                            Quantity = orderDetail.Quantity,
-                            ProductVariantId = orderDetail.ProductVariantId,
-                            Remarks = "Payment: " + payment.Notes,
-                            CreatedBy = payment.CreatedBy,
-                            CreatedAt = DateTime.Now
-                        };
-                        long newId = invDa.Insert(invTrx);
-                        if (newId > 0) invTrxId = (int)newId;
-                    }
+                    if (payment.Amount > dueAmount)
+                        throw new Exception($"Payment exceeds due amount after delivery update. Due: {dueAmount}");
                 }
 
-                payment.InventoryTransactionId = invTrxId;
+                // =====================================================
+                // 4. INVENTORY TRANSACTION (IF PRODUCT EXISTS)
+                // =====================================================
+                var orderDetail = salesDetailDa.GetFirstDetailByOrderRef(payment.TransactionReference);
+                int? inventoryTransactionId = null;
 
-                // 4. Insert Payment
-                long paymentId = custPayDa.Insert(payment);
+                if (orderDetail != null && orderDetail.ProductVariantId > 0)
+                {
+                    var invTrx = new InventoryTransaction
+                    {
+                        SalesOrderDetailId = orderDetail.Id,
+                        ProductVariantId = orderDetail.ProductVariantId,
+                        Quantity = orderDetail.Quantity,
+                        Price = payment.Amount,
+                        InOut = "IN",
+                        Date = DateTime.UtcNow,
+                        Remarks = "Payment: " + payment.Notes,
+                        CreatedBy = payment.CreatedBy,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    long invId = invDa.Insert(invTrx);
+                    if (invId > 0) inventoryTransactionId = (int)invId;
+                }
+
+                payment.InventoryTransactionId = inventoryTransactionId;
+
+                // =====================================================
+                // 5. INSERT PAYMENT
+                // =====================================================
+                long paymentId = paymentDa.Insert(payment);
 
                 BaseDataAccess.CloseTransaction(true, transaction);
                 return paymentId;
             }
-            catch (Exception ex)
+            catch
             {
                 BaseDataAccess.CloseTransaction(false, transaction);
                 throw;
             }
         }
-
         public long Insert(CustomerPaymentBase entity)
         {
             return _customerPaymentDataAccess.Insert(entity);

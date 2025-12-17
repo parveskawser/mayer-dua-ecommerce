@@ -121,7 +121,7 @@ namespace MDUA.DataAccess
 
             // Audit
             cmd.Parameters.Add(new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 100) { Value = (object)obj.CreatedBy ?? DBNull.Value });
-            cmd.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime) { Value = obj.CreatedAt == DateTime.MinValue ? DateTime.Now : obj.CreatedAt });
+            cmd.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime) { Value = obj.CreatedAt == DateTime.MinValue ? DateTime.UtcNow : obj.CreatedAt });
             cmd.Parameters.Add(new SqlParameter("@UpdatedBy", SqlDbType.NVarChar, 100) { Value = (object)obj.UpdatedBy ?? DBNull.Value });
             cmd.Parameters.Add(new SqlParameter("@UpdatedAt", SqlDbType.DateTime) { Value = obj.UpdatedAt.HasValue ? (object)obj.UpdatedAt.Value : DBNull.Value });
         }

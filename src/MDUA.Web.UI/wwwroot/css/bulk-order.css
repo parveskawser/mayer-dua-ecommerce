@@ -109,11 +109,6 @@ html, body {
         background-color: #f8f9fa;
     }
 
-.badge-stock {
-    margin-left: 8px;
-    font-size: 0.75em;
-}
-
 /* ========== 6. MOBILE RESPONSIVENESS ========== */
 @media (max-width: 991px) {
     html, body {
@@ -144,4 +139,28 @@ html, body {
     .product-scroll-area {
         overflow: visible;
     }
+}
+
+
+/* 1. Wrapper INSIDE the TD (Handles layout) */
+.variant-flex-wrapper {
+    display: flex;
+    align-items: center;
+    max-width: 250px; /* Controls the width limit */
+}
+
+/* 2. The Text Name (Shrinks and adds ...) */
+.variant-name-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1; /* Takes available space */
+    min-width: 0; /* Allows it to shrink below its content size */
+}
+
+/* 3. The Badge (Stays fixed) */
+.badge-stock {
+    white-space: nowrap;
+    margin-left: 8px;
+    flex-shrink: 0; /* Ensures badge never shrinks or hides */
 }
