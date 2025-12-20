@@ -79,7 +79,7 @@ namespace MDUA.Facade
 
             // 2. Set Defaults
             if (message.SentAt == DateTime.MinValue)
-                message.SentAt = DateTime.Now;
+                message.SentAt = DateTime.UtcNow;
 
             // 3. Save via Data Access
             return _chatDataAccess.SaveMessage(message);

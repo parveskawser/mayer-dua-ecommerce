@@ -6,6 +6,7 @@ ViewData["Title"] = "Add Product";
 @section Styles {
     <link rel="stylesheet" href="~/css/add-product.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+
     <style>
         /* Custom tweak for Summernote to match your glass/white theme */
         .note-editor {
@@ -50,20 +51,20 @@ ViewData["Title"] = "Add Product";
 
                     <!-- Product Name -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold small">Product Name</label>
+                        <label class="form-label fw-bold small">Product Name <span class="text-danger">*</span></label>
                         <input type="text" name="ProductName" class="form-control form-control-modal" placeholder="e.g. Premium T-Shirt" required />
                     </div>
 
                     <!-- Description -->
                     <div class="mb-4">
                         <label class="form-label fw-bold small">Description</label>
-                        <textarea id="summernote" name="Description" required></textarea>
+                        <textarea id="summernote" name="Description"></textarea>
                     </div>
 
                     <!-- Pricing & Inventory Grid -->
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small">Base Price</label>
+                            <label class="form-label fw-bold small">Base Price <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">Tk</span>
                                 <input type="number" step="0.01" name="BasePrice" class="form-control form-control-modal border-start-0 ps-0" placeholder="0.00" min="0" required />
@@ -74,7 +75,7 @@ ViewData["Title"] = "Add Product";
                             <input type="number" name="ReorderLevel" class="form-control form-control-modal" value="0" min ="0" required />
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-bold small">Slug (Unique URL)</label>
+                            <label class="form-label fw-bold small">Slug (Unique URL) <span class="text-danger">*</span></label>
 
                             <input type="text"
                                    id="slugInput"
@@ -89,7 +90,6 @@ ViewData["Title"] = "Add Product";
 
                             <div class="form-text small">Leave empty to auto-generate from name.</div>
                         </div>
-
 
                     </div>
                 </div>
@@ -112,19 +112,18 @@ ViewData["Title"] = "Add Product";
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold small">Category</label>
+                        <label class="form-label fw-bold small">Category <span class="text-danger">*</span></label>
                         <select name="CategoryId" class="form-select form-control-modal" required>
                             <option value="">-- Select Category --</option>
                             @if (Model.Categories != null)
                             {
-                            foreach (var c in Model.Categories)
-                            {
-                            <option value="@c.Id">@c.Name</option>
-                            }
+                                foreach (var c in Model.Categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
                             }
                         </select>
                     </div>
-
                     <hr class="border-light my-4" />
 
                     <!-- Attributes Section -->

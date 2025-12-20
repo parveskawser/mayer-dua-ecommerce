@@ -8,7 +8,9 @@ using MDUA.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static MDUA.Entities.ProductVariant;
+using System.Net; 
 
 namespace MDUA.Facade
 {
@@ -244,81 +246,194 @@ namespace MDUA.Facade
             return product;
         }
         public long AddProduct(Product product, string username, int companyId)
+
         {
+
             if (product == null)
+
                 throw new ArgumentNullException(nameof(product));
 
             product.CompanyId = companyId;
+
             product.CreatedBy = username;
+
             product.UpdatedBy = username;
-            product.CreatedAt = DateTime.Now;
-            product.UpdatedAt = DateTime.Now;
+
+            product.CreatedAt = DateTime.UtcNow;
+
+            product.UpdatedAt = DateTime.UtcNow;
+
             product.ReorderLevel = product.ReorderLevel < 0 ? 0 : product.ReorderLevel;
 
-            // 2️⃣ INSERT PRODUCT
+            // 1️⃣ INSERT PRODUCT
+
             long productId = _ProductDataAccess.Insert(product);
 
             if (productId <= 0)
+
                 return productId;
 
-            if (product.Attributes != null)
+            // 2️⃣ INSERT ATTRIBUTES (If any selected)
+
+            if (product.Attributes != null && product.Attributes.Count > 0)
+
             {
+
                 int displayOrder = 1;
+
                 foreach (var attr in product.Attributes)
+
                 {
-                    // The binder only set AttributeId, we set the rest
+
                     attr.ProductId = (int)productId;
+
                     attr.DisplayOrder = displayOrder++;
 
-                    // Call the new DA class to insert
                     _productAttributeDataAccess.Insert(attr);
+
                 }
+
             }
 
-            // 3️⃣ INSERT VARIANTS
-            foreach (var variant in product.Variants)
-            {
-                variant.ProductId = (int)productId;
-                variant.CreatedBy = username;
-                variant.CreatedAt = DateTime.Now;
+            // 3️⃣ HANDLE VARIANTS
 
-                // Insert ProductVariant row
-                int variantId = _ProductVariantDataAccess.Insert(variant);
-                if (variantId > 0)
+            // If user provided variants (e.g. Size: S, M, L), insert them normally.
+
+            if (product.Variants != null && product.Variants.Count > 0)
+
+            {
+
+                foreach (var variant in product.Variants)
+
                 {
-                    var vps = new VariantPriceStock
+
+                    variant.ProductId = (int)productId;
+
+                    variant.CreatedBy = username;
+
+                    variant.CreatedAt = DateTime.UtcNow;
+
+                    int variantId = _ProductVariantDataAccess.Insert(variant);
+
+                    if (variantId > 0)
+
                     {
-                        Id = variantId, // Use the new Variant ID
-                        Price = variant.VariantPrice ?? 0, // Get price from the form
-                        CompareAtPrice = null, // Default
-                        CostPrice = null, // Default
-                        StockQty = 0, // Default stock is 0
-                        TrackInventory = true, // Default from your table
-                        AllowBackorder = false, // Default from your table
-                        WeightGrams = null // Default
+
+                        var vps = new VariantPriceStock
+
+                        {
+
+                            Id = variantId,
+
+                            Price = (decimal)(variant.VariantPrice ?? product.BasePrice), // Fallback to Base Price
+
+                            CompareAtPrice = null,
+
+                            CostPrice = null,
+
+                            StockQty = 0,
+
+                            TrackInventory = true,
+
+                            AllowBackorder = false,
+
+                            WeightGrams = null
+
+                        };
+
+                        _variantPriceStockDataAccess.Insert(vps);
+
+                        // Insert Attribute Values for this specific variant
+
+                        if (variant.AttributeValueIds != null)
+
+                        {
+
+                            int displayOrder = 1;
+
+                            foreach (int valueId in variant.AttributeValueIds)
+
+                            {
+
+                                _ProductVariantDataAccess.InsertVariantAttributeValue(
+
+                                    variantId, valueId, displayOrder++);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            else
+
+            {
+
+                // ✅ DEFAULT VARIANT LOGIC (For Simple Products)
+
+                // If NO variants were provided, create one "Standard" variant automatically.
+
+                // This ensures SalesOrderDetail and Inventory tables can link to a Variant ID.
+
+                var defaultVariant = new ProductVariant
+
+                {
+
+                    ProductId = (int)productId,
+
+                    VariantName = "Standard", // Internal name for simple products
+                    VariantPrice = (decimal)( product.BasePrice), // Fallback to Base Price
+
+                    IsActive = true,
+
+                    CreatedBy = username,
+
+                    CreatedAt = DateTime.UtcNow
+
+                };
+
+                int defaultVariantId = _ProductVariantDataAccess.Insert(defaultVariant);
+
+                if (defaultVariantId > 0)
+
+                {
+
+                    // Link Price & Stock to this default variant
+
+                    var vps = new VariantPriceStock
+
+                    {
+
+                        Id = defaultVariantId,
+
+                        Price = (decimal)product.BasePrice, // Use the product's main price
+
+                        CompareAtPrice = null,
+
+                        CostPrice = null,
+
+                        StockQty = 0, // Default stock 0, updated via Purchase later
+
+                        TrackInventory = true,
+
+                        AllowBackorder = false,
+
+                        WeightGrams = null
+
                     };
 
-                    // Call the new DA class to insert
                     _variantPriceStockDataAccess.Insert(vps);
+
                 }
 
-                // 4️⃣ INSERT VARIANT ATTRIBUTE VALUES
-                if (variant.AttributeValueIds != null)
-                {
-                    int displayOrder = 1;
-
-                    foreach (int valueId in variant.AttributeValueIds)
-                    {
-                        _ProductVariantDataAccess.InsertVariantAttributeValue(
-                            variantId,
-                            valueId,
-                            displayOrder++
-                        );
-                    }
-                }
             }
 
             return productId;
+
         }
 
         public ProductList GetLastFiveProducts()
@@ -381,13 +496,11 @@ namespace MDUA.Facade
 
         public ProductVariantList GetVariantsByProductId(int productId)
         {
-            // You already have this method in ProductVariantDataAccess
             return _ProductVariantDataAccess.GetProductVariantsByProductId(productId);
         }
 
         public bool? ToggleProductStatus(int productId)
         {
-            // Simply pass the call down to the DA layer
             return _ProductDataAccess.ToggleStatus(productId);
         }
 
@@ -419,7 +532,6 @@ namespace MDUA.Facade
 
             return product;
         }
-        // ... inside the ProductFacade class
 
         public ProductResult GetProductForEdit(int productId)
         {
@@ -434,23 +546,19 @@ namespace MDUA.Facade
             return model;
         }
 
-        // This method is unchanged and still correct
         public long UpdateProduct(Product product, string username)
         {
             product.UpdatedBy = username;
-            product.UpdatedAt = DateTime.Now;
-            return _ProductDataAccess.Update(product);
+            product.UpdatedAt = DateTime.UtcNow;// [cite_start]// [cite: 179]
+                     return _ProductDataAccess.Update(product);
         }
         public long UpdateVariantPrice(int variantId, decimal newPrice, string newSku)
         {
-            // Pass only the ID and the new Price
             return _variantPriceStockDataAccess.UpdatePrice(variantId, newPrice,  newSku);
         }
         public long DeleteVariant(int variantId)
         {
-            // ✅ Use the existing .Delete() method
-            // Since your database has "ON DELETE CASCADE", 
-            // this simple delete is all you need.
+         
             return _ProductVariantDataAccess.Delete(variantId);
         }
 
@@ -459,7 +567,6 @@ namespace MDUA.Facade
             return _attributeNameDataAccess.GetByProductId(productId);
         }
 
-        // Ensure you have this method to handle the saving
         public long AddVariantToExistingProduct(ProductVariant variant)
         {
             // 1. Insert Variant
@@ -526,7 +633,6 @@ namespace MDUA.Facade
             return result;
                 }
 
-        // 1. Get Missing Attributes
         public List<AttributeName> GetMissingAttributesForVariant(int productId, int variantId)
         {
             return _attributeNameDataAccess.GetMissingAttributesForVariant(productId, variantId);
@@ -566,14 +672,14 @@ namespace MDUA.Facade
         public long AddDiscount(ProductDiscount discount)
         {
             // Set defaults if needed
-            discount.CreatedAt = DateTime.Now;
-            discount.UpdatedAt = DateTime.Now;
+            discount.CreatedAt = DateTime.UtcNow;
+            discount.UpdatedAt = DateTime.UtcNow;
             return _ProductDiscountDataAccess.Insert(discount);
         }
 
         public long UpdateDiscount(ProductDiscount discount)
         {
-            discount.UpdatedAt = DateTime.Now;
+            discount.UpdatedAt = DateTime.UtcNow;
             return _ProductDiscountDataAccess.Update(discount);
         }
 
@@ -609,11 +715,32 @@ namespace MDUA.Facade
         // Helper to find the single best discount from a list of potential discounts
         public ProductDiscount GetBestDiscount(int productId, decimal basePrice)
         {
-            // 1. Get ALL discounts for this product
             var allDiscounts = _ProductDiscountDataAccess.GetByProductId(productId);
 
-            // 2. Filter for currently active (Date range + IsActive flag)
-            var now = DateTime.Now;
+            // =======================================================================
+            // 1. DEFINE YOUR STORE'S TIMEZONE
+            // Change this string if your business moves to another country.
+            // Common IDs: "Bangladesh Standard Time", "Eastern Standard Time", "UTC", "Tokyo Standard Time"
+            // =======================================================================
+            string storeTimeZoneId = "Bangladesh Standard Time";
+
+            // 2. CONVERT SERVER TIME (UTC) TO STORE TIME
+            // This handles Daylight Saving Time (DST) automatically if the region uses it.
+            DateTime now;
+            try
+            {
+                TimeZoneInfo zoneInfo = TimeZoneInfo.FindSystemTimeZoneById(storeTimeZoneId);
+                now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zoneInfo);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                // Fallback if the server (e.g., Linux Docker) doesn't have Windows TimeZone IDs
+                // "Asia/Dhaka" is the IANA ID equivalent
+                TimeZoneInfo zoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Asia/Dhaka");
+                now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zoneInfo);
+            }
+
+            // 3. Filter as before
             var validDiscounts = allDiscounts
                 .Where(d => d.IsActive
                          && d.EffectiveFrom <= now
@@ -622,24 +749,19 @@ namespace MDUA.Facade
 
             if (!validDiscounts.Any()) return null;
 
-            // 3. Calculate which one gives the LOWEST price
+            // ... (Keep the rest of your calculation logic exactly as is) ...
+
             ProductDiscount bestDiscount = null;
             decimal lowestPriceFound = basePrice;
 
             foreach (var d in validDiscounts)
             {
                 decimal calculatedPrice = basePrice;
-
-                if (d.DiscountType == "Flat")
-                {
+                if (d.DiscountType.Equals("Flat", StringComparison.OrdinalIgnoreCase))
                     calculatedPrice -= d.DiscountValue;
-                }
-                else if (d.DiscountType == "Percentage")
-                {
+                else if (d.DiscountType.Equals("Percentage", StringComparison.OrdinalIgnoreCase))
                     calculatedPrice -= (basePrice * (d.DiscountValue / 100));
-                }
 
-                // If this discount results in a lower price, it's the new winner
                 if (calculatedPrice < lowestPriceFound)
                 {
                     lowestPriceFound = calculatedPrice;
@@ -648,8 +770,7 @@ namespace MDUA.Facade
             }
 
             return bestDiscount;
-        }
-        // In ProductFacade.cs
+        }        
 
         public List<ProductImage> GetProductImages(int productId)
         {
@@ -673,7 +794,7 @@ namespace MDUA.Facade
                 SortOrder = existingImages.Count + 1, // Auto-increment sort order
                 AltText = "Product Image",
                 CreatedBy = username,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             return _ProductImageDataAccess.Insert(img);
         }
@@ -780,7 +901,6 @@ namespace MDUA.Facade
         }
         #endregion
 
-        // ... inside ProductFacade class ...
 
         // =========================================================
         // VIDEO MANAGEMENT REGION
@@ -792,55 +912,55 @@ namespace MDUA.Facade
                                           .OrderBy(v => v.SortOrder)
                                           .ToList();
         }
-
+        // 1. Update the AddProductVideo method
         public long AddProductVideo(ProductVideo video, string username)
         {
-            // 1. Convert URL
-            video.VideoUrl = ConvertToEmbedUrl(video.VideoUrl);
+            // A. Validate generic requirements
+            if (video == null) throw new ArgumentNullException(nameof(video));
+            if (string.IsNullOrWhiteSpace(video.VideoUrl)) throw new ArgumentException("Video URL is required.");
 
-            // 2. Audit Fields
+            // B. SERVER-SIDE VALIDATION & CONVERSION
+            // This ensures only valid YouTube, Vimeo, or Facebook links are saved.
+            string embedUrl = ConvertToEmbedUrl(video.VideoUrl);
+
+            // If the conversion returned null/empty, it means the URL was invalid.
+            if (string.IsNullOrEmpty(embedUrl))
+            {
+                throw new ArgumentException("Invalid Video URL. Only YouTube, Vimeo, and Facebook are supported.");
+            }
+
+            // C. Set the validated/converted URL
+            video.VideoUrl = embedUrl;
+
+            // D. Audit Fields
             video.CreatedBy = username;
-            video.CreatedAt = DateTime.Now;
-
-            // ✅ FIX: Set UpdatedAt to prevent "SqlDateTime overflow" error (0001-01-01)
-            // Your Stored Procedure inserts this column, so it must be valid.
+            video.CreatedAt = DateTime.UtcNow;
             video.UpdatedBy = username;
-            video.UpdatedAt = DateTime.Now;
+            video.UpdatedAt = DateTime.UtcNow;
 
-            // ✅ FIX: Ensure ThumbnailUrl isn't null if DB expects a string
             if (string.IsNullOrEmpty(video.ThumbnailUrl)) video.ThumbnailUrl = "";
 
-            // 3. Fetch Existing Videos to check state
+            // E. Sort Order Logic
             var existingVideos = _productVideoDataAccess.GetByProductId(video.ProductId);
-
-            // 4. Logic: Auto-Calculate SortOrder (Max + 1)
             if (existingVideos != null && existingVideos.Count > 0)
             {
                 video.SortOrder = existingVideos.Max(v => v.SortOrder) + 1;
             }
             else
             {
-                video.SortOrder = 1; // First video starts at 1
+                video.SortOrder = 1;
+                video.IsPrimary = true; // First video is always primary
             }
 
-            // 5. Logic: Handle "IsPrimary"
-            bool isFirstVideo = (existingVideos == null || existingVideos.Count == 0);
-
-            if (isFirstVideo)
+            // F. Primary Logic
+            if (video.IsPrimary && existingVideos != null && existingVideos.Count > 0)
             {
-                // Force Primary if it's the first video ever
-                video.IsPrimary = true;
-            }
-            else if (video.IsPrimary)
-            {
-                // If user manually checked "Set as Primary" for a NEW video,
-                // we must UNSET the existing primary video first.
                 var currentPrimary = existingVideos.FirstOrDefault(v => v.IsPrimary);
                 if (currentPrimary != null)
                 {
                     currentPrimary.IsPrimary = false;
                     currentPrimary.UpdatedBy = username;
-                    currentPrimary.UpdatedAt = DateTime.Now;
+                    currentPrimary.UpdatedAt = DateTime.UtcNow;
                     _productVideoDataAccess.Update(currentPrimary);
                 }
             }
@@ -848,55 +968,72 @@ namespace MDUA.Facade
             return _productVideoDataAccess.Insert(video);
         }
 
-        // ... inside the class ...
-
-        public List<LowStockItem> GetLowStockVariants(int topN)
-        {
-            // _variantPriceStockDataAccess is already injected in your constructor
-            return _variantPriceStockDataAccess.GetLowStockVariants(topN);
-        }
-
-        // ...
+        // 2. Update the Helper Method
         public string ConvertToEmbedUrl(string url)
         {
-            if (string.IsNullOrEmpty(url)) return "";
+            if (string.IsNullOrEmpty(url)) return null;
 
-            // 1. If already correct, return it
-            if (url.Contains("/embed/")) return url;
+            // 1. Resolve Redirects (Share links) - CRITICAL for loading content
+            if (url.Contains("facebook.com/share/") || url.Contains("fb.watch"))
+            {
+                string resolvedUrl = ResolveRedirect(url);
+                if (!string.IsNullOrEmpty(resolvedUrl)) url = resolvedUrl;
+            }
 
-            string videoId = "";
+            // 2. Already Embedded Check
+            // If we don't do this, a valid Facebook plugin link gets encoded again and breaks.
+            if (url.Contains("facebook.com/plugins/video.php") ||
+                url.Contains("player.vimeo.com/video/") ||
+                url.Contains("youtube.com/embed/"))
+            {
+                return url;
+            }
 
+            // 3. YouTube (Handles Standard, Shorts, Embed, Youtu.be)
+            var ytMatch = System.Text.RegularExpressions.Regex.Match(url, @"(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^""&?\/\s]{11})", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (ytMatch.Success)
+            {
+                return $"https://www.youtube.com/embed/{ytMatch.Groups[1].Value}";
+            }
+
+            // 4. Vimeo (Handles vimeo.com/ID and player.vimeo.com/video/ID)
+            var vimeoMatch = System.Text.RegularExpressions.Regex.Match(url, @"(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (vimeoMatch.Success)
+            {
+                return $"https://player.vimeo.com/video/{vimeoMatch.Groups[1].Value}";
+            }
+
+            // 5. Facebook
+            if (url.Contains("facebook.com"))
+            {
+                var encodedUrl = System.Net.WebUtility.UrlEncode(url);
+                return $"https://www.facebook.com/plugins/video.php?href={encodedUrl}&show_text=false&width=560";
+            }
+
+            return null;
+        }
+        private string ResolveRedirect(string url)
+        {
             try
             {
-                // Case A: Short Link (youtu.be/ID?si=...)
-                if (url.Contains("youtu.be/"))
+                // Simple HEAD request to follow redirects
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "HEAD";
+                request.AllowAutoRedirect = true;
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
+
+                using (var response = (HttpWebResponse)request.GetResponse())
                 {
-                    var parts = url.Split(new[] { "youtu.be/" }, StringSplitOptions.None);
-                    if (parts.Length > 1)
-                    {
-                        // Grab everything after slash, then split by '?' or '&' to remove params
-                        videoId = parts[1].Split('?')[0].Split('&')[0];
-                    }
-                }
-                // Case B: Standard Link (youtube.com/watch?v=ID)
-                else if (url.Contains("v="))
-                {
-                    var parts = url.Split(new[] { "v=" }, StringSplitOptions.None);
-                    if (parts.Length > 1)
-                    {
-                        videoId = parts[1].Split('&')[0].Split('?')[0];
-                    }
+                    return response.ResponseUri.AbsoluteUri;
                 }
             }
-            catch { return url; }
-
-            if (!string.IsNullOrEmpty(videoId))
+            catch
             {
-                return $"https://www.youtube.com/embed/{videoId}";
+                // If resolution fails (e.g. timeout), return original url and hope for the best
+                return url;
             }
-
-            return url;
         }
+
         public long DeleteProductVideo(int videoId)
         {
             // 1. Fetch the video first to check its status
@@ -924,7 +1061,7 @@ namespace MDUA.Facade
                 if (nextPrimary != null)
                 {
                     nextPrimary.IsPrimary = true;
-                    nextPrimary.UpdatedAt = DateTime.Now;
+                    nextPrimary.UpdatedAt = DateTime.UtcNow;
                     // Note: We don't have the username passed to this method signature, 
                     // but since it's an auto-system action, null/empty UpdatedBy is often acceptable.
 
@@ -951,11 +1088,19 @@ namespace MDUA.Facade
                 {
                     v.IsPrimary = shouldBePrimary;
                     v.UpdatedBy = username;
-                    v.UpdatedAt = DateTime.Now;
+                    v.UpdatedAt = DateTime.UtcNow;
 
                     _productVideoDataAccess.Update(v);
                 }
             }
         }
+        public List<LowStockItem> GetLowStockVariants(int topN)
+        {
+            // _variantPriceStockDataAccess is already injected in your constructor
+            return _variantPriceStockDataAccess.GetLowStockVariants(topN);
+        }
+
+        // ...
+      
     }
 }

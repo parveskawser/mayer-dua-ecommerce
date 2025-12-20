@@ -290,8 +290,8 @@ namespace MDUA.Facade
                 UserId = userId,
                 IPAddress = ipAddress,
                 DeviceInfo = deviceInfo,
-                CreatedAt = DateTime.Now,
-                LastActiveAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
+                LastActiveAt = DateTime.UtcNow,
                 IsActive = true
             };
 

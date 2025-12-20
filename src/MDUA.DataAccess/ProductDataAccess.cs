@@ -64,9 +64,22 @@ namespace MDUA.DataAccess
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pInt32("Id", _Id));
 
-            return GetObject(cmd);
-        }
+            // 1. Get the object as usual (Dates will come as 'Unspecified')
+            Product product = GetObject(cmd);
 
+            // 2. ✅ FIX: Manually force the DateTimeKind to UTC
+            // This tells .NET: "These dates are definitely UTC, not local."
+            if (product != null)
+            {
+                if (product.CreatedAt.HasValue)
+                    product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc);
+
+                if (product.UpdatedAt.HasValue)
+                    product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc);
+            }
+
+            return product;
+        }
         public ProductList GetLastFiveProducts()
         {
             string SQLQuery = @"

@@ -79,7 +79,11 @@
                                 <td class="fw-bold text-primary">@orderIdDisplay</td>
                                 <td>@orderType</td>
 
-                                <td class="small">@FormatDate(order.OrderDate)</td>
+                                <td class="small">
+                                    <span class="utc-date" data-utc="@order.OrderDate.ToUtcString()">
+                                        @FormatDate(order.OrderDate)
+                                    </span>
+                                </td>
                                 <td class="fw-bold">Tk. @FormatAmount(order.NetAmount)</td>
 
                                 <td class="text-success fw-bold">
@@ -146,6 +150,7 @@
                                                 @* --- Customer & Address IDs + Details --- *@
                                                 data-cust-id="@order.CompanyCustomerId"
                                                 data-cust-name="@order.CustomerName" @* ✅ NEW *@
+                                                data-cust-phone="@(order.CustomerPhone ?? "N/A")"
                                                 data-addr-id="@(order.AddressId == 0 ? "N/A" : order.AddressId.ToString())"
                                                 data-full-addr="@fullAddress" @* ✅ NEW *@
                                                 data-total="@FormatAmount(order.TotalAmount)"
@@ -260,7 +265,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Delivery Charge (Editable)</label>
+                            <label class="form-label small text-muted">Delivery Charge (Editable) <span class="text-danger">*</span></label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-0">Tk</span>
                                 <input type="number" id="adv_delivery" class="form-control fw-bold" value="0" />
@@ -286,7 +291,7 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Payment Method</label>
+                            <label class="form-label small fw-bold">Payment Method <span class="text-danger">*</span></label>
                             <select id="adv_paymentMethod" name="PaymentMethodId" class="form-select form-select-sm" required>
                                 @if (ViewBag.PaymentMethods != null)
                                 {
@@ -302,7 +307,7 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Payment Type</label>
+                            <label class="form-label small fw-bold">Payment Type <span class="text-danger">*</span></label>
                             <select id="adv_paymentType" name="PaymentType" class="form-select form-select-sm">
                                 <option value="Advance">Advance (Partial)</option>
                                 <option value="Sale">Sale (Full Payment)</option>
@@ -313,7 +318,7 @@
                     <hr class="text-muted my-2 opacity-25">
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-success">Amount Paying Now</label>
+                        <label class="form-label fw-bold text-success">Amount Paying Now <span class="text-danger">*</span></label>
                         <div class="input-group has-validation">
                             <span class="input-group-text bg-success text-white">Tk</span>
                             <input type="number" id="adv_paidAmount" name="Amount" class="form-control fw-bold fs-5" placeholder="0.00" required />
@@ -329,7 +334,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small">Note / Remarks</label>
+                        @* ✅ ADDED: ID 'adv_note_star' and class 'd-none' *@
+                        <label class="form-label small">Note / Remarks <span id="adv_note_star" class="text-danger d-none">*</span></label>
                         <textarea id="adv_note" name="Notes" class="form-control form-control-sm" rows="2" placeholder="e.g. Bkash Trx ID..."></textarea>
                     </div>
 
@@ -376,6 +382,10 @@
                             <div class="info-item">
                                 <span class="info-label">Customer ID</span>
                                 <span class="info-value" id="m-cust-id"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone Number</span>
+                                <span class="info-value" id="m-cust-phone"></span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Address ID</span>
@@ -456,9 +466,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer modal-footer-soft">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

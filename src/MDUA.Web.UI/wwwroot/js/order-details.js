@@ -25,12 +25,13 @@
             // ✅ CUSTOMER: ID + (Name)
             var custId = button.getAttribute('data-cust-id');
             var custName = button.getAttribute('data-cust-name');
+            var custPhone = button.getAttribute('data-cust-phone');
             var custDisplay = custId;
             if (custName && custName !== 'Unknown') {
                 custDisplay += ' (' + custName + ')';
             }
             setText('m-cust-id', custDisplay);
-
+            setText('m-cust-phone', custPhone);
             // ✅ ADDRESS: ID + (Full Address)
             var addrId = button.getAttribute('data-addr-id');
             var fullAddr = button.getAttribute('data-full-addr');

@@ -1,6 +1,4 @@
-﻿//change
-
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
 
     console.log("Admin Order Script Loaded");
 
@@ -15,9 +13,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const displayPrice = document.getElementById('displayPrice');
     const displaySubTotal = document.getElementById('displaySubTotal');
     const displayDiscount = document.getElementById('displayDiscount');
-    const displayDelivery = document.getElementById('displayDelivery');
-    const displayNet = document.getElementById('displayNet');
 
+    // ✅ CHANGED: Reference the Input field for Delivery Charge
+    const deliveryInput = document.getElementById('deliveryChargeInput');
+    // We keep this purely to update any text display if it still exists, though the input shows the value now
+    const displayDelivery = document.getElementById('displayDelivery');
+
+    const displayNet = document.getElementById('displayNet');
     const stockInfo = document.getElementById('stockInfo');
 
     // Mode & Location Elements
@@ -75,14 +77,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const dType = v.DiscountType || v.discountType || "None";
                 const dVal = v.DiscountValue || v.discountValue || 0;
 
-                // ✅ FIX: Check Stock Status
+                // Check Stock Status
                 let label = `${vName} (Tk. ${vPrice})`;
                 let isOutOfStock = vStock <= 0;
 
                 if (isOutOfStock) {
                     label += " ❌";
                 } else if (vStock < 10 && vStock !== 999) {
-                    // Optional: Show stock count in dropdown if low
                     label += ` (${vStock} left)`;
                 }
 
@@ -92,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 opt.setAttribute('data-disc-type', dType);
                 opt.setAttribute('data-disc-val', dVal);
 
-                // ✅ FIX: Disable and Color Red if Out of Stock
                 if (isOutOfStock) {
                     opt.disabled = true;
                     opt.style.color = "#dc3545"; // Red color
@@ -113,8 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
             stockInfo.textContent = "In Stock";
             stockInfo.className = "form-text text-success";
         } else {
-            // We don't need to check <= 0 here because they are disabled in the dropdown,
-            // but good to handle just in case.
             if (stock <= 0) {
                 stockInfo.textContent = "Out of Stock";
                 stockInfo.className = "form-text text-danger fw-bold";
@@ -127,9 +125,43 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     qtyInput.addEventListener('input', calcTotal);
-    if (divisionSelect) divisionSelect.addEventListener('change', calcTotal);
-    if (modeDelivery) modeDelivery.addEventListener('change', calcTotal);
-    if (modeStore) modeStore.addEventListener('change', calcTotal);
+
+    // ✅ NEW: Listen for manual delivery charge edits to recalculate Grand Total
+    if (deliveryInput) {
+        deliveryInput.addEventListener('input', calcTotal);
+        if (!deliveryInput.value) deliveryInput.value = 0;
+    }
+
+    // ==========================================
+    // 2.5 CALCULATION LOGIC
+    // ==========================================
+
+    // ✅ NEW FUNCTION: Calculates suggested delivery fee based on rules and updates the Input
+    function autoCalculateDelivery() {
+        if (!deliveryInput) return;
+
+        if (modeStore && modeStore.checked) {
+            deliveryInput.value = 0;
+        } else {
+            const config = window.deliveryConfig || { dhaka: 0, outside: 0 };
+            const costDhaka = parseFloat(config.dhaka || config.Cost_InsideDhaka || 0);
+            const costOutside = parseFloat(config.outside || config.Cost_OutsideDhaka || 0);
+
+            const div = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
+            const dist = districtSelect.value ? districtSelect.value.toLowerCase() : "";
+
+            // Logic: Dhaka Division OR Dhaka District = Inside City
+            if (div.includes("dhaka") || dist.includes("dhaka")) {
+                deliveryInput.value = costDhaka;
+            } else if (div !== "") {
+                deliveryInput.value = costOutside;
+            } else {
+                deliveryInput.value = 0;
+            }
+        }
+        // After setting the auto value, calculate the totals
+        calcTotal();
+    }
 
     function calcTotal() {
         // Safety check
@@ -146,27 +178,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (discType === "Flat") discount = discVal * qty;
         else if (discType === "Percentage") discount = subTotal * (discVal / 100);
 
-        // ✅ FIX: DYNAMIC DELIVERY CALCULATION
+        // ✅ FIXED: Read from the Input field (allows manual override)
         let delivery = 0;
-        if (!modeStore.checked) {
-            // Get values from the window object we created in the View
-            // Fallback to 0 if config is missing to avoid NaN
-            const config = window.deliveryConfig || { dhaka: 0, outside: 0 };
-
-            // Look for "dhaka" or "Cost_InsideDhaka" depending on how your DB saves keys
-            const costDhaka = parseFloat(config.dhaka || config.Cost_InsideDhaka || 0);
-            const costOutside = parseFloat(config.outside || config.Cost_OutsideDhaka || 0);
-
-            const div = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
-            const dist = districtSelect.value ? districtSelect.value.toLowerCase() : "";
-
-            // Logic: If Division OR District contains "dhaka"
-            if (div.includes("dhaka") || dist.includes("dhaka")) {
-                delivery = costDhaka;
-            }
-            else if (div !== "") {
-                delivery = costOutside;
-            }
+        if (deliveryInput) {
+            delivery = parseFloat(deliveryInput.value) || 0;
+        } else if (displayDelivery) {
+            // Fallback for old UI logic if input is missing
+            delivery = parseFloat(displayDelivery.textContent) || 0;
         }
 
         const net = (subTotal - discount) + delivery;
@@ -174,9 +192,13 @@ document.addEventListener('DOMContentLoaded', function () {
         displayPrice.textContent = price.toFixed(2);
         displaySubTotal.textContent = subTotal.toFixed(2);
         displayDiscount.textContent = discount.toFixed(2);
+
+        // Update display text if element exists
         if (displayDelivery) displayDelivery.textContent = delivery.toFixed(2);
+
         displayNet.textContent = net.toFixed(2);
     }
+
     // ==========================================
     // 3. LOCATION LOGIC (Using OrderAPI)
     // ==========================================
@@ -214,12 +236,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(() => {
                 thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
                 subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
-                calcTotal();
+                // ✅ Changed: Recalculate fee when Division changes
+                autoCalculateDelivery();
             });
     });
 
     districtSelect.addEventListener('change', () => {
         loadFromApi(window.OrderAPI.getThanas(districtSelect.value), thanaSelect);
+        // ✅ Changed: Recalculate fee when District changes (e.g. Gazipur -> Dhaka)
+        autoCalculateDelivery();
     });
 
     thanaSelect.addEventListener('change', () => {
@@ -255,7 +280,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (div) {
                     divisionSelect.value = div;
-                    calcTotal();
+
+                    // Trigger auto calc for the new location
+                    autoCalculateDelivery();
+
                     await loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist);
                     await loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th);
                     await loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
@@ -277,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Email Check Logic (Visual Only)
     const custEmail = document.getElementById('custEmail');
-    const emailStatus = document.getElementById('custEmailStatus'); // Assuming you created this element in view or JS
+    const emailStatus = document.getElementById('custEmailStatus');
     let currentLoadedEmail = "";
 
     if (custEmail) {
@@ -313,7 +341,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function toggleMode() {
         addressContainer.style.display = modeStore.checked ? 'none' : 'block';
-        calcTotal();
+        // When mode changes, recalculate the delivery fee (e.g. set to 0 for Store Pickup)
+        autoCalculateDelivery();
     }
     modeDelivery.addEventListener('change', toggleMode);
     modeStore.addEventListener('change', toggleMode);
@@ -350,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const sub = data.addressData.subOffice;
 
                         divisionSelect.value = div;
-                        calcTotal();
+                        autoCalculateDelivery();
 
                         if (dist) {
                             loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist)
@@ -409,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const payload = {
+
             CustomerPhone: phoneInput.value,
             CustomerName: document.getElementById('custName').value,
             CustomerEmail: custEmail ? custEmail.value : '',
@@ -421,6 +451,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             ProductVariantId: parseInt(variantSelect.value),
             OrderQuantity: parseInt(qtyInput.value),
+
+            // ✅ ADDED: Send the Delivery Charge from the editable input
+            DeliveryCharge: parseFloat(deliveryInput ? deliveryInput.value : 0) || 0,
+
             TargetCompanyId: parseInt(document.getElementById('targetCompanyId')?.value) || 1,
             Confirmed: document.getElementById('confirmImmediately').checked
         };
@@ -445,8 +479,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     finalNet = data.netAmount;
                 }
 
-                const deliveryCharge = parseFloat(displayDelivery.textContent) || 0;
-                const grandTotal = (parseFloat(finalNet) || 0) + deliveryCharge;
+                const deliveryCharge = parseFloat(deliveryInput ? deliveryInput.value : 0) || 0;
+               
+                const grandTotal = parseFloat(displayNet.textContent) || 0;
 
                 const modalHtml = `
                 <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -467,11 +502,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
                             <button type="button" class="btn btn-outline-secondary px-4" onclick="window.location.reload()">Create Another</button>
-<button type="button" 
-        class="btn btn-primary px-4" 
-        onclick="window.location.href='/order/all'">
-    View Orders List
-</button>                        </div>
+                            <button type="button" class="btn btn-primary px-4" onclick="window.location.href='/order/all'">View Orders List</button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -501,4 +533,3 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleMode();
 
 });
-

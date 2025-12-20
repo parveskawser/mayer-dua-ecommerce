@@ -165,7 +165,7 @@ namespace MDUA.Facade
                                 Phone = orderData.CustomerPhone,
                                 Email = emailToCheck,
                                 IsActive = true,
-                                CreatedAt = DateTime.Now,
+                                CreatedAt = DateTime.UtcNow,
                                 CreatedBy = "System_Order"
                             };
                             transCustomerDA.Insert(newCust);
@@ -201,7 +201,7 @@ namespace MDUA.Facade
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "System_Order",
-                            CreatedAt = DateTime.Now,
+                            CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? orderData.PostalCode ?? "0000").ToCharArray()
                         };
@@ -213,11 +213,11 @@ namespace MDUA.Facade
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(companyId, customerId);
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 1;
-                        orderData.OrderDate = DateTime.Now;
+                        orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
                         orderData.CreatedBy = "System_Order";
-                        orderData.CreatedAt = DateTime.Now;
+                        orderData.CreatedAt = DateTime.UtcNow;
                         orderData.Confirmed = false;
 
                         // Call InsertSafe (This uses the TotalAmount calculated above)
@@ -233,7 +233,7 @@ namespace MDUA.Facade
                             Quantity = orderData.OrderQuantity,
                             UnitPrice = finalUnitPrice,
                             CreatedBy = "System_Order",
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         };
                         transDetailDA.InsertSalesOrderDetailSafe(detail);
 
@@ -333,11 +333,11 @@ namespace MDUA.Facade
                         var delivery = new Delivery
                         {
                             SalesOrderId = orderId,
-                            TrackingNumber = "TRK-" + DateTime.Now.Ticks.ToString().Substring(12),
+                            TrackingNumber = "TRK-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
                             Status = "Pending",
                             ShippingCost = actualCost,
                             CreatedBy = "System_Confirm",
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         };
 
                         _deliveryDataAccess.InsertExtended(delivery);
@@ -372,7 +372,7 @@ namespace MDUA.Facade
             // Auto-set ActualDeliveryDate if delivered
             if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
             {
-                delivery.ActualDeliveryDate = DateTime.Now;
+                delivery.ActualDeliveryDate = DateTime.UtcNow;
             }
 
             _deliveryDataAccess.UpdateExtended(delivery);
@@ -500,34 +500,16 @@ namespace MDUA.Facade
             }
 
             // -------------------------------------------------------------
-            // ✅ DELIVERY FEE LOGIC (Fetch from DB Settings)
+            // ✅ DELIVERY FEE LOGIC (Revenue)
             // -------------------------------------------------------------
-            int companyId = orderData.TargetCompanyId > 0 ? orderData.TargetCompanyId : 1;
-            var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
+            // We trust the "DeliveryCharge" sent from the UI (Editable Input)
+            decimal deliveryFeeToCharge = orderData.DeliveryCharge;
 
-            // A. Detect "In-Store" vs "Home Delivery"
-            // (We rely on the Street naming convention from your JS)
+            // A. Detect "In-Store" based on street naming convention from JS
             bool isStoreSale = !string.IsNullOrEmpty(orderData.Street) &&
-                               orderData.Street.IndexOf("Counter Sale", StringComparison.OrdinalIgnoreCase) >= 0;
+                                orderData.Street.IndexOf("Counter Sale", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            decimal deliveryFeeToCharge = 0; // Default for Store Sale
-
-            // B. Calculate Fee if Home Delivery
-            if (!isStoreSale)
-            {
-                bool isDhaka = (!string.IsNullOrEmpty(orderData.Divison) &&
-                                orderData.Divison.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0)
-                               || (!string.IsNullOrEmpty(orderData.City) &&
-                                orderData.City.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0);
-
-                // Fetch Customer Price (Revenue) from Settings
-                int dhakaFee = settings.ContainsKey("dhaka") ? settings["dhaka"] : 60;
-                int outsideFee = settings.ContainsKey("outside") ? settings["outside"] : 120;
-
-                deliveryFeeToCharge = isDhaka ? dhakaFee : outsideFee;
-            }
-
-            // C. Apply to Totals
+            // B. Apply to Totals
             decimal grossProductCost = basePrice * orderData.OrderQuantity;
 
             // DB Logic: [NetAmount] = [TotalAmount] - [DiscountAmount]
@@ -555,7 +537,7 @@ namespace MDUA.Facade
                         var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
 
-                        // ✅ We need DeliveryDataAccess in the transaction context for the snapshot
+                        // ✅ Delivery DA for snapshot
                         var transDeliveryDA = new DeliveryDataAccess(transaction);
 
                         // A. Customer Logic
@@ -573,7 +555,7 @@ namespace MDUA.Facade
                                 Phone = orderData.CustomerPhone,
                                 Email = finalEmail,
                                 IsActive = true,
-                                CreatedAt = DateTime.Now,
+                                CreatedAt = DateTime.UtcNow,
                                 CreatedBy = "Admin"
                             };
                             transCustomerDA.Insert(newCust);
@@ -608,7 +590,7 @@ namespace MDUA.Facade
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "Admin",
-                            CreatedAt = DateTime.Now,
+                            CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
                         };
@@ -619,11 +601,11 @@ namespace MDUA.Facade
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(orderData.TargetCompanyId, customerId);
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 2; // Direct
-                        orderData.OrderDate = DateTime.Now;
+                        orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = orderData.Confirmed ? "Confirmed" : "Draft";
                         orderData.IsActive = true;
                         orderData.CreatedBy = "Admin";
-                        orderData.CreatedAt = DateTime.Now;
+                        orderData.CreatedAt = DateTime.UtcNow;
 
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
 
@@ -635,7 +617,7 @@ namespace MDUA.Facade
                             Quantity = orderData.OrderQuantity,
                             UnitPrice = finalUnitPrice, // Store Net Unit Price
                             CreatedBy = "Admin",
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         });
 
                         // ------------------------------------------------------------------
@@ -644,26 +626,33 @@ namespace MDUA.Facade
                         // Note: Only create delivery record if it's NOT a Store Pickup
                         if (orderData.Confirmed && !isStoreSale)
                         {
+                            // Logic to retrieve Standard Cost from Settings (Expense Tracking)
+                            int companyId = orderData.TargetCompanyId > 0 ? orderData.TargetCompanyId : 1;
+                            var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
+
                             bool isDhaka = (!string.IsNullOrEmpty(orderData.Divison) &&
-                                           orderData.Divison.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0);
+                                            orderData.Divison.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0)
+                                            || (!string.IsNullOrEmpty(orderData.City) &&
+                                            orderData.City.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0);
 
                             // Fetch ACTUAL COST (Expense) from Settings
-                            decimal costInside = settings.ContainsKey("Cost_InsideDhaka") ? settings["Cost_InsideDhaka"] : 60;
-                            decimal costOutside = settings.ContainsKey("Cost_OutsideDhaka") ? settings["Cost_OutsideDhaka"] : 120;
+                            // If keys don't exist, fallback to revenue defaults or 0
+                            decimal costInside = settings.ContainsKey("Cost_InsideDhaka") ? settings["Cost_InsideDhaka"] : (settings.ContainsKey("dhaka") ? settings["dhaka"] : 60);
+                            decimal costOutside = settings.ContainsKey("Cost_OutsideDhaka") ? settings["Cost_OutsideDhaka"] : (settings.ContainsKey("outside") ? settings["outside"] : 120);
 
                             decimal actualCost = isDhaka ? costInside : costOutside;
 
                             var delivery = new Delivery
                             {
                                 SalesOrderId = orderId,
-                                TrackingNumber = "DO-" + DateTime.Now.Ticks.ToString().Substring(12),
+                                TrackingNumber = "DO-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
                                 Status = "Pending",
-                                ShippingCost = actualCost, // ✅ EXPENSE FROZEN
+                                ShippingCost = actualCost, // ✅ EXPENSE (Standard Cost)
                                 CreatedBy = "Admin_Direct",
-                                CreatedAt = DateTime.Now
+                                CreatedAt = DateTime.UtcNow
                             };
 
-                            // Use the Extended Insert logic we fixed earlier
+                            // Use the Extended Insert logic
                             transDeliveryDA.InsertExtended(delivery);
                         }
 
@@ -675,7 +664,7 @@ namespace MDUA.Facade
                             NetAmount = netAmount,
                             DiscountAmount = totalDiscount,
                             TotalAmount = orderData.TotalAmount,
-                            DeliveryFee = deliveryFeeToCharge // Return what we calculated
+                            DeliveryFee = deliveryFeeToCharge // Return the charged amount
                         };
                     }
                     catch
@@ -685,7 +674,8 @@ namespace MDUA.Facade
                     }
                 }
             }
-        }        //new
+        }
+        //new
         public DashboardStats GetDashboardMetrics()
         {
             return _salesOrderHeaderDataAccess.GetDashboardStats();
@@ -701,7 +691,7 @@ namespace MDUA.Facade
         {
             return _salesOrderHeaderDataAccess.GetSalesTrend(6);
         }
-//new
+        //new
         public List<ChartDataPoint> GetOrderStatusCounts()
         {
             return _salesOrderHeaderDataAccess.GetOrderStatusCounts();

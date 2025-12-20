@@ -7,6 +7,7 @@
 }
 
 @section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
 }
 
@@ -69,7 +70,7 @@
                             </div>
                             <div class="row g-3 mb-3">
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold">Postal Code</label>
+                                    <label class="form-label fw-bold">Postal Code<span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="postalCode" name="PostalCode" placeholder="e.g. 1212">
                                     <small class="text-muted" id="postalStatus">Type to autofill</small>
                                 </div>
@@ -79,9 +80,9 @@
                                 </div>
                             </div>
                             <div class="row g-3">
-                                <div class="col-md-4"><label class="form-label">District</label><select class="form-select" id="district-select" name="City" disabled><option value="">Select...</option></select></div>
-                                <div class="col-md-4"><label class="form-label">Thana</label><select class="form-select" id="thana-select" name="Thana" disabled><option value="">Select...</option></select></div>
-                                <div class="col-md-4"><label class="form-label">Sub-Office</label><select class="form-select" id="suboffice-select" name="SubOffice" disabled><option value="">Select...</option></select></div>
+                                <div class="col-md-4"><label class="form-label">District<span class="text-danger">*</span></label><select class="form-select" id="district-select" name="City" disabled><option value="">Select...</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Thana<span class="text-danger">*</span></label><select class="form-select" id="thana-select" name="Thana" disabled><option value="">Select...</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Sub-Office<span class="text-danger">*</span></label><select class="form-select" id="suboffice-select" name="SubOffice" disabled><option value="">Select...</option></select></div>
                             </div>
                         </div>
                     </form>
@@ -97,7 +98,6 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">1. Select Product <span class="text-danger">*</span></label>
                         <select class="form-select" id="productSelect" required>
-                            <option value="">Choose Product...</option>
                         </select>
                     </div>
 
@@ -130,11 +130,13 @@
                         <span>Discount:</span>
                         <span class="fw-bold">- Tk. <span id="displayDiscount">0.00</span></span>
                     </div>
-                    <div class="d-flex justify-content-between mb-2 small">
+                    <div class="d-flex justify-content-between mb-2 small align-items-center">
                         <span>Delivery:</span>
-                        <span class="fw-medium text-primary">+ Tk. <span id="displayDelivery">0.00</span></span>
+                        <div class="input-group input-group-sm" style="width: 100px;">
+                            <input type="number" class="form-control text-end fw-bold text-primary px-1"
+                                   id="deliveryChargeInput" value="0" min="0" step="1">
+                        </div>
                     </div>
-
                     <div class="d-flex justify-content-between mb-4 border-top pt-2">
                         <span class="fs-5 fw-bold">Net Payable:</span>
                         <span class="fs-5 fw-bold text-success">Tk. <span id="displayNet">0.00</span></span>
@@ -163,8 +165,8 @@
 
         // ✅ FIX: Serialize the delivery settings from Controller
         window.deliveryConfig = @Html.Raw(Json.Serialize(ViewBag.DeliverySettings));
-        </script>
-
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script src="~/js/combo.js"></script>
     <script src="~/js/admin-order.js"></script>
 }

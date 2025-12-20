@@ -27,11 +27,11 @@ namespace MDUA.DataAccess
 
                 cmd.Parameters.AddWithValue("@ProductVariantId", variantId);
                 cmd.Parameters.AddWithValue("@InOut", "IN");
-                cmd.Parameters.AddWithValue("@Date", DateTime.Now);
+                cmd.Parameters.AddWithValue("@Date", DateTime.UtcNow);
                 cmd.Parameters.AddWithValue("@Price", price);
                 cmd.Parameters.AddWithValue("@Quantity", qty);
                 cmd.Parameters.AddWithValue("@CreatedBy", "System");
-                cmd.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
+                cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
                 cmd.Parameters.AddWithValue("@UpdatedBy", DBNull.Value);
                 cmd.Parameters.AddWithValue("@UpdatedAt", DBNull.Value);
                 cmd.Parameters.AddWithValue("@Remarks", (object)remarks ?? DBNull.Value);

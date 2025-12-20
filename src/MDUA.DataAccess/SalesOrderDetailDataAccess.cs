@@ -45,8 +45,12 @@ namespace MDUA.DataAccess
                         if (!reader.IsDBNull(reader.GetOrdinal("Id")))
                             detail.Id = reader.GetInt32(reader.GetOrdinal("Id"));
 
-                        // ✅ 3. CRITICAL MAP: Read 'ProductId' -> Store in 'ProductVariantId'
-                        // This ensures the value is passed to the property expected by Inventory Logic
+                        // ✅ FIX: Map SalesOrderId correctly
+                        if (!reader.IsDBNull(reader.GetOrdinal("SalesOrderId")))
+                        {
+                            detail.SalesOrderId = reader.GetInt32(reader.GetOrdinal("SalesOrderId"));
+                        }
+
                         int prodIdx = reader.GetOrdinal("ProductId");
                         if (!reader.IsDBNull(prodIdx))
                         {

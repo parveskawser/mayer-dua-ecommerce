@@ -109,8 +109,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")"
-                           href="@Url.Action("Add", "Product")"> Add Product
+                        <a class="nav-link nav-link-sm @(currentAction == "Add" && currentController == "Product" ? "active" : "")"
+                           href="@Url.Action("Add", "Product")">
+                            Add Product
                         </a>
                     </li>
                 </ul>
@@ -181,7 +182,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")"
+                        <a class="nav-link nav-link-sm @(currentAction == "Add" && currentController == "Order" ? "active" : "")"
                            href="@Url.Action("Add", "Order")">
                             Add Order
                         </a>

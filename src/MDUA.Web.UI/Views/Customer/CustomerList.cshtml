@@ -41,7 +41,11 @@
                                 <td>@c.Email</td>
                                 <td>@c.Phone</td>
                                 <td><span class="badge @(c.IsActive ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")">@(c.IsActive ? "Active" : "Inactive")</span></td>
-                                <td class="small text-muted">@c.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td class="small text-muted">
+                                    <span class="utc-date" data-utc="@c.CreatedAt.ToUtcString()">
+                                        @c.CreatedAt.ToString("MMM dd, yyyy")
+                                    </span>
+                                </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-2 justify-content-end">
                                         <button type="button"

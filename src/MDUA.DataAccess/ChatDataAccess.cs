@@ -46,8 +46,8 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pInt32("UserLoginId", session.UserLoginId));
                 AddParameter(cmd, pNVarChar("GuestName", session.GuestName));
                 AddParameter(cmd, pNVarChar("Status", string.IsNullOrEmpty(session.Status) ? "New" : session.Status));
-                AddParameter(cmd, pDateTime("StartedAt", DateTime.Now));
-                AddParameter(cmd, pDateTime("LastMessageAt", DateTime.Now));
+                AddParameter(cmd, pDateTime("StartedAt", DateTime.UtcNow));
+                AddParameter(cmd, pDateTime("LastMessageAt", DateTime.UtcNow));
                 AddParameter(cmd, pBool("IsActive", true));
 
                 // Execute
