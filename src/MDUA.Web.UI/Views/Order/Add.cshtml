@@ -8,26 +8,30 @@
 
 @section Styles {
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
+    
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+    
+    <style>
+        /* Fix for intl-tel-input dropdown width */
+        .iti { width: 100%; }
+    </style>
 }
 
 @Html.AntiForgeryToken()
 
 <input type="hidden" id="targetCompanyId" value="@ViewBag.TargetCompanyId" />
 
-<!-- WRAPPER START -->
 <div class="orders-wrapper">
 
-    <!-- 1. FIXED HEADER -->
     <div class="orders-header d-flex justify-content-between align-items-center">
         <h2 class="fw-bold mb-0">🛒 Create Direct Order</h2>
     </div>
 
-    <!-- 2. SCROLLABLE FORM AREA -->
     <div class="orders-scroll-content">
 
         <div class="row">
-            <!-- Left Column: Customer & Address -->
             <div class="col-lg-8">
                 <div class="glass-card p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -47,8 +51,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="custPhone" name="CustomerPhone" placeholder="017..." required>
-                                    <button class="btn btn-outline-secondary" type="button" id="btnCheckCust" title="Search">🔍</button>
+                                    <input type="tel" class="form-control" id="custPhone" name="CustomerPhone" required>
                                 </div>
                                 <small id="custStatus" class="text-muted">Enter phone to autofill</small>
                             </div>
@@ -89,9 +92,7 @@
                 </div>
             </div>
 
-            <!-- Right Column: Product & Calculation -->
             <div class="col-lg-4">
-                <!-- Sticky positioning works perfectly inside the scroll container -->
                 <div class="glass-card p-4 h-100 position-sticky" style="top: 0.5rem;">
                     <h5 class="fw-bold mb-3 text-success">Order Items</h5>
 
@@ -116,7 +117,6 @@
 
                     <hr>
 
-                    <!-- Calculation Area -->
                     <div class="d-flex justify-content-between mb-2 small">
                         <span>Unit Price:</span>
                         <span class="fw-medium">Tk. <span id="displayPrice">0.00</span></span>
@@ -155,18 +155,19 @@
             </div>
         </div>
 
-    </div> <!-- END SCROLL AREA -->
-
-</div> <!-- END WRAPPER -->
-@section Scripts {
+    @section Scripts {
     <script>
-        // Serializes the product list
         window.rawVariants = @Html.Raw(Json.Serialize(variants ?? new List<dynamic>()));
 
         // ✅ FIX: Serialize the delivery settings from Controller
         window.deliveryConfig = @Html.Raw(Json.Serialize(ViewBag.DeliverySettings));
     </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+
     <script src="~/js/combo.js"></script>
     <script src="~/js/admin-order.js"></script>
 }

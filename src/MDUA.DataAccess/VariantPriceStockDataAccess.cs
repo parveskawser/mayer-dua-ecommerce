@@ -95,10 +95,10 @@ namespace MDUA.DataAccess
         {
             var list = new List<LowStockItem>();
 
-            // Query joins VariantPriceStock -> ProductVariant -> Product
-            // Filters for Active items only
+            // ✅ FIX 1: Added 'vps.Id' to the SELECT list
             string sql = $@"
         SELECT TOP (@TopN)
+            vps.Id, 
             p.ProductName,
             pv.VariantName,
             vps.StockQty,
@@ -114,7 +114,7 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pInt32("TopN", topN));
 
                 SqlDataReader reader;
-                SelectRecords(cmd, out reader); // Use your framework's execute method
+                SelectRecords(cmd, out reader);
 
                 using (reader)
                 {
@@ -122,6 +122,8 @@ namespace MDUA.DataAccess
                     {
                         list.Add(new LowStockItem
                         {
+                            // ✅ FIX 2: Map the Id to VariantId
+                            VariantId = Convert.ToInt32(reader["Id"]),
                             ProductName = reader["ProductName"].ToString(),
                             VariantName = reader["VariantName"] != DBNull.Value ? reader["VariantName"].ToString() : "",
                             StockQty = Convert.ToInt32(reader["StockQty"]),
