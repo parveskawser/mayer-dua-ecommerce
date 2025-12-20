@@ -8,9 +8,11 @@ namespace MDUA.Entities
 {
     public class LowStockItem
     {
+        public int VariantId { get; set; } 
         public string ProductName { get; set; }
         public string VariantName { get; set; }
         public int StockQty { get; set; }
         public decimal Price { get; set; }
+
     }
 }

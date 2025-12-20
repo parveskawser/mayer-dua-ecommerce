@@ -7,6 +7,30 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
+    <style>
+        /* Highlight Animation */
+        @@keyframes highlight-pulse {
+            0%
+
+        {
+            background-color: rgba(220, 53, 69, 0.0);
+        }
+
+        20% {
+            background-color: rgba(220, 53, 69, 0.2);
+        }
+
+        100% {
+            background-color: rgba(220, 53, 69, 0.0);
+        }
+
+        }
+
+        .row-highlight {
+            animation: highlight-pulse 3s ease-out;
+            border-left: 4px solid #dc3545 !important;
+        }
+    </style>
 }
 
 <div class="inventory-wrapper">
@@ -95,6 +119,7 @@
     </div>
 </div>
 
+@* --- Modals (Request, Info, Receive) --- *@
 <div class="modal fade" id="requestModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -213,4 +238,56 @@
 @section Scripts {
     <script src="~/js/inventory.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Get highlightId (VariantId) from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightId = urlParams.get('highlightId');
+
+            if (highlightId) {
+                //  _InventoryRow.cshtml to render <tr id="row-{VariantId}">
+                const targetRow = document.getElementById('row-' + highlightId);
+
+                if (targetRow) {
+                    // 2. Find the parent collapse element
+                    const collapseEl = targetRow.closest('.collapse');
+                    if (collapseEl) {
+                        // 3. Open the Bootstrap accordion
+                        const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+                        bsCollapse.show();
+
+                        // 4. Wait for expansion, then scroll and highlight
+                        collapseEl.addEventListener('shown.bs.collapse', function () {
+                            scrollToAndHighlight(targetRow);
+                        });
+
+                        // Fallback in case it's already open or event doesn't fire
+                        setTimeout(() => scrollToAndHighlight(targetRow), 300);
+                    } else {
+                        // Not inside collapse
+                        scrollToAndHighlight(targetRow);
+                    }
+
+                    // 5. Clean URL immediately
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({ path: newUrl }, '', newUrl);
+                }
+            }
+
+            function scrollToAndHighlight(element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('row-highlight');
+            }
+
+            // 6. Remove highlight on click anywhere in the table body
+            const tableBody = document.querySelector('tbody');
+            if(tableBody) {
+                tableBody.addEventListener('click', function() {
+                    const highlighted = document.querySelector('.row-highlight');
+                    if(highlighted) highlighted.classList.remove('row-highlight');
+                });
+            }
+        });
+    </script>
 }

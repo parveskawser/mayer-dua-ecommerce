@@ -56,7 +56,8 @@ namespace MDUA.Facade.Interface
         ProductDiscount GetBestDiscount(int productId, decimal basePrice);
         ProductList SearchProducts(string searchTerm);
         List<ProductVideo> GetProductVideos(int productId);
-        long AddProductVideo(ProductVideo video, string username);
+        Task<long> AddProductVideo(ProductVideo video, string username);
+        Task<string> ConvertToEmbedUrl(string url);
         long DeleteProductVideo(int videoId);
         void SetPrimaryProductVideo(int videoId, int productId, string username);
         List<LowStockItem> GetLowStockVariants(int topN);

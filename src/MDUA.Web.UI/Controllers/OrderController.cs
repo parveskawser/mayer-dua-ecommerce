@@ -269,16 +269,18 @@ namespace MDUA.Web.UI.Controllers
 
         [HttpGet]
         [Route("order/check-customer")]
-        // ✅ FIX: Remove [FromQuery] and rely on standard parameter binding for simple string
         public IActionResult CheckCustomer(string phone)
         {
-            // NO try/catch here, we assume the global error handler is active.
-
-            // We must check for null/empty string here manually, as the binder might allow it
-            if (string.IsNullOrEmpty(phone))
+            // 1. Validate Null/Empty
+            if (string.IsNullOrWhiteSpace(phone))
             {
-                // Return success=false if phone is empty, not a 400 error
                 return Json(new { found = false, message = "Phone number is empty." });
+            }
+
+            phone = phone.Trim();
+            if (!phone.StartsWith("+"))
+            {
+                phone = "+" + phone;
             }
 
             // Call Facade logic
@@ -286,7 +288,6 @@ namespace MDUA.Web.UI.Controllers
 
             if (customer != null)
             {
-                // Helper to convert char[] to string safely
                 Func<char[], string> CharArrayToString = (char[] arr) =>
                     arr != null ? new string(arr).Trim() : null;
 
@@ -295,16 +296,13 @@ namespace MDUA.Web.UI.Controllers
                     found = true,
                     name = customer.CustomerName ?? "",
                     email = customer.Email ?? "",
-
-                    // Safely map all address fields (even if address is null)
                     addressData = (address != null) ? new
                     {
                         street = address.Street ?? "",
                         divison = address.Divison ?? "",
                         city = address.City ?? "",
-                        postalCode = address.PostalCode, // Assumed string/varchar
-                        zipCode = CharArrayToString(address.ZipCode), // Convert char[] to string
-                                                                      // Note: Thana/SubOffice must be mapped here if needed
+                        postalCode = address.PostalCode,
+                        zipCode = CharArrayToString(address.ZipCode),
                     } : null
                 });
             }
@@ -479,7 +477,6 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        // In MDUA.Web.UI/Controllers/OrderController.cs
 
         [Route("order/add")]
         [HttpGet]
@@ -493,7 +490,6 @@ namespace MDUA.Web.UI.Controllers
                 var products = _orderFacade.GetProductVariantsForAdmin();
                 ViewBag.ProductVariants = products;
 
-                // 2. ✅ ADD THIS: Fetch Delivery Settings for the View
                 int companyId = 1; // Default or fetch from User Claims
                 var claim = User.FindFirst("CompanyId") ?? User.FindFirst("TargetCompanyId");
                 if (claim != null && int.TryParse(claim.Value, out int parsedId))
@@ -501,14 +497,12 @@ namespace MDUA.Web.UI.Controllers
                     companyId = parsedId;
                 }
 
-                // Fetch settings (e.g., dhaka=60, outside=120)
                 var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
 
-                // Ensure defaults if keys are missing
                 if (!settings.ContainsKey("dhaka")) settings["dhaka"] = 0;
                 if (!settings.ContainsKey("outside")) settings["outside"] = 0;
 
-                ViewBag.DeliverySettings = settings; // <--- This was missing
+                ViewBag.DeliverySettings = settings; 
 
                 return View();
             }
@@ -659,7 +653,6 @@ namespace MDUA.Web.UI.Controllers
 
         [HttpPost]
         [Route("/order/add-payment")]
-        // ✅ CHANGE: Accept PaymentRequestModel instead of CustomerPayment
         public IActionResult AddAdvancePayment([FromBody] PaymentRequestModel model)
         {
             if (model.CustomerId <= 0 || model.Amount <= 0)

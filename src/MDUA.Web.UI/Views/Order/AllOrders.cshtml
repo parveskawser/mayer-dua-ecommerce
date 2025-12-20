@@ -6,6 +6,31 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+    <style>
+        /* Animation for the visual cue */
+        @@keyframes highlight-pulse {
+            0%
+
+        {
+            background-color: rgba(13, 110, 253, 0.0);
+        }
+
+        20% {
+            background-color: rgba(13, 110, 253, 0.2);
+        }
+
+        100% {
+            background-color: rgba(13, 110, 253, 0.0);
+        }
+
+        }
+
+        .row-highlight {
+            animation: highlight-pulse 2s ease-out;
+            border-left: 4px solid #0d6efd !important;
+            transition: border-left-color 0.3s ease;
+        }
+    </style>
 }
 
 @Html.AntiForgeryToken()
@@ -65,7 +90,9 @@
                             else if (order.Status == "Cancelled") statusBadgeClass = "bg-danger text-white"; // Force Red
                             else if (order.Status == "Delivered") statusBadgeClass = "bg-primary text-white";
 
+                            // ✅ ADDED ID here for the Javascript to find
                             <tr class="accordion-toggle" style="cursor: pointer;"
+                                id="order-row-@order.Id"
                                 onclick="document.getElementById('btn-@order.Id').click()">
                                 <td onclick="event.stopPropagation();">
                                     <button class="btn btn-sm btn-link text-decoration-none text-dark p-0 transition-icon"
@@ -111,7 +138,8 @@
                                 <td>
                                     @* Added id="status-badge-@order.Id" so JS can find it *@
                                     <span id="status-badge-@order.Id" class="badge @statusBadgeClass">@displayStatus</span>
-                                </td>                                <td onclick="event.stopPropagation();">
+                                </td>
+                                <td onclick="event.stopPropagation();">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input confirm-toggle" type="checkbox"
                                                id="toggle-@order.Id"
@@ -123,7 +151,7 @@
                             </tr>
 
                             <tr class="collapse bg-light shadow-sm" id="@collapseId">
-                                <td colspan="7" class="p-3 bg-light">
+                                <td colspan="9" class="p-3 bg-light">
                                     <div class="d-flex align-items-center gap-3 ps-3">
                                         <span class="text-uppercase small fw-bold text-muted">Actions:</span>
 
@@ -157,9 +185,9 @@
                                                 data-net="@FormatAmount(order.NetAmount)"
                                                 data-discount="@FormatAmount(order.TotalAmount - order.NetAmount)"
                                                 data-created-by="@(order.CreatedBy ?? "System")"
-                                                data-created-at="@FormatDate(order.CreatedAt)"
+                                                data-created-at="@order.CreatedAt.ToUtcString()"
+                                                data-updated-at="@order.UpdatedAt.ToUtcString()"
                                                 data-updated-by="@(order.UpdatedBy ?? "-")"
-                                                data-updated-at="@FormatDate(order.UpdatedAt)"
                                                 data-ip="@(order.IPAddress ?? "N/A")"
                                                 data-session="@(order.SessionId ?? "N/A")">
                                             <i class="fas fa-eye text-primary me-1"></i> View Details
@@ -474,6 +502,45 @@
 @section Scripts {
     <script src="~/js/order-details.js" asp-append-version="true"></script>
     <script src="~/js/order-actions.js" asp-append-version="true"></script>
+
+    @*   Handles scrolling and highlighting *@
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Check URL for highlightId
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightId = urlParams.get('highlightId');
+
+            if (highlightId) {
+                const targetRow = document.getElementById('order-row-' + highlightId);
+
+                if (targetRow) {
+                    // Scroll into view
+                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Apply visual highlight
+                    targetRow.classList.add('row-highlight');
+
+                    // Remove the query param from URL instantly so refresh doesn't trigger it
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({ path: newUrl }, '', newUrl);
+                }
+            }
+
+            //  Remove highlight when clicking ANY row
+            const tableBody = document.querySelector('tbody');
+            if (tableBody) {
+                tableBody.addEventListener('click', function(e) {
+                    // Find the currently highlighted row
+                    const highlightedRow = document.querySelector('.row-highlight');
+
+                    // If one exists, remove the class
+                    if (highlightedRow) {
+                        highlightedRow.classList.remove('row-highlight');
+                    }
+                });
+            }
+        });
+    </script>
 }
 
 @functions {

@@ -1,0 +1,166 @@
+﻿/* ========== 1. GLOBAL LAYOUT LOCK ========== */
+/* Stop the whole page from scrolling */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* ========== 2. MAIN WRAPPER (The Fix) ========== */
+.bulk-wrapper {
+    /* Adjust '80px' if you see a double scrollbar (it accounts for your Navbar height) */
+    height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: row; /* Side-by-side layout */
+    overflow: hidden; /* Contains everything inside */
+    background-color: #f8f9fa;
+}
+
+/* ========== 3. LEFT PANE: PRODUCT LIST ========== */
+.product-pane {
+    flex: 1; /* Takes all remaining width */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 1rem; /* Reduced padding for tighter fit */
+}
+
+/* The Fixed Header inside the Product Pane */
+.product-pane-header {
+    flex: 0 0 auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+}
+
+/* The Scrollable Area for Product Cards */
+.product-scroll-area {
+    flex: 1;
+    overflow-y: auto; /* SCROLLS HERE */
+    overflow-x: hidden;
+    padding-right: 5px;
+    padding-bottom: 50px;
+}
+
+    /* Custom Scrollbar */
+    .product-scroll-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .product-scroll-area::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+/* ========== 4. RIGHT PANE: SIDEBAR FORM (UPDATED) ========== */
+.sidebar-pane {
+    width: 380px; /* Fixed width for the form */
+    background: #ffffff;
+    border-left: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Scrollable if form gets too long */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.03);
+    z-index: 50;
+    /* --- NEW CHANGES --- */
+    /* 1. Move the sidebar down by 30px */
+    margin-top: 60px;
+    /* 2. Subtract that margin from height so it doesn't overflow */
+    height: calc(100% - 30px);
+    /* Optional: Add a border and rounded corner for a cleaner look */
+    border-top: 1px solid #dee2e6;
+    border-top-left-radius: 8px;
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+/* ========== 5. KEEPING YOUR EXISTING STYLES ========== */
+.card {
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+}
+
+    .card.border-start {
+        border-left-width: 5px !important;
+    }
+
+    .card.border-danger {
+        border-left-color: #f8b4b4 !important;
+    }
+
+    .card.border-success {
+        border-left-color: #b4e4b4 !important;
+    }
+
+.table-v-middle td {
+    vertical-align: middle;
+}
+
+.variant-row {
+    transition: background-color 0.2s;
+}
+
+    .variant-row:hover {
+        background-color: #f8f9fa;
+    }
+
+/* ========== 6. MOBILE RESPONSIVENESS ========== */
+@media (max-width: 991px) {
+    html, body {
+        overflow: auto !important;
+        height: auto !important;
+    }
+
+    .bulk-wrapper {
+        height: auto;
+        flex-direction: column-reverse;
+        display: block;
+    }
+    /* Reset margin and height on mobile */
+    .sidebar-pane {
+        width: 100%;
+        height: auto;
+        margin-top: 0;
+        border-left: none;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 0;
+    }
+
+    .product-pane {
+        height: auto;
+        overflow: visible;
+    }
+
+    .product-scroll-area {
+        overflow: visible;
+    }
+}
+
+
+/* 1. Wrapper INSIDE the TD (Handles layout) */
+.variant-flex-wrapper {
+    display: flex;
+    align-items: center;
+    max-width: 250px; /* Controls the width limit */
+}
+
+/* 2. The Text Name (Shrinks and adds ...) */
+.variant-name-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1; /* Takes available space */
+    min-width: 0; /* Allows it to shrink below its content size */
+}
+
+/* 3. The Badge (Stays fixed) */
+.badge-stock {
+    white-space: nowrap;
+    margin-left: 8px;
+    flex-shrink: 0; /* Ensures badge never shrinks or hides */
+}

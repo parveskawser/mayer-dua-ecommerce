@@ -1,0 +1,1065 @@
+﻿:root {
+    /* --- Modern Palette --- */
+    --primary: #2563eb; /* Modern Blue */
+    --primary-hover: #1d4ed8;
+    --accent: #f59e0b; /* Amber/Orange for urgency */
+    --text-main: #1f2937; /* Dark Gray */
+    --text-muted: #6b7280;
+    --bg-body: #f3f4f6; /* Light Gray Background */
+    --bg-card: #ffffff;
+    --border-color: #e5e7eb;
+    --success: #10b981;
+    --error: #ef4444;
+    /* --- Spacing & Radius --- */
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --container-width: 1100px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* --- Global Reset & Typography --- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout Wrappers --- */
+.container {
+    width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* --- Header --- */
+.header {
+    background: var(--bg-card);
+    padding: 1rem 0;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* --- Sections Common --- */
+section {
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    overflow: hidden;
+}
+
+/* --- Hero / Combo Info --- */
+.combo-info {
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    border: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.combo-info h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #111827;
+    line-height: 1.2;
+}
+
+.combo-info p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 1.5rem auto;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.combo-btn {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.combo-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.status-btn {
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    margin-left: 10px;
+}
+
+.status-btn:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* --- Scarcity Bar --- */
+.scarcity-section {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.stock-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    margin: 8px auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.stock-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    border-radius: 99px;
+    transition: width 1s ease-in-out;
+}
+
+.hurry-text {
+    font-size: 0.875rem;
+    color: var(--error);
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* --- Price Section --- */
+.price-section {
+    text-align: center;
+}
+
+.price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+}
+
+.old-price {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-left: 0.5rem;
+    font-weight: 400;
+}
+
+.offer-text {
+    background: #ecfdf5;
+    color: #065f46;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* --- Images & Gallery --- */
+.product-image img.main-img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    display: block;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.product-gallery {
+    max-width: 800px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.carousel {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.slide {
+    display: none;
+    width: 100%;
+    height: auto;
+}
+
+.slide.active {
+    display: block;
+}
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.8);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--text-main);
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}
+
+.prev:hover, .next:hover {
+    background: white;
+}
+
+/* --- Description & Testimonials --- */
+.description, .testimonials {
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+.description h2, .testimonials h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.review {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--accent);
+}
+
+.review-text {
+    font-style: italic;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.reviewer {
+    font-weight: bold;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* =========================================
+   ORDER SECTION - FIXED LAYOUT
+   ========================================= */
+.order-section {
+    max-width: var(--container-width);
+    margin: 2rem auto 4rem auto;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+.order-section h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* The Grid Container */
+.order-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    grid-template-areas:
+        "billing summary"
+        "payment summary";
+    align-items: start;
+}
+
+/* Left Side: Form */
+.billing {
+    grid-area: billing;
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+/* Right Side: Summary (Sticky) */
+.order-summary {
+    grid-area: summary;
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 100px;
+    align-self: flex-start;
+}
+
+/* Payment Method Section */
+.payment-section {
+    grid-area: payment;
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.payment-section h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-option {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column; /* Stack vertically by default */
+    align-items: center;
+    justify-content: center;
+    gap: 0; /* Gap handled by image margin */
+    text-align: center;
+    min-height: 100px;
+}
+
+.payment-option:hover {
+    border-color: var(--primary);
+    background: #f0f9ff;
+    transform: translateY(-2px);
+}
+
+/* Radio Button Positioning */
+.payment-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.payment-option label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0;
+}
+
+.payment-option.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* --- Payment Logos (Official Images) --- */
+.payment-logo {
+    height: 35px; /* Fixed height for consistency */
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 5px; /* Space between logo and text */
+    display: block;
+}
+
+/* Confirm Button - In Payment Section */
+.payment-section .submit-btn {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    padding: 1rem;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+}
+
+.payment-section .submit-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.payment-section .submit-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Remove old submit button from billing section */
+.billing .submit-btn {
+    display: none;
+}
+
+/* =========================================
+   PAYMENT SECTION DESIGN
+   ========================================= */
+
+/* 1. Main Container */
+.payment-section {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    /* Soft shadow for depth */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f3f4f6;
+    margin-top: 25px;
+}
+
+    .payment-section h3 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 1.25rem;
+        color: #111827;
+        font-weight: 700;
+    }
+
+/* 2. Payment Option Cards Grid */
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* Individual Card */
+.payment-option {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+}
+
+    /* Hover State */
+    .payment-option:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    /* Selected State (Blue Border & Background) */
+    .payment-option.selected {
+        border-color: #2563eb; /* Primary Blue */
+        background-color: #eff6ff; /* Light Blue Tint */
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    }
+
+/* Labels & Icons */
+.payment-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.payment-option label {
+    margin: 0;
+    cursor: pointer;
+    width: 100%;
+}
+
+.payment-option span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.2;
+    display: block;
+}
+
+/* Radio Button Positioning inside Card */
+.payment-option input[type="radio"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    accent-color: #2563eb;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 3. Payment Details Area (The Toggle Section) */
+#payment-details-area {
+    background-color: #f9fafb; /* Light Gray Background */
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 4. Mode Selection (Radio List) */
+#payment-mode-selector {
+    margin-bottom: 15px;
+}
+
+    #payment-mode-selector label.small {
+        display: block;
+        margin-bottom: 10px;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+/* Flex container for radio rows */
+.d-flex.gap-3 {
+    display: flex;
+    flex-direction: column; /* Stack vertically for clarity */
+    gap: 12px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+    .form-check:hover {
+        border-color: #cbd5e1;
+    }
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    accent-color: #2563eb;
+    cursor: pointer;
+    margin-top: 0; /* Reset */
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: #111827;
+    cursor: pointer;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* 5. Manual Input Fields */
+#manual-payment-fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1d5db;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-left: 4px solid #2563eb;
+    color: #1e40af;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+#manual-payment-fields label {
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+#trx-id-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+    letter-spacing: 1px; /* Make TrxID easier to read */
+}
+
+    #trx-id-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+/* 6. Submit Button */
+.submit-btn {
+    width: 100%;
+    background-color: #2563eb; /* Brand Blue */
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+    .submit-btn:hover {
+        background-color: #1d4ed8; /* Darker Blue */
+        transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .payment-options {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    }
+}
+/* --- Form Elements --- */
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-top: 1rem;
+}
+
+.required-star {
+    color: var(--error);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+input.input-error, select.input-error, textarea.input-error {
+    border-color: var(--error) !important;
+    background-color: #fef2f2;
+}
+
+/* --- Variant Chips --- */
+.variant-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.variant-chip {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.variant-chip:hover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.variant-chip.selected {
+    background: var(--text-main);
+    color: white;
+    border-color: var(--text-main);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* --- Quantity Controls --- */
+.qty-row {
+    margin-top: 1.5rem;
+    background: #f3f4f6;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-wrapper button {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-wrapper button:hover {
+    background: #f9fafb;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+#quantity {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0;
+}
+/* Add this to combo.css */
+.variant-chip.disabled {
+    opacity: 0.4;
+    pointer-events: none; /* Prevents clicking */
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    text-decoration: line-through;
+}
+/* --- Receipt Table --- */
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+.receipt-table th, .receipt-table td {
+    padding: 0.75rem 0;
+    text-align: right;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.receipt-table th:first-child, .receipt-table td:first-child {
+    text-align: left;
+}
+
+.receipt-table tfoot th {
+    border-top: 2px solid #374151;
+    color: #111827;
+    font-size: 1.1rem;
+    padding-top: 1rem;
+    border-bottom: none;
+}
+
+#order-variant-image-holder {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+}
+
+/* Hide mobile image holder on Desktop */
+#mobile-order-variant-image-holder {
+    display: none;
+}
+
+/* --- Status Modal --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: white;
+}
+
+.status-confirmed {
+    background: var(--primary);
+}
+
+.status-delivered {
+    background: var(--success);
+}
+
+.status-cancelled {
+    background: var(--error);
+}
+
+/* Force autofill background to match design */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+}
+
+/* --- Responsive Design (Mobile) --- */
+@media (max-width: 768px) {
+    .order-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "billing"
+            "summary"
+            "payment";
+        gap: 1.5rem;
+    }
+
+    /* All sections full width */
+    .billing,
+    .order-summary,
+    .payment-section {
+        position: static;
+        width: 100%;
+    }
+
+    /* Mobile Payment Options (Horizontal Row) */
+    .payment-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .payment-option {
+        flex-direction: row; /* Icon Left, Text Right */
+        justify-content: flex-start;
+        padding: 1rem;
+        min-height: auto;
+    }
+
+    .payment-option input[type="radio"] {
+        position: static; /* Radio visible inline */
+        margin-right: 0.75rem;
+    }
+
+    .payment-option label {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        width: auto;
+    }
+
+    /* Mobile Payment Logo Sizing */
+    .payment-logo {
+        height: 25px; /* Smaller for mobile row */
+        margin-bottom: 0;
+        margin-right: 12px;
+    }
+
+    .combo-info h1 {
+        font-size: 1.75rem;
+    }
+
+    .price {
+        font-size: 2rem;
+    }
+
+    .billing, .order-summary, .payment-section {
+        padding: 1.5rem;
+    }
+
+    /* Mobile Variant Image Logic */
+    #mobile-order-variant-image-holder {
+        display: block;
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    #order-variant-image-holder {
+        display: none;
+    }
+}
+
+
+/* Centers the Title */
+.video-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Centers the Video Player */
+.video-container {
+    display: flex;
+    position: center;
+    justify-content: center; /* This centers the iframe horizontally */
+    align-items: center;
+    width: 100%;
+}
+
+    /*Sets the Size of the Video */
+    .video-container iframe {
+        width: 60%; /* Your requested width */
+        height: 300px; /* Your requested height */
+        border-radius: 8px; /* Optional: Makes corners rounded */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Optional: Adds a subtle shadow */
+    }
+
+/* MOBILE FIX: On phones, 60% is too small, so we make it 95% */
+@media (max-width: 768px) {
+    .video-container iframe {
+        width: 95%;
+        height: 250px; /* Slightly smaller height for mobile */
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0; /* Adds vertical spacing */
+    width: 100%; /* Ensures it spans the full width of the page */
+}
+
+    /* Optional: Removes default margins from the paragraph for better spacing */
+    footer p {
+        margin: 0;
+    }
+

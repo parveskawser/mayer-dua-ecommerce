@@ -81,6 +81,13 @@ namespace MDUA.Facade
 
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
+            // ✅ 0. VALIDATION: Ensure Customer Name is present
+            if (string.IsNullOrWhiteSpace(orderData.CustomerName))
+                throw new Exception("Customer Name is required to place an order.");
+
+            // Clean the input
+            orderData.CustomerName = orderData.CustomerName.Trim();
+
             // 1. PRE-CALCULATION (Read-Only)
             var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId);
             if (variant == null) throw new Exception("Variant not found.");
@@ -121,10 +128,6 @@ namespace MDUA.Facade
             decimal totalProductPrice = baseVariantPrice * quantity;
 
             // 2. Add Delivery to Total (This hacks the DB to make NetAmount correct)
-            // DB Formula: NetAmount = TotalAmount - DiscountAmount
-            // We want: NetAmount = (Product + Delivery) - Discount
-            // Therefore: TotalAmount MUST BE = (Product + Delivery)
-
             decimal deliveryCharge = orderData.DeliveryCharge; // Captured from UI
             orderData.TotalAmount = totalProductPrice + deliveryCharge;
             orderData.DiscountAmount = totalDiscountAmount;
@@ -161,23 +164,39 @@ namespace MDUA.Facade
 
                             var newCust = new Customer
                             {
-                                CustomerName = orderData.CustomerName,
+                                CustomerName = orderData.CustomerName, // ✅ Use Name Here
                                 Phone = orderData.CustomerPhone,
                                 Email = emailToCheck,
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
-                                CreatedBy = "System_Order"
+                                CreatedBy = orderData.CustomerName, // ✅ Audit: Created by the Guest Name
                             };
                             transCustomerDA.Insert(newCust);
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
                         else
                         {
+                            bool needUpdate = false;
+
+                            // ✅ Update Logic: If existing customer has no name, update it with current name
+                            if (string.IsNullOrEmpty(customer.CustomerName) || customer.CustomerName == "Unknown")
+                            {
+                                customer.CustomerName = orderData.CustomerName;
+                                needUpdate = true;
+                            }
+
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
                                 customer.Email != orderData.CustomerEmail &&
                                 (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith("@guest.local")))
                             {
                                 customer.Email = orderData.CustomerEmail;
+                                needUpdate = true;
+                            }
+
+                            if (needUpdate)
+                            {
+                                customer.UpdatedBy = orderData.CustomerName; // ✅ Audit update
+                                customer.UpdatedAt = DateTime.UtcNow;
                                 transCustomerDA.Update(customer);
                             }
                         }
@@ -200,7 +219,7 @@ namespace MDUA.Facade
                             SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
-                            CreatedBy = "System_Order",
+                            CreatedBy = orderData.CustomerName, // ✅ Audit: Use Name instead of "System_Order"
                             CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? orderData.PostalCode ?? "0000").ToCharArray()
@@ -216,7 +235,7 @@ namespace MDUA.Facade
                         orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
-                        orderData.CreatedBy = "System_Order";
+                        orderData.CreatedBy = orderData.CustomerName; // ✅ Audit: Use Name instead of "System_Order"
                         orderData.CreatedAt = DateTime.UtcNow;
                         orderData.Confirmed = false;
 
@@ -232,7 +251,7 @@ namespace MDUA.Facade
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
                             UnitPrice = finalUnitPrice,
-                            CreatedBy = "System_Order",
+                            CreatedBy = orderData.CustomerName, // ✅ Audit: Use Name instead of "System_Order"
                             CreatedAt = DateTime.UtcNow
                         };
                         transDetailDA.InsertSalesOrderDetailSafe(detail);
