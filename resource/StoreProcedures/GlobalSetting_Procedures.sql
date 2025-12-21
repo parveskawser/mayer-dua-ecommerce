@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertGlobalSetting    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertGlobalSetting    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertGlobalSetting]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertGlobalSetting]
 GO
@@ -57,7 +57,7 @@ AS
 	
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateGlobalSetting    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateGlobalSetting    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateGlobalSetting]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateGlobalSetting]
 GO
@@ -93,7 +93,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteGlobalSetting    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteGlobalSetting    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteGlobalSetting]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteGlobalSetting]
 GO
@@ -124,7 +124,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllGlobalSetting    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllGlobalSetting    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllGlobalSetting]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllGlobalSetting]
 GO
@@ -141,7 +141,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetGlobalSettingById    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetGlobalSettingById    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetGlobalSettingById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetGlobalSettingById]
 GO
@@ -162,7 +162,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetGlobalSettingMaximumId    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetGlobalSettingMaximumId    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetGlobalSettingMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetGlobalSettingMaximumId]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetGlobalSettingRowCount    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetGlobalSettingRowCount    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetGlobalSettingRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetGlobalSettingRowCount]
 GO
@@ -210,7 +210,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedGlobalSetting    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedGlobalSetting    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedGlobalSetting]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedGlobalSetting]
 GO
@@ -292,7 +292,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetGlobalSettingByQuery    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetGlobalSettingByQuery    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetGlobalSettingByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetGlobalSettingByQuery]
 GO

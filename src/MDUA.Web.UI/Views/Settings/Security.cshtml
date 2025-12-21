@@ -1,0 +1,197 @@
+﻿@{
+    ViewData["Title"] = "Security Settings";
+    Layout = "_AdminLayout";
+    bool isEnabled = ViewBag.IsTwoFactorEnabled ?? false;
+}
+
+<div class="container-fluid p-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="mb-4 fw-bold text-dark">Security Settings</h3>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="fas fa-shield-alt text-primary me-2"></i>Two-Factor Authentication</h5>
+                        <p class="text-muted mb-0 small">Secure your account with an additional layer of protection.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="twoFaToggle" style="width: 3em; height: 1.5em; cursor: pointer;" @(isEnabled ? "checked" : "")>
+                    </div>
+                </div>
+            </div>
+
+            <div id="configSection" class="card border shadow-sm" style="display: @(isEnabled ? "block" : "none");">
+                <div class="card-body p-4">
+
+                    @if (isEnabled)
+                    {
+                        <div class="text-center py-4 fade-in">
+                            <h4 class="text-success fw-bold">2FA is Currently Active</h4>
+                            <p class="text-muted mb-0">Your account is secured. To disable, toggle the switch above.</p>
+
+                            <form id="disableTokenForm" style="display:none;">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row align-items-center fade-in">
+                            <div class="col-md-5 text-center border-end">
+                                <p class="text-muted small fw-bold mb-3">STEP 1: SCAN QR CODE</p>
+                                <img src="@ViewBag.QrCodeImage" alt="QR Code" class="img-thumbnail shadow-sm mb-3" style="width: 180px; height: 180px;">
+
+                                <div class="bg-light p-2 rounded border mx-auto" style="max-width: 220px;">
+                                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Manual Entry Key</small>
+                                    <code class="fw-bold text-dark user-select-all">@ViewBag.ManualEntryKey</code>
+                                </div>
+                            </div>
+
+                            <div class="col-md-7 ps-md-4 mt-3 mt-md-0">
+                                <h5 class="fw-bold">Finish Setup</h5>
+                                <p class="text-muted small mb-4">Open Google Authenticator (or any TOTP app), scan the code, and enter the 6-digit number generated below.</p>
+
+                                <form id="enable2faForm">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="entryKey" value="@ViewBag.ManualEntryKey">
+
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-secondary">AUTHENTICATION CODE</label>
+                                        <input type="text" name="code" class="form-control form-control-lg text-center letter-spacing-2"
+                                               placeholder="000 000" maxlength="6" inputmode="numeric" required autocomplete="off">
+                                    </div>
+
+                                    <button class="btn btn-primary w-100 py-2 fw-bold" type="submit">
+                                        <i class="fas fa-lock me-2"></i> Verify & Activate
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+               
+                
+                
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-2 {
+        letter-spacing: 4px;
+        font-weight: 600;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Double @@ escapes the character so Razor ignores it */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+
+            // ✅ 1. Capture the Server State (True/False)
+            // We use .ToLower() because C# 'True' needs to be JS 'true'
+            var is2faOriginallyEnabled = @(isEnabled.ToString().ToLower());
+
+            $('#twoFaToggle').change(function() {
+                var isChecked = $(this).is(':checked');
+                var $toggle = $(this);
+
+                if (isChecked) {
+                    // CASE A: Turning ON -> Show setup
+                    $('#configSection').slideDown();
+                }
+                else {
+                    // CASE B: Turning OFF
+                    if (is2faOriginallyEnabled) {
+                        // 2FA was actually ACTIVE in the DB -> Show Warning
+
+                        // Prevent the toggle from switching visually until confirmed
+                        $toggle.prop('checked', true);
+
+                        Swal.fire({
+                            title: 'Disable 2FA?',
+                            text: "This will remove the extra layer of security from your account.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, Disable it'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                performDisable($toggle);
+                            } else {
+                                // User canceled the popup, keep switch ON
+                                $toggle.prop('checked', true);
+                            }
+                        });
+                    }
+                    else {
+                        // 2FA was NOT active (User just cancelled the setup) -> Just hide UI
+                        $('#configSection').slideUp();
+                    }
+                }
+            });
+
+            // 2. Function to Call Backend to Disable
+            function performDisable($toggle) {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.post('@Url.Action("DisableTwoFactor", "Account")',
+                    { __RequestVerificationToken: token },
+                    function(res) {
+                        if (res.success) {
+                            Swal.fire('Disabled!', 'Two-Factor Authentication is turned off.', 'success')
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                            // Revert toggle if failed
+                            $toggle.prop('checked', true);
+                        }
+                    }
+                ).fail(function() {
+                    Swal.fire('Error', 'Server connection failed.', 'error');
+                    $toggle.prop('checked', true);
+                });
+            }
+
+            // 3. Handle the "Verify & Enable" Form Submission
+            $('#enable2faForm').submit(function(e) {
+                e.preventDefault();
+                var data = $(this).serialize();
+
+                $.post('@Url.Action("EnableTwoFactor", "Settings")', data, function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            title: 'Secured!',
+                            text: 'Two-Factor Authentication is now active.',
+                            icon: 'success',
+                            confirmButtonColor: '#0d6efd'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Failed', res.message, 'error');
+                    }
+                });
+            });
+        });
+    </script>
+}

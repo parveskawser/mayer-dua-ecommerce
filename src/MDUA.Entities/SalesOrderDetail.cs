@@ -12,5 +12,7 @@ namespace MDUA.Entities
 	{
         [DataMember]
         public int ProductVariantId { get; set; }
+        [DataMember]
+        public virtual ProductVariant ProductVariant { get; set; }
     }
 }

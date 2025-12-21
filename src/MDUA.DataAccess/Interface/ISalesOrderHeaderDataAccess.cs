@@ -53,7 +53,9 @@ namespace MDUA.DataAccess.Interface
         void UpdateOrderDeliveryCharge(int orderId, decimal newDeliveryCharge);
 
         SalesOrderHeader GetBySalesOrderRef(string salesOrderRef);
+        SalesOrderHeader GetOrderTotalsSafe(int orderId);
 
+        bool GetConfirmedFlag(int orderId);
 
     }
 }

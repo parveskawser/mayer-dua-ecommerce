@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ultimate Summer Combo | FashionHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* --- Modern Palette --- */
-            --primary: #2563eb; /* Modern Blue */
+            --primary: #2563eb;
             --primary-hover: #1d4ed8;
-            --accent: #f59e0b; /* Amber/Orange for urgency */
-            --text-main: #1f2937; /* Dark Gray */
+            --accent: #f59e0b;
+            --text-main: #1f2937;
             --text-muted: #6b7280;
-            --bg-body: #f3f4f6; /* Light Gray Background */
+            --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --border-color: #e5e7eb;
             --success: #10b981;
@@ -29,9 +29,7 @@
         }
 
         /* --- Global Reset & Typography --- */
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -51,27 +49,28 @@
             padding: 0 1rem;
         }
 
-        /* --- Header --- */
+        /* --- Modern Glass Header --- */
         .header {
-            background: var(--bg-card);
-            padding: 1rem 0;
-            box-shadow: var(--shadow-sm);
+            /* Semi-transparent white */
+            background: rgba(255, 255, 255, 0.85);
+            
+            /* The Blur Magic */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* For Safari */
+            
+            /* Remove heavy shadow, add subtle border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            
+            padding: 0.8rem 0; /* Slightly sleeker height */
             text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: all 0.3s ease;
         }
 
-        .logo {
-            height: 50px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        /* --- Sections Common --- */
-        section {
-            margin-bottom: 2rem;
-        }
+        section { margin-bottom: 2rem; }
 
         .card {
             background: var(--bg-card);
@@ -172,19 +171,12 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.6;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         /* --- Price Section --- */
-        .price-section {
-            text-align: center;
-        }
+        .price-section { text-align: center; }
 
         .price {
             font-size: 2.5rem;
@@ -236,15 +228,8 @@
             box-shadow: var(--shadow-md);
         }
 
-        .slide {
-            display: none;
-            width: 100%;
-            height: auto;
-        }
-
-            .slide.active {
-                display: block;
-            }
+        .slide { display: none; width: 100%; height: auto; }
+        .slide.active { display: block; }
 
         .prev, .next {
             position: absolute;
@@ -264,17 +249,9 @@
             justify-content: center;
         }
 
-        .prev {
-            left: 10px;
-        }
-
-        .next {
-            right: 10px;
-        }
-
-            .prev:hover, .next:hover {
-                background: white;
-            }
+        .prev { left: 10px; }
+        .next { right: 10px; }
+        .prev:hover, .next:hover { background: white; }
 
         /* --- Description & Testimonials --- */
         .description, .testimonials {
@@ -294,10 +271,7 @@
             padding: 0.75rem;
             border-bottom: 1px solid var(--border-color);
         }
-
-            .detail-row:last-child {
-                border-bottom: none;
-            }
+        .detail-row:last-child { border-bottom: none; }
 
         .review {
             background: #f9fafb;
@@ -321,7 +295,7 @@
         }
 
         /* =========================================
-           ORDER SECTION - FIXED LAYOUT
+           ORDER SECTION
            ========================================= */
         .order-section {
             max-width: var(--container-width);
@@ -337,7 +311,6 @@
                 margin-bottom: 2rem;
             }
 
-        /* The Grid Container */
         .order-container {
             display: grid;
             grid-template-columns: 1.5fr 1fr;
@@ -348,7 +321,6 @@
             align-items: start;
         }
 
-        /* Left Side: Form */
         .billing {
             grid-area: billing;
             background: var(--bg-card);
@@ -358,7 +330,6 @@
             border: 1px solid var(--border-color);
         }
 
-        /* Right Side: Summary (Sticky) */
         .order-summary {
             grid-area: summary;
             background: white;
@@ -371,7 +342,6 @@
             align-self: flex-start;
         }
 
-        /* Payment Method Section */
         .payment-section {
             grid-area: payment;
             background: var(--bg-card);
@@ -405,10 +375,10 @@
             background: white;
             transition: all 0.3s ease;
             display: flex;
-            flex-direction: column; /* Stack vertically by default */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0; /* Gap handled by image margin */
+            gap: 0;
             text-align: center;
             min-height: 100px;
         }
@@ -419,7 +389,6 @@
                 transform: translateY(-2px);
             }
 
-            /* Radio Button Positioning */
             .payment-option input[type="radio"] {
                 width: 20px;
                 height: 20px;
@@ -449,16 +418,14 @@
                 box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
             }
 
-        /* --- Payment Logos (Official Images) --- */
         .payment-logo {
-            height: 35px; /* Fixed height for consistency */
+            height: 35px;
             width: auto;
             object-fit: contain;
-            margin-bottom: 5px; /* Space between logo and text */
+            margin-bottom: 5px;
             display: block;
         }
 
-        /* Confirm Button - In Payment Section */
         .payment-section .submit-btn {
             width: 100%;
             background-color: var(--primary);
@@ -474,21 +441,10 @@
             box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
         }
 
-            .payment-section .submit-btn:hover {
-                background-color: var(--primary-hover);
-            }
+            .payment-section .submit-btn:hover { background-color: var(--primary-hover); }
 
-            .payment-section .submit-btn:disabled {
-                background-color: #9ca3af;
-                cursor: not-allowed;
-            }
+        .billing .submit-btn { display: none; }
 
-        /* Remove old submit button from billing section */
-        .billing .submit-btn {
-            display: none;
-        }
-
-        /* --- Form Elements --- */
         label {
             display: block;
             margin-bottom: 0.5rem;
@@ -498,9 +454,7 @@
             margin-top: 1rem;
         }
 
-        .required-star {
-            color: var(--error);
-        }
+        .required-star { color: var(--error); }
 
         input, select, textarea {
             width: 100%;
@@ -518,11 +472,13 @@
                 border-color: var(--primary);
                 box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             }
-
-            input.input-error, select.input-error, textarea.input-error {
-                border-color: var(--error) !important;
-                background-color: #fef2f2;
-            }
+        
+        /* --- Address Grid System --- */
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
 
         /* --- Variant Chips --- */
         .variant-chips-container {
@@ -554,15 +510,6 @@
                 color: white;
                 border-color: var(--text-main);
                 box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
-            
-            .variant-chip.disabled {
-                opacity: 0.4;
-                pointer-events: none; /* Prevents clicking */
-                background-color: #f3f4f6;
-                border-color: #e5e7eb;
-                color: #9ca3af;
-                text-decoration: line-through;
             }
 
         /* --- Quantity Controls --- */
@@ -596,12 +543,6 @@
                 justify-content: center;
             }
 
-                .quantity-wrapper button:hover {
-                    background: #f9fafb;
-                    border-color: var(--primary);
-                    color: var(--primary);
-                }
-
         #quantity {
             width: 50px;
             text-align: center;
@@ -625,9 +566,7 @@
                 border-bottom: 1px dashed #e5e7eb;
             }
 
-                .receipt-table th:first-child, .receipt-table td:first-child {
-                    text-align: left;
-                }
+                .receipt-table th:first-child, .receipt-table td:first-child { text-align: left; }
 
             .receipt-table tfoot th {
                 border-top: 2px solid #374151;
@@ -645,96 +584,175 @@
             margin-bottom: 1rem;
         }
 
-        /* Hide mobile image holder on Desktop */
-        #mobile-order-variant-image-holder {
+        #mobile-order-variant-image-holder { display: none; }
+
+        /* --- Modal CSS --- */
+        .modal {
             display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
         }
 
-        /* Force autofill background to match design */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
-            -webkit-text-fill-color: var(--text-main) !important;
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 600px;
+            border-radius: var(--radius-lg);
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.3s;
         }
 
-        /* --- Responsive Design (Mobile) --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover { color: #000; }
+
+        #status-lookup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #status-lookup-form input { text-align: center; }
+
+        .status-pending { background-color: #ffeeba; color: #856404; }
+        .status-shipped { background-color: #cce5ff; color: #004085; }
+        .status-returned { background-color: #e2e3e5; color: #383d41; }
+
+        .receipt-container {
+            border: 2px dashed #ddd;
+            background-color: #fffbf0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .receipt-title {
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .receipt-header-details p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .receipt-summary-table {
+            width: 100%;
+            margin-top: 15px;
+            border-top: 2px dashed #ccc;
+            border-collapse: collapse;
+        }
+
+        .receipt-summary-table td, .receipt-summary-table th {
+            padding: 8px 0;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .receipt-summary-table th {
+            text-align: left;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .receipt-container tr td.qty { text-align: center; }
+        .receipt-container tr td.price, .receipt-container tr td.total { text-align: right; }
+
+        .discount-amount { color: #dc3545; }
+
+        .grand-total-row th, .grand-total-row td {
+            border-top: 2px dashed #333;
+            border-bottom: 2px dashed #333;
+            font-weight: 900;
+            font-size: 1.1rem;
+            padding: 10px 0;
+            color: #000;
+        }
+
+        .thank-you-message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .logo {
+            height: 45px; /* Slightly larger for the new icon */
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive Design --- */
         @media (max-width: 768px) {
             .order-container {
                 grid-template-columns: 1fr;
-                grid-template-areas:
-                    "billing"
-                    "summary"
-                    "payment";
+                grid-template-areas: "billing" "summary" "payment";
                 gap: 1.5rem;
             }
-
-            /* All sections full width */
-            .billing,
-            .order-summary,
-            .payment-section {
-                position: static;
-                width: 100%;
-            }
-
-            /* Mobile Payment Options (Horizontal Row) */
-            .payment-options {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-
-            .payment-option {
-                flex-direction: row; /* Icon Left, Text Right */
-                justify-content: flex-start;
-                padding: 1rem;
-                min-height: auto;
-            }
-
-                .payment-option input[type="radio"] {
-                    position: static; /* Radio visible inline */
-                    margin-right: 0.75rem;
-                }
-
-                .payment-option label {
-                    flex-direction: row;
-                    text-align: left;
-                    align-items: center;
-                    width: auto;
-                }
-
-            /* Mobile Payment Logo Sizing */
-            .payment-logo {
-                height: 25px; /* Smaller for mobile row */
-                margin-bottom: 0;
-                margin-right: 12px;
-            }
-
-            .combo-info h1 {
-                font-size: 1.75rem;
-            }
-
-            .price {
-                font-size: 2rem;
-            }
-
-            .billing, .order-summary, .payment-section {
-                padding: 1.5rem;
-            }
-
-            /* Mobile Variant Image Logic */
-            #mobile-order-variant-image-holder {
-                display: block;
-                background: #f9fafb;
-                padding: 1rem;
-                border-radius: var(--radius-md);
-                border: 1px solid #e5e7eb;
-                margin-bottom: 1rem;
-            }
-
-            #order-variant-image-holder {
-                display: none;
-            }
+            .billing, .order-summary, .payment-section { width: 100%; position: static; }
+            .payment-options { grid-template-columns: 1fr; gap: 0.75rem; }
+            .payment-option { flex-direction: row; justify-content: flex-start; padding: 1rem; min-height: auto; }
+            .payment-option input[type="radio"] { position: static; margin-right: 0.75rem; }
+            .payment-option label { flex-direction: row; width: auto; }
+            .form-row-2 { grid-template-columns: 1fr; }
+            #mobile-order-variant-image-holder { display: block; margin-bottom: 1rem; }
+            #order-variant-image-holder { display: none; }
         }
     </style>
 </head>
@@ -742,9 +760,16 @@
 
     <header class="header">
         <div class="container">
-            <img src="https://placehold.co/150x50/2563eb/ffffff?text=Combo+Logo"
-                 alt="Company Logo"
-                 class="logo" />
+            <a href="#" style="text-decoration: none;">
+                <div style="display: inline-block; border: 3px solid #1f2937; padding: 8px 20px; text-transform: uppercase;">
+                    <span style="font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.5rem; color: #1f2937; letter-spacing: 2px;">
+                        FASHION
+                    </span>
+                    <span style="font-family: sans-serif; font-weight: 300; font-size: 1.5rem; color: #2563eb;">
+                        HUB
+                    </span>
+                </div>
+            </a>
         </div>
     </header>
 
@@ -754,7 +779,7 @@
             <p>Experience the best of style and comfort with our exclusive summer collection. Limited edition items specifically curated for you.</p>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <a href="#order" class="btn combo-btn">Order Now</a>
-                <button class="btn status-btn">Track My Order</button>
+                <button class="btn status-btn" id="open-status-modal">Track My Order</button>
             </div>
         </section>
 
@@ -768,19 +793,13 @@
 
         <section class="price-section">
             <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
-                <p class="price">
-                    Tk. 1,500
-                    <span class="old-price">Tk. 2,200</span>
-                </p>
+                <p class="price">Tk. 1,500 <span class="old-price">Tk. 2,200</span></p>
                 <p class="offer-text">💰 Cash on delivery available</p>
             </div>
         </section>
 
         <section class="product-image">
-            <img src="https://placehold.co/800x600/f3f4f6/333?text=Main+Product+Image"
-                 alt="Main Product"
-                 class="combo main-img"
-                 id="main-product-img" />
+            <img src="https://placehold.co/800x600/f3f4f6/333?text=Main+Product+Image" alt="Main Product" class="combo main-img" id="main-product-img" />
         </section>
 
         <section class="product-gallery card">
@@ -798,31 +817,16 @@
 
         <section class="description card">
             <h2>Product Details</h2>
-            <div class="detail-row">
-                <span class="detail-icon">🧵</span>
-                <p><strong>Fabric:</strong> 100% Premium Cotton</p>
-            </div>
-            <div class="detail-row">
-                <span class="detail-icon">🎨</span>
-                <p><strong>Color:</strong> Fade-resistant dyes</p>
-            </div>
-            <div class="detail-row">
-                <span class="detail-icon">🛡️</span>
-                <p><strong>Warranty:</strong> 6 Months Color Guarantee</p>
-            </div>
+            <div class="detail-row"><span class="detail-icon">🧵</span><p><strong>Fabric:</strong> 100% Premium Cotton</p></div>
+            <div class="detail-row"><span class="detail-icon">🎨</span><p><strong>Color:</strong> Fade-resistant dyes</p></div>
+            <div class="detail-row"><span class="detail-icon">🛡️</span><p><strong>Warranty:</strong> 6 Months Color Guarantee</p></div>
         </section>
 
         <section class="testimonials card">
             <h2>What Our Customers Say</h2>
             <div class="reviews">
-                <div class="review">
-                    <p class="review-text">"The quality is absolutely amazing for the price. Highly recommended!"</p>
-                    <p class="reviewer">– Rahim Ahmed</p>
-                </div>
-                <div class="review">
-                    <p class="review-text">"Fast delivery and the packaging was great. Will order again."</p>
-                    <p class="reviewer">– Tanvir Hasan</p>
-                </div>
+                <div class="review"><p class="review-text">"The quality is absolutely amazing for the price. Highly recommended!"</p><p class="reviewer">– Rahim Ahmed</p></div>
+                <div class="review"><p class="review-text">"Fast delivery and the packaging was great. Will order again."</p><p class="reviewer">– Tanvir Hasan</p></div>
             </div>
         </section>
 
@@ -850,44 +854,60 @@
                         </div>
 
                         <div id="mobile-order-variant-image-holder">
-                            <img id="mobile-order-variant-image"
-                                 src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant"
-                                 alt="Selected Variant"
-                                 style="width: 100%; height: 200px; object-fit: contain;" />
+                            <img id="mobile-order-variant-image" src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant" alt="Selected Variant" style="width: 100%; height: 200px; object-fit: contain;" />
                         </div>
 
-                        <label>Phone Number <span class="required-star">*</span></label>
-                        <div class="input-group">
-                            <input type="tel" placeholder="017XXXXXXXX" required />
-                        </div>
-
-                        <label>Full Name <span class="required-star">*</span></label>
-                        <input type="text" placeholder="Your Name" required />
-
-                        <div class="address-section">
-                            <label>Street Address <span class="required-star">*</span></label>
-                            <textarea placeholder="House No, Road No, Area..." rows="2" required></textarea>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div>
-                                    <label>District <span class="required-star">*</span></label>
-                                    <select required>
-                                        <option value="">Dhaka</option>
-                                        <option value="">Chittagong</option>
-                                        <option value="">Sylhet</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label>Thana <span class="required-star">*</span></label>
-                                    <select required>
-                                        <option value="">Select...</option>
-                                        <option value="">Gulshan</option>
-                                        <option value="">Mirpur</option>
-                                    </select>
-                                </div>
+                        <div class="form-row-2">
+                            <div>
+                                <label>Phone Number <span class="required-star">*</span></label>
+                                <input type="tel" placeholder="017XXXXXXXX" required />
+                            </div>
+                            <div>
+                                <label>Full Name <span class="required-star">*</span></label>
+                                <input type="text" placeholder="Your Name" required />
                             </div>
                         </div>
 
+                       <div class="address-section">
+    <div style="background: #f0f9ff; padding: 10px; border-radius: 8px; margin-top: 15px; border: 1px solid #bae6fd;">
+        <label style="margin-top:0;">Postal Code (Auto-Fill) <span class="required-star">*</span></label>
+        <input type="text" id="postal-code" placeholder="e.g. 1212" style="font-weight: bold; color: var(--primary);" />
+        <small style="color: var(--text-muted); font-size: 0.8rem;">Type <strong>1212</strong> to test auto-filling address.</small>
+    </div>
+
+    <div class="form-row-2">
+        <div>
+            <label>Division <span class="required-star">*</span></label>
+            <select id="division" required>
+                <option value="">Select Division...</option>
+                </select>
+        </div>
+        <div>
+            <label>District <span class="required-star">*</span></label>
+            <select id="district" required disabled>
+                <option value="">Select Division First...</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row-2">
+        <div>
+            <label>Thana <span class="required-star">*</span></label>
+            <select id="thana" required disabled>
+                <option value="">Select District First...</option>
+            </select>
+        </div>
+        <div>
+            <label>Sub Office <span class="required-star">*</span></label>
+            <select id="sub-office" required disabled>
+                <option value="">Select Thana First...</option>
+            </select>
+        </div>
+    </div>
+
+    <label>Street Address <span class="required-star">*</span></label>
+    <textarea placeholder="House No, Road No, Area..." rows="2" required></textarea>
+</div>
                         <div class="qty-row">
                             <label style="margin:0;">Quantity</label>
                             <div class="quantity-wrapper">
@@ -901,10 +921,7 @@
 
                 <div class="order-summary">
                     <div id="order-variant-image-holder">
-                        <img id="order-variant-image"
-                             src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant"
-                             alt="Selected Variant"
-                             style="width: 100%; height: 200px; object-fit: contain;" />
+                        <img id="order-variant-image" src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant" alt="Selected Variant" style="width: 100%; height: 200px; object-fit: contain;" />
                     </div>
 
                     <h3 style="margin-top:0;">Your Receipt</h3>
@@ -930,29 +947,24 @@
                         <div class="payment-option selected" onclick="selectPayment(this)">
                             <input type="radio" name="paymentMethod" checked>
                             <label>
-                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png"
-                                     alt="Cash on Delivery" class="payment-logo">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" alt="Cash on Delivery" class="payment-logo">
                                 <span>Cash on Delivery</span>
                             </label>
                         </div>
-
                         <div class="payment-option" onclick="selectPayment(this)">
                             <input type="radio" name="paymentMethod">
                             <label>
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BKash_logo.svg/1200px-BKash_logo.svg.png"
-                                     alt="bKash" class="payment-logo">
+                                 <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
+                                    alt="bKash" class="payment-logo">
                                 <span>bKash</span>
                             </label>
                         </div>
-
                         <div class="payment-option" onclick="selectPayment(this)">
                             <input type="radio" name="paymentMethod">
                             <label>
                                 <div style="display: flex; gap:5px; justify-content:center;">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
-                                         alt="Visa" class="payment-logo" style="width: auto; height: 15px;">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                                         alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" class="payment-logo" style="width: auto; height: 15px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
                                 </div>
                                 <span style="margin-left: 5px;">Card</span>
                             </label>
@@ -960,42 +972,49 @@
                     </div>
                     <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
                 </div>
-
             </div>
         </section>
     </div>
 
+    <div id="order-status-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Track Your Order 📦</h3>
+            <p>Please enter your <strong>Online Order ID</strong> to check the status of your purchase.</p>
+            <form id="status-lookup-form">
+                <input type="text" id="order-id-input" name="OrderId" placeholder="Enter your Order ID (e.g., ON00012345)" required />
+                <button type="submit" class="btn submit-btn">Check Status</button>
+            </form>
+            <div id="status-result" class="status-result-area"></div>
+            <div id="status-loading" class="text-center" style="display: none; padding: 20px;">
+                <div class="spinner"></div>
+                <p>Loading order details...</p>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="container" style="text-align: center; padding: 2rem 0; color: #666;">
-            <p>© 2024 Combo King. All Rights Reserved.</p>
+            <p>© 2025 MDUA System. All Rights Reserved.</p>
         </div>
     </footer>
 
     <script>
-        // Gallery Slider Logic
+        // Gallery Slider
         let slideIndex = 0;
         const slides = document.querySelectorAll(".slide");
-
         function showSlide(index) {
             if (index >= slides.length) slideIndex = 0;
             if (index < 0) slideIndex = slides.length - 1;
-            
             slides.forEach(slide => slide.classList.remove("active"));
             slides[slideIndex].classList.add("active");
         }
+        function changeSlide(n) { showSlide(slideIndex += n); }
 
-        function changeSlide(n) {
-            showSlide(slideIndex += n);
-        }
-
-        // Chip Selection Logic (Visual only)
+        // Chip Selection
         function selectChip(el) {
-            // Find parent container
             const container = el.parentElement;
-            // Remove 'selected' from siblings
-            const siblings = container.querySelectorAll('.variant-chip');
-            siblings.forEach(sib => sib.classList.remove('selected'));
-            // Add 'selected' to clicked element
+            container.querySelectorAll('.variant-chip').forEach(sib => sib.classList.remove('selected'));
             el.classList.add('selected');
         }
 
@@ -1006,24 +1025,240 @@
             let newVal = currentVal + n;
             if (newVal < 1) newVal = 1;
             qtyInput.value = newVal;
-            
-            // Update summary for demo
             document.getElementById('summary-qty').innerText = newVal;
             document.getElementById('summary-subtotal').innerText = 'Tk. ' + (newVal * 1500).toLocaleString();
             document.getElementById('receipt-grand-total').innerText = 'Tk. ' + ((newVal * 1500) + 60).toLocaleString();
         }
 
-        // Payment Method Selection Logic
+        // Payment Selection
         function selectPayment(el) {
-            const options = document.querySelectorAll('.payment-option');
-            options.forEach(opt => {
+            document.querySelectorAll('.payment-option').forEach(opt => {
                 opt.classList.remove('selected');
                 opt.querySelector('input[type="radio"]').checked = false;
             });
-            
             el.classList.add('selected');
             el.querySelector('input[type="radio"]').checked = true;
         }
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+$(document).ready(function () {
+const locationData = {
+        "Dhaka": {
+            "Dhaka": {
+                "Gulshan": [
+                    { name: "Gulshan Model Town", code: "1212" },
+                    { name: "Banani", code: "1213" },
+                    { name: "Niketan", code: "1212" }
+                ],
+                "Mirpur": [
+                    { name: "Mirpur-1", code: "1216" },
+                    { name: "Mirpur-10", code: "1216" },
+                    { name: "Pallabi", code: "1216" }
+                ],
+                "Dhanmondi": [
+                    { name: "Dhanmondi R/A", code: "1209" },
+                    { name: "Jigatola", code: "1209" }
+                ]
+            },
+            "Gazipur": {
+                "Gazipur Sadar": {
+                    "Joydebpur": [
+                        { name: "Joydebpur Head Office", code: "1700" },
+                        { name: "Baoaid", code: "1702" }
+                    ]
+                }
+            }
+        },
+        "Chittagong": {
+            "Chittagong": {
+                "Pahartali": [
+                    { name: "Pahartali", code: "4202" },
+                    { name: "Wireless", code: "4202" }
+                ],
+                "Panchlaish": [
+                    { name: "Nasirabad", code: "4209" },
+                    { name: "Muradpur", code: "4209" }
+                ]
+            },
+            "Comilla": {
+                "Comilla Sadar": [
+                    { name: "Comilla HO", code: "3500" },
+                    { name: "Kandirpar", code: "3500" }
+                ]
+            }
+        }
+    };
+
+    // --- 2. HELPER TO POPULATE SELECTS ---
+    function populateSelect(selector, options, defaultText = "Select...") {
+        const $el = $(selector);
+        $el.empty().append(`<option value="">${defaultText}</option>`);
+
+        if (options) {
+            $el.prop('disabled', false);
+
+            if (Array.isArray(options)) {
+                // It's the Sub-Office Array (contains Objects {name, code})
+                options.forEach(opt => {
+                    // We add data-code attribute here so we can read it later
+                    $el.append(`<option value="${opt.name}" data-code="${opt.code}">${opt.name}</option>`);
+                });
+            } else {
+                // It's a Division/District/Thana Object (keys are names)
+                Object.keys(options).forEach(key => {
+                    $el.append(`<option value="${key}">${key}</option>`);
+                });
+            }
+        } else {
+            $el.prop('disabled', true);
+        }
+    }
+
+    // --- 3. INITIALIZATION ---
+    populateSelect('#division', locationData, "Select Division...");
+
+
+    // --- 4. CASCADE EVENTS (Dropdown Logic) ---
+    
+    // Division -> District
+    $('#division').on('change', function() {
+        const div = $(this).val();
+        const distData = div ? locationData[div] : null;
+        
+        populateSelect('#district', distData, "Select District...");
+        populateSelect('#thana', null, "Select District First...");
+        populateSelect('#sub-office', null, "Select Thana First...");
+        $('#postal-code').val(''); // Clear code on reset
+    });
+
+    // District -> Thana
+    $('#district').on('change', function() {
+        const div = $('#division').val();
+        const dist = $(this).val();
+        const thanaData = (div && dist) ? locationData[div][dist] : null;
+        
+        populateSelect('#thana', thanaData, "Select Thana...");
+        populateSelect('#sub-office', null, "Select Thana First...");
+        $('#postal-code').val('');
+    });
+
+    // Thana -> Sub Office
+    $('#thana').on('change', function() {
+        const div = $('#division').val();
+        const dist = $('#district').val();
+        const thana = $(this).val();
+        const subData = (div && dist && thana) ? locationData[div][dist][thana] : null;
+        
+        populateSelect('#sub-office', subData, "Select Sub Office...");
+        $('#postal-code').val('');
+    });
+
+    // --- 5. REVERSE AUTOFILL (Sub Office -> Postal Code) ---
+    // This runs when you select the Sub Office from the dropdown
+    $('#sub-office').on('change', function() {
+        // Get the 'data-code' from the selected option
+        const code = $(this).find(':selected').data('code');
+        
+        if (code) {
+            $('#postal-code').val(code).css('border-color', 'var(--success)');
+        } else {
+            $('#postal-code').val('').css('border-color', '#d1d5db');
+        }
+    });
+
+    // --- 6. FORWARD AUTOFILL (Postal Code -> Dropdowns) ---
+    // Only works for the sample "1212" to avoid complex reverse-search logic in this snippet
+    $('#postal-code').on('keyup', function() {
+        const code = $(this).val().trim();
+        
+        if (code === '1212') {
+            // Manually trigger the cascade sequence
+            $('#division').val('Dhaka').trigger('change');
+            $('#district').val('Dhaka').trigger('change');
+            $('#thana').val('Gulshan').trigger('change');
+            $('#sub-office').val('Gulshan Model Town').trigger('change'); // This will re-trigger block #5, which confirms the code
+        }
+    });
+
+    // --- 7. ORDER TRACKING / MODAL LOGIC (Existing) ---
+    const modal = $('#order-status-modal');
+    const openBtn = $('#open-status-modal');
+    const closeBtn = modal.find('.close-btn');
+    const lookupForm = $('#status-lookup-form');
+    const resultArea = $('#status-result');
+    const loading = $('#status-loading');
+
+    openBtn.on('click', function () {
+        modal.css('display', 'block');
+        $('#order-id-input').val('');
+        resultArea.empty();
+        loading.hide();
+    });
+
+    closeBtn.on('click', function () { modal.css('display', 'none'); });
+    $(window).on('click', function (event) { if ($(event.target).is(modal)) modal.css('display', 'none'); });
+
+    lookupForm.on('submit', function (e) {
+        e.preventDefault();
+        const orderIdInput = $('#order-id-input').val().trim();
+        if (orderIdInput === "") {
+            resultArea.html('<p style="color: red;">Please enter a valid Online Order ID.</p>');
+            return;
+        }
+        resultArea.empty();
+        loading.show();
+
+        // MOCK DATA RESPONSE
+        setTimeout(function() {
+            loading.hide();
+            const mockData = {
+                orderFound: true,
+                orderId: orderIdInput || "ON12345678",
+                status: "Shipped",
+                formattedOrderDate: "02 Dec 2025",
+                estimatedDelivery: "05 Dec 2025",
+                customerName: "Inaya",
+                customerAddress: "123 Fashion Street, Dhaka",
+                discountAmount: 100,
+                deliveryCharge: 60,
+                netAmount: 1400,
+                grandTotal: 1460,
+                lineItems: [{ productName: "Summer Combo (Black, L)", qty: 1, price: 1500, lineTotal: 1500 }]
+            };
+
+            if (mockData && mockData.orderFound) {
+                const totalAmount = mockData.lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+                let lineItemHtml = mockData.lineItems.map(item => `
+                    <tr><td>${item.productName}</td><td class="qty">${item.qty}</td><td class="price">Tk. ${parseFloat(item.price).toFixed(2)}</td><td class="total">Tk. ${parseFloat(item.lineTotal).toFixed(2)}</td></tr>
+                `).join('');
+
+                resultArea.html(`
+                    <div class="receipt-container">
+                        <p class="receipt-title">Order Details</p>
+                        <div class="receipt-header-details">
+                            <p><strong>Order ID:</strong> ${mockData.orderId}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${mockData.status.toLowerCase()}">${mockData.status}</span></p>
+                            <p><strong>Order Date:</strong> ${mockData.formattedOrderDate}</p>
+                            <p><strong>Estimated Delivery:</strong> ${mockData.estimatedDelivery}</p>
+                            <p><strong>Customer:</strong> ${mockData.customerName}</p>
+                            <p><strong>Ship To:</strong> ${mockData.customerAddress}</p>
+                        </div>
+                        <table class="receipt-summary-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${lineItemHtml}</tbody></table>
+                        <table class="receipt-summary-table" style="margin-top:10px; border-top:none;">
+                            <tr><th>Sub Total (Items)</th><td>Tk. ${totalAmount.toFixed(2)}</td></tr>
+                            <tr><th>Discount</th><td class="discount-amount">(-) Tk. ${parseFloat(mockData.discountAmount).toFixed(2)}</td></tr>
+                            <tr><th>Net Amount</th><td>Tk. ${parseFloat(mockData.netAmount).toFixed(2)}</td></tr>
+                            <tr><th>Delivery Charge</th><td>(+) Tk. ${parseFloat(mockData.deliveryCharge).toFixed(2)}</td></tr>
+                            <tr class="grand-total-row"><th>Grand Total (COD)</th><td>Tk. ${parseFloat(mockData.grandTotal).toFixed(2)}</td></tr>
+                        </table>
+                        <p class="thank-you-message">Thank you for placing your order!</p>
+                    </div>
+                `);
+            }
+        }, 1000);
+    });
+});
+</script>
 </body>
 </html>

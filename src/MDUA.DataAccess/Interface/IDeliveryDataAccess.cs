@@ -35,5 +35,9 @@ namespace MDUA.DataAccess.Interface
         void UpdateExtended(Delivery delivery);
         Delivery GetBySalesOrderIdExtended(int salesOrderId);
         Delivery GetExtended(int id);
+        long InsertDeliveryItem(int deliveryId, int salesOrderDetailId, int quantity);
+        Delivery Get(int id);
+        IList<Delivery> LoadAllWithDetails(); // This specific method fetches the joined data
+        int Update(Delivery delivery);
     }	
 }

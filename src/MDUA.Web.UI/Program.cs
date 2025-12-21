@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
-
+System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 // 1. Register Services and Facades
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();

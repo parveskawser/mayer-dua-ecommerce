@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertUserLogin    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertUserLogin]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateUserLogin    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateUserLogin]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteUserLogin    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteUserLogin]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserLogin    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserLogin    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllUserLogin]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginById    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginById    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserLoginByCompanyId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserLoginByCompanyId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginByCompanyId]
 GO
@@ -212,7 +212,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginMaximumId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginMaximumId]
 GO
@@ -241,7 +241,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginRowCount    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginRowCount]
 GO
@@ -260,7 +260,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedUserLogin    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedUserLogin    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedUserLogin]
 GO
@@ -354,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginByQuery    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginByQuery]
 GO

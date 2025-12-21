@@ -33,5 +33,6 @@ namespace MDUA.DataAccess.Interface
 	{
         long InsertSalesOrderDetailSafe(SalesOrderDetail detail);
         SalesOrderDetail GetFirstDetailByOrderRef(string orderRef);
+        List<SalesOrderDetail> GetOrderDetailsSafe(int salesOrderId);
     }	
 }

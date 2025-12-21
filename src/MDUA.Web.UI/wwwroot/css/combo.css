@@ -80,20 +80,20 @@ section {
     margin-top: 2rem;
 }
 
-.combo-info h1 {
-    font-size: 2.25rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    color: #111827;
-    line-height: 1.2;
-}
+    .combo-info h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: #111827;
+        line-height: 1.2;
+    }
 
-.combo-info p {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    max-width: 600px;
-    margin: 0 auto 1.5rem auto;
-}
+    .combo-info p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 1.5rem auto;
+    }
 
 .btn {
     display: inline-flex;
@@ -114,10 +114,10 @@ section {
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
 }
 
-.combo-btn:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-}
+    .combo-btn:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+    }
 
 .status-btn {
     background-color: white;
@@ -126,10 +126,10 @@ section {
     margin-left: 10px;
 }
 
-.status-btn:hover {
-    background-color: #f9fafb;
-    border-color: #d1d5db;
-}
+    .status-btn:hover {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+    }
 
 /* --- Scarcity Bar --- */
 .scarcity-section {
@@ -233,9 +233,9 @@ section {
     height: auto;
 }
 
-.slide.active {
-    display: block;
-}
+    .slide.active {
+        display: block;
+    }
 
 .prev, .next {
     position: absolute;
@@ -263,9 +263,9 @@ section {
     right: 10px;
 }
 
-.prev:hover, .next:hover {
-    background: white;
-}
+    .prev:hover, .next:hover {
+        background: white;
+    }
 
 /* --- Description & Testimonials --- */
 .description, .testimonials {
@@ -273,10 +273,10 @@ section {
     margin: 2rem auto;
 }
 
-.description h2, .testimonials h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
+    .description h2, .testimonials h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
 
 .detail-row {
     display: flex;
@@ -286,9 +286,9 @@ section {
     border-bottom: 1px solid var(--border-color);
 }
 
-.detail-row:last-child {
-    border-bottom: none;
-}
+    .detail-row:last-child {
+        border-bottom: none;
+    }
 
 .review {
     background: #f9fafb;
@@ -322,11 +322,11 @@ section {
     box-shadow: none;
 }
 
-.order-section h2 {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 2rem;
-}
+    .order-section h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
 
 /* The Grid Container */
 .order-container {
@@ -372,13 +372,13 @@ section {
     border: 1px solid var(--border-color);
 }
 
-.payment-section h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    color: var(--text-main);
-    text-align: center;
-}
+    .payment-section h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        color: var(--text-main);
+        text-align: center;
+    }
 
 .payment-options {
     display: grid;
@@ -404,41 +404,41 @@ section {
     min-height: 100px;
 }
 
-.payment-option:hover {
-    border-color: var(--primary);
-    background: #f0f9ff;
-    transform: translateY(-2px);
-}
+    .payment-option:hover {
+        border-color: var(--primary);
+        background: #f0f9ff;
+        transform: translateY(-2px);
+    }
 
-/* Radio Button Positioning */
-.payment-option input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    margin: 0;
-    cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
+    /* Radio Button Positioning */
+    .payment-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
 
-.payment-option label {
-    margin: 0;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0;
-}
+    .payment-option label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0;
+    }
 
-.payment-option.selected {
-    border-color: var(--primary);
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-}
+    .payment-option.selected {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
 
 /* --- Payment Logos (Official Images) --- */
 .payment-logo {
@@ -465,14 +465,14 @@ section {
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
 }
 
-.payment-section .submit-btn:hover {
-    background-color: var(--primary-hover);
-}
+    .payment-section .submit-btn:hover {
+        background-color: var(--primary-hover);
+    }
 
-.payment-section .submit-btn:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-}
+    .payment-section .submit-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
 
 /* Remove old submit button from billing section */
 .billing .submit-btn {
@@ -754,16 +754,16 @@ input, select, textarea {
     background: #fff;
 }
 
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
 
-input.input-error, select.input-error, textarea.input-error {
-    border-color: var(--error) !important;
-    background-color: #fef2f2;
-}
+    input.input-error, select.input-error, textarea.input-error {
+        border-color: var(--error) !important;
+        background-color: #fef2f2;
+    }
 
 /* --- Variant Chips --- */
 .variant-chips-container {
@@ -785,17 +785,17 @@ input.input-error, select.input-error, textarea.input-error {
     user-select: none;
 }
 
-.variant-chip:hover {
-    border-color: var(--primary);
-    background: #eff6ff;
-}
+    .variant-chip:hover {
+        border-color: var(--primary);
+        background: #eff6ff;
+    }
 
-.variant-chip.selected {
-    background: var(--text-main);
-    color: white;
-    border-color: var(--text-main);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
+    .variant-chip.selected {
+        background: var(--text-main);
+        color: white;
+        border-color: var(--text-main);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
 
 /* --- Quantity Controls --- */
 .qty-row {
@@ -814,25 +814,25 @@ input.input-error, select.input-error, textarea.input-error {
     gap: 0.5rem;
 }
 
-.quantity-wrapper button {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    background: white;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .quantity-wrapper button {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: white;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.quantity-wrapper button:hover {
-    background: #f9fafb;
-    border-color: var(--primary);
-    color: var(--primary);
-}
+        .quantity-wrapper button:hover {
+            background: #f9fafb;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
 
 #quantity {
     width: 50px;
@@ -859,23 +859,23 @@ input.input-error, select.input-error, textarea.input-error {
     margin-top: 1.5rem;
 }
 
-.receipt-table th, .receipt-table td {
-    padding: 0.75rem 0;
-    text-align: right;
-    border-bottom: 1px dashed #e5e7eb;
-}
+    .receipt-table th, .receipt-table td {
+        padding: 0.75rem 0;
+        text-align: right;
+        border-bottom: 1px dashed #e5e7eb;
+    }
 
-.receipt-table th:first-child, .receipt-table td:first-child {
-    text-align: left;
-}
+        .receipt-table th:first-child, .receipt-table td:first-child {
+            text-align: left;
+        }
 
-.receipt-table tfoot th {
-    border-top: 2px solid #374151;
-    color: #111827;
-    font-size: 1.1rem;
-    padding-top: 1rem;
-    border-bottom: none;
-}
+    .receipt-table tfoot th {
+        border-top: 2px solid #374151;
+        color: #111827;
+        font-size: 1.1rem;
+        padding-top: 1rem;
+        border-bottom: none;
+    }
 
 #order-variant-image-holder {
     background: #f9fafb;
@@ -974,17 +974,17 @@ input:-webkit-autofill:active {
         min-height: auto;
     }
 
-    .payment-option input[type="radio"] {
-        position: static; /* Radio visible inline */
-        margin-right: 0.75rem;
-    }
+        .payment-option input[type="radio"] {
+            position: static; /* Radio visible inline */
+            margin-right: 0.75rem;
+        }
 
-    .payment-option label {
-        flex-direction: row;
-        text-align: left;
-        align-items: center;
-        width: auto;
-    }
+        .payment-option label {
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            width: auto;
+        }
 
     /* Mobile Payment Logo Sizing */
     .payment-logo {
@@ -1063,3 +1063,57 @@ footer {
         margin: 0;
     }
 
+/* ==================================================
+SCROLL TO TOP (PROGRESS RING)
+================================================== */
+.progress-wrap {
+    position: fixed;
+    right: 35px;
+    bottom: 100px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    display: block;
+    border-radius: 50px;
+    box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.1); /* Light blue track */
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px);
+    transition: all 200ms linear;
+    background-color: rgba(217, 212, 212, 0.75);
+}
+
+    .progress-wrap.active-progress {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* The SVG Circle Logic */
+    .progress-wrap svg path {
+        fill: none;
+    }
+
+    .progress-wrap svg.progress-circle path {
+        stroke: var(--primary); /* Uses your existing blue */
+        stroke-width: 4;
+        box-sizing: border-box;
+        transition: all 200ms linear;
+    }
+
+    /* The Arrow Icon */
+    .progress-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: var(--primary);
+        transition: all 200ms linear;
+    }
+
+    .progress-wrap:hover i {
+        transform: translate(-50%, -60%); /* Slight jump effect on hover */
+        color: var(--primary-hover);
+    }

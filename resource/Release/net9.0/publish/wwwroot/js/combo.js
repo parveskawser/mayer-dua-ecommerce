@@ -3,6 +3,7 @@
 // ==================================================
 // 1. ORDER API HELPERS
 // ==================================================
+
 window.OrderAPI = {
     // Check Customer Phone
     checkCustomer: async function (phone) {
@@ -511,8 +512,20 @@ $(document).ready(function () {
     });
 
     // Handle Phone Input with Debounce
-    
+
     // 1. INPUT EVENT: Handles Auto-Discovery & Immediate "Too Long" checks
+    // ==================================================
+    // RESTRICT PHONE INPUT (Numbers and + only)
+    // ==================================================
+    $('#customerPhone').on('input', function () {
+        var val = $(this).val();
+
+        // Allow 0-9 and the + sign. Remove everything else.
+        // regex: /[^0-9+]/g means "replace any character that is NOT a digit OR a plus sign"
+        if (/[^0-9+]/.test(val)) {
+            $(this).val(val.replace(/[^0-9+]/g, ''));
+        }
+    });
     $('#customerPhone').on('input', debounce(function () {
         let fullPhone = iti.getNumber();
         const isValid = iti.isValidNumber();
@@ -1103,6 +1116,8 @@ $(document).ready(function () {
             chatSessionId = null;
             chatUserName = null;
         }
+
+
     }
 
     // Initialize Session
@@ -1316,5 +1331,49 @@ $(document).ready(function () {
 
     if (chatSessionId) {
         initSignalR();
+    }
+    // ==================================================
+    // 12. SCROLL TO TOP WITH PROGRESS RING
+    // ==================================================
+
+    // Select the SVG path
+    var progressPath = document.querySelector('.progress-wrap path');
+
+    // Only run if element exists
+    if (progressPath) {
+        var pathLength = progressPath.getTotalLength();
+
+        // Initialize CSS transitions
+        progressPath.style.transition = progressPath.style.WebkitTransition = 'none';
+        progressPath.style.strokeDasharray = pathLength + ' ' + pathLength;
+        progressPath.style.strokeDashoffset = pathLength;
+        progressPath.getBoundingClientRect();
+        progressPath.style.transition = progressPath.style.WebkitTransition = 'stroke-dashoffset 10ms linear';
+
+        var updateProgress = function () {
+            var scroll = $(window).scrollTop();
+            var height = $(document).height() - $(window).height();
+            var progress = pathLength - (scroll * pathLength / height);
+            progressPath.style.strokeDashoffset = progress;
+        }
+
+        updateProgress();
+        $(window).scroll(updateProgress);
+
+        var offset = 50; // Show after 50px scroll
+
+        $(window).on('scroll', function () {
+            if ($(this).scrollTop() > offset) {
+                $('.progress-wrap').addClass('active-progress');
+            } else {
+                $('.progress-wrap').removeClass('active-progress');
+            }
+        });
+
+        $('.progress-wrap').on('click', function (event) {
+            event.preventDefault();
+            $('html, body').animate({ scrollTop: 0 }, 550);
+            return false;
+        });
     }
 });

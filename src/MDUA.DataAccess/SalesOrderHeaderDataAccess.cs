@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Collections.Generic; // Required for Dictionary
+using System.Collections.Generic;
+using System.Linq; // Needed for FirstOrDefault
 
 using MDUA.Framework;
 using MDUA.Framework.Exceptions;
@@ -26,7 +27,7 @@ namespace MDUA.DataAccess
                 (@CompanyCustomerId, @AddressId, @SalesChannelId, @OrderDate, 
                  @TotalAmount, @DiscountAmount, @Status, @IsActive, @Confirmed, 
                  @CreatedBy, @CreatedAt, @UpdatedBy, @UpdatedAt, @SessionId, @IPAddress);
-                
+                 
                 SELECT CONVERT(INT, SCOPE_IDENTITY());";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
@@ -342,15 +343,16 @@ namespace MDUA.DataAccess
             }
         }
 
+
         public void UpdateStatusSafe(int orderId, string status, bool confirmed)
         {
             string SQLQuery = @"
-                UPDATE [dbo].[SalesOrderHeader]
-                SET 
-                    [Status] = @Status,
-                    [Confirmed] = @Confirmed,
-                    [UpdatedAt] = GETDATE()
-                WHERE [Id] = @Id";
+            UPDATE [dbo].[SalesOrderHeader]
+            SET 
+                [Status] = @Status,
+                [Confirmed] = @Confirmed,
+                [UpdatedAt] = GETDATE()
+            WHERE [Id] = @Id";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
@@ -358,15 +360,22 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pNVarChar("Status", 30, status));
                 AddParameter(cmd, pBool("Confirmed", confirmed));
 
-                if (cmd.Connection.State != ConnectionState.Open)
-                {
+                if (cmd.Connection.State != System.Data.ConnectionState.Open)
                     cmd.Connection.Open();
-                }
 
-                cmd.ExecuteNonQuery();
+                // ✅ EXECUTE AND CHECK ROWS AFFECTED
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                // Close connection explicitly if not handled by framework
                 cmd.Connection.Close();
+
+                // 🛑 DEBUG TRAP: Throw error if no Order was found
+                if (rowsAffected == 0)
+                {
+                    throw new Exception($"CRITICAL FAILURE: Tried to update Order #{orderId}, but database found 0 matching rows. The Order ID might be wrong or the Order doesn't exist.");
+                }
             }
-        }
+        } // <--- THIS WAS MISSING
 
         public List<Dictionary<string, object>> GetVariantsForDropdown()
         {
@@ -609,9 +618,9 @@ namespace MDUA.DataAccess
         public SalesOrderHeader GetBySalesOrderRef(string salesOrderRef)
         {
             string sql = @"
-        SELECT TOP 1 *
-        FROM SalesOrderHeader
-        WHERE SalesOrderId = @SalesOrderId";
+            SELECT TOP 1 *
+            FROM SalesOrderHeader
+            WHERE SalesOrderId = @SalesOrderId";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
@@ -653,6 +662,110 @@ namespace MDUA.DataAccess
             }
         }
 
+        public SalesOrderHeader GetOrderTotalsSafe(int orderId)
+        {
+            var order = new SalesOrderHeader();
 
+            // We only select the columns we calculate with. 
+            // We SKIP date columns to avoid the crash.
+            string sql = @"
+            SELECT 
+                [TotalAmount], 
+                [DiscountAmount] 
+            FROM [SalesOrderHeader] 
+            WHERE [Id] = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.Parameters.Add(new SqlParameter("@Id", System.Data.SqlDbType.Int) { Value = orderId });
+
+                if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        // Manual Mapping - Safe and Fast
+
+                        // 1. TotalAmount
+                        int idxTotal = reader.GetOrdinal("TotalAmount");
+                        if (!reader.IsDBNull(idxTotal))
+                            order.TotalAmount = reader.GetDecimal(idxTotal);
+                        else
+                            order.TotalAmount = 0;
+
+                        // 2. DiscountAmount
+                        int idxDisc = reader.GetOrdinal("DiscountAmount");
+                        if (!reader.IsDBNull(idxDisc))
+                            order.DiscountAmount = reader.GetDecimal(idxDisc);
+                        else
+                            order.DiscountAmount = 0;
+                    }
+                }
+            }
+            return order;
+        }
+
+
+
+        public bool GetConfirmedFlag(int orderId)
+        {
+            string sql = "SELECT Confirmed FROM dbo.SalesOrderHeader WHERE Id = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                object val = cmd.ExecuteScalar();
+                cmd.Connection.Close();
+
+                if (val == null || val == DBNull.Value) return false;
+                return Convert.ToBoolean(val);
+            }
+        }
+
+        // ✅ Diagnostic update that proves: DB name + rows updated + final status
+        public void UpdateStatusSafeLogged(int orderId, string status, bool confirmed)
+        {
+            string sql = @"
+UPDATE dbo.SalesOrderHeader
+SET Status = @Status,
+    Confirmed = @Confirmed,
+    UpdatedAt = GETDATE()
+WHERE Id = @Id;
+
+SELECT @@ROWCOUNT;";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, pInt32("Id", orderId));
+                AddParameter(cmd, pNVarChar("Status", 30, status));
+                AddParameter(cmd, pBool("Confirmed", confirmed));
+
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                var dbName = cmd.Connection.Database;
+                int rows = Convert.ToInt32(cmd.ExecuteScalar());
+
+                // ✅ prove which DB is being updated and whether it affected rows
+
+                // ✅ confirm what DB contains immediately after update
+                cmd.CommandText = "SELECT Status, Confirmed, UpdatedAt FROM dbo.SalesOrderHeader WHERE Id = @Id";
+                cmd.Parameters.Clear();
+                AddParameter(cmd, pInt32("Id", orderId));
+
+  
+
+                cmd.Connection.Close();
+
+                if (rows == 0)
+                    throw new Exception($"SOH update affected 0 rows. Wrong DB or invalid orderId={orderId}.");
+            }
+        }
     }
 }

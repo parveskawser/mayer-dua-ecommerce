@@ -86,7 +86,7 @@ namespace MDUA.Facade
             services.AddScoped<IPurchaseFacade, PurchaseFacade>();
             services.AddScoped<IPaymentMethodFacade, PaymentMethodFacade>(); // Admin setup facade
             services.AddScoped<ISettingsFacade, SettingsFacade>();
-
+            services.AddScoped<IDeliveryFacade, DeliveryFacade>();
             // ✅ ADDED THIS (Required for OrderController)
             services.AddScoped<IPaymentFacade, PaymentFacade>();
         }
