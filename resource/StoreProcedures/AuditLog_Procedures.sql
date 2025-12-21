@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertAuditLog    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertAuditLog    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertAuditLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertAuditLog]
 GO
@@ -68,7 +68,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateAuditLog    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateAuditLog    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateAuditLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateAuditLog]
 GO
@@ -112,7 +112,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteAuditLog    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteAuditLog    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteAuditLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteAuditLog]
 GO
@@ -143,7 +143,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAuditLog    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAuditLog    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllAuditLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllAuditLog]
 GO
@@ -160,7 +160,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAuditLogById    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAuditLogById    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAuditLogById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAuditLogById]
 GO
@@ -181,7 +181,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAuditLogMaximumId    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAuditLogMaximumId    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAuditLogMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAuditLogMaximumId]
 GO
@@ -210,7 +210,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAuditLogRowCount    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAuditLogRowCount    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAuditLogRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAuditLogRowCount]
 GO
@@ -229,7 +229,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedAuditLog    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedAuditLog    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedAuditLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedAuditLog]
 GO
@@ -319,7 +319,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAuditLogByQuery    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAuditLogByQuery    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAuditLogByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAuditLogByQuery]
 GO

@@ -325,106 +325,147 @@ namespace MDUA.Facade
         }        // ==========================================================================
                  // ✅ 2. CORRECTED: UpdateOrderConfirmation (Expense Snapshot Logic)
                  // ==========================================================================
-        public string UpdateOrderConfirmation(int orderId, bool isConfirmed)
-        {
-            // 1. Update Header (We know this works)
-            string dbStatus = isConfirmed ? "Confirmed" : "Draft";
-            _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, dbStatus, isConfirmed);
+                 // Inside MDUA.Facade/OrderFacade.cs
 
-            // 2. Delivery Logic with DEBUGGING
-            if (isConfirmed)
+        // 1. Update signature to accept 'username'
+        public string UpdateOrderConfirmation(int orderId, bool isConfirmed, string username)
+        {
+            string dbStatus = isConfirmed ? "Confirmed" : "Draft";
+
+            using (var scope = new System.Transactions.TransactionScope())
             {
                 try
                 {
-                    // DEBUG LINE: Force a check to see if we are about to call the DA
-                    // If this throws, we know we entered the block.
-                    // throw new Exception("DEBUG: Entered Delivery Block"); 
+                    // Update Status
+                    _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, dbStatus, isConfirmed);
 
-                    // Call the Extended method
-                    var existingDelivery = _deliveryDataAccess.GetBySalesOrderIdExtended(orderId);
-
-                    if (existingDelivery == null)
+                    if (isConfirmed)
                     {
-                        // ... (Your existing settings logic) ...
-                        // For debug simplicity, let's hardcode cost momentarily to rule out SettingsFacade errors
-                        decimal actualCost = 60;
+                        var existingDelivery = _deliveryDataAccess.GetBySalesOrderIdExtended(orderId);
 
-                        var delivery = new Delivery
+                        if (existingDelivery == null)
                         {
-                            SalesOrderId = orderId,
-                            TrackingNumber = "TRK-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
-                            Status = "Pending",
-                            ShippingCost = actualCost,
-                            CreatedBy = "System_Confirm",
-                            CreatedAt = DateTime.UtcNow
-                        };
+                            // --- 1. CALCULATE SHIPPING COST ---
 
-                        _deliveryDataAccess.InsertExtended(delivery);
+                            // A. Get the Order Header to access TotalAmount & DiscountAmount
+                            var order = _salesOrderHeaderDataAccess.GetOrderTotalsSafe(orderId);
+                            if (order == null) throw new Exception("Order header not found.");
+
+                            // B. Get Product Net Total (Sum of items)
+                            // Assuming this method exists in your DAL based on your snippet
+                            decimal productNetTotal = _salesOrderHeaderDataAccess.GetProductTotalFromDetails(orderId);
+
+                            // C. Apply Formula: Delivery = Total - Products - Discount
+                            decimal calculatedDeliveryCost = order.TotalAmount - productNetTotal - order.DiscountAmount;
+
+                            // Safety check: Cost shouldn't be negative
+                            if (calculatedDeliveryCost < 0) calculatedDeliveryCost = 0;
+
+                            // --- 2. CREATE DELIVERY RECORD ---
+                            var delivery = new Delivery
+                            {
+                                SalesOrderId = orderId,
+                                TrackingNumber = "TRK-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
+                                Status = "Pending",
+
+                                // ✅ Use Calculated Cost
+                                ShippingCost = calculatedDeliveryCost,
+
+                                // ✅ Use Logged-in User
+                                CreatedBy = username,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            long newDeliveryId = _deliveryDataAccess.InsertExtended(delivery);
+
+                            // --- 3. INSERT ITEMS ---
+                            if (newDeliveryId > 0)
+                            {
+                                // ✅ TRICK: Cast the interface to the concrete class
+                                // This bypasses the "Interface does not contain definition" error
+                                // because we are telling the compiler "Trust me, it's this specific class."
+                                var concreteDetailDA = (SalesOrderDetailDataAccess)_salesOrderDetailDataAccess;
+
+                                // Now you can call the method you added to the class!
+                                var orderItems = concreteDetailDA.GetOrderDetailsSafe(orderId);
+                                foreach (var item in orderItems)
+                                {
+                                    _deliveryDataAccess.InsertDeliveryItem(
+                                        (int)newDeliveryId,
+                                        item.Id,
+                                        item.Quantity
+                                    );
+                                }
+                            }
+                        }
                     }
+
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
-                    // This captures the specific error inside delivery logic
-                    throw new Exception($"DELIVERY_CRASH: {ex.Message} | Stack: {ex.StackTrace}");
+                    throw new Exception($"ORDER_CONFIRM_ERROR: {ex.Message}");
                 }
             }
 
-            return isConfirmed ? "Confirmed" : "Pending";
+            return dbStatus;
         }
-        // ==========================================================================
+
         // ✅ 3. NEW: UpdateDeliveryStatus (Status Sync Logic)
         // ==========================================================================
         // In src/MDUA.Facade/OrderFacade.cs
 
         public void UpdateDeliveryStatus(int deliveryId, string newStatus)
         {
-            // 1. Fetch using EXTENDED method (Safe mapping)
-            // 🛑 WAS: var delivery = _deliveryDataAccess.Get(deliveryId); 
-            // ✅ FIX: Use GetExtended to avoid "DateTime to String" casting errors
+
             var delivery = _deliveryDataAccess.GetExtended(deliveryId);
 
-            if (delivery == null) throw new Exception("Delivery record not found.");
+            if (delivery == null) throw new Exception("Delivery not found");
+            if (delivery.SalesOrderId <= 0) throw new Exception("Data Error: Delivery has no Sales Order ID.");
 
-            // 2. Update Logistical Status
+            // 2) Update Delivery
             delivery.Status = newStatus;
-
-            // Auto-set ActualDeliveryDate if delivered
             if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
-            {
                 delivery.ActualDeliveryDate = DateTime.UtcNow;
-            }
 
             _deliveryDataAccess.UpdateExtended(delivery);
 
-            // 3. Map to Commercial Status (SalesOrderHeader)
+            // 3) Map Delivery -> SOH.Status
             string parentStatus = null;
-            switch (newStatus.ToLower())
-            {
-                case "shipped":
-                case "in transit":
-                case "out for delivery":
-                    parentStatus = "Shipped";
-                    break;
-                case "delivered":
-                    parentStatus = "Delivered";
-                    break;
-                case "returned":
-                case "returned to hub":
-                    parentStatus = "Returned";
-                    break;
-                case "cancelled":
-                    parentStatus = "Cancelled";
-                    break;
-            }
+            string cleanStatus = (newStatus ?? "").ToLower().Trim();
 
-            // 4. Sync Parent
+            if (cleanStatus == "pending") parentStatus = "Draft";
+            else if (cleanStatus == "shipped" || cleanStatus == "in transit" || cleanStatus == "out for delivery") parentStatus = "Shipped";
+            else if (cleanStatus == "delivered") parentStatus = "Delivered";
+            else if (cleanStatus == "returned" || cleanStatus == "returned to hub") parentStatus = "Returned";
+            else if (cleanStatus == "cancelled") parentStatus = "Cancelled";
+
+
+            // 4) Sync SalesOrderHeader
+            // 4. Update SalesOrderHeader (Sync)
             if (parentStatus != null)
             {
-                _salesOrderHeaderDataAccess.UpdateStatusSafe(delivery.SalesOrderId, parentStatus, true);
+                bool confirmedState = false;
+
+                if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concrete)
+                    confirmedState = concrete.GetConfirmedFlag(delivery.SalesOrderId);
+
+
+                try
+                {
+                    // ✅ use the diagnostic updater (proves DB + rowsAffected)
+                    if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concrete2)
+                        concrete2.UpdateStatusSafeLogged(delivery.SalesOrderId, parentStatus, confirmedState);
+                    else
+                        _salesOrderHeaderDataAccess.UpdateStatusSafe(delivery.SalesOrderId, parentStatus, confirmedState);
+
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
             }
         }
-
-        //facade
         public void UpdateOrderStatus(int orderId, string newStatus)
 
         {
@@ -715,6 +756,9 @@ namespace MDUA.Facade
         {
             return _salesOrderHeaderDataAccess.GetOrderStatusCounts();
         }
+
+
+
         #endregion
     }
 }

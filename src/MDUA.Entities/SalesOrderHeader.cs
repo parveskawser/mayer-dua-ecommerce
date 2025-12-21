@@ -43,7 +43,8 @@ namespace MDUA.Entities
         public decimal DueAmount { get; set; }
 
         [DataMember]
-        public decimal ActualLogisticsCost { get; set; } 
-
+        public decimal ActualLogisticsCost { get; set; }
+        [DataMember]
+        public virtual CompanyCustomer CompanyCustomer { get; set; }
     }
 }

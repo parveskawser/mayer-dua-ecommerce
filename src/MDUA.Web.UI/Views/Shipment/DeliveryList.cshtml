@@ -1,0 +1,153 @@
+﻿@model IEnumerable<MDUA.Entities.Delivery>
+
+@{
+    ViewData["Title"] = "Delivery List";
+
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+<div class="container-fluid mt-4">
+    <h3>Delivery Management</h3>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Delivery ID</th>
+                        <th>Order Ref</th>
+                        <th>Customer</th>
+                        <th>Tracking #</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><span class="fw-bold">#@item.Id</span></td>
+                                <td>
+                                    @(item.SalesOrderHeader?.OnlineOrderId ?? item.SalesOrderHeader?.DirectOrderId ?? item.SalesOrderId.ToString())
+                                </td>
+                                <td>
+                                    @(item.SalesOrderHeader?.CompanyCustomer?.Customer?.CustomerName ?? "Guest")
+                                </td>
+                                <td>
+                                    <span class="text-muted font-monospace">
+                                        @(string.IsNullOrEmpty(item.TrackingNumber) ? "-" : item.TrackingNumber)
+                                    </span>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm"
+                                            onchange="updateStatus(@item.Id, this.value)"
+                                            style="width: 140px; font-weight: 500; border-color: #dee2e6;">
+                                        <!option value="Pending" @(item.Status == "Pending" ? "selected" : "")>Pending</!option>
+                                        <!option value="Shipped" @(item.Status == "Shipped" ? "selected" : "")>Shipped</!option>
+                                        <!option value="Delivered" @(item.Status == "Delivered" ? "selected" : "")>Delivered</!option>
+                                        <!option value="Returned" @(item.Status == "Returned" ? "selected" : "")>Returned</!option>
+                                        <!option value="Cancelled" @(item.Status == "Cancelled" ? "selected" : "")>Cancelled</!option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#items-@item.Id">
+                                        <i class="fa fa-list"></i> View Items
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6" class="p-0 border-0">
+                                    <div class="collapse bg-light p-3 border-bottom" id="items-@item.Id">
+
+                                        <h6 class="small text-uppercase text-muted fw-bold mb-2">Package Contents</h6>
+                                        <table class="table table-sm table-bordered bg-white w-100 mb-2">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product Name</th>
+                                                    <th>SKU</th>
+                                                    <th class="text-center" style="width: 80px;">Qty</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (item.DeliveryItems != null && item.DeliveryItems.Any())
+                                                {
+                                                    foreach (var detail in item.DeliveryItems)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @(detail.SalesOrderDetail?.ProductVariant?.Product?.ProductName ?? "Unknown")
+                                                                <div class="small text-muted">
+                                                                    @(detail.SalesOrderDetail?.ProductVariant?.VariantName)
+                                                                </div>
+                                                            </td>
+                                                            <td class="small align-middle">
+                                                                @(detail.SalesOrderDetail?.ProductVariant?.Sku ?? "-")
+                                                            </td>
+                                                            <td class="text-center align-middle fw-bold">
+                                                                @detail.Quantity
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr><td colspan="3" class="text-center text-muted">No items linked.</td></tr>
+                                                }
+                                            </tbody>
+                                        </table>
+
+                                        @if (item.ShippingCost.HasValue && item.ShippingCost > 0)
+                                        {
+                                            <div class="d-flex justify-content-end align-items-center mt-2">
+                                                <span class="text-muted me-2">Shipping Cost:</span>
+                                                <span class="fw-bold text-dark fs-6">
+                                                    Tk. @item.ShippingCost.Value.ToString("N2")
+                                                </span>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                No shipments found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStatus(id, newStatus) {
+        // Show simple visual feedback (optional)
+
+        $.post('@Url.Action("UpdateStatus", "Shipment")',
+        {
+            deliveryId: id,
+            status: newStatus
+        })
+        .done(function (response) {
+            if (response.success) {
+                // Optional: Toast notification success
+            } else {
+                alert("Failed to update status: " + response.message);
+            }
+        })
+        .fail(function () {
+            alert("Server error occurred while updating status.");
+        });
+    }
+</script>

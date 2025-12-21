@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductInventory    Script Date: 11/25/2025 1:36:28 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductInventory    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductInventory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductInventory]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductInventory    Script Date: 11/25/2025 1:36:28 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductInventory    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductInventory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductInventory]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductInventory    Script Date: 11/25/2025 1:36:28 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductInventory    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductInventory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductInventory]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductInventory    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductInventory    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductInventory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductInventory]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductInventoryById    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductInventoryById    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductInventoryById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductInventoryById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductInventoryByProductId    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductInventoryByProductId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductInventoryByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductInventoryByProductId]
 GO
@@ -217,7 +217,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductInventoryMaximumId    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductInventoryMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductInventoryMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductInventoryMaximumId]
 GO
@@ -246,7 +246,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductInventoryRowCount    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductInventoryRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductInventoryRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductInventoryRowCount]
 GO
@@ -265,7 +265,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductInventory    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductInventory    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductInventory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductInventory]
 GO
@@ -361,7 +361,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductInventoryByQuery    Script Date: 11/25/2025 1:36:28 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductInventoryByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductInventoryByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductInventoryByQuery]
 GO

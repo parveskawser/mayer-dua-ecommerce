@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertSalesOrderDetail    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertSalesOrderDetail    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertSalesOrderDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertSalesOrderDetail]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateSalesOrderDetail    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateSalesOrderDetail    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateSalesOrderDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateSalesOrderDetail]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteSalesOrderDetail    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteSalesOrderDetail    Script Date: 12/2/2025 4:44:58 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteSalesOrderDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteSalesOrderDetail]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetail    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetail    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllSalesOrderDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllSalesOrderDetail]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailById    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailById    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetailBySalesOrderId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetailBySalesOrderId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailBySalesOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailBySalesOrderId]
 GO
@@ -217,7 +217,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetailByProductId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesOrderDetailByProductId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailByProductId]
 GO
@@ -238,7 +238,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailMaximumId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailMaximumId]
 GO
@@ -267,7 +267,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailRowCount    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailRowCount]
 GO
@@ -286,7 +286,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedSalesOrderDetail    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedSalesOrderDetail    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedSalesOrderDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedSalesOrderDetail]
 GO
@@ -382,7 +382,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailByQuery    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesOrderDetailByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesOrderDetailByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesOrderDetailByQuery]
 GO

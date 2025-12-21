@@ -17,5 +17,11 @@ namespace MDUA.Entities
 
         // ✅ The Key Field for Profit Calculation
         [DataMember] public decimal? ShippingCost { get; set; }
+        [DataMember]
+        public virtual SalesOrderHeader SalesOrderHeader { get; set; }
+
+        // Links to the items inside this delivery
+        [DataMember]
+        public virtual IList<DeliveryItem> DeliveryItems { get; set; }
     }
 }

@@ -467,8 +467,11 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // Call the Facade logic we just created
-                string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed);
+                // ✅ Get Logged-in Username
+                string username = User.Identity.Name ?? "Unknown_User";
+
+                // ✅ Pass it to the Facade
+                string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed, username);
 
                 return Json(new { success = true, newStatus = newStatus });
             }

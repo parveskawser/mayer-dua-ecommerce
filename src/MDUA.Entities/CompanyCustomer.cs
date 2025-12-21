@@ -10,6 +10,7 @@ namespace MDUA.Entities
 {
 	public partial class CompanyCustomer 
 	{
-		
-	}
+        [DataMember]
+        public virtual Customer Customer { get; set; }
+    }
 }

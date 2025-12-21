@@ -12,6 +12,52 @@ namespace MDUA.DataAccess
 {
 	public partial class SalesOrderDetailDataAccess
 	{
+
+        // Inside SalesOrderDetailDataAccess.cs
+
+        // Inside SalesOrderDetailDataAccess.cs
+
+        public List<SalesOrderDetail> GetOrderDetailsSafe(int salesOrderId)
+        {
+            var list = new List<SalesOrderDetail>();
+
+            // ✅ FIX: Removed '[ProductVariantId]' from the query.
+            // We only select the columns strictly required for the Delivery logic.
+            string sql = @"
+        SELECT 
+            [Id], 
+            [SalesOrderId], 
+            [Quantity]
+        FROM [SalesOrderDetail] 
+        WHERE [SalesOrderId] = @SalesOrderId";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.Parameters.Add(new SqlParameter("@SalesOrderId", System.Data.SqlDbType.Int) { Value = salesOrderId });
+
+                if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var obj = new SalesOrderDetail();
+
+                        // 2. Map only what we selected
+                        obj.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+                        obj.SalesOrderId = reader.GetInt32(reader.GetOrdinal("SalesOrderId"));
+                        obj.Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"));
+
+                        // Note: We removed the line reading ProductVariantId because it caused the crash
+                        // and your Delivery logic doesn't use it anyway.
+
+                        list.Add(obj);
+                    }
+                }
+            }
+            return list;
+        }
         public SalesOrderDetail GetFirstDetailByOrderRef(string orderRef)
         {
             // 1. Explicitly select the DB Column Name 'ProductId'

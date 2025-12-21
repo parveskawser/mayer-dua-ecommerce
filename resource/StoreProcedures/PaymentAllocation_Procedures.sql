@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPaymentAllocation    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPaymentAllocation    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPaymentAllocation]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPaymentAllocation]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePaymentAllocation    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePaymentAllocation    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePaymentAllocation]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePaymentAllocation]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePaymentAllocation    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePaymentAllocation    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePaymentAllocation]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePaymentAllocation]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocation    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocation    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPaymentAllocation]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPaymentAllocation]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentAllocationById    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentAllocationById    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocationByCustomerPaymentId    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocationByCustomerPaymentId    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationByCustomerPaymentId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationByCustomerPaymentId]
 GO
@@ -212,7 +212,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocationBySalesOrderId    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPaymentAllocationBySalesOrderId    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationBySalesOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationBySalesOrderId]
 GO
@@ -233,7 +233,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentAllocationMaximumId    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentAllocationMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationMaximumId]
 GO
@@ -262,7 +262,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentAllocationRowCount    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentAllocationRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationRowCount]
 GO
@@ -281,7 +281,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPaymentAllocation    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPaymentAllocation    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPaymentAllocation]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPaymentAllocation]
 GO
@@ -375,7 +375,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentAllocationByQuery    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentAllocationByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentAllocationByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentAllocationByQuery]
 GO

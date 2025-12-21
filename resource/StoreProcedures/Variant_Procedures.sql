@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVariant    Script Date: 12/10/2025 2:32:54 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVariant    Script Date: 12/2/2025 4:44:59 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVariant]
 GO
@@ -65,7 +65,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVariant    Script Date: 12/10/2025 2:32:54 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVariant    Script Date: 12/2/2025 4:44:59 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVariant]
 GO
@@ -107,7 +107,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVariant    Script Date: 12/10/2025 2:32:54 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVariant    Script Date: 12/2/2025 4:44:59 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVariant]
 GO
@@ -138,7 +138,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariant    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariant    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVariant]
 GO
@@ -155,7 +155,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantById    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantById    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantById]
 GO
@@ -176,7 +176,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantByProductId    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantByProductId    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantByProductId]
 GO
@@ -197,7 +197,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantMaximumId    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantMaximumId    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantMaximumId]
 GO
@@ -226,7 +226,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantRowCount    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantRowCount    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantRowCount]
 GO
@@ -245,7 +245,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVariant    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVariant    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVariant]
 GO
@@ -333,7 +333,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantByQuery    Script Date: 12/10/2025 2:32:54 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantByQuery    Script Date: 12/2/2025 4:44:59 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantByQuery]
 GO

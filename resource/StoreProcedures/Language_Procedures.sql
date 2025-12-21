@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertLanguage    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertLanguage    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertLanguage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertLanguage]
 GO
@@ -68,7 +68,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateLanguage    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateLanguage    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateLanguage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateLanguage]
 GO
@@ -112,7 +112,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteLanguage    Script Date: 12/10/2025 2:32:50 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteLanguage    Script Date: 12/2/2025 4:44:57 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteLanguage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteLanguage]
 GO
@@ -143,7 +143,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllLanguage    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllLanguage    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllLanguage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllLanguage]
 GO
@@ -160,7 +160,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageById    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageById    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageById]
 GO
@@ -181,7 +181,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageMaximumId    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageMaximumId]
 GO
@@ -210,7 +210,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageRowCount    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageRowCount]
 GO
@@ -229,7 +229,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedLanguage    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedLanguage    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedLanguage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedLanguage]
 GO
@@ -319,7 +319,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageByQuery    Script Date: 12/10/2025 2:32:50 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageByQuery]
 GO

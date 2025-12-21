@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertDelivery    Script Date: 12/10/2025 2:32:49 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertDelivery    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertDelivery]
 GO
@@ -13,13 +13,9 @@ CREATE PROCEDURE InsertDelivery
 (
 	@Id int OUTPUT,
 	@SalesOrderId int,
+	@DeliveryDate datetime,
 	@TrackingNumber nvarchar(100),
-	@CarrierName nvarchar(100),
-	@ShipDate datetime,
-	@EstimatedArrival datetime,
-	@ActualDeliveryDate datetime,
 	@Status nvarchar(50),
-	@ShippingCost decimal(18, 2),
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
@@ -29,13 +25,9 @@ AS
     INSERT INTO [dbo].[Delivery] 
 	(
 	[SalesOrderId],
+	[DeliveryDate],
 	[TrackingNumber],
-	[CarrierName],
-	[ShipDate],
-	[EstimatedArrival],
-	[ActualDeliveryDate],
 	[Status],
-	[ShippingCost],
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
@@ -44,13 +36,9 @@ AS
 	VALUES 
 	(
 	@SalesOrderId,
+	@DeliveryDate,
 	@TrackingNumber,
-	@CarrierName,
-	@ShipDate,
-	@EstimatedArrival,
-	@ActualDeliveryDate,
 	@Status,
-	@ShippingCost,
 	@CreatedBy,
 	@CreatedAt,
 	@UpdatedBy,
@@ -83,7 +71,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateDelivery    Script Date: 12/10/2025 2:32:49 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateDelivery    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateDelivery]
 GO
@@ -95,13 +83,9 @@ CREATE PROCEDURE UpdateDelivery
 (
 	@Id int,
 	@SalesOrderId int,
+	@DeliveryDate datetime,
 	@TrackingNumber nvarchar(100),
-	@CarrierName nvarchar(100),
-	@ShipDate datetime,
-	@EstimatedArrival datetime,
-	@ActualDeliveryDate datetime,
 	@Status nvarchar(50),
-	@ShippingCost decimal(18, 2),
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
@@ -111,13 +95,9 @@ AS
     UPDATE [dbo].[Delivery] 
 	SET
 	[SalesOrderId] = @SalesOrderId,
+	[DeliveryDate] = @DeliveryDate,
 	[TrackingNumber] = @TrackingNumber,
-	[CarrierName] = @CarrierName,
-	[ShipDate] = @ShipDate,
-	[EstimatedArrival] = @EstimatedArrival,
-	[ActualDeliveryDate] = @ActualDeliveryDate,
 	[Status] = @Status,
-	[ShippingCost] = @ShippingCost,
 	[CreatedBy] = @CreatedBy,
 	[CreatedAt] = @CreatedAt,
 	[UpdatedBy] = @UpdatedBy,
@@ -137,7 +117,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteDelivery    Script Date: 12/10/2025 2:32:49 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteDelivery    Script Date: 12/2/2025 4:44:56 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteDelivery]
 GO
@@ -168,7 +148,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDelivery    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDelivery    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllDelivery]
 GO
@@ -185,7 +165,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryById    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryById    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryById]
 GO
@@ -206,7 +186,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDeliveryBySalesOrderId    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDeliveryBySalesOrderId    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryBySalesOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryBySalesOrderId]
 GO
@@ -227,7 +207,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryMaximumId    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryMaximumId    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryMaximumId]
 GO
@@ -256,7 +236,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryRowCount    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryRowCount    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryRowCount]
 GO
@@ -275,7 +255,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedDelivery    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedDelivery    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedDelivery]
 GO
@@ -328,13 +308,9 @@ SET @SQL1 = 'WITH DeliveryEntries AS (
 			SELECT ROW_NUMBER() OVER ('+ @SortColumn +')AS Row,
 	[Id],
 	[SalesOrderId],
+	[DeliveryDate],
 	[TrackingNumber],
-	[CarrierName],
-	[ShipDate],
-	[EstimatedArrival],
-	[ActualDeliveryDate],
 	[Status],
-	[ShippingCost],
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
@@ -346,13 +322,9 @@ SET @SQL1 = 'WITH DeliveryEntries AS (
 				SELECT 
 	[Id],
 	[SalesOrderId],
+	[DeliveryDate],
 	[TrackingNumber],
-	[CarrierName],
-	[ShipDate],
-	[EstimatedArrival],
-	[ActualDeliveryDate],
 	[Status],
-	[ShippingCost],
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
@@ -375,7 +347,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryByQuery    Script Date: 12/10/2025 2:32:49 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryByQuery    Script Date: 12/2/2025 4:44:56 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryByQuery]
 GO

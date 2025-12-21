@@ -361,30 +361,41 @@
 
     function toggleMode() {
         addressContainer.style.display = modeStore.checked ? 'none' : 'block';
-        // When mode changes, recalculate the delivery fee (e.g. set to 0 for Store Pickup)
         autoCalculateDelivery();
     }
     modeDelivery.addEventListener('change', toggleMode);
     modeStore.addEventListener('change', toggleMode);
 
-    // ✅ 2. REAL-TIME VALIDATION & SEARCH (Debounced)
-    // This replaces the old "Click Search" button logic
+    // ==========================================
+    // 2. PHONE INPUT LOGIC & VALIDATION
+    // ==========================================
+
+    const statusEl = document.getElementById('custStatus');
+
+    // A. RESTRICT INPUT: Allow only 0-9 and +
+    // This runs immediately (no debounce) to prevent typing letters
+    phoneInput.addEventListener('input', function () {
+        const val = this.value;
+        if (/[^0-9+]/.test(val)) {
+            this.value = val.replace(/[^0-9+]/g, '');
+        }
+    });
+
+    // Handles Auto-Discovery & Immediate "Too Long" checks
     phoneInput.addEventListener('input', debounce(function () {
         const fullPhone = iti.getNumber();
         const isValid = iti.isValidNumber();
         const errorCode = iti.getValidationError();
-        const statusEl = document.getElementById('custStatus');
 
-        // Reset UI
-        statusEl.textContent = "";
+        // Reset UI defaults
         statusEl.className = "text-muted small";
 
         if (isValid) {
-            // Valid Number -> Trigger API Check
+            // CASE A: Number is Valid -> Trigger Auto-Check
             statusEl.textContent = "⏳ Checking...";
             statusEl.className = "text-primary small";
 
-            // Call API with standardized number (encodeURIComponent handles the +)
+            // Call API
             window.OrderAPI.checkCustomer(fullPhone).then(data => {
                 if (data.found) {
                     // FOUND
@@ -394,31 +405,27 @@
                     document.getElementById('custName').value = data.name || '';
                     if (custEmail) {
                         custEmail.value = data.email || '';
-                        currentLoadedEmail = data.email || ''; // Mark as safe
+                        currentLoadedEmail = data.email || '';
                     }
 
                     // Autofill Address (Only if Delivery Mode)
                     if (data.addressData && modeDelivery.checked) {
                         custAddress.value = data.addressData.street || '';
 
-                        // Smart Location Filling (Waterfall)
+                        // Smart Location Filling
                         if (data.addressData.postalCode) {
                             postalInput.value = data.addressData.postalCode;
-                            postalInput.dispatchEvent(new Event('blur')); // Trigger postal check
+                            postalInput.dispatchEvent(new Event('blur'));
                         } else if (data.addressData.divison) {
-                            // Fallback to manual cascading if postal code missing
                             const div = data.addressData.divison;
-                            const dist = data.addressData.city;
-                            const th = data.addressData.thana;
-                            const sub = data.addressData.subOffice;
-
                             divisionSelect.value = div;
-                            autoCalculateDelivery(); // Recalc fee
+                            autoCalculateDelivery();
 
-                            if (dist) {
-                                loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist)
-                                    .then(() => th ? loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th) : null)
-                                    .then(() => sub ? loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub) : null);
+                            // Cascading loads
+                            if (data.addressData.city) {
+                                loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, data.addressData.city)
+                                    .then(() => data.addressData.thana ? loadFromApi(window.OrderAPI.getThanas(data.addressData.city), thanaSelect, data.addressData.thana) : null)
+                                    .then(() => data.addressData.subOffice ? loadFromApi(window.OrderAPI.getSubOffices(data.addressData.thana), subOfficeSelect, data.addressData.subOffice) : null);
                             }
                         }
                     }
@@ -426,35 +433,45 @@
                     // NEW CUSTOMER
                     statusEl.textContent = "New Customer";
                     statusEl.className = "text-info small";
-                    // Clear fields for fresh entry
+
+                    // Clear fields
                     document.getElementById('custName').value = '';
                     if (custEmail) { custEmail.value = ''; currentLoadedEmail = ''; }
                     custAddress.value = '';
                 }
             });
         } else {
-            // INVALID (While Typing)
-            // Only show 'Too Long' error immediately. 
-            // 'Too Short' is handled on Blur to avoid annoying user.
-            if (errorCode === 3) { // 3 = TOO_LONG
+            // CASE B: Number is Invalid (While Typing)
+
+            // 1. If Too Long (Error Code 3), tell them immediately
+            if (errorCode === 3) {
                 statusEl.textContent = "⚠ Number too long";
                 statusEl.className = "text-danger small";
+            }
+            // 2. If Too Short or just Invalid, DO NOT complain yet. 
+            //    Wait for them to finish typing (handled in 'blur').
+            else {
+                statusEl.textContent = "";
             }
         }
     }, 500));
 
-    // ✅ 3. BLUR VALIDATION (Catch 'Too Short' here)
+    // C. BLUR VALIDATION
+    // Handles "Too Short" or generic errors when user leaves the field
     phoneInput.addEventListener('blur', function () {
         const fullPhone = iti.getNumber();
         const isValid = iti.isValidNumber();
         const errorCode = iti.getValidationError();
-        const statusEl = document.getElementById('custStatus');
 
+        // Only show error if input is not empty but invalid
         if (!isValid && fullPhone.length > 0) {
-            if (errorCode === 2) { // 2 = TOO_SHORT
+            if (errorCode === 2) { // TOO_SHORT
                 statusEl.textContent = "⚠ Number too short";
                 statusEl.className = "text-danger small";
-            } else if (errorCode === 1 || errorCode > 3) {
+            } else if (errorCode === 3) { // TOO_LONG
+                statusEl.textContent = "⚠ Number too long";
+                statusEl.className = "text-danger small";
+            } else {
                 statusEl.textContent = "⚠ Invalid number";
                 statusEl.className = "text-danger small";
             }
