@@ -146,6 +146,13 @@
             </a>
             <div class="collapse @(isSettingsPage ? "show" : "")" id="settingsMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                    @* ✅ NEW ITEM HERE *@
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "CompanyProfile" ? "active" : "")"
+                           href="@Url.Action("CompanyProfile", "Settings")">
+                            Company Profile
+                        </a>
+                    </li>
                     <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")" href="@Url.Action("PaymentSettings", "Settings")">Payment Methods</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "Security" ? "active" : "")" href="@Url.Action("Security", "Settings")">Security (2FA)</a></li>
                 </ul>
