@@ -1,5 +1,6 @@
 ﻿using MDUA.Facade;
 using MDUA.Facade.Interface;
+using Microsoft.AspNetCore.Hosting; // ✅ Required for file upload
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +20,25 @@ namespace MDUA.Web.UI.Controllers
         private readonly ISettingsFacade _settingsFacade;
         private readonly IPaymentFacade _paymentFacade;
         private readonly IUserLoginFacade _userLoginFacade;
-        public SettingsController(ISettingsFacade settingsFacade, IPaymentFacade paymentFacade, IUserLoginFacade userLoginFacade)
+
+        // ✅ Add CompanyFacade and Environment
+        private readonly ICompanyFacade _companyFacade;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+
+        public SettingsController(
+            ISettingsFacade settingsFacade,
+            IPaymentFacade paymentFacade,
+            IUserLoginFacade userLoginFacade,
+            ICompanyFacade companyFacade,     // Injected
+            IWebHostEnvironment webHostEnvironment // Injected
+        )
         {
             _settingsFacade = settingsFacade;
             _paymentFacade = paymentFacade;
             _userLoginFacade = userLoginFacade;
-
+            _companyFacade = companyFacade;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -196,6 +210,70 @@ namespace MDUA.Web.UI.Controllers
 
             // 5. Redirect to the 2FA Verify Screen
             return RedirectToAction("VerifyReset2FA", "Account");
+
+        }
+
+        // ✅ 1. GET: Show Company Profile
+        [HttpGet]
+        public IActionResult CompanyProfile()
+        {
+            var company = _companyFacade.Get(CurrentCompanyId);
+            return View(company);
+        }
+
+        // ✅ 2. POST: Update Profile & Upload Image
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
+        public async Task<IActionResult> UpdateCompanyProfile(string CompanyName, IFormFile LogoFile)
+        {
+            try
+            {
+                // 1. Get existing data to preserve other fields
+                var company = _companyFacade.Get(CurrentCompanyId);
+                if (company == null) return Json(new { success = false, message = "Company not found." });
+
+                // 2. Update Name
+                if (!string.IsNullOrEmpty(CompanyName))
+                {
+                    company.CompanyName = CompanyName;
+                }
+
+                // 3. Handle File Upload (if provided)
+                if (LogoFile != null && LogoFile.Length > 0)
+                {
+                    // Create folder if not exists
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "company-logos");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    // Generate unique filename
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + LogoFile.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // Save file
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await LogoFile.CopyToAsync(fileStream);
+                    }
+
+                    // Store relative path in DB (e.g., "/uploads/company-logos/abc.png")
+                    company.LogoImg = "/uploads/company-logos/" + uniqueFileName;
+                }
+
+                // 4. Update Database
+                // Note: Ensure UpdatedBy/At are set if your BaseDataAccess doesn't handle them automatically
+                company.UpdatedBy = CurrentUserName;
+                company.UpdatedAt = DateTime.Now;
+
+                _companyFacade.Update(company);
+
+                return Json(new { success = true, message = "Profile updated successfully!", newLogoUrl = company.LogoImg, newName = company.CompanyName });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

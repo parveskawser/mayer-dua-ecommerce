@@ -40,11 +40,16 @@
 </head>
 <body>
     <header class="header">
-        <div class="container">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
                  alt="@(Model.CompanyName ?? "Company") Logo"
                  class="logo"
                  onerror="this.onerror=null; this.src='/images/logo.jpg';" />
+
+            <div class="header-actions" style="display: flex; gap: 10px;">
+                <a href="#order" class="btn combo-btn">Order Now</a>
+                <button id="open-status-modal" class="btn status-btn">Track My Order</button>
+            </div>
         </div>
     </header>
 
@@ -53,10 +58,6 @@
             <h1> @Model.ProductName </h1>
             <div class="product-description-content">
                 @Html.Raw(Model.Description)
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <a href="#order" class="btn combo-btn">Order Now</a>
-                <button id="open-status-modal" class="btn status-btn">Track My Order</button>
             </div>
         </section>
 
@@ -265,16 +266,15 @@
                             <textarea name="Street" placeholder="House No, Road No, Area..." rows="2" required></textarea>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <input type="hidden" id="hidden-division" name="Divison" value="" />
                                 <div>
-                                    <label>Division <span class="required-star">*</span></label>
-                                    <select id="division-select" name="Divison" required>
-                                        <option value="">Select Division</option>
-                                    </select>
+                                    <label>Postal Code </label>
+                                    <input type="text" name="PostalCode" placeholder="Enter code to autofill location..." required />
                                 </div>
                                 <div>
                                     <label>District <span class="required-star">*</span></label>
-                                    <select id="district-select" name="City" disabled required>
-                                        <option value="">Select...</option>
+                                    <select id="district-select" name="City" required>
+                                        <option value="">Loading Districts...</option>
                                     </select>
                                 </div>
                             </div>
@@ -283,13 +283,13 @@
                                 <div>
                                     <label>Thana <span class="required-star">*</span></label>
                                     <select id="thana-select" name="Thana" disabled required>
-                                        <option value="">Select...</option>
+                                        <option value="">Select district first...</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label>Sub-Office <span class="required-star">*</span></label>
                                     <select id="suboffice-select" name="SubOffice" disabled required>
-                                        <option value="">Select...</option>
+                                        <option value="">Select thana first...</option>
                                     </select>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@
                         </div>
 
                         <div class="qty-row">
-                            <label style="margin:0;">Quantity</label>
+                            <label style="margin:0;">Quantity <span class="required-star">*</span></label>
                             <div style="text-align: right;">
                                 <div class="quantity-wrapper">
                                     <button type="button" id="decrease">-</button>

@@ -632,6 +632,24 @@ $(document).ready(function () {
 
     populateDivisions();
 
+    // NEW: Load all districts immediately
+    function populateAllDistricts() {
+        // We assume your controller can return ALL districts if no division is passed
+        // OR you might need to create a specific endpoint like '/order/get-all-districts'
+        // For now, we try calling get-districts without parameters.
+        $.get('/order/get-districts', function (data) {
+            enableSelect('#district-select', data, 'Select District');
+        }).fail(function () {
+            $('#district-select').empty().append('<option>Error loading districts</option>');
+        });
+    }
+
+    // Call this instead of populateDivisions
+    populateAllDistricts();
+
+    // REMOVED: $('#division-select').change(...) logic is no longer needed 
+    // because we don't have a visible division dropdown.
+
     $('#division-select').change(function () {
         let division = $(this).val();
 
@@ -654,9 +672,15 @@ $(document).ready(function () {
     $('#district-select').change(function () {
         let district = $(this).val();
 
+        // NEW: Try to find the division for this district from the option data
+        // (Assuming your API returns division info, if not, this part is optional but good for data integrity)
+        // If your API data doesn't have 'division' in the option dataset, the backend usually figures it out from City anyway.
+        // $('#hidden-division').val("..."); 
+
         resetSelect('#thana-select', 'Loading...');
         resetSelect('#suboffice-select', 'Select Thana first');
 
+        // Delivery Charge Logic (This remains exactly the same)
         let charge = delivery.outside;
         if (district && (district.toLowerCase().includes('dhaka') || district.trim() === 'Dhaka')) {
             charge = delivery.dhaka;
@@ -675,7 +699,6 @@ $(document).ready(function () {
             resetSelect('#thana-select', 'Select District first');
         }
     });
-
     $('#thana-select').change(function () {
         let thana = $(this).val();
 
@@ -1059,37 +1082,44 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
             if (data.found) {
                 $input.css('border-color', '#2ecc71');
 
-                let $divSelect = $('#division-select');
-                $divSelect.val(data.division).trigger('change');
+                // 1. Set Hidden Division
+                $('#hidden-division').val(data.division);
 
-                setTimeout(() => {
-                    let $distSelect = $('#district-select');
-                    $distSelect.val(data.district).trigger('change');
-                }, 500);
+                // 2. Set District Directly (No timeout needed anymore)
+                let $distSelect = $('#district-select');
+                $distSelect.val(data.district).trigger('change');
 
+                // 3. Load Thana and Suboffice (Keep timeout slightly to allow Thana API to load after District change triggers)
                 setTimeout(() => {
                     if (data.thana) {
                         let $thanaSelect = $('#thana-select');
+                        // Force load the specific thana option immediately
                         $thanaSelect.empty()
                             .append(`<option value="${data.thana}" selected>${data.thana}</option>`)
                             .prop('disabled', false);
+
+                        // Trigger change to load suboffices
+                        $thanaSelect.trigger('change');
                     }
 
-                    if (data.subOffice) {
-                        let $subSelect = $('#suboffice-select');
-                        $subSelect.empty()
-                            .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
+                    // 4. Load SubOffice
+                    setTimeout(() => {
+                        if (data.subOffice) {
+                            let $subSelect = $('#suboffice-select');
+                            $subSelect.empty()
+                                .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
 
-                        $subSelect.find(':selected').data('code', code);
-                        $subSelect.prop('disabled', false);
-                    }
-                }, 800);
+                            $subSelect.find(':selected').data('code', code);
+                            $subSelect.prop('disabled', false);
+                        }
+                    }, 300); // Small delay for SubOffice API
+
+                }, 500); // Delay for Thana API (triggered by district change)
 
             } else {
                 $input.css('border-color', '#e74c3c');
             }
-        });
-    }
+        });    }
 });
 /* =========================================================
     (Customer Chat Logic)

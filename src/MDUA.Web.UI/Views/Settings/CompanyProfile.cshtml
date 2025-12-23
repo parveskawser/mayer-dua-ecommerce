@@ -1,0 +1,225 @@
+@model MDUA.Entities.Company
+@{
+    ViewData["Title"] = "Company Profile";
+    Layout = "_AdminLayout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<style>
+    /* --- Fluffy CSS --- */
+    :root {
+        --fluffy-bg: #f0f4f8;
+        --fluffy-card-bg: #ffffff;
+        --fluffy-shadow-light: #ffffff;
+        --fluffy-shadow-dark: #d1d9e6;
+        --primary-gradient: linear-gradient(145deg, #4facfe, #00f2fe);
+        --success-gradient: linear-gradient(145deg, #42e695, #3bb2b8);
+        --danger-gradient: linear-gradient(145deg, #ff6b6b, #ff4757);
+    }
+
+    /* --- CRITICAL FIX FOR BACKDROP --- */
+    /* Forces the modal to be on top of everything, even the sidebar */
+    .modal {
+        z-index: 99999 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 99990 !important;
+    }
+
+    .fluffy-card {
+        background-color: var(--fluffy-card-bg);
+        border-radius: 40px;
+        border: none;
+        box-shadow: 20px 20px 60px var(--fluffy-shadow-dark), -20px -20px 60px var(--fluffy-shadow-light);
+        padding: 40px;
+    }
+
+    .fluffy-input {
+        background: #f0f4f8;
+        border: none;
+        border-radius: 20px;
+        padding: 15px 20px;
+        color: #555;
+        box-shadow: inset 5px 5px 10px #d1d9e6, inset -5px -5px 10px #ffffff;
+        transition: all 0.2s ease;
+    }
+
+        .fluffy-input:focus {
+            outline: none;
+            box-shadow: inset 2px 2px 5px #d1d9e6, inset -2px -2px 5px #ffffff, 0 0 10px rgba(66, 230, 149, 0.3);
+        }
+
+    .fluffy-img-container {
+        padding: 10px;
+        background: var(--fluffy-card-bg);
+        border-radius: 50%;
+        box-shadow: 10px 10px 20px #d1d9e6, -10px -10px 20px #ffffff;
+        display: inline-block;
+        position: relative;
+    }
+
+        .fluffy-img-container img {
+            display: block;
+            border-radius: 50%;
+        }
+
+    .fluffy-btn-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: none;
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 5px 5px 10px rgba(0,0,0,0.1), -5px -5px 10px rgba(255,255,255,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    .fluffy-btn-save {
+        border-radius: 30px;
+        border: none;
+        padding: 15px;
+        font-weight: 700;
+        color: white;
+        background: var(--success-gradient);
+        box-shadow: 8px 8px 16px rgba(59, 178, 184, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.8);
+    }
+
+    .fluffy-label {
+        color: #6c757d;
+        font-weight: 700;
+        margin-left: 15px;
+        margin-bottom: 8px;
+    }
+
+    /* --- Modal & Cropper CSS --- */
+    .img-container {
+        max-height: 500px;
+        background-color: #f7f7f7;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .fluffy-btn-option {
+        border-radius: 15px;
+        border: none;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #555;
+        background: #f0f4f8;
+        box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff;
+        transition: all 0.2s;
+    }
+
+        .fluffy-btn-option.active {
+            color: white;
+            background: var(--primary-gradient);
+            box-shadow: inset 3px 3px 5px rgba(0,0,0,0.2);
+        }
+
+    .fluffy-btn-cancel {
+        border-radius: 30px;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        background: var(--danger-gradient);
+        box-shadow: 5px 5px 10px rgba(255, 107, 107, 0.4);
+    }
+</style>
+
+<div class="container-fluid p-4 d-flex justify-content-center">
+    <div class="d-flex flex-column w-100" style="max-width: 600px;">
+        <h3 class="mb-4 text-center fw-bold text-secondary">Company Profile</h3>
+
+        <div class="card fluffy-card">
+            <div class="card-body">
+                <form id="companyProfileForm" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="text-center mb-5">
+                        <div class="fluffy-img-container">
+                            <img id="logoPreview"
+                                 src="@(string.IsNullOrEmpty(Model.LogoImg) ? "https://via.placeholder.com/150?text=No+Logo" : Model.LogoImg)"
+                                 alt="Company Logo"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                            <input type="file" id="logoInput" name="LogoFile" accept="image/*" class="d-none">
+
+                            <button type="button" class="fluffy-btn-icon position-absolute bottom-0 end-0"
+                                    onclick="document.getElementById('logoInput').click();"
+                                    title="Upload New Logo">
+                                📷
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fluffy-label">Company Name</label>
+                        <input type="text" class="form-control fluffy-input"
+                               id="companyName" name="CompanyName"
+                               value="@Model.CompanyName" required>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="submit" class="btn fluffy-btn-save" id="btnSaveProfile">
+                            <span>📝</span> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 30px; border:none; background: #f0f4f8;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-secondary ps-3">Edit Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <div class="img-container shadow-sm">
+                    <img id="imageToCrop" src="" style="max-width: 100%;">
+                </div>
+
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-md-7 d-flex gap-2 flex-wrap">
+                        <button type="button" class="fluffy-btn-option active" onclick="setRatio(1)">1:1</button>
+                        <button type="button" class="fluffy-btn-option" onclick="setRatio(16/9)">16:9</button>
+                        <button type="button" class="fluffy-btn-option" onclick="setRatio(NaN)">Free</button>
+                    </div>
+
+                    <div class="col-md-5 d-flex gap-2 justify-content-md-end align-items-center mt-2 mt-md-0">
+                        <div class="d-flex align-items-center gap-2 bg-white rounded-pill px-3 py-2 shadow-sm">
+                            <span class="text-muted small fw-bold">W:</span>
+                            <input type="number" id="cropWidth" class="border-0 bg-transparent text-center fw-bold text-primary" style="width: 50px; outline:none;">
+                            <span class="text-muted small fw-bold">H:</span>
+                            <input type="number" id="cropHeight" class="border-0 bg-transparent text-center fw-bold text-primary" style="width: 50px; outline:none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn fluffy-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn fluffy-btn-save px-5 py-2" id="btnCropApply">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/company-profile.js"></script>
+}

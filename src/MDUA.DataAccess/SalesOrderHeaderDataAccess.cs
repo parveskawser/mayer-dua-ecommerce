@@ -730,42 +730,62 @@ namespace MDUA.DataAccess
 
         // ✅ Diagnostic update that proves: DB name + rows updated + final status
         public void UpdateStatusSafeLogged(int orderId, string status, bool confirmed)
-        {
-            string sql = @"
-UPDATE dbo.SalesOrderHeader
-SET Status = @Status,
-    Confirmed = @Confirmed,
-    UpdatedAt = GETDATE()
-WHERE Id = @Id;
 
+        {
+
+            string sql = @"
+
+UPDATE dbo.SalesOrderHeader
+
+SET Status = @Status,
+
+    Confirmed = @Confirmed,
+
+UpdatedAt = @UpdatedAt
+ 
 SELECT @@ROWCOUNT;";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
+
             {
+
                 AddParameter(cmd, pInt32("Id", orderId));
+
                 AddParameter(cmd, pNVarChar("Status", 30, status));
+
                 AddParameter(cmd, pBool("Confirmed", confirmed));
 
+                AddParameter(cmd, new SqlParameter("@UpdatedAt", SqlDbType.DateTime) { Value = DateTime.UtcNow });
+
                 if (cmd.Connection.State != ConnectionState.Open)
+
                     cmd.Connection.Open();
 
                 var dbName = cmd.Connection.Database;
+
                 int rows = Convert.ToInt32(cmd.ExecuteScalar());
 
                 // ✅ prove which DB is being updated and whether it affected rows
 
                 // ✅ confirm what DB contains immediately after update
+
                 cmd.CommandText = "SELECT Status, Confirmed, UpdatedAt FROM dbo.SalesOrderHeader WHERE Id = @Id";
+
                 cmd.Parameters.Clear();
+
                 AddParameter(cmd, pInt32("Id", orderId));
 
-  
+
 
                 cmd.Connection.Close();
 
                 if (rows == 0)
+
                     throw new Exception($"SOH update affected 0 rows. Wrong DB or invalid orderId={orderId}.");
+
             }
+
         }
+
     }
 }

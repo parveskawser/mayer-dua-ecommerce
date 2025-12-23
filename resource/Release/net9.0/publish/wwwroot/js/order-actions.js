@@ -13,7 +13,7 @@ window.openAdvanceModal = function (element) {
     const btn = element;
     const orderRef = btn.getAttribute('data-order-ref');
     const custId = btn.getAttribute('data-cust-id');
-
+    const orderId = btn.getAttribute('data-order-id');
     const parseVal = (val) => {
         if (!val) return 0;
         return parseFloat(val.toString().replace(/,/g, '')) || 0;
@@ -32,7 +32,7 @@ window.openAdvanceModal = function (element) {
     // Populate hidden/meta fields
     document.getElementById('adv_orderRef').value = orderRef;
     document.getElementById('adv_customerId').value = custId;
-
+    document.getElementById('adv_orderId').value = orderId;
     // Visual-only fields
     document.getElementById('adv_productPrice').value =
         productPrice.toLocaleString('en-BD', { minimumFractionDigits: 2 });
@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const payload = {
+                OrderId: parseInt(document.getElementById('adv_orderId').value),
                 CustomerId: parseInt(document.getElementById('adv_customerId').value),
                 PaymentMethodId: parseInt(document.getElementById('adv_paymentMethod').value),
                 PaymentType: document.getElementById('adv_paymentType').value,
@@ -308,11 +309,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(r => r.json())
                 .then(data => {
                     if (!data.success) {
+                        // Error case: Just show the alert. 
+                        // No .then() needed here because we aren't reloading immediately after.
                         alert(data.message);
                         return;
                     }
-                    alert("Payment Added & Order Updated Successfully!");
-                    location.reload();
+
+                    // Success case: We MUST wait for the user to click "OK" before reloading
+                    alert("Payment Added & Order Updated Successfully!")
+                        .then(() => {
+                            // This code only runs AFTER the user clicks the "OK" button
+                            location.reload();
+                        });
                 })
                 .catch(() => alert("Network Error"));
         });
@@ -346,10 +354,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData.toString()
             }).then(r => r.json()).then(data => {
                 if (data.success && statusBadge) {
-                    statusBadge.textContent = data.newStatus;
+
+                    // ✅ FIX: Check if status is "Draft" and change text to "Pending"
+                    const displayStatus = data.newStatus === 'Draft' ? 'Pending' : data.newStatus;
+
+                    statusBadge.textContent = displayStatus;
+
                     statusBadge.className = data.newStatus === 'Confirmed'
                         ? 'badge bg-success text-white'
                         : 'badge bg-warning text-dark';
+
                 } else if (!data.success) {
                     checkbox.checked = !isConfirmed; // Revert
                     alert("Action failed: " + data.message);

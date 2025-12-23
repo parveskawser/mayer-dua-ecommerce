@@ -64,7 +64,8 @@
     // ==========================================
     const allVariants = (typeof window.rawVariants !== 'undefined' && Array.isArray(window.rawVariants)) ? window.rawVariants : [];
     const productMap = {};
-
+    // Change "Select Product..." to whatever text you want to appear
+    productSelect.add(new Option("", ""));
     allVariants.forEach(v => {
         const pId = v.ProductId || v.productId;
         const pName = v.ProductName || v.productName;
@@ -77,7 +78,23 @@
             productMap[pId].variants.push(v);
         }
     });
+    if (document.getElementById('productSelect')) {
+        var tom = new TomSelect("#productSelect", {
+            create: false,
+            sortField: { field: "text", direction: "asc" },
+            placeholder: "Select/Search Product...", // This text will now show!
+            allowEmptyOption: false,          // Changed to FALSE to prevent selecting "blank"
+            maxOptions: null,
+            onChange: function (value) {
+                const event = new Event('change');
+                productSelect.dispatchEvent(event);
+            }
+        });
 
+        // ✅ FORCE PLACEHOLDER: This clears the default empty selection
+        // The 'true' argument prevents triggering the 'change' event unnecessarily
+        tom.clear(true);
+    }
     productSelect.addEventListener('change', function () {
         variantSelect.innerHTML = '<option value="" data-price="0">Select Variant...</option>';
         variantSelect.disabled = true;
