@@ -10,6 +10,10 @@ namespace MDUA.Entities
 {
 	public partial class DeliveryItem 
 	{
-		
-	}
+        [DataMember] public int SalesOrderDetailId { get; set; }
+        [DataMember] public int Quantity { get; set; }
+
+        // Navigation Property
+        [DataMember] public virtual SalesOrderDetail SalesOrderDetail { get; set; }
+    }
 }

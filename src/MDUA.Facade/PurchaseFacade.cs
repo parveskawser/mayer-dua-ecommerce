@@ -100,10 +100,10 @@ namespace MDUA.Facade
 
         public long CreatePurchaseOrder(PoRequested po)
         {
-            po.RequestDate = DateTime.Now;
+            po.RequestDate = DateTime.UtcNow;
             po.Status = "Pending";
-            po.CreatedAt = DateTime.Now;
-            po.UpdatedAt = DateTime.Now;
+            po.CreatedAt = DateTime.UtcNow;
+            po.UpdatedAt = DateTime.UtcNow;
 
             // ✅ Use empty string as fallback if CreatedBy is still null
             if (string.IsNullOrEmpty(po.CreatedBy))
@@ -224,9 +224,9 @@ namespace MDUA.Facade
                     try
                     {
                         // 1. Insert Bulk Order Header
-                        bulkOrder.AgreementDate = DateTime.Now;
-                        bulkOrder.CreatedAt = DateTime.Now;
-                        bulkOrder.UpdatedAt = DateTime.Now;
+                        bulkOrder.AgreementDate = DateTime.UtcNow;
+                        bulkOrder.CreatedAt = DateTime.UtcNow;
+                        bulkOrder.UpdatedAt = DateTime.UtcNow;
                         bulkOrder.TotalTargetQuantity = items.Sum(x => x.Quantity);
                         bulkOrder.TotalTargetAmount = 0;
                         bulkOrder.Status = "Active";
@@ -249,9 +249,9 @@ namespace MDUA.Facade
 
                             item.VendorId = bulkOrder.VendorId;
                             item.Status = "Pending";
-                            item.RequestDate = DateTime.Now;
-                            item.CreatedAt = DateTime.Now;
-                            item.UpdatedAt = DateTime.Now;
+                            item.RequestDate = DateTime.UtcNow;
+                            item.CreatedAt = DateTime.UtcNow;
+                            item.UpdatedAt = DateTime.UtcNow;
                             item.CreatedBy = bulkOrder.CreatedBy;
                             item.ReferenceNo = bulkOrder.AgreementNumber;
 

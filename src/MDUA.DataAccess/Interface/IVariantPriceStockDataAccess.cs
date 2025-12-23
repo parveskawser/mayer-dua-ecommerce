@@ -34,6 +34,6 @@ namespace MDUA.DataAccess.Interface
         int Insert(VariantPriceStock vps);
         long UpdatePrice(int variantId, decimal price, string sku);
         void AddStock(int variantId, int qty, SqlTransaction transaction);
-
+        List<LowStockItem> GetLowStockVariants(int topN);
     }
 }

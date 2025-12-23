@@ -18,7 +18,7 @@ namespace MDUA.Facade.Interface
         List<dynamic> GetSubOffices(string thana);
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         List<SalesOrderHeader> GetAllOrdersForAdmin();
-        string UpdateOrderConfirmation(int orderId, bool isConfirmed);
+        string UpdateOrderConfirmation(int orderId, bool isConfirmed, string username);
         List<dynamic> GetProductVariantsForAdmin();
         dynamic PlaceAdminOrder(SalesOrderHeader orderData); //change
 
@@ -26,6 +26,9 @@ namespace MDUA.Facade.Interface
         List<SalesOrderHeader> GetRecentOrders(); //new
         List<ChartDataPoint> GetSalesTrend(); //new
         List<ChartDataPoint> GetOrderStatusCounts(); //new
+        void UpdateDeliveryStatus(int deliveryId, string newStatus);
+
+        void UpdateOrderStatus(int orderId, string newStatus);
 
     }
 }

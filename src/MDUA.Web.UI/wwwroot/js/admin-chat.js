@@ -17,7 +17,7 @@ var adminChat = (function () {
             .then(() => console.log("✅ Admin Chat SignalR Connected"))
             .catch(err => console.error(err));
 
-        // EVENT: Receive Message (Real-time updates in Admin Panel)
+        // ✅ EXISTING: Regular message updates
         _hubConnection.on("ReceiveMessage", function (user, message, sessionGuid) {
             loadHeaderChats();
             if ($('#admin-chat-panel').is(':visible')) {
@@ -27,6 +27,28 @@ var adminChat = (function () {
             if (currentGuid && currentGuid.toLowerCase() === sessionGuid.toLowerCase()) {
                 appendBubble(user, message, false);
             }
+        });
+
+        // 🆕 NEW: Urgent Handoff Alert
+        _hubConnection.on("ReceiveUrgentHandoff", function (guestName, reason, sessionGuid) {
+            // 1. Play Alert Sound
+            var audio = new Audio('/sounds/urgent-notification.mp3');
+            audio.play().catch(e => console.log("Audio blocked"));
+
+            // 2. Show Desktop Notification (if permitted)
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("🚨 Urgent: Customer Needs Help!", {
+                    body: `${guestName}: ${reason}`,
+                    icon: '/images/logo.jpg'
+                });
+            }
+
+            // 3. Flash the Header Icon
+            $('#header-msg-btn').addClass('urgent-flash');
+            setTimeout(() => $('#header-msg-btn').removeClass('urgent-flash'), 5000);
+
+            // 4. Refresh the chat list
+            loadHeaderChats();
         });
 
         loadHeaderChats();
@@ -122,7 +144,6 @@ var adminChat = (function () {
         });
     }
 
-    // 🌟 RESTORED: Logic to join with specific name
     function openSession(id, guid, name) {
         $('#current-chat-session-id').val(id);
         $('#current-chat-guid').val(guid);
@@ -130,9 +151,12 @@ var adminChat = (function () {
         $('#admin-chat-history').html('<div style="text-align:center; padding:20px;">Loading history...</div>');
 
         // Refresh lists
-        setTimeout(function () { loadHeaderChats(); if ($('#admin-chat-panel').is(':visible')) loadActiveChats(); }, 1000);
+        setTimeout(function () {
+            loadHeaderChats();
+            if ($('#admin-chat-panel').is(':visible')) loadActiveChats();
+        }, 1000);
 
-        // ✅ RESTORED: Create the specific name string
+        // Create the specific name string
         var adminName = $('#current-admin-name').val() || "Admin";
         var joinMessage = "Support Agent - " + adminName;
 
@@ -146,24 +170,20 @@ var adminChat = (function () {
             messages.forEach(m => appendBubble(m.senderName, m.messageText, m.isFromAdmin));
         });
     }
+
     function openFromHeader(id, guid, name) {
         $('#header-msg-dropdown').hide();
         $('#admin-chat-panel').fadeIn();
         openSession(id, guid, name);
     }
 
-    // 🌟 RESTORED: Logic to display "Sent by Name"
     function sendReply() {
         const msg = $('#admin-chat-input').val().trim();
         const guid = $('#current-chat-guid').val();
-
-        // Get Local Name for UI
         var adminName = $('#current-admin-name').val() || "Admin";
 
         if (!msg || !guid) return;
 
-        // Pass 'adminName' so the hub can use it OR hub uses server-side identity
-        // But for local bubble, we definitely use adminName
         _hubConnection.invoke("SendReplyToUser", adminName, msg, guid)
             .then(function () {
                 appendBubble(adminName, msg, true);
@@ -175,8 +195,6 @@ var adminChat = (function () {
         let align = isSelf ? 'align-self: flex-end;' : 'align-self: flex-start;';
         let bg = isSelf ? 'background: #2563eb; color: white;' : 'background: #f1f5f9; color: #1e293b;';
         let radius = isSelf ? 'border-radius: 12px 12px 0 12px;' : 'border-radius: 12px 12px 12px 0;';
-
-        // Logic: If me, show "Sent by Name", else just Name
         let label = isSelf ? `Sent by ${user}` : user;
 
         let html = `<div style="${align} max-width: 70%; ${bg} padding: 10px 14px; ${radius} font-size: 0.95rem; line-height: 1.5; margin-bottom: 5px;">${text}</div>

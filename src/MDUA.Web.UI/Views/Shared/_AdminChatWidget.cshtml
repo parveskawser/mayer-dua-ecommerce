@@ -1,4 +1,19 @@
-﻿<input type="hidden" id="current-admin-name" value="@Model?.UserLogin?.UserName" />
+﻿﻿<style>
+     .urgent-flash {
+         animation: flash 0.5s infinite;
+     }
+
+     @@keyframes flash {
+         0%, 100% {
+             color: #ef4444;
+         }
+
+         50% {
+             color: #fbbf24;
+         }
+     }
+</style>
+<input type="hidden" id="current-admin-name" value="@Model?.UserLogin?.UserName" />
 <div id="admin-chat-panel" style="display:none !important; position: fixed; bottom: 20px; right: 20px; width: 400px; height: 500px; background: white; border: 1px solid #ccc; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 10000; border-radius: 12px; font-family: 'Segoe UI', sans-serif; overflow: hidden;">
 
     <div style="display: flex; flex-direction: column; height: 100%;">
@@ -30,4 +45,3 @@
 
     </div>
 </div>
-

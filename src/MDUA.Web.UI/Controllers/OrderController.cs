@@ -10,34 +10,50 @@ using MDUA.Web.UI.Controllers;
 
 namespace MDUA.Web.UI.Controllers
 {
-     public class OrderController : BaseController
+    public class OrderController : BaseController
     {
-        private readonly IOrderFacade _orderFacade; 
+        private readonly IOrderFacade _orderFacade;
         private readonly IUserLoginFacade _userLoginFacade;
-
-        public OrderController(IOrderFacade orderFacade, IUserLoginFacade userLoginFacade)
+        private readonly IPaymentFacade _paymentFacade; // <--- ADD THIS
+        private readonly ISettingsFacade _settingsFacade;
+        public OrderController(IOrderFacade orderFacade, IUserLoginFacade userLoginFacade, IPaymentFacade paymentFacade, ISettingsFacade settingsFacade)
         {
             _orderFacade = orderFacade;
             _userLoginFacade = userLoginFacade;
-
+            _paymentFacade = paymentFacade;
+            _settingsFacade = settingsFacade;
         }
 
+
+
         [HttpGet]
+
         public IActionResult GetOrderStatus([FromQuery] string orderId)
+
         {
+
             if (string.IsNullOrEmpty(orderId))
+
             {
+
                 return BadRequest(new { message = "Order ID is required." });
+
             }
 
             try
+
             {
+
                 // --- 1. Facade Call ---
+
                 var receiptLines = _orderFacade.GetOrderReceiptByOnlineId(orderId);
 
                 if (receiptLines == null || !receiptLines.Any())
+
                 {
+
                     return NotFound(new { message = $"Order {orderId} not found.", orderFound = false });
+
                 }
 
                 // --- 2. Robust Data Extraction and Casting ---
@@ -45,25 +61,46 @@ namespace MDUA.Web.UI.Controllers
                 var headerData = (IDictionary<string, object>)receiptLines.First();
 
                 // Helper function for safer decimal retrieval (Handles DBNull and casting errors)
+
                 Func<string, decimal> GetDecimal = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                     ? Convert.ToDecimal(val, CultureInfo.InvariantCulture) : 0M;
 
                 // Helper function for safer string retrieval
+
                 Func<string, string> GetString = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                     ? val.ToString() : string.Empty;
 
                 // Helper function for safer DateTime retrieval
+
                 Func<string, DateTime> GetDateTime = (key) =>
+
                     headerData.TryGetValue(key, out var val) && val is DateTime dt ? dt : DateTime.MinValue;
 
 
                 // --- Extract Data Using Helpers ---
+
                 string retrievedOrderId = GetString("OnlineOrderId") ?? orderId;
-                string orderStatus = GetString("OrderStatus");
+
+                string orderStatusRaw = GetString("OrderStatus")?.ToLower()?.Trim();
+
+                string orderStatus = orderStatusRaw switch
+
+                {
+
+                    "draft" => "Pending",
+
+                    _ => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(orderStatusRaw ?? "Unknown")
+
+                };
 
                 decimal netAmount = GetDecimal("NetAmount");
+
                 decimal discountAmount = GetDecimal("DiscountAmount");
 
                 string deliveryDivision = GetString("Divison").ToLower();
@@ -71,92 +108,148 @@ namespace MDUA.Web.UI.Controllers
                 DateTime orderDate = GetDateTime("OrderDate");
 
                 // --- 3. Delivery and Total Calculation ---
+
                 // Inside GetOrderStatus:
+
                 // ... (after DateTime orderDate = GetDateTime("OrderDate");)
 
                 // --- 3. Delivery and Total Calculation ---
 
                 const decimal DHAKA_CHARGE = 50M;
+
                 const decimal OUTSIDE_CHARGE = 100M;
+
                 const int DHAKA_DAYS = 3;
+
                 const int OUTSIDE_DAYS = 5;
 
                 decimal deliveryCharge = OUTSIDE_CHARGE;
+
                 int deliveryDays = OUTSIDE_DAYS;
 
                 // Determine charge and days based on Division
+
                 if (deliveryDivision.Contains("dhaka"))
+
                 {
+
                     deliveryCharge = DHAKA_CHARGE;
+
                     deliveryDays = DHAKA_DAYS;
+
                 }
 
                 string estimatedDelivery = "N/A";
+
                 string formattedOrderDate = "N/A";
 
                 if (orderDate != DateTime.MinValue)
+
                 {
+
                     // The date is valid, calculate both outputs
+
                     estimatedDelivery = orderDate.AddDays(deliveryDays).ToString("yyyy-MM-dd");
+
                     formattedOrderDate = orderDate.ToString("yyyy-MM-dd HH:mm:ss");
+
                 }
 
                 decimal finalGrandTotal = netAmount + deliveryCharge;
 
                 // --- 4. Process Line Items ---
+
                 var lineItems = receiptLines.Select(line =>
+
                 {
+
                     var lineDict = (IDictionary<string, object>)line;
 
                     // Helper for decimal within line item
+
                     Func<string, decimal> GetLineDecimal = (key) =>
+
                         lineDict.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                         ? Convert.ToDecimal(val, CultureInfo.InvariantCulture) : 0M;
 
                     // Helper for string within line item
+
                     Func<string, string> GetLineString = (key) =>
+
                         lineDict.TryGetValue(key, out var val) && val != null && val != DBNull.Value
+
                         ? val.ToString() : string.Empty;
 
                     return new
+
                     {
+
                         productName = GetLineString("ProductName"),
+
                         qty = lineDict.TryGetValue("OrderQuantity", out var qty) && qty != null ? Convert.ToInt32(qty) : 0,
+
                         price = GetLineDecimal("UnitPrice"),
+
                         lineTotal = GetLineDecimal("Price")
+
                     };
+
                 }).ToList();
 
 
                 // --- 5. Prepare the final JSON response ---
+
                 var response = new
+
                 {
+
                     orderFound = true,
+
                     orderId = retrievedOrderId,
+
                     status = orderStatus,
+
                     grandTotal = finalGrandTotal,
+
                     estimatedDelivery = estimatedDelivery,
+
                     deliveryCharge = deliveryCharge,
+
                     discountAmount = discountAmount,
+
                     netAmount = netAmount,
+
                     formattedOrderDate = formattedOrderDate,
 
                     customerName = GetString("CustomerName"),
+
                     customerAddress = GetString("CustomerAddress"),
+
                     lineItems = lineItems
+
                 };
 
                 return Ok(response);
+
             }
+
             catch (Exception ex)
+
             {
+
                 // 🛑 Log the exception (ex) here to see the actual error (e.g., InvalidCastException) 🛑
+
                 // Example logging (replace with your actual logger):
+
                 // _logger.LogError(ex, "Failed to retrieve order status for {OrderId}", orderId);
 
                 return StatusCode(500, new { message = "Internal server error during tracking lookup. See server logs for details." });
+
             }
+
         }
+
 
 
 
@@ -172,20 +265,22 @@ namespace MDUA.Web.UI.Controllers
 
             return Json(new { exists = exists });
         }
-        
-        
+
+
         [HttpGet]
         [Route("order/check-customer")]
-        // ✅ FIX: Remove [FromQuery] and rely on standard parameter binding for simple string
         public IActionResult CheckCustomer(string phone)
         {
-            // NO try/catch here, we assume the global error handler is active.
-
-            // We must check for null/empty string here manually, as the binder might allow it
-            if (string.IsNullOrEmpty(phone))
+            // 1. Validate Null/Empty
+            if (string.IsNullOrWhiteSpace(phone))
             {
-                // Return success=false if phone is empty, not a 400 error
                 return Json(new { found = false, message = "Phone number is empty." });
+            }
+
+            phone = phone.Trim();
+            if (!phone.StartsWith("+"))
+            {
+                phone = "+" + phone;
             }
 
             // Call Facade logic
@@ -193,7 +288,6 @@ namespace MDUA.Web.UI.Controllers
 
             if (customer != null)
             {
-                // Helper to convert char[] to string safely
                 Func<char[], string> CharArrayToString = (char[] arr) =>
                     arr != null ? new string(arr).Trim() : null;
 
@@ -202,16 +296,13 @@ namespace MDUA.Web.UI.Controllers
                     found = true,
                     name = customer.CustomerName ?? "",
                     email = customer.Email ?? "",
-
-                    // Safely map all address fields (even if address is null)
                     addressData = (address != null) ? new
                     {
                         street = address.Street ?? "",
                         divison = address.Divison ?? "",
                         city = address.City ?? "",
-                        postalCode = address.PostalCode, // Assumed string/varchar
-                        zipCode = CharArrayToString(address.ZipCode), // Convert char[] to string
-                                                                      // Note: Thana/SubOffice must be mapped here if needed
+                        postalCode = address.PostalCode,
+                        zipCode = CharArrayToString(address.ZipCode),
                     } : null
                 });
             }
@@ -274,9 +365,7 @@ namespace MDUA.Web.UI.Controllers
             return Json(data);
         }
 
-        [Route("order/all")]
-
-
+        [Route("/order/all")]
         [HttpGet]
         public IActionResult AllOrders()
         {
@@ -284,20 +373,30 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-         // 1. Fetch all orders from the Facade
-         List<SalesOrderHeader> orders = _orderFacade.GetAllOrdersForAdmin();
+                int companyId = 1;
+                var claim = User.FindFirst("CompanyId") ?? User.FindFirst("TargetCompanyId");
+                if (claim != null && int.TryParse(claim.Value, out int parsedId))
+                {
+                    companyId = parsedId;
+                }
 
-         // 2. Pass the list to the view. 
-         // The view should be strongly typed to List<MDUA.Entities.SalesOrderHeader>.
-         return View(orders);
-             }
-             catch (Exception ex)
-             {
-                 // Log the error and show an empty list or error view
-                 ViewData["ErrorMessage"] = "Failed to load order list: " + ex.Message;
-                 return View(new List<SalesOrderHeader>());
-             }
-         }
+                var orders = _orderFacade.GetAllOrdersForAdmin();
+                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
+                ViewBag.PaymentMethods = paymentMethods;
+
+                var deliverySettings = _settingsFacade.GetDeliverySettings(companyId);
+
+                ViewBag.DeliveryDhaka = deliverySettings["dhaka"];
+                ViewBag.DeliveryOutside = deliverySettings["outside"];
+
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                ViewData["ErrorMessage"] = "Failed to load: " + ex.Message;
+                return View(new List<SalesOrderHeader>());
+            }
+        }
 
 
         [HttpPost]
@@ -307,20 +406,54 @@ namespace MDUA.Web.UI.Controllers
             // 1. Safety Check: If JSON binding failed (e.g., sending null for an int), model will be null.
             if (model == null)
             {
+
                 return BadRequest(new { success = false, message = "Invalid Data: Please select a product variant and fill all required fields." });
             }
 
             try
             {
+                // ✅ MOVED HERE (Outside the 'if' block)
+
+                // ---------------------------------------------------------
+                // 1. CAPTURE IP ADDRESS
+                // ---------------------------------------------------------
+                string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+                if (Request.Headers.ContainsKey("X-Forwarded-For"))
+                {
+                    ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+                }
+
+                // Handle Localhost IPv6
+                if (ipAddress == "::1") ipAddress = "127.0.0.1";
+
+                if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Length > 45)
+                {
+                    ipAddress = ipAddress.Substring(0, 45);
+                }
+
+                model.IPAddress = ipAddress;
+
+                // ---------------------------------------------------------
+                // 2. CAPTURE SESSION ID
+                // ---------------------------------------------------------
+                // "Kickstart" session if empty to ensure the ID is stable
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("IsActive")))
+                {
+                    HttpContext.Session.SetString("IsActive", "true");
+                }
+
+                model.SessionId = HttpContext.Session.Id;
+
+                // ---------------------------------------------------------
+                // 3. PROCEED
+                // ---------------------------------------------------------
                 var orderId = _orderFacade.PlaceGuestOrder(model);
                 return Json(new { success = true, orderId = orderId });
             }
             catch (Exception ex)
             {
-                // Get the Inner Exception if available
                 var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                if (string.IsNullOrEmpty(realError)) realError = ex.ToString();
-
                 return Json(new { success = false, message = realError });
             }
         }
@@ -334,8 +467,11 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // Call the Facade logic we just created
-                string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed);
+                // ✅ Get Logged-in Username
+                string username = User.Identity.Name ?? "Unknown_User";
+
+                // ✅ Pass it to the Facade
+                string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed, username);
 
                 return Json(new { success = true, newStatus = newStatus });
             }
@@ -344,8 +480,8 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        [Route("order/add")]
 
+        [Route("order/add")]
         [HttpGet]
         public IActionResult Add()
         {
@@ -353,9 +489,23 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // Fetch products for the dropdown
+                // 1. Fetch Products
                 var products = _orderFacade.GetProductVariantsForAdmin();
                 ViewBag.ProductVariants = products;
+
+                int companyId = 1; // Default or fetch from User Claims
+                var claim = User.FindFirst("CompanyId") ?? User.FindFirst("TargetCompanyId");
+                if (claim != null && int.TryParse(claim.Value, out int parsedId))
+                {
+                    companyId = parsedId;
+                }
+
+                var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
+
+                if (!settings.ContainsKey("dhaka")) settings["dhaka"] = 0;
+                if (!settings.ContainsKey("outside")) settings["outside"] = 0;
+
+                ViewBag.DeliverySettings = settings; 
 
                 return View();
             }
@@ -366,7 +516,58 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
-        [Route("order/add")]
+        [HttpPost]
+
+        [Route("SalesOrder/UpdateStatus")]
+
+        public IActionResult UpdateStatus(int id, string status)
+
+        {
+
+            try
+
+            {
+
+                // 1. Validate Status
+
+                var allowedStatuses = new[] { "Draft", "Confirmed", "Shipped", "Delivered", "Cancelled", "Returned" };
+
+                if (!allowedStatuses.Contains(status))
+
+                {
+
+                    return Json(new { success = false, message = "Invalid Status" });
+
+                }
+
+                // 2. Call Facade to update DB
+
+                // We reuse the update logic. You might need to add a method to your Facade 
+
+                // if UpdateOrderConfirmation is too specific.
+
+                // Let's assume we add a generic UpdateStatus method to Facade
+
+                _orderFacade.UpdateOrderStatus(id, status);
+
+                return Json(new { success = true });
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return Json(new { success = false, message = ex.Message });
+
+            }
+
+        }
+
+
+
+
+        [Route("order/place-direct")]
         [HttpPost]
         public IActionResult PlaceDirectOrder([FromBody] SalesOrderHeader model)
         {
@@ -375,12 +576,47 @@ namespace MDUA.Web.UI.Controllers
             try
             {
                 // ✅ FIX: Enforce valid Company ID from UI.
-                // We removed the fallback to ID 1 as per your requirement.
                 if (model.TargetCompanyId <= 0)
                 {
                     return Json(new { success = false, message = "Target Company ID is required." });
                 }
 
+                // ---------------------------------------------------------
+                // 1. CAPTURE IP ADDRESS
+                // ---------------------------------------------------------
+                string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+                // Check if behind a proxy (like Nginx/Cloudflare/IIS)
+                if (Request.Headers.ContainsKey("X-Forwarded-For"))
+                {
+                    ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+                }
+
+                // Handle Localhost IPv6
+                if (ipAddress == "::1") ipAddress = "127.0.0.1";
+
+                // Truncate to 45 chars to fit database schema
+                if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Length > 45)
+                {
+                    ipAddress = ipAddress.Substring(0, 45);
+                }
+
+                model.IPAddress = ipAddress;
+
+                // ---------------------------------------------------------
+                // 2. CAPTURE SESSION ID
+                // ---------------------------------------------------------
+                // "Kickstart" session if empty to ensure the ID is stable
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("IsActive")))
+                {
+                    HttpContext.Session.SetString("IsActive", "true");
+                }
+
+                model.SessionId = HttpContext.Session.Id;
+
+                // ---------------------------------------------------------
+                // 3. EXECUTE ORDER
+                // ---------------------------------------------------------
                 // 🛑 FIX: Use 'var' or 'dynamic' because PlaceAdminOrder returns an object, not a string
                 var result = _orderFacade.PlaceAdminOrder(model);
 
@@ -413,5 +649,52 @@ namespace MDUA.Web.UI.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        public class PaymentRequestModel : CustomerPayment
+        {
+            public decimal DeliveryCharge { get; set; }
+        }
+
+        [HttpPost]
+        [Route("/order/add-payment")]
+        public IActionResult AddAdvancePayment([FromBody] PaymentRequestModel model)
+        {
+            if (model.CustomerId <= 0 || model.Amount <= 0)
+            {
+                return Json(new { success = false, message = "Invalid Amount or Customer" });
+            }
+
+            if (model.PaymentMethodId <= 0)
+            {
+                return Json(new { success = false, message = "Please select a valid Payment Method." });
+            }
+
+            try
+            {
+                model.PaymentDate = DateTime.Now;
+                model.CreatedBy = User.Identity?.Name ?? "Admin";
+                model.CreatedAt = DateTime.Now;
+                model.Status = "Completed";
+
+                // ✅ CHANGE: Pass the DeliveryCharge to the Facade
+                long newId = _paymentFacade.AddPayment(model, model.DeliveryCharge);
+
+                if (newId > 0)
+                {
+                    return Json(new { success = true, message = "Payment recorded successfully." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Database insertion failed." });
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = msg });
+            }
+        }
+
+
+
     }
-}
+    }

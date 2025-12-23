@@ -1,8 +1,16 @@
-﻿//change
-
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
 
     console.log("Admin Order Script Loaded");
+
+    // Helper: Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
 
     // ==========================================
     // 1. UI ELEMENTS
@@ -15,9 +23,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const displayPrice = document.getElementById('displayPrice');
     const displaySubTotal = document.getElementById('displaySubTotal');
     const displayDiscount = document.getElementById('displayDiscount');
-    const displayDelivery = document.getElementById('displayDelivery');
-    const displayNet = document.getElementById('displayNet');
 
+    // ✅ CHANGED: Reference the Input field for Delivery Charge
+    const deliveryInput = document.getElementById('deliveryChargeInput');
+    // We keep this purely to update any text display if it still exists, though the input shows the value now
+    const displayDelivery = document.getElementById('displayDelivery');
+
+    const displayNet = document.getElementById('displayNet');
     const stockInfo = document.getElementById('stockInfo');
 
     // Mode & Location Elements
@@ -37,6 +49,15 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error("OrderAPI is missing! Make sure combo.js is loaded before admin-order.js");
         return;
     }
+
+    // ✅ 1. INITIALIZE COUNTRY CODE INPUT
+    const phoneInput = document.getElementById('custPhone');
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "bd",
+        separateDialCode: true,
+        preferredCountries: ["bd", "us", "gb"],
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+    });
 
     // ==========================================
     // 2. PRODUCT LOGIC
@@ -75,14 +96,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const dType = v.DiscountType || v.discountType || "None";
                 const dVal = v.DiscountValue || v.discountValue || 0;
 
-                // ✅ FIX: Check Stock Status
+                // Check Stock Status
                 let label = `${vName} (Tk. ${vPrice})`;
                 let isOutOfStock = vStock <= 0;
 
                 if (isOutOfStock) {
                     label += " ❌";
                 } else if (vStock < 10 && vStock !== 999) {
-                    // Optional: Show stock count in dropdown if low
                     label += ` (${vStock} left)`;
                 }
 
@@ -92,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 opt.setAttribute('data-disc-type', dType);
                 opt.setAttribute('data-disc-val', dVal);
 
-                // ✅ FIX: Disable and Color Red if Out of Stock
                 if (isOutOfStock) {
                     opt.disabled = true;
                     opt.style.color = "#dc3545"; // Red color
@@ -113,8 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
             stockInfo.textContent = "In Stock";
             stockInfo.className = "form-text text-success";
         } else {
-            // We don't need to check <= 0 here because they are disabled in the dropdown,
-            // but good to handle just in case.
             if (stock <= 0) {
                 stockInfo.textContent = "Out of Stock";
                 stockInfo.className = "form-text text-danger fw-bold";
@@ -127,9 +144,43 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     qtyInput.addEventListener('input', calcTotal);
-    if (divisionSelect) divisionSelect.addEventListener('change', calcTotal);
-    if (modeDelivery) modeDelivery.addEventListener('change', calcTotal);
-    if (modeStore) modeStore.addEventListener('change', calcTotal);
+
+    // ✅ NEW: Listen for manual delivery charge edits to recalculate Grand Total
+    if (deliveryInput) {
+        deliveryInput.addEventListener('input', calcTotal);
+        if (!deliveryInput.value) deliveryInput.value = 0;
+    }
+
+    // ==========================================
+    // 2.5 CALCULATION LOGIC
+    // ==========================================
+
+    // ✅ NEW FUNCTION: Calculates suggested delivery fee based on rules and updates the Input
+    function autoCalculateDelivery() {
+        if (!deliveryInput) return;
+
+        if (modeStore && modeStore.checked) {
+            deliveryInput.value = 0;
+        } else {
+            const config = window.deliveryConfig || { dhaka: 0, outside: 0 };
+            const costDhaka = parseFloat(config.dhaka || config.Cost_InsideDhaka || 0);
+            const costOutside = parseFloat(config.outside || config.Cost_OutsideDhaka || 0);
+
+            const div = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
+            const dist = districtSelect.value ? districtSelect.value.toLowerCase() : "";
+
+            // Logic: Dhaka Division OR Dhaka District = Inside City
+            if (div.includes("dhaka") || dist.includes("dhaka")) {
+                deliveryInput.value = costDhaka;
+            } else if (div !== "") {
+                deliveryInput.value = costOutside;
+            } else {
+                deliveryInput.value = 0;
+            }
+        }
+        // After setting the auto value, calculate the totals
+        calcTotal();
+    }
 
     function calcTotal() {
         // Safety check
@@ -146,11 +197,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (discType === "Flat") discount = discVal * qty;
         else if (discType === "Percentage") discount = subTotal * (discVal / 100);
 
+        // ✅ FIXED: Read from the Input field (allows manual override)
         let delivery = 0;
-        if (!modeStore.checked) {
-            const div = divisionSelect.value ? divisionSelect.value.toLowerCase() : "";
-            if (div.includes("dhaka")) delivery = 50;
-            else if (div !== "") delivery = 100;
+        if (deliveryInput) {
+            delivery = parseFloat(deliveryInput.value) || 0;
+        } else if (displayDelivery) {
+            // Fallback for old UI logic if input is missing
+            delivery = parseFloat(displayDelivery.textContent) || 0;
         }
 
         const net = (subTotal - discount) + delivery;
@@ -158,7 +211,10 @@ document.addEventListener('DOMContentLoaded', function () {
         displayPrice.textContent = price.toFixed(2);
         displaySubTotal.textContent = subTotal.toFixed(2);
         displayDiscount.textContent = discount.toFixed(2);
+
+        // Update display text if element exists
         if (displayDelivery) displayDelivery.textContent = delivery.toFixed(2);
+
         displayNet.textContent = net.toFixed(2);
     }
 
@@ -199,12 +255,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(() => {
                 thanaSelect.innerHTML = '<option value="">Select...</option>'; thanaSelect.disabled = true;
                 subOfficeSelect.innerHTML = '<option value="">Select...</option>'; subOfficeSelect.disabled = true;
-                calcTotal();
+                // ✅ Changed: Recalculate fee when Division changes
+                autoCalculateDelivery();
             });
     });
 
     districtSelect.addEventListener('change', () => {
         loadFromApi(window.OrderAPI.getThanas(districtSelect.value), thanaSelect);
+        // ✅ Changed: Recalculate fee when District changes (e.g. Gazipur -> Dhaka)
+        autoCalculateDelivery();
     });
 
     thanaSelect.addEventListener('change', () => {
@@ -240,7 +299,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (div) {
                     divisionSelect.value = div;
-                    calcTotal();
+
+                    // Trigger auto calc for the new location
+                    autoCalculateDelivery();
+
                     await loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist);
                     await loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th);
                     await loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
@@ -257,12 +319,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // 4. CUSTOMER AUTOFILL (Using OrderAPI)
     // ==========================================
     const custAddress = document.getElementById('custAddress');
-    const phoneInput = document.getElementById('custPhone');
+    // NOTE: 'phoneInput' is already defined at the top for intl-tel-input
+
     const addressContainer = document.getElementById('address-container');
 
     // Email Check Logic (Visual Only)
     const custEmail = document.getElementById('custEmail');
-    const emailStatus = document.getElementById('custEmailStatus'); // Assuming you created this element in view or JS
+    const emailStatus = document.getElementById('custEmailStatus');
     let currentLoadedEmail = "";
 
     if (custEmail) {
@@ -298,68 +361,121 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function toggleMode() {
         addressContainer.style.display = modeStore.checked ? 'none' : 'block';
-        calcTotal();
+        autoCalculateDelivery();
     }
     modeDelivery.addEventListener('change', toggleMode);
     modeStore.addEventListener('change', toggleMode);
 
-    document.getElementById('btnCheckCust').addEventListener('click', () => {
-        const phone = phoneInput.value.trim();
-        if (phone.length < 10) return;
+    // ==========================================
+    // 2. PHONE INPUT LOGIC & VALIDATION
+    // ==========================================
 
-        window.OrderAPI.checkCustomer(phone).then(data => {
-            if (data.found) {
-                document.getElementById('custName').value = data.name || '';
+    const statusEl = document.getElementById('custStatus');
 
-                // Handle Email
-                if (custEmail) {
-                    custEmail.value = data.email || '';
-                    currentLoadedEmail = data.email || '';
-                }
+    // A. RESTRICT INPUT: Allow only 0-9 and +
+    // This runs immediately (no debounce) to prevent typing letters
+    phoneInput.addEventListener('input', function () {
+        const val = this.value;
+        if (/[^0-9+]/.test(val)) {
+            this.value = val.replace(/[^0-9+]/g, '');
+        }
+    });
 
-                document.getElementById('custStatus').textContent = "Customer found!";
-                document.getElementById('custStatus').className = "text-success small";
+    // Handles Auto-Discovery & Immediate "Too Long" checks
+    phoneInput.addEventListener('input', debounce(function () {
+        const fullPhone = iti.getNumber();
+        const isValid = iti.isValidNumber();
+        const errorCode = iti.getValidationError();
 
-                if (data.addressData && modeDelivery.checked) {
-                    custAddress.value = data.addressData.street || '';
+        // Reset UI defaults
+        statusEl.className = "text-muted small";
 
-                    // Waterfall Chain for Address
-                    if (data.addressData.postalCode) {
-                        postalInput.value = data.addressData.postalCode;
-                        postalInput.dispatchEvent(new Event('blur'));
+        if (isValid) {
+            // CASE A: Number is Valid -> Trigger Auto-Check
+            statusEl.textContent = "⏳ Checking...";
+            statusEl.className = "text-primary small";
+
+            // Call API
+            window.OrderAPI.checkCustomer(fullPhone).then(data => {
+                if (data.found) {
+                    // FOUND
+                    statusEl.textContent = "✓ Customer found!";
+                    statusEl.className = "text-success small fw-bold";
+
+                    document.getElementById('custName').value = data.name || '';
+                    if (custEmail) {
+                        custEmail.value = data.email || '';
+                        currentLoadedEmail = data.email || '';
                     }
-                    else if (data.addressData.divison) {
-                        const div = data.addressData.divison;
-                        const dist = data.addressData.city;
-                        const th = data.addressData.thana;
-                        const sub = data.addressData.subOffice;
 
-                        divisionSelect.value = div;
-                        calcTotal();
+                    // Autofill Address (Only if Delivery Mode)
+                    if (data.addressData && modeDelivery.checked) {
+                        custAddress.value = data.addressData.street || '';
 
-                        if (dist) {
-                            loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, dist)
-                                .then(() => {
-                                    if (th) {
-                                        return loadFromApi(window.OrderAPI.getThanas(dist), thanaSelect, th);
-                                    }
-                                })
-                                .then(() => {
-                                    if (sub) {
-                                        return loadFromApi(window.OrderAPI.getSubOffices(th), subOfficeSelect, sub);
-                                    }
-                                });
+                        // Smart Location Filling
+                        if (data.addressData.postalCode) {
+                            postalInput.value = data.addressData.postalCode;
+                            postalInput.dispatchEvent(new Event('blur'));
+                        } else if (data.addressData.divison) {
+                            const div = data.addressData.divison;
+                            divisionSelect.value = div;
+                            autoCalculateDelivery();
+
+                            // Cascading loads
+                            if (data.addressData.city) {
+                                loadFromApi(window.OrderAPI.getDistricts(div), districtSelect, data.addressData.city)
+                                    .then(() => data.addressData.thana ? loadFromApi(window.OrderAPI.getThanas(data.addressData.city), thanaSelect, data.addressData.thana) : null)
+                                    .then(() => data.addressData.subOffice ? loadFromApi(window.OrderAPI.getSubOffices(data.addressData.thana), subOfficeSelect, data.addressData.subOffice) : null);
+                            }
                         }
                     }
+                } else {
+                    // NEW CUSTOMER
+                    statusEl.textContent = "New Customer";
+                    statusEl.className = "text-info small";
+
+                    // Clear fields
+                    document.getElementById('custName').value = '';
+                    if (custEmail) { custEmail.value = ''; currentLoadedEmail = ''; }
+                    custAddress.value = '';
                 }
-            } else {
-                document.getElementById('custStatus').textContent = "New Customer";
-                document.getElementById('custStatus').className = "text-primary small";
-                document.getElementById('custName').value = '';
-                if (custEmail) { custEmail.value = ''; currentLoadedEmail = ''; }
-                custAddress.value = '';
+            });
+        } else {
+            // CASE B: Number is Invalid (While Typing)
+
+            // 1. If Too Long (Error Code 3), tell them immediately
+            if (errorCode === 3) {
+                statusEl.textContent = "⚠ Number too long";
+                statusEl.className = "text-danger small";
             }
-        });
+            // 2. If Too Short or just Invalid, DO NOT complain yet. 
+            //    Wait for them to finish typing (handled in 'blur').
+            else {
+                statusEl.textContent = "";
+            }
+        }
+    }, 500));
+
+    // C. BLUR VALIDATION
+    // Handles "Too Short" or generic errors when user leaves the field
+    phoneInput.addEventListener('blur', function () {
+        const fullPhone = iti.getNumber();
+        const isValid = iti.isValidNumber();
+        const errorCode = iti.getValidationError();
+
+        // Only show error if input is not empty but invalid
+        if (!isValid && fullPhone.length > 0) {
+            if (errorCode === 2) { // TOO_SHORT
+                statusEl.textContent = "⚠ Number too short";
+                statusEl.className = "text-danger small";
+            } else if (errorCode === 3) { // TOO_LONG
+                statusEl.textContent = "⚠ Number too long";
+                statusEl.className = "text-danger small";
+            } else {
+                statusEl.textContent = "⚠ Invalid number";
+                statusEl.className = "text-danger small";
+            }
+        }
     });
 
     // ==========================================
@@ -370,8 +486,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const msg = document.getElementById('orderMsg');
         const isStoreSale = modeStore.checked;
 
-        if (!phoneInput.value || !document.getElementById('custName').value || !variantSelect.value) {
-            alert("Please fill in Phone, Name, Product, and Variant.");
+        // ✅ 4. VALIDATE PHONE BEFORE SUBMIT
+        if (!iti.isValidNumber()) {
+            alert("Please enter a valid phone number for the selected country.");
+            phoneInput.focus();
+            return;
+        }
+
+        if (!document.getElementById('custName').value || !variantSelect.value) {
+            alert("Please fill in Name, Product, and Variant.");
             return;
         }
 
@@ -394,7 +517,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const payload = {
-            CustomerPhone: phoneInput.value,
+
+            // ✅ 5. SEND STANDARDIZED NUMBER
+            CustomerPhone: iti.getNumber(),
+
             CustomerName: document.getElementById('custName').value,
             CustomerEmail: custEmail ? custEmail.value : '',
             Street: isStoreSale ? "Counter Sale - In Store" : custAddress.value,
@@ -406,6 +532,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             ProductVariantId: parseInt(variantSelect.value),
             OrderQuantity: parseInt(qtyInput.value),
+
+            // ✅ ADDED: Send the Delivery Charge from the editable input
+            DeliveryCharge: parseFloat(deliveryInput ? deliveryInput.value : 0) || 0,
+
             TargetCompanyId: parseInt(document.getElementById('targetCompanyId')?.value) || 1,
             Confirmed: document.getElementById('confirmImmediately').checked
         };
@@ -430,8 +560,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     finalNet = data.netAmount;
                 }
 
-                const deliveryCharge = parseFloat(displayDelivery.textContent) || 0;
-                const grandTotal = (parseFloat(finalNet) || 0) + deliveryCharge;
+                const deliveryCharge = parseFloat(deliveryInput ? deliveryInput.value : 0) || 0;
+
+                const grandTotal = parseFloat(displayNet.textContent) || 0;
 
                 const modalHtml = `
                 <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -452,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
                             <button type="button" class="btn btn-outline-secondary px-4" onclick="window.location.reload()">Create Another</button>
-                            <a href="/Order/AllOrders" class="btn btn-primary px-4">View Orders List</a>
+                            <button type="button" class="btn btn-primary px-4" onclick="window.location.href='/order/all'">View Orders List</button>
                         </div>
                       </div>
                     </div>

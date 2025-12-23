@@ -1,7 +1,7 @@
 .fixed-page-title {
     /* Fixed Positioning */
     position: fixed;
-    top: 0;
+    top: 60px;
     left: 0;
     width: 100%; /* Forces it to span the full screen width */
 

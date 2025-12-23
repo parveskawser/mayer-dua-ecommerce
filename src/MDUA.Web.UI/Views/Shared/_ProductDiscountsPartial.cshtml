@@ -1,5 +1,22 @@
 ﻿@model List<MDUA.Entities.ProductDiscount>
 
+@{
+    // Helper function to convert UTC to Bangladesh Time for display
+    DateTime ToBdTime(DateTime utcDate)
+    {
+        try
+        {
+            // Try Windows TimeZone ID
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDate, TimeZoneInfo.FindSystemTimeZoneById("Bangladesh Standard Time"));
+        }
+        catch
+        {
+            // Fallback for Linux/Docker/Mac
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDate, TimeZoneInfo.FindSystemTimeZoneById("Asia/Dhaka"));
+        }
+    }
+}
+
 <div class="card mb-3 border-success">
     <div class="card-header bg-light">
         <h6 class="mb-0 text-success fw-bold">+ Add New Discount</h6>
@@ -10,22 +27,22 @@
 
             <div class="row g-2">
                 <div class="col-md-3">
-                    <label class="small fw-bold">Type</label>
+                    <label class="small fw-bold">Type <span class="text-danger">*</span></label>
                     <select name="DiscountType" class="form-control form-control-sm">
                         <option value="Flat">Flat Amount</option>
                         <option value="Percentage">Percentage (%)</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="small fw-bold">Value</label>
+                    <label class="small fw-bold">Value <span class="text-danger">*</span></label>
                     <input type="number" step="0.01" name="DiscountValue" class="form-control form-control-sm" placeholder="0.00" required />
                 </div>
                 <div class="col-md-3">
-                    <label class="small fw-bold">Min Qty</label>
+                    <label class="small fw-bold">Min Qty <span class="text-danger">*</span></label>
                     <input type="number" name="MinQuantity" class="form-control form-control-sm" value="1" />
                 </div>
                 <div class="col-md-3">
-                    <label class="small fw-bold">Status</label>
+                    <label class="small fw-bold">Status <span class="text-danger">*</span></label>
                     <select name="IsActive" class="form-control form-control-sm">
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
@@ -34,12 +51,12 @@
             </div>
             <div class="row g-2 mt-2">
                 <div class="col-md-6">
-                    <label class="small fw-bold">Effective From</label>
-                    <input type="date" name="EffectiveFrom" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    <label class="small fw-bold">Effective From <span class="text-danger">*</span></label>
+                    <input type="datetime-local" id="newDiscountEffectiveFrom" name="EffectiveFrom" class="form-control form-control-sm" required />
                 </div>
                 <div class="col-md-6">
                     <label class="small fw-bold">Effective To</label>
-                    <input type="date" name="EffectiveTo" class="form-control form-control-sm" />
+                    <input type="datetime-local" name="EffectiveTo" class="form-control form-control-sm" />
                 </div>
             </div>
 
@@ -58,8 +75,8 @@
                 <th>Type</th>
                 <th>Value</th>
                 <th>Min Qty</th>
-                <th>From</th>
-                <th>To</th>
+                <th>From (Dhaka Time)</th>
+                <th>To (Dhaka Time)</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -69,6 +86,10 @@
             {
                 foreach (var d in Model)
                 {
+                    // 1. Calculate BD Time for this row
+                    var startBd = ToBdTime(d.EffectiveFrom);
+                    var endBd = d.EffectiveTo.HasValue ? ToBdTime(d.EffectiveTo.Value) : (DateTime?)null;
+
                     <tr data-id="@d.Id">
                         <td data-col="type">
                             <span class="display-value">@d.DiscountType</span>
@@ -85,14 +106,25 @@
                             <span class="display-value">@d.MinQuantity</span>
                             <input type="number" class="form-control form-control-sm edit-input" value="@d.MinQuantity" style="display:none; width: 60px;" />
                         </td>
+
                         <td data-col="from">
-                            <span class="display-value">@d.EffectiveFrom.ToString("dd MMM yyyy")</span>
-                            <input type="date" class="form-control form-control-sm edit-input" value="@d.EffectiveFrom.ToString("yyyy-MM-dd")" style="display:none;" />
+                            <span class="display-value">
+                                @startBd.ToString("dd MMM yyyy hh:mm tt")
+                            </span>
+                            <input type="datetime-local" class="form-control form-control-sm edit-input"
+                                   value="@startBd.ToString("yyyy-MM-ddTHH:mm")"
+                                   style="display:none;" />
                         </td>
+
                         <td data-col="to">
-                            <span class="display-value">@(d.EffectiveTo?.ToString("dd MMM yyyy") ?? "-")</span>
-                            <input type="date" class="form-control form-control-sm edit-input" value="@(d.EffectiveTo?.ToString("yyyy-MM-dd"))" style="display:none;" />
+                            <span class="display-value">
+                                @(endBd?.ToString("dd MMM yyyy hh:mm tt") ?? "-")
+                            </span>
+                            <input type="datetime-local" class="form-control form-control-sm edit-input"
+                                   value="@(endBd?.ToString("yyyy-MM-ddTHH:mm"))"
+                                   style="display:none;" />
                         </td>
+
                         <td data-col="active">
                             <span class="display-value badge @(d.IsActive ? "bg-success" : "bg-secondary")">@(d.IsActive ? "Active" : "Inactive")</span>
                             <select class="form-control form-control-sm edit-input" style="display:none;">
@@ -114,3 +146,19 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    (function() {
+        var addInput = document.getElementById('newDiscountEffectiveFrom');
+        if (addInput && !addInput.value) {
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = String(now.getMonth() + 1).padStart(2, '0');
+            var d = String(now.getDate()).padStart(2, '0');
+            var h = String(now.getHours()).padStart(2, '0');
+            var min = String(now.getMinutes()).padStart(2, '0');
+
+            addInput.value = `${y}-${m}-${d}T${h}:${min}`;
+        }
+    })();
+</script>

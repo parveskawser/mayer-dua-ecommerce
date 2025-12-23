@@ -149,13 +149,14 @@
                                     {
                                         string statusClass = "bg-secondary-subtle text-dark";
                                         string displayStatus = o.Status == "Draft" ? "Pending" : o.Status;
+
                                         if (displayStatus == "Confirmed") statusClass = "bg-success text-white";
                                         else if (displayStatus == "Pending") statusClass = "bg-warning text-dark";
 
                                         string displayId = o.SalesOrderId ?? o.OnlineOrderId ?? o.Id.ToString();
                                         string type = o.SalesChannelId == 1 ? "Online" : "Direct";
 
-                                        <tr>
+                                        <tr style="cursor: pointer;" onclick="window.location.href='@Url.Action("AllOrders", "Order")?highlightId=@o.Id'">
                                             <td class="ps-4 fw-bold text-dark">@displayId</td>
                                             <td>
                                                 <span class="badge bg-light text-secondary border">@type</span>
@@ -214,8 +215,56 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+            <div class="card-low-stock">
+                <div class="header-low-stock">
+                    <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+                </div>
+
+                <div class="list-group list-group-flush">
+                    @if (Model.LowStockItems != null && Model.LowStockItems.Any())
+                    {
+                        foreach (var item in Model.LowStockItems)
+                        {
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3"
+                                 style="cursor: pointer;"
+                                 onclick="window.location.href='@Url.Action("StockStatus", "Purchase")?highlightId=@item.VariantId'">
+
+                                <div class="d-flex flex-column" style="flex: 1; padding-right: 10px;">
+                                    <span class="fw-bold text-dark">@item.ProductName</span>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-tag me-1" style="font-size: 0.7rem;"></i>
+                                        @(string.IsNullOrEmpty(item.VariantName) ? "Standard" : item.VariantName)
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    @if (item.StockQty == 0)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill mb-1">Out of Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill mb-1">@item.StockQty left</span>
+                                    }
+                                    <div class="fw-bold text-primary small">
+                                        Tk. @item.Price.ToString("N0")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted small">
+                            <i class="fas fa-check-circle text-success mb-2 fs-4"></i><br />
+                            All items stocked!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <!--
         <div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
             <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
             <div class="row g-3 font-monospace small">
@@ -247,9 +296,11 @@
             </div>
         </div>
 
-    </div>     <partial name="_AdminChatWidget" />
+    </div> 
+        -->
+        <partial name="_AdminChatWidget" />
 </div>
-
+</div>
 @section Scripts {
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

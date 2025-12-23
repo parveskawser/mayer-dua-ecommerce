@@ -22,10 +22,12 @@ namespace MDUA.Facade
         private readonly IProductVariantDataAccess _productVariantDataAccess;
         private readonly IProductFacade _productFacade;
         private readonly IPostalCodesDataAccess _postalCodesDataAccess;
+        private readonly ISettingsFacade _settingsFacade;
+        private readonly IDeliveryItemDataAccess _deliveryItemDataAccess;
 
         // ✅ 1. Declare Configuration to access appsettings.json
         private readonly IConfiguration _configuration;
-
+        private readonly IDeliveryDataAccess _deliveryDataAccess;
         public OrderFacade(
             ISalesOrderHeaderDataAccess salesOrderHeaderDataAccess,
             ISalesOrderDetailDataAccess salesOrderDetailDataAccess,
@@ -35,8 +37,9 @@ namespace MDUA.Facade
             IProductVariantDataAccess productVariantDataAccess,
             IProductFacade productFacade,
             IPostalCodesDataAccess postalCodesDataAccess,
-            // ✅ 2. Inject Configuration
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ISettingsFacade settingsFacade,
+            IDeliveryDataAccess deliveryDataAccess,IDeliveryItemDataAccess deliveryItemDataAccess)
         {
             _salesOrderHeaderDataAccess = salesOrderHeaderDataAccess;
             _salesOrderDetailDataAccess = salesOrderDetailDataAccess;
@@ -46,9 +49,11 @@ namespace MDUA.Facade
             _productVariantDataAccess = productVariantDataAccess;
             _productFacade = productFacade;
             _postalCodesDataAccess = postalCodesDataAccess;
-
-            // ✅ 3. Assign Configuration
             _configuration = configuration;
+            _settingsFacade = settingsFacade;
+            _deliveryDataAccess = deliveryDataAccess;
+            _deliveryItemDataAccess = deliveryItemDataAccess;
+
         }
 
         #region Common Implementation
@@ -76,27 +81,28 @@ namespace MDUA.Facade
 
         public string PlaceGuestOrder(SalesOrderHeader orderData)
         {
-            // 1. PRE-CALCULATION (Read-Only, outside transaction)
+            // ✅ 0. VALIDATION: Ensure Customer Name is present
+            if (string.IsNullOrWhiteSpace(orderData.CustomerName))
+                throw new Exception("Customer Name is required to place an order.");
+
+            // Clean the input
+            orderData.CustomerName = orderData.CustomerName.Trim();
+
+            // 1. PRE-CALCULATION (Read-Only)
             var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId);
             if (variant == null) throw new Exception("Variant not found.");
 
-
-
             if (variant.StockQty == 0)
-            {
                 throw new Exception("The selected product variant is currently out of stock.");
-            }
 
             if (variant.StockQty < orderData.OrderQuantity)
-            {
                 throw new Exception($"Requested amount {orderData.OrderQuantity} exceeds available amount {variant.StockQty}.");
-            }
 
             decimal baseVariantPrice = variant.VariantPrice ?? 0;
             int quantity = orderData.OrderQuantity;
 
+            // Discount Calculation
             var bestDiscount = _productFacade.GetBestDiscount(variant.ProductId, baseVariantPrice);
-
             decimal finalUnitPrice = baseVariantPrice;
             decimal totalDiscountAmount = 0;
 
@@ -117,85 +123,89 @@ namespace MDUA.Facade
                 }
             }
 
-            // 2. TRANSACTIONAL SAVE (The Fix)
-            // ✅ Fetch connection string safely from appsettings.json
+            // ✅ CALCULATION LOGIC FOR COMPUTED COLUMN
+            // 1. Calculate Pure Product Cost
+            decimal totalProductPrice = baseVariantPrice * quantity;
+
+            // 2. Add Delivery to Total (This hacks the DB to make NetAmount correct)
+            decimal deliveryCharge = orderData.DeliveryCharge; // Captured from UI
+            orderData.TotalAmount = totalProductPrice + deliveryCharge;
+            orderData.DiscountAmount = totalDiscountAmount;
+
+            // 2. TRANSACTIONAL SAVE
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                // ✅ Start ONE transaction for all DA classes to share
                 using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // 3. MANUAL DA INSTANTIATION
-                        // We create temporary DA instances that use our SHARED transaction.
-                        // This bypasses the "Distributed Transaction" error.
-
                         var transCustomerDA = new CustomerDataAccess(transaction);
                         var transCompanyCustomerDA = new CompanyCustomerDataAccess(transaction);
                         var transAddressDA = new AddressDataAccess(transaction);
                         var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
 
-                        // --- LOGIC STARTS HERE ---
-
                         int companyId = orderData.TargetCompanyId;
                         int customerId = 0;
 
                         // A. Customer Logic
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
-
                         if (customer == null)
                         {
                             string emailToCheck = !string.IsNullOrEmpty(orderData.CustomerEmail)
                                 ? orderData.CustomerEmail
                                 : $"{orderData.CustomerPhone}@guest.local";
 
-                            var existingCustomerByEmail = transCustomerDA.GetByEmail(emailToCheck);
-                            if (existingCustomerByEmail != null)
-                            {
-                                throw new Exception($"Email {emailToCheck} is already registered with a different phone number.");
-                            }
+                            if (transCustomerDA.GetByEmail(emailToCheck) != null)
+                                throw new Exception($"Email {emailToCheck} is already registered.");
 
                             var newCust = new Customer
                             {
-                                CustomerName = orderData.CustomerName,
+                                CustomerName = orderData.CustomerName, // ✅ Use Name Here
                                 Phone = orderData.CustomerPhone,
                                 Email = emailToCheck,
                                 IsActive = true,
-                                CreatedAt = DateTime.Now,
-                                CreatedBy = "System_Order"
+                                CreatedAt = DateTime.UtcNow,
+                                CreatedBy = orderData.CustomerName, // ✅ Audit: Created by the Guest Name
                             };
-
                             transCustomerDA.Insert(newCust);
-
-                            // Refresh to get the new ID
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
                         else
                         {
+                            bool needUpdate = false;
+
+                            // ✅ Update Logic: If existing customer has no name, update it with current name
+                            if (string.IsNullOrEmpty(customer.CustomerName) || customer.CustomerName == "Unknown")
+                            {
+                                customer.CustomerName = orderData.CustomerName;
+                                needUpdate = true;
+                            }
+
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
                                 customer.Email != orderData.CustomerEmail &&
                                 (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith("@guest.local")))
                             {
                                 customer.Email = orderData.CustomerEmail;
+                                needUpdate = true;
+                            }
+
+                            if (needUpdate)
+                            {
+                                customer.UpdatedBy = orderData.CustomerName; // ✅ Audit update
+                                customer.UpdatedAt = DateTime.UtcNow;
                                 transCustomerDA.Update(customer);
                             }
                         }
-
                         customerId = customer.Id;
 
                         // B. Link Logic
-                        bool isLinked = transCompanyCustomerDA.IsLinked(companyId, customerId);
-                        if (!isLinked)
+                        if (!transCompanyCustomerDA.IsLinked(companyId, customerId))
                         {
-                            transCompanyCustomerDA.Insert(new CompanyCustomer
-                            {
-                                CompanyId = companyId,
-                                CustomerId = customerId
-                            });
+                            transCompanyCustomerDA.Insert(new CompanyCustomer { CompanyId = companyId, CustomerId = customerId });
                         }
 
                         // C. Address Logic
@@ -209,42 +219,27 @@ namespace MDUA.Facade
                             SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
-                            CreatedBy = "System_Order",
-                            CreatedAt = DateTime.Now,
+                            CreatedBy = orderData.CustomerName, // ✅ Audit: Use Name instead of "System_Order"
+                            CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? orderData.PostalCode ?? "0000").ToCharArray()
                         };
 
                         var existingAddress = transAddressDA.CheckExistingAddress(customerId, addr);
-                        int addressId;
+                        int addressId = (existingAddress != null) ? existingAddress.Id : (int)transAddressDA.InsertAddressSafe(addr);
 
-                        if (existingAddress != null)
-                        {
-                            addressId = existingAddress.Id;
-                        }
-                        else
-                        {
-                            // ✅ FIX: Capture the returned ID!
-                            // Do NOT rely on addr.Id being updated automatically.
-                            long newAddressId = transAddressDA.InsertAddressSafe(addr);
-
-                            if (newAddressId <= 0) throw new Exception("Failed to insert Address. ID returned was 0.");
-
-                            addressId = (int)newAddressId;
-                        }
                         // D. Save Order Header
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(companyId, customerId);
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 1;
-                        orderData.OrderDate = DateTime.Now;
-                        orderData.DiscountAmount = totalDiscountAmount;
-                        orderData.TotalAmount = baseVariantPrice * quantity;
+                        orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
-                        orderData.CreatedBy = "System_Order";
-                        orderData.CreatedAt = DateTime.Now;
+                        orderData.CreatedBy = orderData.CustomerName; // ✅ Audit: Use Name instead of "System_Order"
+                        orderData.CreatedAt = DateTime.UtcNow;
                         orderData.Confirmed = false;
 
+                        // Call InsertSafe (This uses the TotalAmount calculated above)
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
 
                         if (orderId <= 0) throw new Exception("Failed to create Order Header.");
@@ -256,27 +251,22 @@ namespace MDUA.Facade
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
                             UnitPrice = finalUnitPrice,
-                            CreatedBy = "System_Order",
-                            CreatedAt = DateTime.Now
+                            CreatedBy = orderData.CustomerName, // ✅ Audit: Use Name instead of "System_Order"
+                            CreatedAt = DateTime.UtcNow
                         };
-
                         transDetailDA.InsertSalesOrderDetailSafe(detail);
 
-                        // 4. COMMIT TRANSACTION
                         transaction.Commit();
-
                         return "ON" + orderId.ToString("D8");
                     }
                     catch (Exception)
                     {
                         transaction.Rollback();
-                        throw; // Re-throw the error so the Controller sees it
+                        throw;
                     }
                 }
             }
         }
-
-
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {
             var customer = _customerDataAccess.GetByPhone(phone);
@@ -297,26 +287,226 @@ namespace MDUA.Facade
             }
             return _salesOrderHeaderDataAccess.GetOrderReceiptByOnlineId(onlineOrderId);
         }
-        
+
+        // ==========================================================================
+        // ✅ 1. CORRECTED: GetAllOrdersForAdmin (Revenue Stability Logic)
+        // ==========================================================================
         public List<SalesOrderHeader> GetAllOrdersForAdmin()
         {
-            // Assuming the existing _salesOrderHeaderDataAccess.GetAll() calls the 
-            // [dbo].[GetAllSalesOrderHeader] stored procedure, or equivalent.
-            return _salesOrderHeaderDataAccess.GetAllSalesOrderHeaders().ToList();
-        }
+            var orders = _salesOrderHeaderDataAccess.GetAllSalesOrderHeaders().ToList();
 
-        public string UpdateOrderConfirmation(int orderId, bool isConfirmed)
+            foreach (var order in orders)
+            {
+                // 1. Calculate Sum of Discounted Items (Net Product Total)
+                decimal productNetTotal = _salesOrderHeaderDataAccess.GetProductTotalFromDetails(order.Id);
+
+                if (order.TotalAmount > 0)
+                {
+                    // ✅ CORRECT FORMULA: 
+                    // Delivery = Total(Gross) - Products(Net) - Discount
+                    // Example: 1675 - 1101 - 449 = 125
+                    order.DeliveryCharge = order.TotalAmount - productNetTotal - order.DiscountAmount;
+                }
+                else
+                {
+                    order.DeliveryCharge = 0;
+                }
+
+                // --- PROFIT CALCULATION (Optional, for internal use) ---
+                // order.ActualLogisticsCost is already populated by DataAccess
+
+                // --- DUE CALCULATION ---
+                decimal net = order.NetAmount ?? 0m;
+                decimal paid = order.PaidAmount;
+                order.DueAmount = net - paid;
+            }
+
+            return orders;
+        }        // ==========================================================================
+                 // ✅ 2. CORRECTED: UpdateOrderConfirmation (Expense Snapshot Logic)
+                 // ==========================================================================
+                 // Inside MDUA.Facade/OrderFacade.cs
+
+        // 1. Update signature to accept 'username'
+        public string UpdateOrderConfirmation(int orderId, bool isConfirmed, string username)
         {
-            // 1. Determine DB Status (Must be "Draft" to satisfy SQL Check Constraint)
             string dbStatus = isConfirmed ? "Confirmed" : "Draft";
 
-            // 2. Call the safe update method to save to Database
-            _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, dbStatus, isConfirmed);
+            using (var scope = new System.Transactions.TransactionScope())
+            {
+                try
+                {
+                    // Update Status
+                    _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, dbStatus, isConfirmed);
 
-            // 3. Return "Pending" to the UI for display purposes
-            // This ensures the badge immediately shows "Pending" instead of "Draft"
-            return isConfirmed ? "Confirmed" : "Pending";
+                    if (isConfirmed)
+                    {
+                        var existingDelivery = _deliveryDataAccess.GetBySalesOrderIdExtended(orderId);
+
+                        if (existingDelivery == null)
+                        {
+                            // --- 1. CALCULATE SHIPPING COST ---
+
+                            // A. Get the Order Header to access TotalAmount & DiscountAmount
+                            var order = _salesOrderHeaderDataAccess.GetOrderTotalsSafe(orderId);
+                            if (order == null) throw new Exception("Order header not found.");
+
+                            // B. Get Product Net Total (Sum of items)
+                            // Assuming this method exists in your DAL based on your snippet
+                            decimal productNetTotal = _salesOrderHeaderDataAccess.GetProductTotalFromDetails(orderId);
+
+                            // C. Apply Formula: Delivery = Total - Products - Discount
+                            decimal calculatedDeliveryCost = order.TotalAmount - productNetTotal - order.DiscountAmount;
+
+                            // Safety check: Cost shouldn't be negative
+                            if (calculatedDeliveryCost < 0) calculatedDeliveryCost = 0;
+
+                            // --- 2. CREATE DELIVERY RECORD ---
+                            var delivery = new Delivery
+                            {
+                                SalesOrderId = orderId,
+                                TrackingNumber = "TRK-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
+                                Status = "Pending",
+
+                                // ✅ Use Calculated Cost
+                                ShippingCost = calculatedDeliveryCost,
+
+                                // ✅ Use Logged-in User
+                                CreatedBy = username,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            long newDeliveryId = _deliveryDataAccess.InsertExtended(delivery);
+
+                            // --- 3. INSERT ITEMS ---
+                            if (newDeliveryId > 0)
+                            {
+                                // ✅ TRICK: Cast the interface to the concrete class
+                                // This bypasses the "Interface does not contain definition" error
+                                // because we are telling the compiler "Trust me, it's this specific class."
+                                var concreteDetailDA = (SalesOrderDetailDataAccess)_salesOrderDetailDataAccess;
+
+                                // Now you can call the method you added to the class!
+                                var orderItems = concreteDetailDA.GetOrderDetailsSafe(orderId);
+                                foreach (var item in orderItems)
+                                {
+                                    _deliveryDataAccess.InsertDeliveryItem(
+                                        (int)newDeliveryId,
+                                        item.Id,
+                                        item.Quantity
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    scope.Complete();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"ORDER_CONFIRM_ERROR: {ex.Message}");
+                }
+            }
+
+            return dbStatus;
+        }        // ==========================================================================
+        // In src/MDUA.Facade/OrderFacade.cs
+
+        public void UpdateDeliveryStatus(int deliveryId, string newStatus)
+        {
+
+            var delivery = _deliveryDataAccess.GetExtended(deliveryId);
+
+            if (delivery == null) throw new Exception("Delivery not found");
+            if (delivery.SalesOrderId <= 0) throw new Exception("Data Error: Delivery has no Sales Order ID.");
+            bool isOrderConfirmed = false;
+            if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concreteDA)
+            {
+                isOrderConfirmed = concreteDA.GetConfirmedFlag(delivery.SalesOrderId);
+            }
+            else
+            {
+                // Fallback if interface doesn't support GetConfirmedFlag
+                var order = _salesOrderHeaderDataAccess.Get(delivery.SalesOrderId);
+                isOrderConfirmed = order != null && (order.Confirmed || order.Status == "Confirmed");
+            }
+
+            if (!isOrderConfirmed)
+            {
+                throw new Exception("Action Denied: You cannot update delivery status while the Sales Order is still Draft/Pending. Please confirm the order first.");
+            }
+            // 2) Update Delivery
+            delivery.Status = newStatus;
+            if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+                delivery.ActualDeliveryDate = DateTime.UtcNow;
+
+            _deliveryDataAccess.UpdateExtended(delivery);
+
+            // 3) Map Delivery -> SOH.Status
+            string parentStatus = null;
+            string cleanStatus = (newStatus ?? "").ToLower().Trim();
+
+            if (cleanStatus == "pending") parentStatus = "Draft";
+            else if (cleanStatus == "shipped" || cleanStatus == "in transit" || cleanStatus == "out for delivery") parentStatus = "Shipped";
+            else if (cleanStatus == "delivered") parentStatus = "Delivered";
+            else if (cleanStatus == "returned" || cleanStatus == "returned to hub") parentStatus = "Returned";
+            else if (cleanStatus == "cancelled") parentStatus = "Cancelled";
+
+
+            // 4) Sync SalesOrderHeader
+            // 4. Update SalesOrderHeader (Sync)
+            if (parentStatus != null)
+            {
+                bool confirmedState = false;
+
+                if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concrete)
+                    confirmedState = concrete.GetConfirmedFlag(delivery.SalesOrderId);
+
+
+                try
+                {
+                    // ✅ use the diagnostic updater (proves DB + rowsAffected)
+                    if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concrete2)
+                        concrete2.UpdateStatusSafeLogged(delivery.SalesOrderId, parentStatus, confirmedState);
+                    else
+                        _salesOrderHeaderDataAccess.UpdateStatusSafe(delivery.SalesOrderId, parentStatus, confirmedState);
+
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            }
         }
+        public void UpdateOrderStatus(int orderId, string newStatus)
+
+        {
+
+            // 1. REMOVE THIS LINE (This is what crashes):
+
+            // var order = _salesOrderHeaderDataAccess.Get(orderId);
+
+            // 2. Determine 'Confirmed' status logically
+
+            // If we are Cancelling, unconfirm it. Otherwise, keep it confirmed (or confirm it).
+
+            bool confirmedState = true;
+
+            if (newStatus == "Cancelled" || newStatus == "Draft")
+
+            {
+
+                confirmedState = false;
+
+            }
+
+            // 3. Call the safe update method directly (Just like ToggleConfirmation does)
+
+            _salesOrderHeaderDataAccess.UpdateStatusSafe(orderId, newStatus, confirmedState);
+
+        }
+
+
 
         public List<dynamic> GetProductVariantsForAdmin()
         {
@@ -381,10 +571,30 @@ namespace MDUA.Facade
                 }
             }
 
-            decimal grossAmount = basePrice * orderData.OrderQuantity;
-            decimal netAmount = grossAmount - totalDiscount;
+            // -------------------------------------------------------------
+            // ✅ DELIVERY FEE LOGIC (Revenue)
+            // -------------------------------------------------------------
+            // We trust the "DeliveryCharge" sent from the UI (Editable Input)
+            decimal deliveryFeeToCharge = orderData.DeliveryCharge;
 
-            // 3. Save
+            // A. Detect "In-Store" based on street naming convention from JS
+            bool isStoreSale = !string.IsNullOrEmpty(orderData.Street) &&
+                                orderData.Street.IndexOf("Counter Sale", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            // B. Apply to Totals
+            decimal grossProductCost = basePrice * orderData.OrderQuantity;
+
+            // DB Logic: [NetAmount] = [TotalAmount] - [DiscountAmount]
+            // We want: [NetAmount] = (Product + Delivery) - Discount
+            orderData.TotalAmount = grossProductCost + deliveryFeeToCharge;
+            orderData.DiscountAmount = totalDiscount;
+
+            // For Return Object
+            decimal netAmount = orderData.TotalAmount - totalDiscount;
+
+            // -------------------------------------------------------------
+            // 3. SAVE TO DATABASE
+            // -------------------------------------------------------------
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -399,14 +609,15 @@ namespace MDUA.Facade
                         var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
 
+                        // ✅ Delivery DA for snapshot
+                        var transDeliveryDA = new DeliveryDataAccess(transaction);
+
                         // A. Customer Logic
                         int customerId = 0;
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
-
-                        // ✅ FIX: Determine Email (Use input if present, else fallback)
                         string finalEmail = !string.IsNullOrEmpty(orderData.CustomerEmail)
-                                            ? orderData.CustomerEmail
-                                            : $"{orderData.CustomerPhone}@direct.local";
+                            ? orderData.CustomerEmail
+                            : $"{orderData.CustomerPhone}@direct.local";
 
                         if (customer == null)
                         {
@@ -414,9 +625,9 @@ namespace MDUA.Facade
                             {
                                 CustomerName = orderData.CustomerName,
                                 Phone = orderData.CustomerPhone,
-                                Email = finalEmail, // ✅ Used here
+                                Email = finalEmail,
                                 IsActive = true,
-                                CreatedAt = DateTime.Now,
+                                CreatedAt = DateTime.UtcNow,
                                 CreatedBy = "Admin"
                             };
                             transCustomerDA.Insert(newCust);
@@ -424,9 +635,8 @@ namespace MDUA.Facade
                         }
                         else
                         {
-                            // ✅ FIX: Update email if provided and user currently has placeholder
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
-                               (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith("@direct.local") || customer.Email.EndsWith("@guest.local")))
+                                (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith(".local")))
                             {
                                 customer.Email = orderData.CustomerEmail;
                                 transCustomerDA.Update(customer);
@@ -440,53 +650,83 @@ namespace MDUA.Facade
                             transCompanyCustomerDA.Insert(new CompanyCustomer { CompanyId = orderData.TargetCompanyId, CustomerId = customerId });
                         }
 
-                        // C. Address Logic
+                        // C. Address
                         var addr = new Address
                         {
                             CustomerId = customerId,
                             Street = orderData.Street,
                             City = orderData.City,
                             Divison = orderData.Divison,
-                            // ✅ FIX: Save Thana & SubOffice
                             Thana = orderData.Thana,
                             SubOffice = orderData.SubOffice,
-
                             Country = "Bangladesh",
                             AddressType = "Shipping",
                             CreatedBy = "Admin",
-                            CreatedAt = DateTime.Now,
+                            CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
                         };
-
                         var existingAddr = transAddressDA.CheckExistingAddress(customerId, addr);
                         int addressId = (existingAddr != null) ? existingAddr.Id : (int)transAddressDA.InsertAddressSafe(addr);
 
-                        // D. Header
+                        // D. Order Header
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(orderData.TargetCompanyId, customerId);
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 2; // Direct
-                        orderData.OrderDate = DateTime.Now;
-                        orderData.DiscountAmount = totalDiscount;
-                        orderData.TotalAmount = grossAmount;
-
+                        orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = orderData.Confirmed ? "Confirmed" : "Draft";
                         orderData.IsActive = true;
                         orderData.CreatedBy = "Admin";
-                        orderData.CreatedAt = DateTime.Now;
+                        orderData.CreatedAt = DateTime.UtcNow;
 
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
 
-                        // E. Detail
+                        // E. Order Detail
                         transDetailDA.InsertSalesOrderDetailSafe(new SalesOrderDetail
                         {
                             SalesOrderId = orderId,
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
-                            UnitPrice = finalUnitPrice,
+                            UnitPrice = finalUnitPrice, // Store Net Unit Price
                             CreatedBy = "Admin",
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         });
+
+                        // ------------------------------------------------------------------
+                        // ✅ 4. EXPENSE SNAPSHOT (If Confirmed, Freeze Cost in Delivery Table)
+                        // ------------------------------------------------------------------
+                        // Note: Only create delivery record if it's NOT a Store Pickup
+                        if (orderData.Confirmed && !isStoreSale)
+                        {
+                            // Logic to retrieve Standard Cost from Settings (Expense Tracking)
+                            int companyId = orderData.TargetCompanyId > 0 ? orderData.TargetCompanyId : 1;
+                            var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
+
+                            bool isDhaka = (!string.IsNullOrEmpty(orderData.Divison) &&
+                                            orderData.Divison.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0)
+                                            || (!string.IsNullOrEmpty(orderData.City) &&
+                                            orderData.City.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                            // Fetch ACTUAL COST (Expense) from Settings
+                            // If keys don't exist, fallback to revenue defaults or 0
+                            decimal costInside = settings.ContainsKey("Cost_InsideDhaka") ? settings["Cost_InsideDhaka"] : (settings.ContainsKey("dhaka") ? settings["dhaka"] : 60);
+                            decimal costOutside = settings.ContainsKey("Cost_OutsideDhaka") ? settings["Cost_OutsideDhaka"] : (settings.ContainsKey("outside") ? settings["outside"] : 120);
+
+                            decimal actualCost = isDhaka ? costInside : costOutside;
+
+                            var delivery = new Delivery
+                            {
+                                SalesOrderId = orderId,
+                                TrackingNumber = "DO-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
+                                Status = "Pending",
+                                ShippingCost = actualCost, // ✅ EXPENSE (Standard Cost)
+                                CreatedBy = "Admin_Direct",
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            // Use the Extended Insert logic
+                            transDeliveryDA.InsertExtended(delivery);
+                        }
 
                         transaction.Commit();
 
@@ -495,7 +735,8 @@ namespace MDUA.Facade
                             OrderId = "DO" + orderId.ToString("D8"),
                             NetAmount = netAmount,
                             DiscountAmount = totalDiscount,
-                            TotalAmount = grossAmount
+                            TotalAmount = orderData.TotalAmount,
+                            DeliveryFee = deliveryFeeToCharge // Return the charged amount
                         };
                     }
                     catch
@@ -506,7 +747,6 @@ namespace MDUA.Facade
                 }
             }
         }
-
         //new
         public DashboardStats GetDashboardMetrics()
         {
@@ -523,11 +763,14 @@ namespace MDUA.Facade
         {
             return _salesOrderHeaderDataAccess.GetSalesTrend(6);
         }
-//new
+        //new
         public List<ChartDataPoint> GetOrderStatusCounts()
         {
             return _salesOrderHeaderDataAccess.GetOrderStatusCounts();
         }
+
+
+
         #endregion
     }
 }

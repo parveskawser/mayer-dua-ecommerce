@@ -1,0 +1,179 @@
+﻿@model MDUA.Web.UI.Controllers.AccountController.VerifyTwoFactorVm
+@{
+    Layout = null;
+    ViewData["Title"] = "Verify Identity";
+
+    // ✅ RETRIEVE CONFIGURATION
+    string formAction = ViewData["FormAction"] as string ?? "VerifyTwoFactor";
+    string backAction = ViewData["BackAction"] as string ?? "LogIn";
+    string backText = ViewData["BackText"] as string ?? "Back to Login";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Secure Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* 1. Background & Layout */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+
+        /* 2. Glassmorphism Card */
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+            backdrop-filter: blur(12px);           /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 3. Icon Styling */
+        .icon-header {
+            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 0 50% 50% / 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+        }
+
+        .icon-circle {
+            background: rgba(255, 255, 255, 0.2);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        /* 4. Input Field Styling */
+        .otp-input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-input {
+            letter-spacing: 0.5em; /* Spreads out the numbers */
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .otp-input:focus {
+            border-color: #0d6efd;
+            background: #fff;
+            box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+
+        .otp-input::placeholder {
+            letter-spacing: 2px;
+            font-size: 1rem;
+            color: #adb5bd;
+            font-weight: 400;
+        }
+
+        /* 5. Button Styling */
+        .btn-verify {
+            background: linear-gradient(90deg, #0d6efd 0%, #0056b3 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .text-instructions {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card pb-4">
+
+        <div class="icon-header">
+            <div class="icon-circle">
+                <i class="fas fa-shield-alt text-white fa-2x"></i>
+            </div>
+        </div>
+
+        <div class="px-4 px-md-5">
+            <h3 class="fw-bold text-center text-dark mb-2">Two-Factor Auth</h3>
+            <p class="text-center text-instructions mb-4">
+                To protect your account, please enter the 6-digit code from your authenticator app.
+            </p>
+
+            <form asp-action="@formAction" method="post" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="TargetUserId" />
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger py-2 small rounded-3 mb-3 text-center shadow-sm border-0">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Invalid code. Please try again.
+                    </div>
+                }
+
+                <div class="otp-input-group">
+                    <input type="text"
+                           name="Code"
+                           class="form-control otp-input"
+                           placeholder="000000"
+                           maxlength="6"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autocomplete="one-time-code"
+                           required
+                           autofocus />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-verify text-white mb-4">
+                    Verify Identity <i class="fas fa-arrow-right ms-2 small"></i>
+                </button>
+            </form>
+
+            <div class="text-center border-top pt-3">
+                <a asp-action="Login" class="text-decoration-none small text-secondary fw-bold">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

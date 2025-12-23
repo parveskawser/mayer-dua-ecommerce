@@ -32,5 +32,8 @@ namespace MDUA.DataAccess.Interface
 	public interface ISalesOrderDetailDataAccess : ICommonDataAccess<SalesOrderDetail, SalesOrderDetailList, SalesOrderDetailBase>
 	{
         long InsertSalesOrderDetailSafe(SalesOrderDetail detail);
+        SalesOrderDetail GetFirstDetailByOrderRef(string orderRef);
+        List<SalesOrderDetail> GetOrderDetailsSafe(int salesOrderId);
+        SalesOrderDetailList GetBySalesOrderId(int salesOrderId);
     }	
 }

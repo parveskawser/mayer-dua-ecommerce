@@ -410,3 +410,90 @@ html, body {
         transform: translateY(0);
     }
 }
+
+
+/* --- LOW STOCK CARD (Combo King Style) --- */
+.card-low-stock {
+    background: #ffffff;
+    border: 1px solid #fee2e2; /* Light Red Border */
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.header-low-stock {
+    background-color: #fef2f2; /* Very pale red bg */
+    padding: 12px 20px;
+    border-bottom: 1px solid #fee2e2;
+    color: #dc2626; /* Deep Red Text */
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* List Item Styling */
+.low-stock-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: background 0.2s;
+}
+
+    .low-stock-item:last-child {
+        border-bottom: none;
+    }
+
+    .low-stock-item:hover {
+        background-color: #f9fafb;
+    }
+
+/* Typography */
+.item-name {
+    font-weight: 700;
+    color: #1f2937; /* Dark Gray/Black */
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.item-variant {
+    font-size: 0.75rem;
+    color: #6b7280; /* Muted Gray */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Badges (Pills) */
+.badge-stock {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 99px; /* Pill shape */
+    color: white;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.badge-stock-zero {
+    background-color: #ef4444; /* Bright Red */
+}
+
+.badge-stock-low {
+    background-color: #eab308; /* Mustard Yellow */
+    color: white;
+}
+
+.item-price {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}

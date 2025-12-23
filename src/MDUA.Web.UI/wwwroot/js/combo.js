@@ -3,6 +3,7 @@
 // ==================================================
 // 1. ORDER API HELPERS
 // ==================================================
+
 window.OrderAPI = {
     // Check Customer Phone
     checkCustomer: async function (phone) {
@@ -56,7 +57,14 @@ window.OrderAPI = {
         } catch (e) { return []; }
     }
 };
-
+// --- INITIALIZE COUNTRY CODE INPUT ---
+const input = document.querySelector("#customerPhone");
+const iti = window.intlTelInput(input, {
+    initialCountry: "bd",             // Default to Bangladesh (+880)
+    separateDialCode: true,           // Shows flag & +880 in dropdown
+    preferredCountries: ["bd", "us", "gb"], // Optional: Top countries
+    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+});
 $(document).ready(function () {
 
     // SAFETY CHECK: If we are on the Admin page (which doesn't have #order-form),
@@ -66,53 +74,89 @@ $(document).ready(function () {
     }
 
     // ==================================================
-    // 2. PAYMENT METHOD UI LOGIC
+    // 2. PAYMENT METHOD UI LOGIC (SIMPLIFIED)
     // ==================================================
 
-    // Handle payment option clicks
+    // 1. Handle clicking a Payment Method Card
     $('.payment-option').on('click', function () {
-        // Remove selected class from all options
+        // Visual Selection
         $('.payment-option').removeClass('selected');
-
-        // Add selected class to clicked option
         $(this).addClass('selected');
 
-        // Check the radio button
+        // Check the hidden radio button so form submission works
         $(this).find('input[type="radio"]').prop('checked', true);
 
-        // Update button text based on payment method
-        updateSubmitButtonText();
+        handlePaymentUI();
     });
 
-    // Handle radio button changes (for keyboard navigation)
-    $('input[name="paymentMethod"]').on('change', function () {
-        $('.payment-option').removeClass('selected');
-        $(this).closest('.payment-option').addClass('selected');
-        updateSubmitButtonText();
-    });
+    // Core Logic: Show/Hide Input fields based on the selected card's mode
+    function handlePaymentUI() {
+        const $selected = $('.payment-option.selected');
+        if ($selected.length === 0) return;
 
-    // Function to update submit button text
-    function updateSubmitButtonText() {
-        const selectedPayment = $('input[name="paymentMethod"]:checked').val();
-        const $btn = $('#final-submit-btn');
-        const totalAmount = $('#receipt-grand-total').text();
+        // Get Mode directly from the card (Manual vs Gateway)
+        const mode = $selected.data('mode');
+        const instruction = $selected.find('.manual-instruction-text').val();
+        const $detailsArea = $('#payment-details-area');
+        const $trxInput = $('#trx-id-input');
 
-        if (selectedPayment === 'cod') {
-            $btn.text('Confirm Order');
+        if (mode === 'Manual') {
+            // Case: Manual (Send Money)
+            $detailsArea.slideDown(200);
+            $('#instruction-text').text(instruction || "Please follow the instructions.");
+            $trxInput.prop('required', true); // Make TrxID mandatory
         } else {
-            $btn.text(`Proceed and Pay ${totalAmount}`);
+            // Case: Gateway (Secure Pay) or COD
+            $detailsArea.slideUp(200);
+            $trxInput.prop('required', false).val(''); // Clear and un-require
+        }
+
+        updateSubmitButtonText();
+    }
+
+    // Update Button Text based on selection
+    function updateSubmitButtonText() {
+        const $selected = $('.payment-option.selected');
+        const methodCode = $selected.data('payment'); // e.g. 'cod', 'bkash'
+        const mode = $selected.data('mode');          // 'Manual', 'Gateway'
+        const totalAmount = $('#receipt-grand-total').text();
+        const $btn = $('#final-submit-btn');
+
+        if (methodCode === 'cod') {
+            $btn.text('Confirm Order (Cash on Delivery)');
+        }
+        else if (mode === 'Manual') {
+            $btn.text('Verify & Confirm Order');
+        }
+        else {
+            // Gateway / Direct
+            $btn.text(`Pay ${totalAmount} Now`);
         }
     }
 
-    // Initialize button text on page load
-    updateSubmitButtonText();
+    // Initialize on page load (to handle default selection)
+    handlePaymentUI();
 
-    // Update button text when total changes
+    // Hook into the existing total update function
     const originalUpdateTotals = updateTotals;
     updateTotals = function () {
         originalUpdateTotals();
         updateSubmitButtonText();
     };
+
+    // --- UPDATE SUBMIT HANDLER DATA ---
+    // Make sure your Submit Handler (Section 9) captures the correct mode
+    // Add this inside $('#order-form').submit(function(e) {...}) just before $.ajax
+    /*
+        const $selectedCard = $('.payment-option.selected');
+        formData.PaymentMode = $selectedCard.data('mode') || 'Gateway'; // Default to Gateway if undefined (like COD)
+        
+        if (formData.PaymentMode === 'Manual') {
+            formData.TransactionReference = $('#trx-id-input').val();
+        } else {
+            formData.TransactionReference = '';
+        }
+    */
 
     // ==================================================
     // 3. GLOBAL VARIABLES & STATE
@@ -147,8 +191,7 @@ $(document).ready(function () {
     // ==================================================
     // 4. AUTO-SELECT FIRST VARIANT IF ONLY ONE EXISTS
     // ==================================================
-    const variants = window.productVariants || [];
-
+    const variants = (window.productVariants || []).filter(v => v);
     if (variants.length === 1) {
         const singleVariant = variants[0];
         applyVariantData(singleVariant);
@@ -164,84 +207,50 @@ $(document).ready(function () {
     // 5. DYNAMIC ATTRIBUTE SELECTION LOGIC (WITH CASCADING)
     // ==================================================
 
+    // 1. Updated Click Listener (Force String Type)
     $(document).on('click', '.variant-chip', function () {
         let $el = $(this);
         let attributeName = $el.data('attribute');
-        let attributeValue = $el.data('value');
 
-        // 1. Toggle Selection
+        // ✅ FIX 3: Use .attr() to get the raw string value (prevents "40" becoming number 40)
+        let attributeValue = $el.attr('data-value');
+
         if ($el.hasClass('selected')) {
             $el.removeClass('selected');
             delete selectedAttributes[attributeName];
         } else {
-            // Remove 'selected' from other chips in the same row
             $(`.variant-chip[data-attribute='${attributeName}']`).removeClass('selected');
             $el.addClass('selected');
             selectedAttributes[attributeName] = attributeValue;
         }
 
-        // 2. Update Availability of OTHER options based on this new selection
         updateAttributeAvailability();
-
-        // 3. Try to find the matching variant
         findAndApplyVariant();
     });
 
-    // --- NEW CASCADING LOGIC FUNCTION ---
-    function updateAttributeAvailability() {
-        $('.variant-chip').each(function () {
-            const $chip = $(this);
-            const chipAttribute = $chip.data('attribute');
-            const chipValue = $chip.data('value');
-
-            // Skip if this specific chip is already selected (always keep selected items enabled)
-            if ($chip.hasClass('selected')) {
-                $chip.removeClass('disabled');
-                return;
-            }
-
-            // Create a "Test Scenario"
-            const testSelection = { ...selectedAttributes };
-
-            // Allow switching values within the same attribute group
-            delete testSelection[chipAttribute];
-            testSelection[chipAttribute] = chipValue;
-
-            // Check if ANY variant matches this test scenario
-            const isCompatible = variants.some(v => {
-                for (const [key, val] of Object.entries(testSelection)) {
-                    if (!v.attributes || v.attributes[key] !== val) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            // Apply visual state
-            if (isCompatible) {
-                $chip.removeClass('disabled');
-            } else {
-                $chip.addClass('disabled');
-            }
-        });
-    }
-
-    // Call once on load to initialize states
-    updateAttributeAvailability();
-
+    // 2. Updated Match Logic (Safety Checks & Loose Equality)
     function findAndApplyVariant() {
         $('#selected-variant-id').val('');
 
-        const matchedVariant = variants.find(v => {
+        // ✅ FIX 4: Filter out undefined slots just in case
+        const safeVariants = (window.productVariants || []).filter(v => v);
+
+        const matchedVariant = safeVariants.find(v => {
+            if (!v.attributes) return false;
+
             const variantKeys = Object.keys(v.attributes);
             const selectedKeys = Object.keys(selectedAttributes);
 
-            // 1. STRICT COUNT CHECK
+            // A. Count Check
             if (variantKeys.length !== selectedKeys.length) return false;
 
-            // 2. STRICT VALUE CHECK
+            // B. Value Check (String Comparison)
             for (let key of selectedKeys) {
-                if (!v.attributes.hasOwnProperty(key) || v.attributes[key] !== selectedAttributes[key]) {
+                // Ensure the variant has the key
+                if (!v.attributes.hasOwnProperty(key)) return false;
+
+                // Compare as Strings to fix Type Mismatch
+                if (String(v.attributes[key]).trim() !== String(selectedAttributes[key]).trim()) {
                     return false;
                 }
             }
@@ -257,9 +266,83 @@ $(document).ready(function () {
         } else {
             handleNoMatch();
         }
-    }
+    }    // --- NEW CASCADING LOGIC FUNCTION ---
+    function updateAttributeAvailability() {
+        $('.variant-chip').each(function () {
+            const $chip = $(this);
+            const chipAttribute = $chip.data('attribute');
 
-    function applyVariantData(variant) {
+            // CHANGE: Use .attr() to ensure String comparison
+            const chipValue = $chip.attr('data-value');
+
+            // Skip if this specific chip is already selected
+            if ($chip.hasClass('selected')) {
+                $chip.removeClass('disabled');
+                return;
+            }
+
+            // Create a "Test Scenario"
+            const testSelection = { ...selectedAttributes };
+
+            // Allow switching values within the same attribute group
+            delete testSelection[chipAttribute];
+            testSelection[chipAttribute] = chipValue;
+
+            // Check if ANY variant matches this test scenario
+            const isCompatible = variants.some(v => {
+                for (const [key, val] of Object.entries(testSelection)) {
+                    // CHANGE: Convert both sides to String() before comparing
+                    if (!v.attributes || String(v.attributes[key]) !== String(val)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // Apply visual state
+            if (isCompatible) {
+                $chip.removeClass('disabled');
+            } else {
+                $chip.addClass('disabled');
+            }
+        });
+    }
+    // Call once on load to initialize states
+    updateAttributeAvailability();
+
+    function findAndApplyVariant() {
+        $('#selected-variant-id').val('');
+
+        const matchedVariant = variants.find(v => {
+            // ✅ FIX: Safety check for undefined variants
+            if (!v || !v.attributes) return false;
+
+            const variantKeys = Object.keys(v.attributes);
+            const selectedKeys = Object.keys(selectedAttributes);
+
+            // 1. STRICT COUNT CHECK
+            if (variantKeys.length !== selectedKeys.length) return false;
+
+            // 2. STRICT VALUE CHECK
+            for (let key of selectedKeys) {
+                // Convert both sides to String to match "100" (JSON) with "100" (HTML)
+                if (!v.attributes.hasOwnProperty(key) || String(v.attributes[key]) !== String(selectedAttributes[key])) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (matchedVariant) {
+            if (Object.keys(selectedAttributes).length > 0) {
+                applyVariantData(matchedVariant);
+            } else {
+                resetToDefault();
+            }
+        } else {
+            handleNoMatch();
+        }
+    } function applyVariantData(variant) {
         $('#selected-variant-id').val(variant.id);
         currentVariantPrice = variant.price;
         $('#display-price').text('Tk. ' + currentVariantPrice.toLocaleString());
@@ -273,12 +356,18 @@ $(document).ready(function () {
         }
         updateStockMessage(maxAvailableStock);
 
+        // 1. Determine the image URL
         let newImg = variant.image && variant.image.length > 1 ? variant.image : baseProductImageUrl;
-        if (!newImg.startsWith("/") && !newImg.startsWith("http")) newImg = "/" + newImg;
 
-        // Update BOTH Desktop and Mobile images
-        $('#order-variant-image').attr('src', newImg);
-        $('#mobile-order-variant-image').attr('src', newImg);
+        // 2. Fix Slash logic (Don't add slash if image is missing)
+        if (newImg && newImg.length > 0 && !newImg.startsWith("/") && !newImg.startsWith("http")) {
+            newImg = "/" + newImg;
+        }
+
+        // 3. Update Image Src AND Force Visibility
+        // We use .show() to undo the 'display:none' set by the onerror event
+        $('#order-variant-image').attr('src', newImg).show();
+        $('#mobile-order-variant-image').attr('src', newImg).show();
 
         $('.variant-chips-container').css('border', 'none');
         updateTotals();
@@ -423,52 +512,86 @@ $(document).ready(function () {
     });
 
     // Handle Phone Input with Debounce
-    $('#customerPhone').on('input', debounce(function () {
-        let phone = $(this).val();
 
-        if (phone.length >= 11) {
+    // 1. INPUT EVENT: Handles Auto-Discovery & Immediate "Too Long" checks
+    // ==================================================
+    // RESTRICT PHONE INPUT (Numbers and + only)
+    // ==================================================
+    $('#customerPhone').on('input', function () {
+        var val = $(this).val();
+
+        // Allow 0-9 and the + sign. Remove everything else.
+        // regex: /[^0-9+]/g means "replace any character that is NOT a digit OR a plus sign"
+        if (/[^0-9+]/.test(val)) {
+            $(this).val(val.replace(/[^0-9+]/g, ''));
+        }
+    });
+    $('#customerPhone').on('input', debounce(function () {
+        let fullPhone = iti.getNumber();
+        const isValid = iti.isValidNumber();
+        const errorCode = iti.getValidationError();
+
+        if (isValid) {
+            // CASE A: Number is Valid -> Trigger Auto-Check
             $('#phone-status').text("⏳ Checking...").css('color', 'blue');
 
-            window.OrderAPI.checkCustomer(phone).then(function (data) {
+            // Use encodeURIComponent to handle the '+' sign correctly
+            window.OrderAPI.checkCustomer(fullPhone).then(function (data) {
                 if (data.found) {
                     $('#phone-status').text("✓ Welcome back! Info loaded.").css('color', 'green');
-
                     if (data.name) $('#customerName').val(data.name);
 
+                    // Email autofill logic
                     if (data.email) {
                         const $emailField = $('#customerEmail');
                         const currentEmailValue = $emailField.val().trim();
-
-                        // Only autofill if email is empty or has a placeholder value
                         if (!currentEmailValue || currentEmailValue.includes('@guest.local')) {
                             isEmailAutofilled = true;
                             currentCustomerEmail = data.email;
                             $emailField.val(data.email);
                             $('#email-status').text("✓ Using your registered email").css('color', 'green').show();
                             $('.submit-btn').prop('disabled', false).text('Confirm Order');
-                        } else {
-                            // Even if we don't overwrite, we need to know the correct email for this phone
-                            currentCustomerEmail = data.email;
                         }
-                    } else {
-                        // Phone exists but has no email (or generated one)
-                        currentCustomerEmail = null;
                     }
                 } else {
                     $('#phone-status').text("New Customer").css('color', '#666');
-                    isEmailAutofilled = false;
-                    currentCustomerEmail = null;
                 }
-            }).fail(function () {
-                $('#phone-status').text("⚠ Could not verify phone").css('color', 'orange');
+            }).catch(function () {
+                $('#phone-status').text("⚠ Could not verify").css('color', 'orange');
             });
+
         } else {
-            $('#phone-status').text("");
+            // CASE B: Number is Invalid (While Typing)
+
+            // 1. If Too Long, tell them immediately
+            if (errorCode === 3) {
+                $('#phone-status').text("⚠ Number too long").css('color', 'red');
+            }
+            // 2. If Too Short (2) or just Invalid (1), DO NOT complain yet. 
+            //    Wait for them to finish typing (handled in 'blur').
+            else {
+                $('#phone-status').text("");
+            }
+
+            // Reset autofill flags since phone is invalid
             isEmailAutofilled = false;
             currentCustomerEmail = null;
         }
     }, 500));
 
+    // 2. BLUR EVENT: Handles "Too Short" errors when user leaves the field
+    $('#customerPhone').on('blur', function () {
+        let fullPhone = iti.getNumber();
+        const isValid = iti.isValidNumber();
+        const errorCode = iti.getValidationError();
+
+        // Only show error if input is not empty but invalid
+        if (!isValid && fullPhone.length > 0) {
+            if (errorCode === 2) $('#phone-status').text("⚠ Number too short").css('color', 'red');
+            else if (errorCode === 3) $('#phone-status').text("⚠ Number too long").css('color', 'red');
+            else $('#phone-status').text("⚠ Invalid number").css('color', 'red');
+        }
+    });
     // ==================================================
     // 7. LOCATION & TOTALS (ROBUST CASCADING)
     // ==================================================
@@ -692,9 +815,20 @@ $(document).ready(function () {
     // 9. SUBMIT ORDER (MERGED VALIDATION & PAYMENTS)
     // ==================================================
 
+    // ==================================================
+    // 9. SUBMIT ORDER (MERGED VALIDATION & PAYMENTS)
+    // ==================================================
+
+    // ==================================================
+    // 9. SUBMIT ORDER (MERGED VALIDATION & PAYMENTS)
+    // ==================================================
+
     $('#order-form').submit(function (e) {
         e.preventDefault();
-
+        if (!iti.isValidNumber()) {
+            Swal.fire('Error', 'Please enter a valid phone number for the selected country.', 'error');
+            return;
+        }
         // 1. Reset previous error styles
         $('.input-error').removeClass('input-error');
         $('.variant-chips-container').css({ 'border': 'none', 'padding': '0' });
@@ -711,19 +845,18 @@ $(document).ready(function () {
             return;
         }
 
-        // 3. CHECK: Email Error Visible (New Check)
-        // If the email field shows an error message (red text), do not proceed.
+        // 3. CHECK: Email Error Visible
         const $emailStatus = $('#email-status');
-        if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') { // Checks for red color
+        if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') {
             $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
             $('#customerEmail').focus();
             return;
         }
 
+        // 4. CHECK: Variant Selected
         let isValid = true;
         let firstErrorField = null;
 
-        // 4. CHECK: Variant Selected
         if (!$('#selected-variant-id').val()) {
             isValid = false;
             const $variantContainer = $('.variant-chips-container');
@@ -763,32 +896,72 @@ $(document).ready(function () {
             return;
         }
 
-        // ==========================
-        // PROCEED WITH AJAX SUBMIT
-        // ==========================
-        let formData = {};
-        $(this).serializeArray().forEach(function (item) {
-            formData[item.name] = item.value;
-        });
+        // --- PAYMENT METHOD & MODE LOGIC ---
+        // We must define these BEFORE using them for validation
+        const $selectedCard = $('.payment-option.selected');
 
-        // Add Payment Method (From your new logic)
-        formData.PaymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cod';
+        // Get correct SystemCode (e.g., 'bkash') and Mode ('Manual', 'Gateway')
+        const correctMethodCode = $selectedCard.data('payment');
+        const mode = $selectedCard.data('mode');
+
+        // 8. Validation: Manual Mode MUST have a TrxID
+        if (mode === 'Manual') {
+            const trxId = $('#trx-id-input').val().trim();
+            if (!trxId) {
+                Swal.fire('Required', 'Please enter the Transaction ID (TrxID).', 'warning');
+                $('#trx-id-input').focus().addClass('input-error');
+                return; // Stop submission
+            }
+        }
+
+        // --- PREPARE DATA ---
+        let formData = {};
+        $(this).serializeArray().forEach(item => formData[item.name] = item.value);
+
+        // ✅ ROBUST DELIVERY CHARGE CAPTURE
+        // 1. Try getting from UI data
+        let deliveryCost = parseFloat($('#receipt-delivery').data('cost'));
+
+        // 2. If 0 or NaN (e.g. user didn't change dropdown), calculate manually
+        // This prevents sending 0 if the UI state is stale
+        if (isNaN(deliveryCost) || deliveryCost === 0) {
+            const dist = $('#district-select').val();
+            // Use the global 'delivery' object (dhaka/outside) from Index.cshtml
+            if (dist && (dist.toLowerCase().includes('dhaka') || dist.trim() === 'Dhaka')) {
+                deliveryCost = delivery.dhaka;
+            } else {
+                deliveryCost = delivery.outside;
+            }
+        }
+
+        formData.DeliveryCharge = deliveryCost; // Send to server
+
+        // Apply Payment Values
+        formData.PaymentMethod = correctMethodCode;
+        formData.CustomerPhone = iti.getNumber();
+        formData.PaymentMode = mode;
+
+        if (mode === 'Manual') {
+            formData.TransactionReference = $('#trx-id-input').val();
+        }
 
         // Ensure numeric types
         formData.TargetCompanyId = 1;
         formData.ProductVariantId = parseInt(formData.ProductVariantId);
         formData.OrderQuantity = parseInt(formData.OrderQuantity);
-
+        formData.CustomerPhone = iti.getNumber();
+        // Disable Button
         let $btn = $('#final-submit-btn');
         $btn.prop('disabled', true);
 
         // Update text based on payment
-        if (formData.PaymentMethod === 'cod') {
-            $btn.text('Processing...');
-        } else {
+        if (formData.PaymentMode === 'Gateway') {
             $btn.text('Redirecting...');
+        } else {
+            $btn.text('Processing...');
         }
 
+        // SEND TO SERVER
         $.ajax({
             url: '/order/place',
             type: 'POST',
@@ -797,8 +970,8 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     // Success Logic
-                    if (formData.PaymentMethod === 'cod') {
-                        // COD Success
+                    if (formData.PaymentMethod === 'cod' || formData.PaymentMode === 'Manual') {
+                        // COD / Manual Success
                         Swal.fire({
                             title: 'Success!',
                             text: "Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'),
@@ -824,7 +997,7 @@ $(document).ready(function () {
                         }
                     }
                 } else {
-                    // Server returned false
+                    // Server returned failure
                     Swal.fire({
                         title: 'Order Failed',
                         text: res.message || "Failed to place order.",
@@ -854,7 +1027,6 @@ $(document).ready(function () {
             }
         });
     });
-
     // ==================================================
     // 10. IMAGE GALLERY SLIDER
     // ==================================================
@@ -920,22 +1092,23 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
     }
 });
 /* =========================================================
-   FILENAME: wwwroot/js/combo.js (Customer Logic)
+    (Customer Chat Logic)
    ========================================================= */
 
 $(document).ready(function () {
+    // --- Shared Variables ---
     let chatConnection = null;
     let chatSessionId = localStorage.getItem("chatSessionId");
     let chatUserName = localStorage.getItem("chatUserName");
     let sessionTimestamp = localStorage.getItem("chatSessionTimestamp");
 
-    // --- 1. SESSION MANAGEMENT (1 Hour Expiration) ---
-    const ONE_HOUR = 60 * 60 * 1000; // ms
+    const ONE_HOUR = 60 * 60 * 1000;
 
+    // ==================================================
+    // 1. SESSION MANAGEMENT
+    // ==================================================
     function checkSessionExpiry() {
         const now = new Date().getTime();
-        
-        // If expired or no timestamp, clear session
         if (sessionTimestamp && (now - sessionTimestamp > ONE_HOUR)) {
             console.log("⚠️ Session expired. Starting fresh.");
             localStorage.removeItem("chatSessionId");
@@ -946,69 +1119,82 @@ $(document).ready(function () {
         }
     }
 
-    // Initialize Session
     checkSessionExpiry();
-    
+
     if (!chatSessionId) {
-        // Create new session
-        chatSessionId = crypto.randomUUID();
+        chatSessionId = generateUUID();
         localStorage.setItem("chatSessionId", chatSessionId);
-        localStorage.setItem("chatSessionTimestamp", new Date().getTime()); // Save start time
+        localStorage.setItem("chatSessionTimestamp", new Date().getTime());
     }
 
-    // --- 2. LOAD HISTORY ON REFRESH ---
+    function generateUUID() {
+        var d = new Date().getTime();
+        var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16;
+            if (d > 0) {
+                r = (d + r) % 16 | 0;
+                d = Math.floor(d / 16);
+            } else {
+                r = (d2 + r) % 16 | 0;
+                d2 = Math.floor(d2 / 16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
+
+    // ==================================================
+    // 2. LOAD HISTORY
+    // ==================================================
     function loadChatHistory() {
         $.get('/chat/guest-history?sessionGuid=' + chatSessionId, function (messages) {
             if (messages && messages.length > 0) {
-                // If we have history, show the chat box button as "active" or just load them silently
-                // render messages
                 messages.forEach(function (m) {
-                    // m.isFromAdmin determines the side
                     let type = m.isFromAdmin ? 'incoming' : 'outgoing';
                     let senderName = m.isFromAdmin ? (m.senderName || "Support") : "You";
                     appendCustomerMessage(senderName, m.messageText, type);
                 });
-                
-                // If there is history, assume user is "logged in"
-                if(!chatUserName) {
-                    // Try to guess or just set state to active without name if history exists
+
+                if (!chatUserName) {
                     showChatInterface();
                 }
             }
         });
     }
 
-    // Call history loader immediately
     loadChatHistory();
 
-    // --- 3. SignalR Connection Logic ---
+    // ==================================================
+    // 3. SIGNALR CONNECTION
+    // ==================================================
     function initSignalR() {
-        if (chatConnection) return; 
+        if (chatConnection) return;
 
-        // Initialize Builder
         chatConnection = new signalR.HubConnectionBuilder()
             .withUrl("/supportHub?sessionId=" + chatSessionId)
             .withAutomaticReconnect()
             .build();
 
-        // Listener: Admin Reply
+        // ✅ LISTENER 1: Admin Reply (AI or Human)
         chatConnection.on("ReceiveReply", function (adminName, message) {
-            // Update Timestamp on activity to keep session alive
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
-            
-            // 🔔 Sound
-            var audio = document.getElementById("chat-notification-sound");
-            if (audio) { audio.play().catch(e => console.log("Audio blocked")); }
 
-            // UI
+            // Play sound
+            var audio = document.getElementById("chat-notification-sound");
+            if (audio) {
+                audio.play().catch(e => console.log("Audio blocked"));
+            }
+
+            // Display message
             appendCustomerMessage(adminName, message, 'incoming');
-            
+
+            // Badge logic if chat is closed
             if (!$('#live-chat-box').is(':visible')) {
                 $('#support-widget-btn').addClass('active');
             }
         });
 
-        // Listener: System Message
+        // ✅ LISTENER 2: System Messages
         chatConnection.on("ReceiveSystemMessage", function (message) {
             const html = `<div class="msg-system">${message}</div>`;
             $('#chat-messages-list').append(html);
@@ -1020,10 +1206,57 @@ $(document).ready(function () {
             .catch(err => console.error(err));
     }
 
-    // Auto-connect SignalR so we receive messages even if window was refreshed
     initSignalR();
 
-    // --- 4. Message UI Functions ---
+    // ==================================================
+    // 4. SEND MESSAGE LOGIC
+    // ==================================================
+    function sendCustomerMessage() {
+        const msg = $('#chat-input-field').val().trim();
+        const currentName = chatUserName || "Guest";
+
+        if (msg) {
+            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
+
+            // 1. Show Local
+            appendCustomerMessage("You", msg, 'outgoing');
+            $('#chat-input-field').val('');
+
+            // 2. Send to HTTP Endpoint (Triggers AI)
+            const messageData = {
+                SessionGuid: chatSessionId,
+                SenderName: currentName,
+                MessageText: msg
+            };
+
+            $.ajax({
+                url: '/chat/send',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(messageData),
+                success: function (response) {
+                    console.log('✅ Message sent successfully');
+
+                    // If human handoff occurred, show notification
+                    if (response.handedOff) {
+                        appendCustomerMessage("System",
+                            "🔔 A support agent will join shortly.",
+                            'incoming');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('❌ Error sending message:', error);
+                    appendCustomerMessage("System",
+                        "⚠️ Failed to send message. Please check your connection.",
+                        'incoming');
+                }
+            });
+        }
+    }
+
+    // ==================================================
+    // 5. UI HELPERS
+    // ==================================================
     function appendCustomerMessage(sender, text, type) {
         const container = $('#chat-messages-list');
         let senderHtml = type === 'incoming' ? `<div class="msg-sender-name">${sender}</div>` : '';
@@ -1043,82 +1276,10 @@ $(document).ready(function () {
         if (body) body.scrollTop = body.scrollHeight;
     }
 
-    function sendCustomerMessage() {
-        const msg = $('#chat-input-field').val().trim();
-        const currentName = chatUserName || "Guest"; 
-
-        if (msg) {
-            // Refresh timestamp
-            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
-
-            // 1. Show Local
-            appendCustomerMessage("You", msg, 'outgoing');
-            $('#chat-input-field').val('');
-
-            // 2. Send to Server
-            if(chatConnection) {
-                chatConnection.invoke("SendMessageToAdmin", currentName, msg, chatSessionId)
-                    .catch(err => console.error(err));
-            }
-        }
-    }
-
-    // --- 5. UI Interactions ---
-    $('#chat-send-btn').click(sendCustomerMessage);
-    $('#chat-input-field').keypress(function (e) { if (e.which == 13) sendCustomerMessage(); });
-
-    $('#support-widget-btn').click(function () {
-        // Toggle Red/Blue State
-        $(this).toggleClass('active');
-        const menu = $('#support-options');
-        const icon = $(this).find('i');
-
-        if (menu.hasClass('show')) {
-            // Closing
-            menu.removeClass('show');
-            $('#live-chat-box').fadeOut();
-            icon.removeClass('fa-times').addClass('fa-headset');
-        } else {
-            // Opening
-            menu.addClass('show');
-            $('#live-chat-box').hide();
-            icon.removeClass('fa-headset').addClass('fa-times');
-        }
-    });
-
-    $('#btn-open-live-chat').click(function () {
-        $('#support-options').removeClass('show');
-        
-        // Ensure Main Button stays Red/X
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.addClass('active');
-        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
-
-        $('#live-chat-box').fadeIn().css('display', 'flex');
-        checkChatState();
-    });
-
-    $('#chat-close-btn').click(function () {
-        $('#live-chat-box').fadeOut();
-        // Reset Button
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.removeClass('active');
-        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
-    });
-
-    $('#chat-start-btn').click(function () {
-        const name = $('#chat-guest-name').val().trim();
-        if (name) setUserName(name);
-        else $('#chat-guest-name').css('border-color', 'red');
-    });
-
-    $('#chat-skip-btn').click(function () { setUserName("Guest"); });
-
     function setUserName(name) {
         chatUserName = name;
         localStorage.setItem("chatUserName", name);
         showChatInterface();
-        // Update session timestamp
         localStorage.setItem("chatSessionTimestamp", new Date().getTime());
     }
 
@@ -1137,5 +1298,97 @@ $(document).ready(function () {
         $('#chat-name-screen').hide();
         $('#chat-messages-list').css('display', 'flex');
         $('#chat-footer').css('display', 'flex');
+    }
+
+    // ==================================================
+    // 6. EVENT BINDINGS
+    // ==================================================
+    $('#chat-send-btn').click(sendCustomerMessage);
+
+    $('#chat-input-field').keypress(function (e) {
+        if (e.which == 13) sendCustomerMessage();
+    });
+
+    $('#support-widget-btn').click(function () {
+        $(this).toggleClass('active');
+        const menu = $('#support-options');
+        const icon = $(this).find('i');
+
+        if (menu.hasClass('show')) {
+            menu.removeClass('show');
+            $('#live-chat-box').fadeOut();
+            icon.removeClass('fa-times').addClass('fa-headset');
+        } else {
+            menu.addClass('show');
+            $('#live-chat-box').hide();
+            icon.removeClass('fa-headset').addClass('fa-times');
+        }
+    });
+
+    $('#btn-open-live-chat').click(function () {
+        $('#support-options').removeClass('show');
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.addClass('active');
+        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
+        $('#live-chat-box').fadeIn().css('display', 'flex');
+        checkChatState();
+    });
+
+    $('#chat-close-btn').click(function () {
+        $('#live-chat-box').fadeOut();
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.removeClass('active');
+        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
+    });
+
+    $('#chat-start-btn').click(function () {
+        const name = $('#chat-guest-name').val().trim();
+        if (name) setUserName(name);
+        else $('#chat-guest-name').css('border-color', 'red');
+    });
+
+    $('#chat-skip-btn').click(function () {
+        setUserName("Guest");
+    });
+
+    // ==================================================
+    // 7. SCROLL TO TOP WITH PROGRESS RING
+    // ==================================================
+    var progressPath = document.querySelector('.progress-wrap path');
+
+    if (progressPath) {
+        var pathLength = progressPath.getTotalLength();
+
+        progressPath.style.transition = progressPath.style.WebkitTransition = 'none';
+        progressPath.style.strokeDasharray = pathLength + ' ' + pathLength;
+        progressPath.style.strokeDashoffset = pathLength;
+        progressPath.getBoundingClientRect();
+        progressPath.style.transition = progressPath.style.WebkitTransition = 'stroke-dashoffset 10ms linear';
+
+        var updateProgress = function () {
+            var scroll = $(window).scrollTop();
+            var height = $(document).height() - $(window).height();
+            var progress = pathLength - (scroll * pathLength / height);
+            progressPath.style.strokeDashoffset = progress;
+        }
+
+        updateProgress();
+        $(window).scroll(updateProgress);
+
+        var offset = 50;
+
+        $(window).on('scroll', function () {
+            if ($(this).scrollTop() > offset) {
+                $('.progress-wrap').addClass('active-progress');
+            } else {
+                $('.progress-wrap').removeClass('active-progress');
+            }
+        });
+
+        $('.progress-wrap').on('click', function (event) {
+            event.preventDefault();
+            $('html, body').animate({ scrollTop: 0 }, 550);
+            return false;
+        });
     }
 });

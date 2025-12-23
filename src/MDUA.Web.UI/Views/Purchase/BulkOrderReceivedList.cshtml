@@ -50,7 +50,11 @@
                                         </span>
                                     </td>
                                     <td class="fw-bold text-primary">@(item.Title ?? "N/A")</td>
-                                    <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="utc-date" data-utc="@item.CreatedAt.ToUtcString()">
+                                            @item.CreatedAt.ToString("dd MMM yyyy")
+                                        </span>
+                                    </td>
                                     <td class="text-center fw-bold">@item.TotalTargetQuantity</td>
                                     <td>
                                         @if (item.Status == "Active")
@@ -117,12 +121,6 @@
                     </div>
                     <span class="mt-2 text-muted">Ready to load...</span>
                 </div>
-            </div>
-
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Close
-                </button>
             </div>
         </div>
     </div>

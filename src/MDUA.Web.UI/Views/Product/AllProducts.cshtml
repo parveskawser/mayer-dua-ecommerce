@@ -4,21 +4,50 @@
     ViewData["Title"] = "Product List";
 }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <strong>Success!</strong> @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-        <strong>Error!</strong> @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <style>
+        /* Fix for Summernote z-index in Modals */
+        .note-modal-backdrop {
+            z-index: 1050 !important;
+        }
 
+        .note-modal {
+            z-index: 1070 !important;
+        }
+        /* Must be higher than Bootstrap modal */
+        .note-editor {
+            background: white;
+        }
+
+        /* Ensure inputs inside Summernote modal are clickable */
+        .note-modal-content {
+            position: relative;
+            z-index: 1075;
+        }
+
+        /* Bootstrap Modal Z-Index Fix */
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .modal {
+            z-index: 1050 !important;
+        }
+
+        .note-dropdown-menu {
+            max-height: 300px !important; /* Limit height */
+            overflow-y: auto !important; /* Enable scrollbar */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        /* Specific fix for the huge Color Palette */
+        .note-color-palette {
+            max-height: 200px !important;
+            overflow-y: auto !important;
+        }
+    </style>
+}
 <link rel="stylesheet" href="~/css/product-list.css" />
 <div class="fixed-layout-wrapper">
     <div class="header-section d-flex justify-content-between align-items-center mb-3">
@@ -101,7 +130,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="editProductModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content modal-custom">
                 <div class="modal-header modal-header-custom">
@@ -168,16 +197,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteDiscountModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-custom">
-                <div class="modal-body p-4 text-center">
-                    <p>Delete Discount: <strong id="modal-delete-discount-info"></strong>?</p>
-                    <button class="btn btn-danger" id="confirm-delete-discount-button">Confirm Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <div class="modal fade" id="addVariantAttributeModal" tabindex="-1" aria-hidden="true" style="z-index: 10000 !important;">
         <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -254,10 +274,86 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="productVideosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-custom">
+            <div class="modal-header modal-header-custom bg-dark text-white">
+                <h5 class="modal-title">Videos: <span id="modal-video-product-name" class="text-warning"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="modal-videos-content" class="p-4">
+                    <div class="loading-spinner text-center"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteVideoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-custom border-danger">
+            <div class="modal-body text-center p-4">
+                <p class="fw-bold text-danger mb-3">Delete this video?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-confirm-del-video">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 }
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('focusin', function (e) {
+            if (e.target.closest(".note-modal")) {
+                e.stopImmediatePropagation();
+            }
+        }, true);
+        // 1. Configure the Toast Mixin
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // Make Toast available globally for your other JS files
+        window.Toast = Toast;
+
+        $(document).ready(function() {
+            // 2. CHECK TEMP DATA (For Add/Update Redirects)
+            var successMsg = '@TempData["Success"]';
+            var errorMsg = '@TempData["Error"]';
+
+            if (successMsg) {
+                Toast.fire({
+                    icon: 'success',
+                    title: successMsg
+                });
+            }
+
+            if (errorMsg) {
+                Toast.fire({
+                    icon: 'error',
+                    title: errorMsg
+                });
+            }
+
+            // ... Your existing search logic ...
+        });
         window.productConfig = {
             urls: {
                 getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
@@ -283,6 +379,10 @@
                 uploadVariantImage: '@Url.Action("UploadVariantImage", "Product")',
                 deleteVariantImage: '@Url.Action("DeleteVariantImage", "Product")',
                 updateVariantImageOrder: '@Url.Action("UpdateVariantImageOrder", "Product")',
+                 getVideosPartial: '@Url.Action("GetVideosPartial", "Product")',
+                addVideo: '@Url.Action("AddVideo", "Product")',
+                deleteVideo: '@Url.Action("DeleteVideo", "Product")',
+                setPrimaryVideo: '@Url.Action("SetPrimaryVideo", "Product")'
             }
         };
 
@@ -318,5 +418,5 @@
             });
         });
     </script>
-    <script src="~/js/products-index.js"></script>
+    <script src="~/js/products-index.js" asp-append-version="true"></script>
 }
