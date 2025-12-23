@@ -31,5 +31,6 @@ namespace MDUA.DataAccess.Interface
 
 	public interface IDeliveryItemDataAccess : ICommonDataAccess<DeliveryItem, DeliveryItemList, DeliveryItemBase>
 	{ 
+
 	}	
 }

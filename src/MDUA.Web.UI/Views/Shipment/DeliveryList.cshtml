@@ -2,24 +2,127 @@
 
 @{
     ViewData["Title"] = "Delivery List";
-
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-
 }
-<div class="container-fluid mt-4">
-    <h3>Delivery Management</h3>
 
-    <div class="card shadow-sm mt-3">
-        <div class="card-body p-0">
+<style>
+    /* 1. LOCK THE PAGE (No scrollbars on body) */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden !important;
+    }
+
+    /* 2. MAIN LAYOUT WRAPPER */
+    .page-wrapper {
+        /* Fills height below navbar automatically */
+        height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+        overflow: hidden;
+    }
+
+    /* 3. HEADER SECTION (Fixed Height) */
+    .page-header {
+        flex: 0 0 auto;
+        margin-bottom: 1rem;
+    }
+
+    /* 4. CONTENT CARD (Fills Remaining Space) */
+    .content-fill {
+        flex: 1 1 auto; /* Grow to fill space */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        background: white;
+    }
+
+    /* 5. TABLE CONTAINER (The actual Scroll Area) */
+    .table-responsive-locked {
+        position: relative;
+        flex: 1;
+        overflow-y: auto; /* Vertical Scroll */
+        overflow-x: hidden;
+    }
+
+    /* Sticky Header Logic */
+    .sticky-th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Popover Styles */
+    .popover-custom {
+        --bs-popover-bg: #212529;
+        --bs-popover-border-color: #495057;
+        --bs-popover-header-bg: #212529;
+        --bs-popover-header-color: #fff;
+        --bs-popover-body-color: #dee2e6;
+        --bs-popover-max-width: 280px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        border-radius: 8px;
+    }
+
+    .popover-link {
+        color: #ffc107 !important;
+        text-decoration: none;
+        font-weight: bold;
+        display: block;
+        margin-top: 5px;
+    }
+
+        .popover-link:hover {
+            color: #fff !important;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="page-wrapper">
+
+    <div class="page-header d-flex justify-content-between align-items-end">
+
+        <div>
+            <h2 class="fw-bold mb-0 text-dark mt-0">Delivery Management</h2>
+            <div class="text-muted small mt-1">Manage shipments, update statuses, and track deliveries.</div>
+        </div>
+
+        <div class="d-flex flex-column gap-2" style="width: 300px;">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="fa fa-search"></i></span>
+                <input type="text" id="deliverySearch" class="form-control" placeholder="Search Order, Customer, Tracking...">
+            </div>
+
+            <select id="statusFilter" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Returned">Returned</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm content-fill">
+        <div class="table-responsive-locked">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Delivery ID</th>
-                        <th>Order Ref</th>
-                        <th>Customer</th>
-                        <th>Tracking #</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th class="sticky-th">Delivery ID</th>
+                        <th class="sticky-th">Order Ref</th>
+                        <th class="sticky-th">Customer</th>
+                        <th class="sticky-th">Tracking #</th>
+                        <th class="sticky-th">Status</th>
+                        <th class="sticky-th">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,17 +143,47 @@
                                         @(string.IsNullOrEmpty(item.TrackingNumber) ? "-" : item.TrackingNumber)
                                     </span>
                                 </td>
+
                                 <td>
-                                    <select class="form-select form-select-sm"
-                                            onchange="updateStatus(@item.Id, this.value)"
-                                            style="width: 140px; font-weight: 500; border-color: #dee2e6;">
-                                        <!option value="Pending" @(item.Status == "Pending" ? "selected" : "")>Pending</!option>
-                                        <!option value="Shipped" @(item.Status == "Shipped" ? "selected" : "")>Shipped</!option>
-                                        <!option value="Delivered" @(item.Status == "Delivered" ? "selected" : "")>Delivered</!option>
-                                        <!option value="Returned" @(item.Status == "Returned" ? "selected" : "")>Returned</!option>
-                                        <!option value="Cancelled" @(item.Status == "Cancelled" ? "selected" : "")>Cancelled</!option>
-                                    </select>
+                                    @{
+                                        var header = item.SalesOrderHeader;
+                                        bool hasHeader = header != null;
+                                        bool isOrderConfirmed = hasHeader &&
+                                        (string.Equals(header.Status, "Confirmed", StringComparison.OrdinalIgnoreCase) || header.Confirmed == true);
+                                        bool isDeliveryPending = string.Equals(item.Status, "Pending", StringComparison.OrdinalIgnoreCase);
+                                        bool isLocked = !isOrderConfirmed && isDeliveryPending;
+                                        string orderLink = hasHeader ? Url.Content($"~/order/all?highlightId={header.Id}") : "#";
+                                        string popoverContent = $"Order #{header?.Id ?? 0} is not confirmed.<br/><a href='{orderLink}' class='popover-link'>➜ Go to Order List & Confirm</a>";
+                                    }
+
+                                    <span class="d-inline-block" tabindex="0"
+                                          @if (isLocked)
+                                          {
+                                                    <text>
+                                                        data-bs-toggle="popover"
+                                                        data-bs-trigger="hover"
+                                                        data-bs-html="true"
+                                                        data-bs-placement="top"
+                                                        data-bs-custom-class="popover-custom"
+                                                        data-bs-title="Action Required"
+                                                        data-bs-delay='{"show":0, "hide":500}'
+                                                        data-bs-content="@popoverContent"
+                                                    </text>
+                                            }
+        >
+                                                <select class="form-select form-select-sm"
+                                                        onchange="updateStatus(@item.Id, this.value)"
+                                                        @(isLocked ? "disabled" : "")
+                                                        style="width: 140px; font-weight: 500; border-color: #dee2e6; @(isLocked ? "cursor: not-allowed; opacity: 0.6;" : "")">
+                                                    <option value="Pending" selected="@(item.Status == "Pending")">Pending</option>
+                                                    <option value="Shipped" selected="@(item.Status == "Shipped")">Shipped</option>
+                                                    <option value="Delivered" selected="@(item.Status == "Delivered")">Delivered</option>
+                                                    <option value="Returned" selected="@(item.Status == "Returned")">Returned</option>
+                                                    <option value="Cancelled" selected="@(item.Status == "Cancelled")">Cancelled</option>
+                                                </select>
+                                            </span>
                                 </td>
+
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary" type="button"
                                             data-bs-toggle="collapse"
@@ -63,7 +196,6 @@
                             <tr>
                                 <td colspan="6" class="p-0 border-0">
                                     <div class="collapse bg-light p-3 border-bottom" id="items-@item.Id">
-
                                         <h6 class="small text-uppercase text-muted fw-bold mb-2">Package Contents</h6>
                                         <table class="table table-sm table-bordered bg-white w-100 mb-2">
                                             <thead>
@@ -110,7 +242,6 @@
                                                 </span>
                                             </div>
                                         }
-
                                     </div>
                                 </td>
                             </tr>
@@ -131,23 +262,27 @@
 </div>
 
 <script>
-    function updateStatus(id, newStatus) {
-        // Show simple visual feedback (optional)
-
-        $.post('@Url.Action("UpdateStatus", "Shipment")',
-        {
-            deliveryId: id,
-            status: newStatus
-        })
-        .done(function (response) {
-            if (response.success) {
-                // Optional: Toast notification success
-            } else {
-                alert("Failed to update status: " + response.message);
-            }
-        })
-        .fail(function () {
-            alert("Server error occurred while updating status.");
+    document.addEventListener("DOMContentLoaded", function() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            popoverTriggerEl.addEventListener('show.bs.popover', function () {
+                popoverList.forEach(function(otherPopover) {
+                    if (otherPopover._element !== popoverTriggerEl) {
+                        otherPopover.hide();
+                    }
+                });
+            });
+            return new bootstrap.Popover(popoverTriggerEl, { html: true, trigger: 'hover focus' });
         });
+    });
+
+    function updateStatus(id, newStatus) {
+        $.post('@Url.Action("UpdateStatus", "Shipment")', { deliveryId: id, status: newStatus })
+        .done(function (response) {
+            if (!response.success) { alert("Failed: " + response.message); }
+        })
+        .fail(function () { alert("Server error."); });
     }
 </script>
+
+<script src="@Url.Content("~/js/delivery-manager.js")"></script>

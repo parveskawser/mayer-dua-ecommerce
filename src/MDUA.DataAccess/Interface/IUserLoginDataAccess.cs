@@ -40,6 +40,7 @@ namespace MDUA.DataAccess.Interface
         string GetTwoFactorSecretByUserId(int userId);
 
         void DisableTwoFactor(int userId);
-
+        void InvalidateAllSessions(int userId);
+        UserLogin GetByUsername(string username); // ✅ Add this
     }
 }

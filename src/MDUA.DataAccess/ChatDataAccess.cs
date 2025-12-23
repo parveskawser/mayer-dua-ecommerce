@@ -72,7 +72,6 @@ namespace MDUA.DataAccess
 
         public ChatSession GetSessionByUserId(int userId)
         {
-            // Fetches the most recent open session for a user
             string query = "SELECT TOP 1 * FROM ChatSession WHERE UserLoginId = @UserId AND IsActive = 1 ORDER BY LastMessageAt DESC";
             using (SqlCommand cmd = GetSQLCommand(query))
             {
@@ -131,9 +130,6 @@ namespace MDUA.DataAccess
 
         public long SaveMessage(ChatMessage message)
         {
-            // 👇 UPDATED QUERY: 
-            // This now updates the 'GuestName' in the ChatSession table 
-            // whenever a message is received from the user (IsFromAdmin = 0).
             string query = @"
                 INSERT INTO ChatMessage 
                 (ChatSessionId, SenderId, SenderName, MessageText, IsFromAdmin, IsRead, SentAt)
@@ -141,17 +137,18 @@ namespace MDUA.DataAccess
                 (@ChatSessionId, @SenderId, @SenderName, @MessageText, @IsFromAdmin, 0, GETDATE());
                 
                 -- Update the parent session's timestamp AND GuestName
-                UPDATE ChatSession 
-                SET 
-                    LastMessageAt = GETDATE(), 
-                    Status = 'Active',
-                    GuestName = CASE 
-                        -- Only update name if message is from User AND name is not empty
-                        WHEN @IsFromAdmin = 0 AND @SenderName IS NOT NULL AND LEN(@SenderName) > 0 
-                        THEN @SenderName 
-                        ELSE GuestName 
-                    END
-                WHERE Id = @ChatSessionId;
+              UPDATE ChatSession 
+SET 
+    LastMessageAt = GETDATE(),
+    GuestName = CASE 
+        WHEN @IsFromAdmin = 0 
+             AND @SenderName IS NOT NULL 
+             AND LEN(@SenderName) > 0 
+        THEN @SenderName 
+        ELSE GuestName 
+    END
+WHERE Id = @ChatSessionId;
+
 
                 SELECT CAST(SCOPE_IDENTITY() as bigint);";
 
@@ -176,7 +173,7 @@ namespace MDUA.DataAccess
                 // Manual List Filling to ensure independence if framework helpers aren't generic enough
                 List<ChatMessage> list = new List<ChatMessage>();
                 SqlDataReader reader;
-                SelectRecords(cmd, out reader); // Uses your BaseDataAccess method
+                SelectRecords(cmd, out reader); // Uses  BaseDataAccess method
 
                 using (reader)
                 {
@@ -246,7 +243,16 @@ namespace MDUA.DataAccess
             }
             return null;
         }
-
+        public ChatSession GetSessionById(int sessionId)
+        {
+            string query = "SELECT * FROM ChatSession WHERE Id = @Id";
+            using (SqlCommand cmd = GetSQLCommand(query))
+            {
+                AddParameter(cmd, pInt32("Id", sessionId));
+                // Reuse the helper in the class
+                return GetObject(cmd);
+            }
+        }
         private List<ChatSession> GetList(SqlCommand cmd)
         {
             SqlDataReader reader;
@@ -265,6 +271,23 @@ namespace MDUA.DataAccess
             return list;
         }
 
+
+        public void UpdateSession(ChatSession session)
+        {
+            string query = @"
+        UPDATE ChatSession 
+        SET Status = @Status, 
+            LastMessageAt = @LastMessageAt 
+        WHERE Id = @Id";
+
+            using (SqlCommand cmd = GetSQLCommand(query))
+            {
+                AddParameter(cmd, pInt32("Id", session.Id));
+                AddParameter(cmd, pNVarChar("Status", session.Status));
+                AddParameter(cmd, pDateTime("LastMessageAt", session.LastMessageAt));
+                ExecuteCommand(cmd);
+            }
+        }
         private void FillChatSession(ChatSession session, SqlDataReader reader)
         {
             session.Id = reader.GetInt32(reader.GetOrdinal("Id"));

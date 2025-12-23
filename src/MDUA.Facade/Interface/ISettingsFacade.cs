@@ -10,5 +10,7 @@ namespace MDUA.Facade.Interface
 
         Dictionary<string, int> GetDeliverySettings(int companyId);
         void SaveDeliverySettings(int companyId, int dhaka, int outside);
+        void ChangePassword(int userId, string oldPassword, string newPassword);
+        UserLogin GetUserById(int userId);
     }
 }

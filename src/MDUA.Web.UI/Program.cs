@@ -1,15 +1,23 @@
-﻿using MDUA.Facade;
+﻿using DotNetEnv;
+using MDUA.Facade;
 using MDUA.Facade.Interface;
-using MDUA.Web.UI.Hubs; // ✅ Required for SupportHub
+
+using MDUA.Web.UI.Hubs;
+using MDUA.Web.UI.Services;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
-
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
+
+// 2. Load nvironment Variables into Configuration
+builder.Configuration.AddEnvironmentVariables();
 System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 // 1. Register Services and Facades
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
 
 // ✅ NEW: Add SignalR Service
 builder.Services.AddSignalR();

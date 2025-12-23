@@ -4,8 +4,18 @@
 {
     @foreach (var p in Model)
     {
-        <tr data-product-row-id="@p.Id">
-            <td class="fw-semibold" data-product-name="@p.ProductName">@p.ProductName</td>
+        /* --------------------------------------------------------- */
+        /* 1. MAIN PRODUCT ROW                                       */
+        /* --------------------------------------------------------- */
+        <tr data-product-row-id="@p.Id" class="@(p.Variants != null && p.Variants.Any() ? "table-active border-bottom-0" : "")">
+            <td class="fw-semibold" data-product-name="@p.ProductName">
+                @p.ProductName
+                @if (p.Variants != null && p.Variants.Any())
+                {
+                    <br />
+                    <span class="badge bg-info text-dark" style="font-size: 0.65rem;">@p.Variants.Count Variants Found</span>
+                }
+            </td>
 
             <td><span class="pill-tag">@(p.CategoryName ?? "-")</span></td>
 
@@ -14,11 +24,7 @@
             <td class="small">
                 @if (!string.IsNullOrEmpty(p.Slug))
                 {
-                    <a href="/product/@p.Slug"
-                       target="_blank"
-                       class="text-decoration-none"
-                       style="color: #6366f1;"
-                       title="Open /product/@p.Slug in new tab">
+                    <a href="/product/@p.Slug" target="_blank" class="text-decoration-none" style="color: #6366f1;" title="Open /product/@p.Slug in new tab">
                         @p.Slug <span style="font-size: 0.8em;">↗</span>
                     </a>
                 }
@@ -47,14 +53,17 @@
                     @(p.IsActive ? "Active" : "Inactive")
                 </button>
             </td>
+
             <td class="text-end">
-                <button class="btn btn-sm btn-manage js-expand-actions"
-                        data-product-id="@p.Id">
+                <button class="btn btn-sm btn-manage js-expand-actions" data-product-id="@p.Id">
                     Manage <span class="ms-1 text-muted small">&#9660;</span>
                 </button>
             </td>
         </tr>
 
+        /* --------------------------------------------------------- */
+        /* 2. ACTION DRAWER (Placed BEFORE Variants List)            */
+        /* --------------------------------------------------------- */
         <tr class="action-drawer-row d-none" id="drawer-@p.Id">
             <td colspan="7">
                 <div class="p-3 border rounded bg-light">
@@ -74,6 +83,109 @@
                 </div>
             </td>
         </tr>
+
+        /* --------------------------------------------------------- */
+        /* 3. INLINE VARIANTS FOR SEARCH RESULTS                     */
+        /* --------------------------------------------------------- */
+        @if (p.Variants != null && p.Variants.Any())
+        {
+            <tr class="bg-light border-top-0">
+                <td colspan="7" class="p-0">
+                    <div class="ps-5 pe-3 py-2">
+                        <table class="table table-sm table-borderless mb-0">
+                            <thead class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
+                                <tr>
+                                    <th style="width: 30%;">Variant Name</th>
+                                    <th style="width: 20%;">SKU</th>
+                                    <th style="width: 20%;">Price</th>
+                                    <th style="width: 15%;">Stock</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="align-middle">
+                                @foreach (var v in p.Variants)
+                                {
+                                    <tr style="font-size: 0.9rem;" data-variant-id="@v.Id">
+                                        <td class="text-dark">
+                                            <span class="text-muted me-2">↳</span>@v.VariantName
+                                        </td>
+
+                                        <td class="text-muted" data-col="sku">
+                                            <span class="display-value">@(string.IsNullOrEmpty(v.Sku) ? "-" : v.Sku)</span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm edit-input"
+                                                   value="@(string.IsNullOrEmpty(v.Sku) ? "-" : v.Sku)"
+                                                   style="display:none; width: 100px;">
+                                        </td>
+
+                                        <td class="fw-bold text-dark" data-col="price">
+                                            <span class="display-value">Tk. @(v.VariantPrice?.ToString("0.00") ?? "-")</span>
+                                            <input type="number" class="form-control form-control-sm edit-input" value="@v.VariantPrice" style="display:none; width: 100px;">
+                                        </td>
+
+                                        <td>
+                                            <span class="badge @(v.StockQty > 0 ? "bg-success" : "bg-danger")">
+                                                @v.StockQty
+                                            </span>
+                                        </td>
+
+                                        <td class="text-end text-nowrap">
+                                            <div class="d-flex justify-content-end gap-2">
+
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary js-manage-var-images d-flex align-items-center justify-content-center position-relative"
+                                                        data-variant-id="@v.Id"
+                                                        data-product-id="@p.Id"
+                                                        title="Variant Images"
+                                                        style="width: 32px; height: 32px; padding: 0;">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image" viewBox="0 0 16 16">
+                                                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0" />
+                                                        <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12" />
+                                                    </svg>
+
+                                                    @if (v.ImageCount > 0)
+                                                    {
+                                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                              style="font-size: 0.6rem; padding: 0.25em 0.4em;">
+                                                            @v.ImageCount
+                                                            <span class="visually-hidden">images</span>
+                                                        </span>
+                                                    }
+                                                </button>
+
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-warning js-edit-variant d-flex align-items-center justify-content-center"
+                                                        data-variant-id="@v.Id"
+                                                        data-product-id="@p.Id"
+                                                        title="Edit Variant"
+                                                        style="width: 32px; height: 32px; padding: 0;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                                                    </svg>
+                                                </button>
+
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger js-delete-variant d-flex align-items-center justify-content-center"
+                                                        data-variant-id="@v.Id"
+                                                        data-product-id="@p.Id"
+                                                        title="Delete Variant"
+                                                        style="width: 32px; height: 32px; padding: 0;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        }
     }
 }
 else

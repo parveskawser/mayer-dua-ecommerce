@@ -80,7 +80,8 @@
                             string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
                             bool isToggleDisabled = order.Status == "Cancelled" ||
                             order.Status == "Delivered" ||
-                            order.Status == "Returned";
+                            order.Status == "Returned" ||
+                            order.Status == "Shipped";
 
                             // ✅ REFINED LOGIC: Explicitly handle Cancelled
                             string statusBadgeClass = "bg-secondary-subtle text-dark"; // Default

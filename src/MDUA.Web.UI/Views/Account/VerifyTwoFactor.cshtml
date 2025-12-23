@@ -1,6 +1,12 @@
-﻿@{
+﻿@model MDUA.Web.UI.Controllers.AccountController.VerifyTwoFactorVm
+@{
     Layout = null;
     ViewData["Title"] = "Verify Identity";
+
+    // ✅ RETRIEVE CONFIGURATION
+    string formAction = ViewData["FormAction"] as string ?? "VerifyTwoFactor";
+    string backAction = ViewData["BackAction"] as string ?? "LogIn";
+    string backText = ViewData["BackText"] as string ?? "Back to Login";
 }
 
 <!DOCTYPE html>
@@ -133,9 +139,9 @@
                 To protect your account, please enter the 6-digit code from your authenticator app.
             </p>
 
-            <form asp-action="VerifyTwoFactor" method="post" autocomplete="off">
+            <form asp-action="@formAction" method="post" autocomplete="off">
                 @Html.AntiForgeryToken()
-
+                <input type="hidden" asp-for="TargetUserId" />
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="alert alert-danger py-2 small rounded-3 mb-3 text-center shadow-sm border-0">

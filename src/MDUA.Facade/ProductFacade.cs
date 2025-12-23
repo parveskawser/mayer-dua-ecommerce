@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static MDUA.Entities.ProductVariant;
-using System.Net; 
+using System.Net;
 
 namespace MDUA.Facade
 {
@@ -165,7 +165,7 @@ namespace MDUA.Facade
                     }
                 }
 
-               
+
 
                 // C. Pricing Logic
                 decimal vPrice = v.VariantPrice ?? 0;
@@ -389,7 +389,7 @@ namespace MDUA.Facade
                     ProductId = (int)productId,
 
                     VariantName = "Standard", // Internal name for simple products
-                    VariantPrice = (decimal)( product.BasePrice), // Fallback to Base Price
+                    VariantPrice = (decimal)(product.BasePrice), // Fallback to Base Price
 
                     IsActive = true,
 
@@ -553,15 +553,15 @@ namespace MDUA.Facade
         {
             product.UpdatedBy = username;
             product.UpdatedAt = DateTime.UtcNow;// [cite_start]// [cite: 179]
-                     return _ProductDataAccess.Update(product);
+            return _ProductDataAccess.Update(product);
         }
         public long UpdateVariantPrice(int variantId, decimal newPrice, string newSku)
         {
-            return _variantPriceStockDataAccess.UpdatePrice(variantId, newPrice,  newSku);
+            return _variantPriceStockDataAccess.UpdatePrice(variantId, newPrice, newSku);
         }
         public long DeleteVariant(int variantId)
         {
-         
+
             return _ProductVariantDataAccess.Delete(variantId);
         }
 
@@ -634,7 +634,7 @@ namespace MDUA.Facade
                                                  ?? new List<AttributeName>();
             result.ReorderLevel = product?.ReorderLevel ?? 0;
             return result;
-                }
+        }
 
         public List<AttributeName> GetMissingAttributesForVariant(int productId, int variantId)
         {
@@ -887,8 +887,43 @@ namespace MDUA.Facade
             {
                 return new ProductList();
             }
-            return _ProductDataAccess.SearchProducts(searchTerm);
+
+            // 1. Get matching products from Database
+            var products = _ProductDataAccess.SearchProducts(searchTerm);
+
+            // 2. Filter Variants inside the results
+            foreach (var product in products)
+            {
+                if (product.IsVariantBased == true)
+                {
+                    // Fetch ALL variants for this product first
+                    var allVariants = _ProductVariantDataAccess.GetProductVariantsByProductId(product.Id);
+
+                    // Determine if the search matched the Parent Product Name
+                    bool isParentMatch = product.ProductName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    if (isParentMatch)
+                    {
+                        // SCENARIO 1: User searched "T-Shirt" (Parent Name).
+                        // Action: Show ALL variants (S, M, L) so they see full availability.
+                        product.Variants = allVariants;
+                    }
+                    else
+                    {
+                        // SCENARIO 2: User searched "Small" (Variant Name).
+                        // Action: Filter list to show ONLY "Small". Hide "Medium" and "Large".
+                        product.Variants = allVariants.Where(v =>
+                            (!string.IsNullOrEmpty(v.VariantName) && v.VariantName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                            (!string.IsNullOrEmpty(v.SKU) && v.SKU.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                        ).ToList();
+                    }
+                }
+            }
+
+            return products;
         }
+
+
         #endregion
 
 
@@ -1088,6 +1123,6 @@ namespace MDUA.Facade
             return _variantPriceStockDataAccess.GetLowStockVariants(topN);
         }
 
-      
+
     }
 }

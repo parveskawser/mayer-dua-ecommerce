@@ -5,18 +5,22 @@
     --accent: #f59e0b; /* Amber/Orange for urgency */
     --text-main: #1f2937; /* Dark Gray */
     --text-muted: #6b7280;
-    --bg-body: #f3f4f6; /* Light Gray Background */
+    /* --- Fluffy 3D Variables --- */
+    --bg-body: #f0f4f8; /* Slightly cooler/softer gray for contrast */
     --bg-card: #ffffff;
-    --border-color: #e5e7eb;
+    --border-color: #e2e8f0;
     --success: #10b981;
     --error: #ef4444;
-    /* --- Spacing & Radius --- */
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    /* --- Spacing & Radius (Increased for Fluffy look) --- */
+    --radius-md: 16px; /* Softer corners */
+    --radius-lg: 24px; /* Very round corners for cards */
     --container-width: 1100px;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    /* --- Fluffy 3D Shadows --- */
+    --shadow-sm: 4px 4px 8px rgba(174, 174, 192, 0.2), -4px -4px 8px #ffffff;
+    --shadow-md: 8px 8px 16px rgba(174, 174, 192, 0.2), -8px -8px 16px #ffffff;
+    --shadow-lg: 14px 14px 28px rgba(174, 174, 192, 0.25), -14px -14px 28px #ffffff;
+    --shadow-inset: inset 6px 6px 12px rgba(174, 174, 192, 0.2), inset -6px -6px 12px #ffffff;
+    --shadow-btn: 0 10px 20px rgba(37, 99, 235, 0.3), 0 6px 6px rgba(0,0,0,0.1), inset 0 -4px 2px rgba(0,0,0,0.1);
 }
 
 /* --- Global Reset & Typography --- */
@@ -30,7 +34,7 @@ body {
     color: var(--text-main);
     margin: 0;
     padding: 0;
-    line-height: 1.5;
+    line-height: 1.6; /* Increased breathability */
     -webkit-font-smoothing: antialiased;
 }
 
@@ -44,48 +48,56 @@ body {
 
 /* --- Header --- */
 .header {
-    background: var(--bg-card);
+    background: rgba(255, 255, 255, 0.85); /* Semi-transparent */
+    backdrop-filter: blur(12px); /* Frosted glass effect */
     padding: 1rem 0;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     text-align: center;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
 }
 
 .logo {
     height: 50px;
     width: auto;
     object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
 }
 
 /* --- Sections Common --- */
 section {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .card {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: 2rem;
+    box-shadow: var(--shadow-lg); /* Fluffy floating effect */
+    padding: 2.5rem;
     overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.6); /* Subtle highlight border */
 }
 
 /* --- Hero / Combo Info --- */
 .combo-info {
     text-align: center;
-    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid #fff;
     margin-top: 2rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
 }
 
     .combo-info h1 {
-        font-size: 2.25rem;
+        font-size: 2.5rem;
         font-weight: 800;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
         color: #111827;
         line-height: 1.2;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
     }
 
     .combo-info p {
@@ -99,39 +111,46 @@ section {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
+    padding: 0.85rem 2rem;
+    border-radius: 50px; /* Pill shape for fluffy feel */
+    font-weight: 700;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
     cursor: pointer;
     border: none;
+    letter-spacing: 0.5px;
 }
 
 .combo-btn {
-    background-color: var(--primary);
+    background: linear-gradient(145deg, #3b82f6, #2563eb);
     color: white;
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    box-shadow: var(--shadow-btn);
 }
 
     .combo-btn:hover {
-        background-color: var(--primary-hover);
-        transform: translateY(-1px);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4), inset 0 -4px 2px rgba(0,0,0,0.1);
+    }
+
+    .combo-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 5px 10px rgba(37, 99, 235, 0.3);
     }
 
 .status-btn {
     background-color: white;
     color: var(--text-main);
-    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
     margin-left: 10px;
 }
 
     .status-btn:hover {
-        background-color: #f9fafb;
-        border-color: #d1d5db;
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
     }
 
-/* --- Scarcity Bar --- */
+/* --- Scarcity Bar (3D Tube Look) --- */
 .scarcity-section {
     text-align: center;
     max-width: 600px;
@@ -140,12 +159,13 @@ section {
 }
 
 .stock-bar {
-    height: 8px;
-    background: #e5e7eb;
+    height: 14px; /* Thicker */
+    background: #e2e8f0;
     border-radius: 99px;
-    margin: 8px auto;
+    margin: 12px auto;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px #ffffff; /* Inner shadow for tube effect */
 }
 
 .stock-fill {
@@ -153,35 +173,41 @@ section {
     background: linear-gradient(90deg, #f59e0b, #ef4444);
     border-radius: 99px;
     transition: width 1s ease-in-out;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); /* Glow */
 }
 
 .hurry-text {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--error);
-    font-weight: 600;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
     animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
+        transform: scale(1);
     }
 
     50% {
-        opacity: 0.6;
+        opacity: 0.8;
+        transform: scale(0.98);
     }
 }
 
 /* --- Price Section --- */
 .price-section {
     text-align: center;
+    margin-top: 1rem;
 }
 
 .price {
-    font-size: 2.5rem;
-    font-weight: 800;
+    font-size: 2.75rem;
+    font-weight: 900;
     color: var(--primary);
     margin: 0;
+    text-shadow: 2px 4px 6px rgba(37, 99, 235, 0.15); /* 3D Text */
 }
 
 .old-price {
@@ -189,18 +215,19 @@ section {
     color: var(--text-muted);
     text-decoration: line-through;
     margin-left: 0.5rem;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .offer-text {
     background: #ecfdf5;
     color: #065f46;
     display: inline-block;
-    padding: 4px 12px;
+    padding: 6px 16px;
     border-radius: 99px;
     font-size: 0.875rem;
-    font-weight: 600;
-    margin-top: 0.5rem;
+    font-weight: 700;
+    margin-top: 0.75rem;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.15);
 }
 
 /* --- Images & Gallery --- */
@@ -211,8 +238,13 @@ section {
     border-radius: var(--radius-lg);
     display: block;
     margin: 0 auto;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg); /* Floating image */
+    transition: transform 0.3s ease;
 }
+
+    .product-image img.main-img:hover {
+        transform: scale(1.01);
+    }
 
 .product-gallery {
     max-width: 800px;
@@ -225,12 +257,15 @@ section {
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-md);
+    background: #fff;
+    padding: 10px; /* White frame */
 }
 
 .slide {
     display: none;
     width: 100%;
     height: auto;
+    border-radius: 12px;
 }
 
     .slide.active {
@@ -241,73 +276,97 @@ section {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.9);
     border: none;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.2rem;
-    color: var(--text-main);
-    transition: background 0.2s;
+    color: var(--primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
 }
 
 .prev {
-    left: 10px;
+    left: 20px;
 }
 
 .next {
-    right: 10px;
+    right: 20px;
 }
 
     .prev:hover, .next:hover {
         background: white;
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.15);
     }
 
 /* --- Description & Testimonials --- */
 .description, .testimonials {
     max-width: 800px;
-    margin: 2rem auto;
+    margin: 3rem auto;
 }
 
     .description h2, .testimonials h2 {
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        color: #374151;
     }
 
 .detail-row {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+    background: white;
+    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm); /* Individual floating rows */
+    transition: transform 0.2s;
 }
 
-    .detail-row:last-child {
-        border-bottom: none;
+    .detail-row:hover {
+        transform: translateX(5px);
     }
 
 .review {
-    background: #f9fafb;
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    border-left: 4px solid var(--accent);
+    background: #fff;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    border: 1px solid #f3f4f6;
 }
+    /* Quote decoration */
+    .review::before {
+        content: '"';
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-size: 4rem;
+        color: #e5e7eb;
+        font-family: serif;
+        line-height: 1;
+    }
 
 .review-text {
     font-style: italic;
     color: var(--text-main);
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 .reviewer {
-    font-weight: bold;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95rem;
     margin: 0;
 }
 
@@ -324,15 +383,16 @@ section {
 
     .order-section h2 {
         text-align: center;
-        font-size: 2rem;
-        margin-bottom: 2rem;
+        font-size: 2.25rem;
+        margin-bottom: 2.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
 /* The Grid Container */
 .order-container {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
     grid-template-areas:
         "billing summary"
         "payment summary";
@@ -343,22 +403,22 @@ section {
 .billing {
     grid-area: billing;
     background: var(--bg-card);
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255,255,255,0.8);
 }
 
 /* Right Side: Summary (Sticky) */
 .order-summary {
     grid-area: summary;
-    background: white;
-    padding: 2rem;
+    background: var(--bg-card);
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255,255,255,0.8);
     position: sticky;
-    top: 100px;
+    top: 110px;
     align-self: flex-start;
 }
 
@@ -366,15 +426,16 @@ section {
 .payment-section {
     grid-area: payment;
     background: var(--bg-card);
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255,255,255,0.8);
+    margin-top: 0; /* Override generic margin */
 }
 
     .payment-section h3 {
         margin-top: 0;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         font-size: 1.5rem;
         color: var(--text-main);
         text-align: center;
@@ -383,31 +444,31 @@ section {
 .payment-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
 .payment-option {
     position: relative;
     cursor: pointer;
-    border: 2px solid var(--border-color);
+    border: none; /* Removed border for shadow style */
     border-radius: var(--radius-md);
-    padding: 1rem;
-    background: white;
+    padding: 1.5rem 1rem;
+    background: #f8fafc; /* Slightly darker than white for contrast */
+    box-shadow: 5px 5px 10px #e2e8f0, -5px -5px 10px #ffffff; /* Neumorphic float */
     transition: all 0.3s ease;
     display: flex;
-    flex-direction: column; /* Stack vertically by default */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0; /* Gap handled by image margin */
+    gap: 0.5rem;
     text-align: center;
-    min-height: 100px;
+    min-height: 110px;
 }
 
     .payment-option:hover {
-        border-color: var(--primary);
-        background: #f0f9ff;
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 8px 8px 16px #e2e8f0, -8px -8px 16px #ffffff;
     }
 
     /* Radio Button Positioning */
@@ -417,8 +478,9 @@ section {
         margin: 0;
         cursor: pointer;
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 12px;
+        right: 12px;
+        box-shadow: none; /* Reset shadow for radio */
     }
 
     .payment-option label {
@@ -435,308 +497,134 @@ section {
     }
 
     .payment-option.selected {
-        border-color: var(--primary);
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        background: #fff;
+        /* Inset shadow creates the "pressed" 3D look */
+        box-shadow: inset 4px 4px 8px #dce3f0, inset -4px -4px 8px #ffffff;
+        border: 2px solid var(--primary);
     }
 
-/* --- Payment Logos (Official Images) --- */
+/* --- Payment Logos --- */
 .payment-logo {
-    height: 35px; /* Fixed height for consistency */
-    width: auto;
-    object-fit: contain;
-    margin-bottom: 5px; /* Space between logo and text */
-    display: block;
-}
-
-/* Confirm Button - In Payment Section */
-.payment-section .submit-btn {
-    width: 100%;
-    background-color: var(--primary);
-    color: white;
-    padding: 1rem;
-    font-size: 1.1rem;
-    margin-top: 1rem;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
-}
-
-    .payment-section .submit-btn:hover {
-        background-color: var(--primary-hover);
-    }
-
-    .payment-section .submit-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-
-/* Remove old submit button from billing section */
-.billing .submit-btn {
-    display: none;
-}
-
-/* =========================================
-   PAYMENT SECTION DESIGN
-   ========================================= */
-
-/* 1. Main Container */
-.payment-section {
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 16px;
-    /* Soft shadow for depth */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f3f4f6;
-    margin-top: 25px;
-}
-
-    .payment-section h3 {
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 25px;
-        font-size: 1.25rem;
-        color: #111827;
-        font-weight: 700;
-    }
-
-/* 2. Payment Option Cards Grid */
-.payment-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-/* Individual Card */
-.payment-option {
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 15px 5px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    background: #fff;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 90px;
-}
-
-    /* Hover State */
-    .payment-option:hover {
-        border-color: #cbd5e1;
-        transform: translateY(-2px);
-    }
-
-    /* Selected State (Blue Border & Background) */
-    .payment-option.selected {
-        border-color: #2563eb; /* Primary Blue */
-        background-color: #eff6ff; /* Light Blue Tint */
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
-    }
-
-/* Labels & Icons */
-.payment-logo {
-    height: 32px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     margin-bottom: 8px;
     display: block;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
 }
 
-.payment-option label {
-    margin: 0;
-    cursor: pointer;
+/* Submit Button Logic */
+.payment-section .submit-btn {
     width: 100%;
-}
-
-.payment-option span {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #374151;
-    line-height: 1.2;
-    display: block;
-}
-
-/* Radio Button Positioning inside Card */
-.payment-option input[type="radio"] {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    accent-color: #2563eb;
-    width: 16px;
-    height: 16px;
-    margin: 0;
+    background: linear-gradient(145deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 1.1rem;
+    font-size: 1.15rem;
+    margin-top: 1.5rem;
+    border: none;
+    border-radius: 50px;
     cursor: pointer;
+    font-weight: 800;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-btn);
+}
+
+    .payment-section .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4), inset 0 -4px 2px rgba(0,0,0,0.1);
+    }
+
+    .payment-section .submit-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+.billing .submit-btn {
+    display: none;
 }
 
 /* 3. Payment Details Area (The Toggle Section) */
 #payment-details-area {
-    background-color: #f9fafb; /* Light Gray Background */
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    background-color: #f8fafc;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: inset 4px 4px 8px #e2e8f0, inset -4px -4px 8px #ffffff; /* Pressed in look */
+    border: 1px solid #f1f5f9;
 }
 
 /* 4. Mode Selection (Radio List) */
-#payment-mode-selector {
+#payment-mode-selector label.small {
     margin-bottom: 15px;
-}
-
-    #payment-mode-selector label.small {
-        display: block;
-        margin-bottom: 10px;
-        color: #6b7280;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-    }
-
-/* Flex container for radio rows */
-.d-flex.gap-3 {
-    display: flex;
-    flex-direction: column; /* Stack vertically for clarity */
-    gap: 12px;
+    color: #64748b;
 }
 
 .form-check {
     display: flex;
     align-items: center;
     background: #fff;
-    padding: 10px 15px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    transition: border-color 0.2s;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    box-shadow: 3px 3px 6px #e2e8f0, -3px -3px 6px #ffffff; /* Floating pill */
+    margin-bottom: 10px;
+    transition: all 0.2s;
 }
 
     .form-check:hover {
-        border-color: #cbd5e1;
+        transform: scale(1.01);
     }
 
 .form-check-input {
-    width: 18px;
-    height: 18px;
-    margin-right: 12px;
-    accent-color: #2563eb;
-    cursor: pointer;
-    margin-top: 0; /* Reset */
-}
-
-.form-check-label {
-    font-size: 0.95rem;
-    color: #111827;
-    cursor: pointer;
-    font-weight: 500;
-    margin: 0;
+    width: 20px;
+    height: 20px;
+    margin-right: 15px;
+    box-shadow: none; /* Default radio override */
 }
 
 /* 5. Manual Input Fields */
 #manual-payment-fields {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed #d1d5db;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #cbd5e1;
 }
 
 .alert-info {
     background-color: #eff6ff;
-    border-left: 4px solid #2563eb;
+    border-left: 5px solid #2563eb;
     color: #1e40af;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    line-height: 1.4;
-}
-
-#manual-payment-fields label {
-    font-size: 0.9rem;
-    color: #374151;
-    margin-bottom: 8px;
-    font-weight: 600;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.05);
 }
 
 #trx-id-input {
     width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #d1d5db;
-    border-radius: 8px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
     font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: #fff;
-    letter-spacing: 1px; /* Make TrxID easier to read */
+    background: #f1f5f9;
+    /* Deep input field look */
+    box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+    transition: all 0.2s;
 }
 
     #trx-id-input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
 
-/* 6. Submit Button */
-.submit-btn {
-    width: 100%;
-    background-color: #2563eb; /* Brand Blue */
-    color: white;
-    border: none;
-    padding: 16px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-}
-
-    .submit-btn:hover {
-        background-color: #1d4ed8; /* Darker Blue */
-        transform: translateY(-1px);
-    }
-
-    .submit-btn:active {
-        transform: scale(0.98);
-    }
-
-    .submit-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-    }
-
-/* Mobile Responsiveness */
-@media (max-width: 480px) {
-    .payment-options {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
-    }
-}
 /* --- Form Elements --- */
 label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.95rem;
     color: #374151;
-    margin-top: 1rem;
+    margin-top: 1.2rem;
 }
 
 .required-star {
@@ -745,23 +633,25 @@ label {
 
 input, select, textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
     font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
     font-family: inherit;
-    background: #fff;
+    background: #f1f5f9;
+    /* Fluffy Inset Shadow for Inputs */
+    box-shadow: inset 3px 3px 6px #cbd5e1, inset -3px -3px 6px #ffffff;
+    transition: all 0.2s;
 }
 
     input:focus, select:focus, textarea:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); /* Soft focus ring */
     }
 
     input.input-error, select.input-error, textarea.input-error {
-        border-color: var(--error) !important;
+        box-shadow: inset 3px 3px 6px #fecaca, inset -3px -3px 6px #ffffff;
         background-color: #fef2f2;
     }
 
@@ -769,69 +659,82 @@ input, select, textarea {
 .variant-chips-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
 }
 
 .variant-chip {
-    padding: 0.6rem 1.2rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: var(--text-main);
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s;
-    user-select: none;
+    /* Floating chip */
+    box-shadow: 4px 4px 8px #cbd5e1, -4px -4px 8px #ffffff;
 }
 
     .variant-chip:hover {
-        border-color: var(--primary);
-        background: #eff6ff;
+        transform: translateY(-2px);
     }
 
     .variant-chip.selected {
-        background: var(--text-main);
+        background: var(--primary);
         color: white;
-        border-color: var(--text-main);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        /* Pressed state */
+        box-shadow: inset 3px 3px 6px rgba(0,0,0,0.2), inset -3px -3px 6px rgba(255,255,255,0.2);
+    }
+
+    .variant-chip.disabled {
+        opacity: 0.5;
+        box-shadow: none;
+        background: #e2e8f0;
+        pointer-events: none;
     }
 
 /* --- Quantity Controls --- */
 .qty-row {
-    margin-top: 1.5rem;
-    background: #f3f4f6;
+    margin-top: 2rem;
+    background: #f1f5f9;
     padding: 1rem;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    box-shadow: inset 4px 4px 8px #e2e8f0, inset -4px -4px 8px #ffffff;
 }
 
 .quantity-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
     .quantity-wrapper button {
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%; /* Round buttons */
+        border: none;
         background: white;
         cursor: pointer;
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 3px 3px 6px #cbd5e1, -3px -3px 6px #ffffff;
+        color: var(--primary);
+        transition: all 0.2s;
     }
 
         .quantity-wrapper button:hover {
-            background: #f9fafb;
-            border-color: var(--primary);
-            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .quantity-wrapper button:active {
+            box-shadow: inset 2px 2px 4px #cbd5e1, inset -2px -2px 4px #ffffff;
         }
 
 #quantity {
@@ -839,30 +742,26 @@ input, select, textarea {
     text-align: center;
     border: none;
     background: transparent;
-    font-weight: bold;
-    font-size: 1.1rem;
+    font-weight: 800;
+    font-size: 1.25rem;
     padding: 0;
+    box-shadow: none !important; /* Remove input shadow for this display only */
 }
-/* Add this to combo.css */
-.variant-chip.disabled {
-    opacity: 0.4;
-    pointer-events: none; /* Prevents clicking */
-    background-color: #f3f4f6;
-    border-color: #e5e7eb;
-    color: #9ca3af;
-    text-decoration: line-through;
-}
+
 /* --- Receipt Table --- */
 .receipt-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
     .receipt-table th, .receipt-table td {
-        padding: 0.75rem 0;
+        padding: 1rem;
         text-align: right;
-        border-bottom: 1px dashed #e5e7eb;
+        border-bottom: 1px solid #f1f5f9;
     }
 
         .receipt-table th:first-child, .receipt-table td:first-child {
@@ -870,20 +769,26 @@ input, select, textarea {
         }
 
     .receipt-table tfoot th {
-        border-top: 2px solid #374151;
+        border-top: 2px dashed #cbd5e1;
         color: #111827;
-        font-size: 1.1rem;
-        padding-top: 1rem;
+        font-size: 1.25rem;
+        padding-top: 1.5rem;
         border-bottom: none;
+        background: #f8fafc;
     }
 
 #order-variant-image-holder {
-    background: #f9fafb;
+    background: #fff;
     padding: 1rem;
     border-radius: var(--radius-md);
-    border: 1px solid #e5e7eb;
-    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
+
+    #order-variant-image-holder img {
+        border-radius: 8px;
+    }
 
 /* Hide mobile image holder on Desktop */
 #mobile-order-variant-image-holder {
@@ -899,26 +804,30 @@ input, select, textarea {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px); /* stronger blur */
 }
 
 .modal-content {
     background-color: #fff;
     margin: 10% auto;
-    padding: 2rem;
-    border-radius: var(--radius-lg);
+    padding: 3rem;
+    border-radius: 30px; /* Very round */
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid white;
+    text-align: center;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     text-transform: uppercase;
     color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .status-confirmed {
@@ -933,13 +842,14 @@ input, select, textarea {
     background: var(--error);
 }
 
-/* Force autofill background to match design */
+/* Force autofill background to match fluffy design */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-box-shadow: 0 0 0 30px #f1f5f9 inset !important;
     -webkit-text-fill-color: var(--text-main) !important;
+    border-radius: 12px;
 }
 
 /* --- Responsive Design (Mobile) --- */
@@ -1020,68 +930,67 @@ input:-webkit-autofill:active {
     }
 }
 
-
-/* Centers the Title */
+/* Video Section */
 .video-section h2 {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    color: #374151;
 }
 
-/* Centers the Video Player */
 .video-container {
     display: flex;
     position: center;
-    justify-content: center; /* This centers the iframe horizontally */
+    justify-content: center;
     align-items: center;
     width: 100%;
 }
 
-    /*Sets the Size of the Video */
     .video-container iframe {
-        width: 60%; /* Your requested width */
-        height: 300px; /* Your requested height */
-        border-radius: 8px; /* Optional: Makes corners rounded */
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Optional: Adds a subtle shadow */
+        width: 60%;
+        height: 350px;
+        border-radius: 20px; /* Rounder video */
+        box-shadow: var(--shadow-lg); /* Floating video */
+        border: 4px solid white;
     }
 
-/* MOBILE FIX: On phones, 60% is too small, so we make it 95% */
 @media (max-width: 768px) {
     .video-container iframe {
         width: 95%;
-        height: 250px; /* Slightly smaller height for mobile */
+        height: 250px;
     }
 }
 
 footer {
     text-align: center;
-    padding: 20px 0; /* Adds vertical spacing */
-    width: 100%; /* Ensures it spans the full width of the page */
+    padding: 3rem 0;
+    width: 100%;
+    color: var(--text-muted);
 }
 
-    /* Optional: Removes default margins from the paragraph for better spacing */
     footer p {
         margin: 0;
     }
 
 /* ==================================================
-SCROLL TO TOP (PROGRESS RING)
+SCROLL TO TOP (Soft Bubble)
 ================================================== */
 .progress-wrap {
     position: fixed;
-    right: 35px;
-    bottom: 100px;
-    height: 50px;
-    width: 50px;
+    right: 130px;
+    bottom: 30px;
+    height: 54px;
+    width: 54px;
     cursor: pointer;
     display: block;
-    border-radius: 50px;
-    box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.1); /* Light blue track */
+    border-radius: 50%;
+    box-shadow: 6px 6px 12px rgba(174, 174, 192, 0.4), -6px -6px 12px #ffffff; /* 3D float */
     z-index: 10000;
     opacity: 0;
     visibility: hidden;
     transform: translateY(15px);
-    transition: all 200ms linear;
-    background-color: rgba(217, 212, 212, 0.75);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: #f0f4f8;
 }
 
     .progress-wrap.active-progress {
@@ -1090,30 +999,33 @@ SCROLL TO TOP (PROGRESS RING)
         transform: translateY(0);
     }
 
-    /* The SVG Circle Logic */
     .progress-wrap svg path {
         fill: none;
     }
 
     .progress-wrap svg.progress-circle path {
-        stroke: var(--primary); /* Uses your existing blue */
+        stroke: var(--primary);
         stroke-width: 4;
         box-sizing: border-box;
         transition: all 200ms linear;
     }
 
-    /* The Arrow Icon */
     .progress-wrap i {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 20px;
+        font-size: 22px;
         color: var(--primary);
-        transition: all 200ms linear;
     }
 
-    .progress-wrap:hover i {
-        transform: translate(-50%, -60%); /* Slight jump effect on hover */
-        color: var(--primary-hover);
+    .progress-wrap:hover {
+        transform: translateY(-5px);
     }
+/* --- Hide Scroll to Top on Mobile --- */
+@media (max-width: 768px) {
+    .progress-wrap {
+        display: none !important;
+        pointer-events: none;
+    }
+}

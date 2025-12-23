@@ -39,5 +39,6 @@ namespace MDUA.DataAccess.Interface
         Delivery Get(int id);
         IList<Delivery> LoadAllWithDetails(); // This specific method fetches the joined data
         int Update(Delivery delivery);
+
     }	
 }

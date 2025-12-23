@@ -19,10 +19,11 @@ namespace MDUA.Facade.Interface
 
         /// Retrieves the full conversation history for a specific session.
         List<ChatMessage> GetChatHistory(int sessionId);
+        void UpdateSessionStatus(int sessionId, string newStatus);
 
-       
+
         /// For Admins: Gets a list of all currently active/open chat sessions.
- 
+
         List<ChatSession> GetActiveSessionsForAdmin();
 
         /// Marks messages as read.
@@ -30,5 +31,6 @@ namespace MDUA.Facade.Interface
         /// If readerIsAdmin = false, it marks admin messages as read.
         void MarkMessagesAsRead(int sessionId, bool readerIsAdmin);
         ChatSession GetSessionByGuid(Guid sessionGuid);
+        ChatSession GetSessionById(int sessionId); //-- Add This Line
     }
 }

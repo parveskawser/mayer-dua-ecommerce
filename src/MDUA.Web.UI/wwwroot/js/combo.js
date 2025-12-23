@@ -1092,22 +1092,23 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
     }
 });
 /* =========================================================
-   FILENAME: wwwroot/js/combo.js (Customer Logic)
+    (Customer Chat Logic)
    ========================================================= */
 
 $(document).ready(function () {
+    // --- Shared Variables ---
     let chatConnection = null;
     let chatSessionId = localStorage.getItem("chatSessionId");
     let chatUserName = localStorage.getItem("chatUserName");
     let sessionTimestamp = localStorage.getItem("chatSessionTimestamp");
 
-    // --- 1. SESSION MANAGEMENT (1 Hour Expiration) ---
-    const ONE_HOUR = 60 * 60 * 1000; // ms
+    const ONE_HOUR = 60 * 60 * 1000;
 
+    // ==================================================
+    // 1. SESSION MANAGEMENT
+    // ==================================================
     function checkSessionExpiry() {
         const now = new Date().getTime();
-
-        // If expired or no timestamp, clear session
         if (sessionTimestamp && (now - sessionTimestamp > ONE_HOUR)) {
             console.log("⚠️ Session expired. Starting fresh.");
             localStorage.removeItem("chatSessionId");
@@ -1116,19 +1117,14 @@ $(document).ready(function () {
             chatSessionId = null;
             chatUserName = null;
         }
-
-
     }
 
-    // Initialize Session
     checkSessionExpiry();
 
     if (!chatSessionId) {
-        // Create new session
-        //chatSessionId = crypto.randomUUID()
         chatSessionId = generateUUID();
         localStorage.setItem("chatSessionId", chatSessionId);
-        localStorage.setItem("chatSessionTimestamp", new Date().getTime()); // Save start time
+        localStorage.setItem("chatSessionTimestamp", new Date().getTime());
     }
 
     function generateUUID() {
@@ -1146,59 +1142,59 @@ $(document).ready(function () {
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
     }
-    // --- 2. LOAD HISTORY ON REFRESH ---
+
+    // ==================================================
+    // 2. LOAD HISTORY
+    // ==================================================
     function loadChatHistory() {
         $.get('/chat/guest-history?sessionGuid=' + chatSessionId, function (messages) {
             if (messages && messages.length > 0) {
-                // If we have history, show the chat box button as "active" or just load them silently
-                // render messages
                 messages.forEach(function (m) {
-                    // m.isFromAdmin determines the side
                     let type = m.isFromAdmin ? 'incoming' : 'outgoing';
                     let senderName = m.isFromAdmin ? (m.senderName || "Support") : "You";
                     appendCustomerMessage(senderName, m.messageText, type);
                 });
 
-                // If there is history, assume user is "logged in"
                 if (!chatUserName) {
-                    // Try to guess or just set state to active without name if history exists
                     showChatInterface();
                 }
             }
         });
     }
 
-    // Call history loader immediately
     loadChatHistory();
 
-    // --- 3. SignalR Connection Logic ---
+    // ==================================================
+    // 3. SIGNALR CONNECTION
+    // ==================================================
     function initSignalR() {
         if (chatConnection) return;
 
-        // Initialize Builder
         chatConnection = new signalR.HubConnectionBuilder()
             .withUrl("/supportHub?sessionId=" + chatSessionId)
             .withAutomaticReconnect()
             .build();
 
-        // Listener: Admin Reply
+        // ✅ LISTENER 1: Admin Reply (AI or Human)
         chatConnection.on("ReceiveReply", function (adminName, message) {
-            // Update Timestamp on activity to keep session alive
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
 
-            // 🔔 Sound
+            // Play sound
             var audio = document.getElementById("chat-notification-sound");
-            if (audio) { audio.play().catch(e => console.log("Audio blocked")); }
+            if (audio) {
+                audio.play().catch(e => console.log("Audio blocked"));
+            }
 
-            // UI
+            // Display message
             appendCustomerMessage(adminName, message, 'incoming');
 
+            // Badge logic if chat is closed
             if (!$('#live-chat-box').is(':visible')) {
                 $('#support-widget-btn').addClass('active');
             }
         });
 
-        // Listener: System Message
+        // ✅ LISTENER 2: System Messages
         chatConnection.on("ReceiveSystemMessage", function (message) {
             const html = `<div class="msg-system">${message}</div>`;
             $('#chat-messages-list').append(html);
@@ -1210,10 +1206,57 @@ $(document).ready(function () {
             .catch(err => console.error(err));
     }
 
-    // Auto-connect SignalR so we receive messages even if window was refreshed
     initSignalR();
 
-    // --- 4. Message UI Functions ---
+    // ==================================================
+    // 4. SEND MESSAGE LOGIC
+    // ==================================================
+    function sendCustomerMessage() {
+        const msg = $('#chat-input-field').val().trim();
+        const currentName = chatUserName || "Guest";
+
+        if (msg) {
+            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
+
+            // 1. Show Local
+            appendCustomerMessage("You", msg, 'outgoing');
+            $('#chat-input-field').val('');
+
+            // 2. Send to HTTP Endpoint (Triggers AI)
+            const messageData = {
+                SessionGuid: chatSessionId,
+                SenderName: currentName,
+                MessageText: msg
+            };
+
+            $.ajax({
+                url: '/chat/send',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(messageData),
+                success: function (response) {
+                    console.log('✅ Message sent successfully');
+
+                    // If human handoff occurred, show notification
+                    if (response.handedOff) {
+                        appendCustomerMessage("System",
+                            "🔔 A support agent will join shortly.",
+                            'incoming');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('❌ Error sending message:', error);
+                    appendCustomerMessage("System",
+                        "⚠️ Failed to send message. Please check your connection.",
+                        'incoming');
+                }
+            });
+        }
+    }
+
+    // ==================================================
+    // 5. UI HELPERS
+    // ==================================================
     function appendCustomerMessage(sender, text, type) {
         const container = $('#chat-messages-list');
         let senderHtml = type === 'incoming' ? `<div class="msg-sender-name">${sender}</div>` : '';
@@ -1233,82 +1276,10 @@ $(document).ready(function () {
         if (body) body.scrollTop = body.scrollHeight;
     }
 
-    function sendCustomerMessage() {
-        const msg = $('#chat-input-field').val().trim();
-        const currentName = chatUserName || "Guest";
-
-        if (msg) {
-            // Refresh timestamp
-            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
-
-            // 1. Show Local
-            appendCustomerMessage("You", msg, 'outgoing');
-            $('#chat-input-field').val('');
-
-            // 2. Send to Server
-            if (chatConnection) {
-                chatConnection.invoke("SendMessageToAdmin", currentName, msg, chatSessionId)
-                    .catch(err => console.error(err));
-            }
-        }
-    }
-
-    // --- 5. UI Interactions ---
-    $('#chat-send-btn').click(sendCustomerMessage);
-    $('#chat-input-field').keypress(function (e) { if (e.which == 13) sendCustomerMessage(); });
-
-    $('#support-widget-btn').click(function () {
-        // Toggle Red/Blue State
-        $(this).toggleClass('active');
-        const menu = $('#support-options');
-        const icon = $(this).find('i');
-
-        if (menu.hasClass('show')) {
-            // Closing
-            menu.removeClass('show');
-            $('#live-chat-box').fadeOut();
-            icon.removeClass('fa-times').addClass('fa-headset');
-        } else {
-            // Opening
-            menu.addClass('show');
-            $('#live-chat-box').hide();
-            icon.removeClass('fa-headset').addClass('fa-times');
-        }
-    });
-
-    $('#btn-open-live-chat').click(function () {
-        $('#support-options').removeClass('show');
-
-        // Ensure Main Button stays Red/X
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.addClass('active');
-        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
-
-        $('#live-chat-box').fadeIn().css('display', 'flex');
-        checkChatState();
-    });
-
-    $('#chat-close-btn').click(function () {
-        $('#live-chat-box').fadeOut();
-        // Reset Button
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.removeClass('active');
-        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
-    });
-
-    $('#chat-start-btn').click(function () {
-        const name = $('#chat-guest-name').val().trim();
-        if (name) setUserName(name);
-        else $('#chat-guest-name').css('border-color', 'red');
-    });
-
-    $('#chat-skip-btn').click(function () { setUserName("Guest"); });
-
     function setUserName(name) {
         chatUserName = name;
         localStorage.setItem("chatUserName", name);
         showChatInterface();
-        // Update session timestamp
         localStorage.setItem("chatSessionTimestamp", new Date().getTime());
     }
 
@@ -1329,21 +1300,65 @@ $(document).ready(function () {
         $('#chat-footer').css('display', 'flex');
     }
 
-    if (chatSessionId) {
-        initSignalR();
-    }
     // ==================================================
-    // 12. SCROLL TO TOP WITH PROGRESS RING
+    // 6. EVENT BINDINGS
     // ==================================================
+    $('#chat-send-btn').click(sendCustomerMessage);
 
-    // Select the SVG path
+    $('#chat-input-field').keypress(function (e) {
+        if (e.which == 13) sendCustomerMessage();
+    });
+
+    $('#support-widget-btn').click(function () {
+        $(this).toggleClass('active');
+        const menu = $('#support-options');
+        const icon = $(this).find('i');
+
+        if (menu.hasClass('show')) {
+            menu.removeClass('show');
+            $('#live-chat-box').fadeOut();
+            icon.removeClass('fa-times').addClass('fa-headset');
+        } else {
+            menu.addClass('show');
+            $('#live-chat-box').hide();
+            icon.removeClass('fa-headset').addClass('fa-times');
+        }
+    });
+
+    $('#btn-open-live-chat').click(function () {
+        $('#support-options').removeClass('show');
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.addClass('active');
+        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
+        $('#live-chat-box').fadeIn().css('display', 'flex');
+        checkChatState();
+    });
+
+    $('#chat-close-btn').click(function () {
+        $('#live-chat-box').fadeOut();
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.removeClass('active');
+        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
+    });
+
+    $('#chat-start-btn').click(function () {
+        const name = $('#chat-guest-name').val().trim();
+        if (name) setUserName(name);
+        else $('#chat-guest-name').css('border-color', 'red');
+    });
+
+    $('#chat-skip-btn').click(function () {
+        setUserName("Guest");
+    });
+
+    // ==================================================
+    // 7. SCROLL TO TOP WITH PROGRESS RING
+    // ==================================================
     var progressPath = document.querySelector('.progress-wrap path');
 
-    // Only run if element exists
     if (progressPath) {
         var pathLength = progressPath.getTotalLength();
 
-        // Initialize CSS transitions
         progressPath.style.transition = progressPath.style.WebkitTransition = 'none';
         progressPath.style.strokeDasharray = pathLength + ' ' + pathLength;
         progressPath.style.strokeDashoffset = pathLength;
@@ -1360,7 +1375,7 @@ $(document).ready(function () {
         updateProgress();
         $(window).scroll(updateProgress);
 
-        var offset = 50; // Show after 50px scroll
+        var offset = 50;
 
         $(window).on('scroll', function () {
             if ($(this).scrollTop() > offset) {

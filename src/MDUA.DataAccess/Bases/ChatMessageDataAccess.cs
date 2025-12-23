@@ -49,6 +49,7 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pBool(ChatMessageBase.Property_IsFromAdmin, chatMessageObject.IsFromAdmin));
 			AddParameter(cmd, pBool(ChatMessageBase.Property_IsRead, chatMessageObject.IsRead));
 			AddParameter(cmd, pDateTime(ChatMessageBase.Property_SentAt, chatMessageObject.SentAt));
+			AddParameter(cmd, pNVarChar(ChatMessageBase.Property_SenderType, 20, chatMessageObject.SenderType));
 		}
 		#endregion
 		
@@ -273,7 +274,8 @@ namespace MDUA.DataAccess
 				chatMessageObject.IsFromAdmin = reader.GetBoolean( start + 5 );			
 				chatMessageObject.IsRead = reader.GetBoolean( start + 6 );			
 				chatMessageObject.SentAt = reader.GetDateTime( start + 7 );			
-			FillBaseObject(chatMessageObject, reader, (start + 8));
+				if(!reader.IsDBNull(8)) chatMessageObject.SenderType = reader.GetString( start + 8 );			
+			FillBaseObject(chatMessageObject, reader, (start + 9));
 
 			
 			chatMessageObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

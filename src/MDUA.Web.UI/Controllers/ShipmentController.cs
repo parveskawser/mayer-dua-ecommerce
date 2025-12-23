@@ -16,6 +16,7 @@ namespace MDUA.Web.UI.Controllers
             _deliveryFacade = deliveryFacade;
             _orderFacade = orderFacade;
         }
+        [Route("delivery/all")]
 
         [HttpGet]
         public IActionResult DeliveryList()
