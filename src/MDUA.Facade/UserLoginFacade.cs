@@ -450,5 +450,27 @@ namespace MDUA.Facade
 
 
         #endregion
+
+        public void InvalidateAllUserSessions(int userId)
+        {
+            // Pass this call down to DataAccess
+            _UserLoginDataAccess.InvalidateAllSessions(userId);
+        }
+        public UserLogin GetUserByUsername(string username)
+        {
+            // Add this method to your DataAccess layer too
+            return _UserLoginDataAccess.GetByUsername(username);
+        }
+        public void UpdatePassword(int userId, string newPassword)
+        {
+            // 1. Get User
+            var user = _UserLoginDataAccess.Get(userId);
+            if (user != null)
+            {
+                // 2. Update Password (Plain text based on your previous request)
+                user.Password = newPassword;
+                _UserLoginDataAccess.Update(user);
+            }
+        }
     }
 }

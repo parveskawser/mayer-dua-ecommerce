@@ -68,6 +68,8 @@ namespace MDUA.Facade
             services.AddScoped<IGlobalSettingDataAccess, GlobalSettingDataAccess>();
 
             services.AddScoped<IDeliveryDataAccess, DeliveryDataAccess>();
+            services.AddScoped<IDeliveryItemDataAccess, DeliveryItemDataAccess>();
+
 
             // Facade Layer
             services.AddServiceFacade();

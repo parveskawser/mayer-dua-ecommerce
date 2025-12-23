@@ -23,6 +23,7 @@ namespace MDUA.Facade
         private readonly IProductFacade _productFacade;
         private readonly IPostalCodesDataAccess _postalCodesDataAccess;
         private readonly ISettingsFacade _settingsFacade;
+        private readonly IDeliveryItemDataAccess _deliveryItemDataAccess;
 
         // ✅ 1. Declare Configuration to access appsettings.json
         private readonly IConfiguration _configuration;
@@ -36,11 +37,9 @@ namespace MDUA.Facade
             IProductVariantDataAccess productVariantDataAccess,
             IProductFacade productFacade,
             IPostalCodesDataAccess postalCodesDataAccess,
-
-            IConfiguration configuration
-            ,
+            IConfiguration configuration,
             ISettingsFacade settingsFacade,
-            IDeliveryDataAccess deliveryDataAccess)
+            IDeliveryDataAccess deliveryDataAccess,IDeliveryItemDataAccess deliveryItemDataAccess)
         {
             _salesOrderHeaderDataAccess = salesOrderHeaderDataAccess;
             _salesOrderDetailDataAccess = salesOrderDetailDataAccess;
@@ -53,6 +52,7 @@ namespace MDUA.Facade
             _configuration = configuration;
             _settingsFacade = settingsFacade;
             _deliveryDataAccess = deliveryDataAccess;
+            _deliveryItemDataAccess = deliveryItemDataAccess;
 
         }
 
@@ -409,10 +409,7 @@ namespace MDUA.Facade
             }
 
             return dbStatus;
-        }
-
-        // ✅ 3. NEW: UpdateDeliveryStatus (Status Sync Logic)
-        // ==========================================================================
+        }        // ==========================================================================
         // In src/MDUA.Facade/OrderFacade.cs
 
         public void UpdateDeliveryStatus(int deliveryId, string newStatus)
@@ -422,7 +419,22 @@ namespace MDUA.Facade
 
             if (delivery == null) throw new Exception("Delivery not found");
             if (delivery.SalesOrderId <= 0) throw new Exception("Data Error: Delivery has no Sales Order ID.");
+            bool isOrderConfirmed = false;
+            if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concreteDA)
+            {
+                isOrderConfirmed = concreteDA.GetConfirmedFlag(delivery.SalesOrderId);
+            }
+            else
+            {
+                // Fallback if interface doesn't support GetConfirmedFlag
+                var order = _salesOrderHeaderDataAccess.Get(delivery.SalesOrderId);
+                isOrderConfirmed = order != null && (order.Confirmed || order.Status == "Confirmed");
+            }
 
+            if (!isOrderConfirmed)
+            {
+                throw new Exception("Action Denied: You cannot update delivery status while the Sales Order is still Draft/Pending. Please confirm the order first.");
+            }
             // 2) Update Delivery
             delivery.Status = newStatus;
             if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase))

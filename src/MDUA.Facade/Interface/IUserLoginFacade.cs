@@ -30,5 +30,8 @@ namespace MDUA.Facade.Interface
         bool VerifyTwoFactorByUserId(int userId, string codeInput);
 
         void DisableTwoFactor(int userId);
+        void InvalidateAllUserSessions(int userId);
+        UserLogin GetUserByUsername(string username);
+        void UpdatePassword(int userId, string newPassword);
     }
 }

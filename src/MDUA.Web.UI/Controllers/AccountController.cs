@@ -72,12 +72,19 @@ namespace MDUA.Web.UI.Controllers
         public IActionResult VerifyTwoFactor()
         {
             if (TempData.Peek("PreAuthUserId") == null) return RedirectToAction("LogIn");
+
+            // ✅ Defaults for normal Login flow
+            ViewData["FormAction"] = "VerifyTwoFactor";
+            ViewData["BackAction"] = "LogIn";
+            ViewData["BackText"] = "Back to Login";
+
             return View();
         }
 
         public class VerifyTwoFactorVm
         {
             public string Code { get; set; }
+            public int TargetUserId { get; set; }
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -217,5 +224,165 @@ namespace MDUA.Web.UI.Controllers
             ViewBag.UserRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "No Role";
             return View();
         }
+
+
+
+        // ... inside AccountController ...
+
+        #region Forgot Password via 2FA
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ForgotPassword(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                ViewBag.Error = "Please enter your username.";
+                return View();
+            }
+
+            // 1. Find User
+            var user = _userLoginFacade.GetUserByUsername(username);
+
+            if (user == null)
+            {
+                // User doesn't exist
+                ViewBag.Error = "Account not found.";
+                return View();
+            }
+
+            // 2. CHECK: Is 2FA Enabled?
+            if (!user.IsTwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret))
+            {
+                // ❌ NO 2FA -> Show "Contact Admin" UI
+                ViewBag.ManualResetRequired = true;
+                return View();
+            }
+
+            // ✅ YES 2FA -> Proceed to Verification
+
+            // Clear any old login data to prevent conflicts
+            TempData.Remove("PreAuthUserId");
+            TempData.Remove("RememberMe");
+            TempData.Remove("ReturnUrl");
+
+            // Set Reset Data
+            TempData["ResetUserId"] = user.Id;
+            TempData["ResetUsername"] = user.UserName;
+
+            return RedirectToAction("VerifyReset2FA");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult VerifyReset2FA()
+        {
+            if (TempData.Peek("ResetUserId") == null) return RedirectToAction("ForgotPassword");
+
+            // ✅ FIX: Pass the ID into the View Model
+            var model = new VerifyTwoFactorVm
+            {
+                TargetUserId = (int)TempData.Peek("ResetUserId")
+            };
+
+            ViewData["FormAction"] = "VerifyReset2FA";
+            ViewData["BackAction"] = "ForgotPassword";
+            ViewData["BackText"] = "Try different user";
+            ViewData["Title"] = "Verify Reset";
+
+            return View("VerifyTwoFactor", model); // Pass model here
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult VerifyReset2FA(VerifyTwoFactorVm model)
+        {
+            // ✅ FIX: Read ID from the form (Model), NOT TempData
+            // This prevents the "Redirect to Login" issue if TempData is lost
+            if (model.TargetUserId == 0)
+            {
+                return RedirectToAction("ForgotPassword");
+            }
+
+            bool isValid = _userLoginFacade.VerifyTwoFactorByUserId(model.TargetUserId, model.Code);
+
+            if (isValid)
+            {
+                TempData["CanResetPassword"] = true;
+                TempData["ResetUserId"] = model.TargetUserId; // Store for the final step
+                return RedirectToAction("ResetPassword");
+            }
+
+            ModelState.AddModelError("", "Invalid authenticator code.");
+
+            // Restore View Settings
+            ViewData["FormAction"] = "VerifyReset2FA";
+            ViewData["BackAction"] = "ForgotPassword";
+            ViewData["BackText"] = "Try different user";
+            ViewData["Title"] = "Verify Reset";
+
+            return View("VerifyTwoFactor", model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword()
+        {
+            // Ensure the user actually passed the 2FA check
+            if (TempData["CanResetPassword"] == null || TempData.Peek("ResetUserId") == null)
+            {
+                return RedirectToAction("ForgotPassword");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(string newPassword, string confirmPassword)
+        {
+            // 1. Security Check
+            if (TempData["ResetUserId"] is not int userId) return RedirectToAction("ForgotPassword");
+
+            // 2. Validation
+            if (string.IsNullOrEmpty(newPassword) || newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Passwords do not match or are empty.";
+
+                // ✅ CRITICAL FIX: Keep the flags alive so the page doesn't expire
+                TempData.Keep("ResetUserId");
+                TempData["CanResetPassword"] = true; // Ensure GET check passes
+
+                return View();
+            }
+
+            try
+            {
+                // 3. Update & Cleanup
+                _userLoginFacade.UpdatePassword(userId, newPassword);
+                TempData.Clear(); // Clear all flags
+                return View("ResetSuccess");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "An error occurred.";
+                TempData.Keep("ResetUserId");
+                TempData["CanResetPassword"] = true;
+                return View();
+            }
+        }
+
+
+
+        #endregion
     }
 }

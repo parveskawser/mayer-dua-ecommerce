@@ -30,6 +30,9 @@
       * **Live Message Notifications with sound:** Real-time push notifications when new message is received.
   * **DateTime & Timezone Handling:**
       * **Timezone-Aware System:** All DateTime values are stored in UTC at database level. Automatically converted to specific local time in UI and reports. Ensures accuracy across Orders, Payments, Audit Logs and Chat timestamps.
+  * **Two-Factor Authentication (2FA):**
+      * **OTP-Based Authentication:** Time-based One-Time Password (OTP) verification applied after successful username/password validation. OTPs are single-use and expire automatically after a configurable duration.
+  * **Session & Device Aware:** OTP validation is bound to the login session and tracked device.
 -----
 
 ## 2\. 🧱 Solution Structure

@@ -10,10 +10,13 @@ namespace MDUA.Facade
     {
         private readonly ICompanyPaymentMethodDataAccess _dataAccess;
         private readonly IGlobalSettingDataAccess _globalSettingDataAccess;
-        public SettingsFacade(ICompanyPaymentMethodDataAccess dataAccess, IGlobalSettingDataAccess globalSettingDataAccess)
+        private readonly IUserLoginDataAccess _userDataAccess;
+        public SettingsFacade(ICompanyPaymentMethodDataAccess dataAccess, IGlobalSettingDataAccess globalSettingDataAccess, IUserLoginDataAccess userDataAccess)
         {
             _dataAccess = dataAccess;
             _globalSettingDataAccess = globalSettingDataAccess;
+            _userDataAccess = userDataAccess;
+
         }
 
         public List<CompanyPaymentMethodResult> GetCompanyPaymentSettings(int companyId)
@@ -46,6 +49,32 @@ namespace MDUA.Facade
             _globalSettingDataAccess.SaveValue(companyId, "DeliveryCharge_Outside", outside.ToString());
         }
         #endregion
+
+        public void ChangePassword(int userId, string oldPassword, string newPassword)
+        {
+            // A. Get the user
+            var user = _userDataAccess.Get(userId);
+            if (user == null) throw new Exception("User not found.");
+
+            // B. Check Old Password (Direct String Comparison)
+            // Note: This matches exact text (Case-Sensitive usually, depending on DB collation)
+            if (user.Password != oldPassword)
+            {
+                throw new Exception("Current password is incorrect.");
+            }
+
+            // C. Set New Password (Plain Text)
+            user.Password = newPassword;
+
+            // D. Save to Database
+            _userDataAccess.Update(user);
+        }
+
+        public UserLogin GetUserById(int userId)
+        {
+            // We use the existing Get method from your DataAccess layer
+            return _userDataAccess.Get(userId);
+        }
 
     }
 }

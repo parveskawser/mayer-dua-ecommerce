@@ -1,5 +1,4 @@
-﻿<!-- change -->
-@model dynamic
+﻿@model dynamic
 @using System.Security.Claims
 @using MDUA.Facade.Interface
 @inject ICompanyFacade CompanyFacade
@@ -8,25 +7,19 @@
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
 
-    // Check if we are in any Product related page to keep menu open
+    // --- PAGE TYPE CHECKS ---
     bool isProductPage = currentController == "Product";
-
-    // --- NEW: Check for Inventory (Purchase Controller) ---
     bool isInventoryPage = currentController == "Purchase";
-    // -----------------------------------------------------
+    // ✅ FIX: Ensure Shipment controller is recognized
     bool isShipmentPage = currentController == "Shipment";
-
     bool isCustomerPage = currentController == "Customer";
     bool isOrderPage = currentController == "Order";
+    bool isSettingsPage = currentController == "Settings";
 
-    //new
-    string companyName = "MDUA Admin"; // Default
+    // --- COMPANY LOGO LOGIC (Kept as is) ---
+    string companyName = "MDUA Admin";
     string companyLogo = null;
-
-    // 1. Get Company ID from User Claims
     var companyIdClaim = User.FindFirst("CompanyId")?.Value;
-
-    // 2. Fetch Data if ID exists
     if (int.TryParse(companyIdClaim, out int companyId))
     {
         var company = CompanyFacade.Get(companyId);
@@ -36,24 +29,17 @@
             companyLogo = company.LogoImg;
         }
     }
-
-    bool isSettingsPage = currentController == "Settings";
 }
-<div class="sidebar glass-panel d-flex flex-column h-100">
-    <!-- Brand -->
-    <div class="d-flex align-items-center mb-4 ps-2 pt-2">
 
-        <!-- LOGO LOGIC -->
+<div class="sidebar glass-panel d-flex flex-column h-100">
+
+    <div class="d-flex align-items-center mb-4 ps-2 pt-2">
         @if (!string.IsNullOrEmpty(companyLogo))
         {
-            <img src="@companyLogo"
-                 alt="Logo"
-                 class="me-2 rounded-circle"
-                 style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);">
+            <img src="@companyLogo" alt="Logo" class="me-2 rounded-circle" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);">
         }
         else
         {
-            <!-- Fallback: First Letter -->
             <div class="brand-logo me-2">
                 @if (!string.IsNullOrEmpty(companyName))
                 {
@@ -61,142 +47,75 @@
                 }
                 else
                 {
+
                     <text>M</text>
                 }
             </div>
         }
-
-        <!-- NAME LOGIC -->
         <div class="overflow-hidden">
-            <div class="fw-bold text-truncate" style="max-width: 150px;" title="@companyName">
-                @companyName
-            </div>
-            <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">
-                MANAGEMENT
-            </div>
+            <div class="fw-bold text-truncate" style="max-width: 150px;" title="@companyName">@companyName</div>
+            <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">MANAGEMENT</div>
         </div>
     </div>
 
-    <!-- Menu -->
     <div class="mb-2 text-uppercase small text-muted fw-semibold ps-3">Menu</div>
     <ul class="nav nav-pills flex-column mb-auto">
 
-        <!-- Dashboard -->
         <li class="nav-item">
-            <a class="nav-link @(currentAction == "Dashboard" && currentController == "Home" ? "active" : "")"
-               href="@Url.Action("Dashboard", "Home")">
+            <a class="nav-link @(currentAction == "Dashboard" && currentController == "Home" ? "active" : "")" href="@Url.Action("Dashboard", "Home")">
                 <span>📊</span> Dashboard
             </a>
         </li>
 
-        <!-- Products Dropdown -->
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isProductPage ? "active-parent" : "collapsed")"
-               data-bs-toggle="collapse"
-               href="#productsMenu"
-               role="button"
-               aria-expanded="@(isProductPage ? "true" : "false")"
-               aria-controls="productsMenu">
-                <span>
-                    <span>📦</span> Products
-                </span>
+               data-bs-toggle="collapse" href="#productsMenu" role="button" aria-expanded="@(isProductPage ? "true" : "false")" aria-controls="productsMenu">
+                <span><span>📦</span> Products</span>
                 <span class="dropdown-arrow">▾</span>
             </a>
             <div class="collapse @(isProductPage ? "show" : "")" id="productsMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "AllProducts" ? "active" : "")"
-                           href="@Url.Action("AllProducts", "Product")">
-                            Product List
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "Add" && currentController == "Product" ? "active" : "")"
-                           href="@Url.Action("Add", "Product")">
-                            Add Product
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "AllProducts" ? "active" : "")" href="@Url.Action("AllProducts", "Product")">Product List</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")" href="@Url.Action("Add", "Product")">Add Product</a></li>
                 </ul>
             </div>
         </li>
-        <!--  Inventory -->
+
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isInventoryPage ? "active-parent" : "collapsed")"
-               data-bs-toggle="collapse"
-               href="#inventoryMenu"
-               role="button"
-               aria-expanded="@(isInventoryPage ? "true" : "false")"
-               aria-controls="inventoryMenu">
-                <span>
-                    <span>🏭</span> Inventory
-                </span>
+               data-bs-toggle="collapse" href="#inventoryMenu" role="button" aria-expanded="@(isInventoryPage ? "true" : "false")" aria-controls="inventoryMenu">
+                <span><span>🏭</span> Inventory</span>
                 <span class="dropdown-arrow">▾</span>
             </a>
             <div class="collapse @(isInventoryPage ? "show" : "")" id="inventoryMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "StockStatus" ? "active" : "")"
-                           href="@Url.Action("StockStatus", "Purchase")">
-                            Stock
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "BulkOrder" ? "active" : "")"
-                           href="@Url.Action("BulkOrder", "Purchase")">
-                            Bulk Order
-                        </a>
-                    </li>
-
-
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "BulkOrderReceivedList" ? "active" : "")"
-                           href="@Url.Action("BulkOrderReceivedList", "Purchase")">
-                            Bulk Order Receive
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "StockStatus" ? "active" : "")" href="@Url.Action("StockStatus", "Purchase")">Stock</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "BulkOrder" ? "active" : "")" href="@Url.Action("BulkOrder", "Purchase")">Bulk Order</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "BulkOrderReceivedList" ? "active" : "")" href="@Url.Action("BulkOrderReceivedList", "Purchase")">Bulk Order Receive</a></li>
                 </ul>
             </div>
         </li>
 
-        <!-- Customers Link -->
         <li class="nav-item">
             <a class="nav-link @(isCustomerPage ? "active" : "")" href="@Url.Action("CustomerList", "Customer")">
                 <span>👥</span> Customers
             </a>
         </li>
 
-        <!-- Orders Dropdown (The primary focus block) -->
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isOrderPage ? "active-parent" : "collapsed")"
-               data-bs-toggle="collapse"
-               href="#OrdersMenu"
-               role="button"
-               aria-expanded="@(isOrderPage ? "true" : "false")"
-               aria-controls="OrdersMenu">
-                <span>
-                    <span>🛒</span> Orders <!-- CONFIRMED ICON -->
-                </span>
+               data-bs-toggle="collapse" href="#OrdersMenu" role="button" aria-expanded="@(isOrderPage ? "true" : "false")" aria-controls="OrdersMenu">
+                <span><span>🛒</span> Orders</span>
                 <span class="dropdown-arrow">▾</span>
             </a>
             <div class="collapse @(isOrderPage ? "show" : "")" id="OrdersMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "AllOrders" ? "active" : "")"
-                           href="@Url.Action("AllOrders", "Order")">
-                            Order List
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "Add" && currentController == "Order" ? "active" : "")"
-                           href="@Url.Action("Add", "Order")">
-                            Add Order
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "AllOrders" ? "active" : "")" href="@Url.Action("AllOrders", "Order")">Order List</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "Add" ? "active" : "")" href="@Url.Action("Add", "Order")">Add Order</a></li>
                 </ul>
             </div>
         </li>
 
-        <!-- Shipment Link -->
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isShipmentPage ? "active-parent" : "collapsed")"
                data-bs-toggle="collapse"
@@ -204,9 +123,7 @@
                role="button"
                aria-expanded="@(isShipmentPage ? "true" : "false")"
                aria-controls="shipmentMenu">
-                <span>
-                    <span>🚚</span> Shipment
-                </span>
+                <span><span>🚚</span> Shipment</span>
                 <span class="dropdown-arrow">▾</span>
             </a>
             <div class="collapse @(isShipmentPage ? "show" : "")" id="shipmentMenu">
@@ -220,41 +137,23 @@
                 </ul>
             </div>
         </li>
-        <!-- Settings Link -->
+
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isSettingsPage ? "active-parent" : "collapsed")"
-               data-bs-toggle="collapse"
-               href="#settingsMenu"
-               role="button"
-               aria-expanded="@(isSettingsPage ? "true" : "false")"
-               aria-controls="settingsMenu">
-                <span>
-                    <span>⚙️</span> Settings
-                </span>
+               data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="@(isSettingsPage ? "true" : "false")" aria-controls="settingsMenu">
+                <span><span>⚙️</span> Settings</span>
                 <span class="dropdown-arrow">▾</span>
             </a>
             <div class="collapse @(isSettingsPage ? "show" : "")" id="settingsMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
-
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")"
-                           href="@Url.Action("PaymentSettings", "Settings")">
-                            Payment Methods
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-sm @(currentAction == "Security" ? "active" : "")"
-                           href="@Url.Action("Security", "Settings")">
-                            Security (2FA)
-                        </a>
-                    </li>
-
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")" href="@Url.Action("PaymentSettings", "Settings")">Payment Methods</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "Security" ? "active" : "")" href="@Url.Action("Security", "Settings")">Security (2FA)</a></li>
                 </ul>
             </div>
         </li>
+
     </ul>
 
-    <!-- Footer / Logout -->
     <div class="mt-3 pt-3 border-top border-secondary-subtle">
         <form class="d-inline" asp-controller="Account" asp-action="Logout" method="post">
             <button type="submit" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">

@@ -187,5 +187,73 @@ namespace MDUA.DataAccess
                 UpdateRecord(cmd);
             }
         }
+
+        public void InvalidateAllSessions(int userId)
+        {
+            // Corrected SQL matching your [dbo].[UserSession] table
+            string sql = @"
+        UPDATE [dbo].[UserSession] 
+        SET [IsActive] = 0, 
+            [LastActiveAt] = GETUTCDATE()  -- Updating this to mark the closure time
+        WHERE [UserId] = @UserId 
+          AND [IsActive] = 1";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.Parameters.Add(new SqlParameter("@UserId", System.Data.SqlDbType.Int) { Value = userId });
+
+                ExecuteCommand(cmd);
+            }
+        }
+
+        public UserLogin GetByUsername(string username)
+        {
+            // ✅ FIX: Removed 'AND [IsActive] = 1' because your table doesn't have that column
+            string sql = "SELECT * FROM [UserLogin] WHERE [UserName] = @UserName";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.Parameters.Add(new SqlParameter("@UserName", System.Data.SqlDbType.NVarChar) { Value = username });
+
+                if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        var user = new UserLogin();
+
+                        // Map ID
+                        user.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+
+                        // Map Username
+                        user.UserName = reader.GetString(reader.GetOrdinal("UserName"));
+
+                        // Map Password (needed for update logic)
+                        user.Password = reader.GetString(reader.GetOrdinal("Password"));
+
+                        // Map 2FA Status
+                        int idx2FA = reader.GetOrdinal("IsTwoFactorEnabled");
+                        user.IsTwoFactorEnabled = !reader.IsDBNull(idx2FA) && reader.GetBoolean(idx2FA);
+
+                        // Map Secret
+                        int idxSecret = reader.GetOrdinal("TwoFactorSecret");
+                        if (!reader.IsDBNull(idxSecret))
+                        {
+                            user.TwoFactorSecret = reader.GetString(idxSecret);
+                        }
+
+                        // Map CompanyId
+                        int idxComp = reader.GetOrdinal("CompanyId");
+                        if (!reader.IsDBNull(idxComp)) user.CompanyId = reader.GetInt32(idxComp);
+
+                        return user;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }

@@ -346,10 +346,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData.toString()
             }).then(r => r.json()).then(data => {
                 if (data.success && statusBadge) {
-                    statusBadge.textContent = data.newStatus;
+
+                    // ✅ FIX: Check if status is "Draft" and change text to "Pending"
+                    const displayStatus = data.newStatus === 'Draft' ? 'Pending' : data.newStatus;
+
+                    statusBadge.textContent = displayStatus;
+
                     statusBadge.className = data.newStatus === 'Confirmed'
                         ? 'badge bg-success text-white'
                         : 'badge bg-warning text-dark';
+
                 } else if (!data.success) {
                     checkbox.checked = !isConfirmed; // Revert
                     alert("Action failed: " + data.message);

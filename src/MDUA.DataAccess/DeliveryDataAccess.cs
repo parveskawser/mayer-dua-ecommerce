@@ -138,59 +138,60 @@ namespace MDUA.DataAccess
         }
 
         // --- 2. Fix for "Does not implement LoadAllWithDetails" ---
+        // --- 2. Fix for "Does not implement LoadAllWithDetails" ---
         public System.Collections.Generic.IList<Delivery> LoadAllWithDetails()
         {
             var result = new System.Collections.Generic.List<Delivery>();
 
             // SQL to fetch Delivery + Order Info + Customer + Items + Product Info
-            // We use a LEFT JOIN to ensure we get deliveries even if they have no items yet
             string sql = @"
-                SELECT 
-                    d.Id, d.SalesOrderId, d.TrackingNumber, d.Status, d.CarrierName, 
-                    d.ShipDate, d.EstimatedArrival, d.ActualDeliveryDate, d.ShippingCost,
-                    
-                    soh.Id AS OrderId, 
-                    soh.SalesChannelId, -- Needed to derive ID strings if logic is in C#
-                    
-                    c.CustomerName,
-                    
-                    di.Id AS ItemId, di.Quantity,
-                    
-                    p.ProductName, 
-                    pv.VariantName, 
-                    pv.Sku
-                FROM Delivery d
-                INNER JOIN SalesOrderHeader soh ON d.SalesOrderId = soh.Id
-                INNER JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
-                INNER JOIN Customer c ON cc.CustomerId = c.Id
-                LEFT JOIN DeliveryItem di ON d.Id = di.DeliveryId
-                LEFT JOIN SalesOrderDetail sod ON di.SalesOrderDetailId = sod.Id
-                LEFT JOIN ProductVariant pv ON sod.ProductId = pv.Id -- Assuming SOD.ProductId links to Variant
-                LEFT JOIN Product p ON pv.ProductId = p.Id
-                ORDER BY d.Id DESC";
+        SELECT 
+            d.Id, d.SalesOrderId, d.TrackingNumber, d.Status, d.CarrierName, 
+            d.ShipDate, d.EstimatedArrival, d.ActualDeliveryDate, d.ShippingCost,
+            
+            soh.Id AS OrderId, 
+            soh.SalesChannelId,
+            soh.Status AS OrderStatus,      -- ✅ ADDED: Fetch Order Status
+            soh.Confirmed AS OrderConfirmed, -- ✅ ADDED: Fetch Confirmed Bit
+            
+            c.CustomerName,
+            
+            di.Id AS ItemId, di.Quantity,
+            
+            p.ProductName, 
+            pv.VariantName, 
+            pv.Sku
+        FROM Delivery d
+        INNER JOIN SalesOrderHeader soh ON d.SalesOrderId = soh.Id
+        INNER JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
+        INNER JOIN Customer c ON cc.CustomerId = c.Id
+        LEFT JOIN DeliveryItem di ON d.Id = di.DeliveryId
+        LEFT JOIN SalesOrderDetail sod ON di.SalesOrderDetailId = sod.Id
+        LEFT JOIN ProductVariant pv ON sod.ProductId = pv.Id 
+        LEFT JOIN Product p ON pv.ProductId = p.Id
+        ORDER BY d.Id DESC";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
-                cmd.CommandType = CommandType.Text; // Using Raw SQL for complex join
+                cmd.CommandType = CommandType.Text;
 
                 if (cmd.Connection.State != ConnectionState.Open)
                     cmd.Connection.Open();
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    // Dictionary lookup to handle 'One Delivery has Many Items'
                     var lookup = new System.Collections.Generic.Dictionary<int, Delivery>();
 
                     while (reader.Read())
                     {
                         int deliveryId = reader.GetInt32(reader.GetOrdinal("Id"));
 
-                        // 1. Get or Create the Delivery Object
                         if (!lookup.TryGetValue(deliveryId, out Delivery delivery))
                         {
                             delivery = new Delivery
                             {
                                 Id = deliveryId,
+                                SalesOrderId = reader.GetInt32(reader.GetOrdinal("SalesOrderId")), // Added this missing map
                                 TrackingNumber = reader.IsDBNull(reader.GetOrdinal("TrackingNumber")) ? null : reader.GetString(reader.GetOrdinal("TrackingNumber")),
                                 Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? "Pending" : reader.GetString(reader.GetOrdinal("Status")),
                                 CarrierName = reader.IsDBNull(reader.GetOrdinal("CarrierName")) ? null : reader.GetString(reader.GetOrdinal("CarrierName")),
@@ -199,15 +200,16 @@ namespace MDUA.DataAccess
                                 ActualDeliveryDate = reader.IsDBNull(reader.GetOrdinal("ActualDeliveryDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("ActualDeliveryDate")),
                                 ShippingCost = reader.IsDBNull(reader.GetOrdinal("ShippingCost")) ? (decimal?)null : reader.GetDecimal(reader.GetOrdinal("ShippingCost")),
 
-                                // Initialize Collections
                                 DeliveryItems = new System.Collections.Generic.List<DeliveryItem>(),
 
-                                // Map Nested SalesOrderHeader
                                 SalesOrderHeader = new SalesOrderHeader
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
-                                    // Manually reconstructing the specific strings based on your SQL Logic
-                                    // Or simply store the basic ID to show in UI
+
+                                    // ✅ MAPPING FIX: Map the new columns
+                                    Status = reader.IsDBNull(reader.GetOrdinal("OrderStatus")) ? "" : reader.GetString(reader.GetOrdinal("OrderStatus")),
+                                    Confirmed = !reader.IsDBNull(reader.GetOrdinal("OrderConfirmed")) && reader.GetBoolean(reader.GetOrdinal("OrderConfirmed")),
+
                                     CompanyCustomer = new CompanyCustomer
                                     {
                                         Customer = new Customer
@@ -218,8 +220,6 @@ namespace MDUA.DataAccess
                                 }
                             };
 
-                            // Handle Online/Direct Order ID logic roughly if needed, 
-                            // or rely on the View to formatting the ID.
                             int channelId = reader.GetInt32(reader.GetOrdinal("SalesChannelId"));
                             if (channelId == 1)
                                 delivery.SalesOrderHeader.OnlineOrderId = "ON" + delivery.SalesOrderHeader.Id.ToString().PadLeft(8, '0');
@@ -230,7 +230,6 @@ namespace MDUA.DataAccess
                             result.Add(delivery);
                         }
 
-                        // 2. Add the Item (if exists)
                         if (!reader.IsDBNull(reader.GetOrdinal("ItemId")))
                         {
                             var item = new DeliveryItem
@@ -258,7 +257,7 @@ namespace MDUA.DataAccess
             return result;
         }
 
-  
+
         #endregion
 
         #region Private Helpers

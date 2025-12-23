@@ -430,15 +430,16 @@
         });
     });
     // ============================================================
-    // 6. MANAGE VARIANTS LIST (Inline Edit & Delete)
+    // 6. MANAGE VARIANTS LIST (Inline Edit & Delete) - UPDATED GLOBAL
     // ============================================================
 
-    // 1. Delete Variant (Opens Confirm Modal)
-    modalBody.on('click', '.js-delete-variant', function () {
+    // 1. Delete Variant (Global Scope - Works in Modal & Search Results)
+    $(document).on('click', '.js-delete-variant', function () {
         let $button = $(this);
         let $row = $button.closest('tr');
         let variantId = $row.data('variant-id');
-        let variantName = $row.find('td:first').text().trim();
+        // Fallback: Try to find name in first cell, or default to "this variant"
+        let variantName = $row.find('td:first').text().trim() || "this variant";
 
         $('#modal-delete-variant-name').text(variantName);
         $('#confirm-delete-variant-button').data('variant-id', variantId);
@@ -460,52 +461,77 @@
             success: function (data) {
                 if (data.success) {
                     $('#deleteVariantModal').modal('hide');
-                    $('tr[data-variant-id="' + variantId + '"]').fadeOut(300, function () {
+
+                    // Remove the row globally (whether in modal or main table)
+                    let $targetRow = $('tr[data-variant-id="' + variantId + '"]');
+                    $targetRow.fadeOut(300, function () {
                         $(this).remove();
+                        // Check if Modal table is empty
                         if ($('#modal-variants-content tbody tr').length === 0) {
                             $('#modal-variants-content').html('<div class="empty-state"><p>No variants found.</p></div>');
                         }
                     });
+
+                    // Optional: Update parent product badge count if visible
+                    // (You can add logic here if needed)
+
                 } else { alert('Error: ' + data.message); }
             },
             complete: function () { $button.prop('disabled', false).text('Delete Variant'); }
         });
     });
 
-    // 3. Inline Edit Variant
-    modalBody.on('click', '.js-edit-variant', function () {
+    // 3. Inline Edit Variant (Global Scope)
+    $(document).on('click', '.js-edit-variant', function () {
         let $button = $(this);
         let $row = $button.closest('tr');
         let variantId = $row.data('variant-id');
-        let isEditMode = $button.hasClass('text-warning');
 
-        if (isEditMode) {
+        // Check context: Is this inside a Modal or the Main Table?
+        let isModal = $row.closest('.modal').length > 0;
+
+        // Determine Edit Mode:
+        // In Modal: uses 'text-warning' class
+        // In Table: uses 'btn-success' class or check if inputs are visible
+        let isEditMode = $row.find('.edit-input').is(':visible');
+
+        if (!isEditMode) {
             // --- ENTER EDIT MODE ---
             $row.find('td[data-col="price"] .display-value').hide();
             $row.find('td[data-col="price"] .edit-input').show();
             $row.find('td[data-col="sku"] .display-value').hide();
             $row.find('td[data-col="sku"] .edit-input').show();
 
-            // Show [+ Add Attr] button
+            // Show [+ Add Attr] button (Only relevant for Modal layout usually)
             let nameCell = $row.find('td:first');
             if (nameCell.find('.btn-add-attr-inline').length === 0) {
                 nameCell.append(`
-                    <button type="button" class="btn btn-xs btn-outline-primary ms-2 btn-add-attr-inline" 
-                        title="Add missing attribute" style="padding: 0px 4px; font-size: 10px;">
-                        + Add Attr
-                    </button>
-                `);
+                <button type="button" class="btn btn-xs btn-outline-primary ms-2 btn-add-attr-inline" 
+                    title="Add missing attribute" style="padding: 0px 4px; font-size: 10px;">
+                    + Add Attr
+                </button>
+            `);
             }
             nameCell.find('.btn-add-attr-inline').show();
 
-            $button.removeClass('text-warning').addClass('text-success')
-                .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+            // Update Button Icon
+            if (isModal) {
+                $button.removeClass('text-warning').addClass('text-success')
+                    .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+            } else {
+                // Main Table Style
+                $button.removeClass('btn-outline-secondary').addClass('btn-success text-white')
+                    .html('💾'); // Save Emoji
+            }
+
         } else {
             // --- SAVE MODE ---
             let newPrice = $row.find('td[data-col="price"] .edit-input').val();
             let newSku = $row.find('td[data-col="sku"] .edit-input').val();
 
-            $button.prop('disabled', true).text('Saving...');
+            // Visual Feedback
+            let originalText = $button.html();
+            $button.prop('disabled', true).text('...');
 
             $.ajax({
                 url: urls.updateVariantPrice,
@@ -518,17 +544,27 @@
                 },
                 success: function (data) {
                     if (data.success) {
+                        // Update Display Values
                         $row.find('td[data-col="price"] .display-value').text('Tk. ' + parseFloat(newPrice).toFixed(2));
                         $row.find('td[data-col="sku"] .display-value').text(newSku ? newSku : "N/A");
 
+                        // Hide Inputs
                         $row.find('.display-value').show();
                         $row.find('.edit-input').hide();
                         $row.find('.btn-add-attr-inline').hide();
 
-                        $button.removeClass('text-success').addClass('text-warning')
-                            .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
+                        // Restore Button Icon
+                        if (isModal) {
+                            $button.removeClass('text-success').addClass('text-warning')
+                                .html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
+                        } else {
+                            // Main Table Style
+                            $button.removeClass('btn-success text-white').addClass('btn-outline-secondary')
+                                .html('✏️'); // Edit Emoji
+                        }
                     } else {
                         alert('Error: ' + data.message);
+                        $button.html(originalText); // Revert on error
                     }
                 },
                 complete: function () { $button.prop('disabled', false); }
@@ -536,12 +572,14 @@
         }
     });
 
-    // 4. HANDLER: Click "[+ Add Attr]"
-    modalBody.on('click', '.btn-add-attr-inline', function (e) {
+    // 4. HANDLER: Click "[+ Add Attr]" (Global Scope)
+    $(document).on('click', '.btn-add-attr-inline', function (e) {
         e.stopPropagation();
         let $row = $(this).closest('tr');
         let variantId = $row.data('variant-id');
-        let productId = $('input[name="ProductId"]').val();
+
+        // Try to get ProductId from input (Modal) OR data attribute (Search Row)
+        let productId = $('input[name="ProductId"]').val() || $row.find('.js-edit-variant').data('product-id');
 
         $('#target-variant-id').val(variantId);
         $('#missing-attr-select').html('<option>Loading...</option>');
@@ -559,8 +597,8 @@
         });
     });
 
-    // 5. HANDLER: Missing Attribute Selected
-    $('#missing-attr-select').on('change', function () {
+    // 5. HANDLER: Missing Attribute Selected (Global Scope)
+    $(document).on('change', '#missing-attr-select', function () {
         let attrId = $(this).val();
         let $valSelect = $('#missing-value-select');
 
@@ -574,15 +612,18 @@
         }
     });
 
-    // 6. HANDLER: Confirm Add Attribute
-    $('#btn-confirm-add-attr').on('click', function () {
+    // 6. HANDLER: Confirm Add Attribute (Global Scope)
+    $(document).on('click', '#btn-confirm-add-attr', function () {
         let variantId = $('#target-variant-id').val();
         let valId = $('#missing-value-select').val();
+
+        // Try to get ProductId from hidden input or inferred from the page context
         let productId = $('input[name="ProductId"]').val();
 
         if (!valId) { alert("Select a value"); return; }
 
-        $(this).prop('disabled', true).text('Adding...');
+        let $btn = $(this);
+        $btn.prop('disabled', true).text('Adding...');
 
         $.ajax({
             url: urls.addAttributeToVariant,
@@ -592,16 +633,24 @@
             success: function (data) {
                 if (data.success) {
                     $('#addVariantAttributeModal').modal('hide');
-                    $.get(urls.getVariantsPartial, { productId: productId }, function (html) {
-                        $('#modal-variants-content').html(html);
-                        addAttributeRow();
-                    });
+
+                    // If we are in the Modal, refresh the Modal Content
+                    if ($('#productVariantsModal').hasClass('show')) {
+                        $.get(urls.getVariantsPartial, { productId: productId }, function (html) {
+                            $('#modal-variants-content').html(html);
+                            // Re-initialize dynamic rows if needed function exists
+                            if (typeof addAttributeRow === "function") addAttributeRow();
+                        });
+                    } else {
+                        // If we are in Search Results, trigger a fresh search to refresh the row
+                        $('#productSearchInput').trigger('input');
+                    }
                 } else {
                     alert("Failed");
                 }
             },
             complete: function () {
-                $('#btn-confirm-add-attr').prop('disabled', false).text('Add & Update');
+                $btn.prop('disabled', false).text('Add & Update');
             }
         });
     });

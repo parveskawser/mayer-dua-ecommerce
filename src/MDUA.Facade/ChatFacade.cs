@@ -26,7 +26,7 @@ namespace MDUA.Facade
             {
                 SessionGuid = sessionGuid,
                 UserLoginId = null,
-                GuestName = "Guest-" + sessionGuid.ToString().Substring(0, 4), // Default name e.g. Guest-A1B2
+                GuestName = "Guest-" + sessionGuid.ToString().Substring(0, 4), // Friendly Name
                 Status = "New",
                 IsActive = true
             };
@@ -41,9 +41,9 @@ namespace MDUA.Facade
 
             var session = new ChatSession
             {
-                SessionGuid = Guid.NewGuid(), // Generate a new GUID for internal tracking
+                SessionGuid = Guid.NewGuid(),
                 UserLoginId = userId,
-                GuestName = userName, // We store the actual name here for easier display
+                GuestName = userName,
                 Status = "New",
                 IsActive = true
             };
@@ -54,6 +54,15 @@ namespace MDUA.Facade
         public List<ChatSession> GetActiveSessionsForAdmin()
         {
             return _chatDataAccess.GetActiveSessions();
+        }
+
+        public ChatSession GetSessionByGuid(Guid sessionGuid)
+        {
+            return _chatDataAccess.GetSessionByGuid(sessionGuid);
+        }
+        public ChatSession GetSessionById(int sessionId)
+        {
+            return _chatDataAccess.GetSessionById(sessionId);
         }
 
         #endregion
@@ -68,23 +77,29 @@ namespace MDUA.Facade
             if (string.IsNullOrWhiteSpace(message.MessageText))
                 throw new ArgumentException("Message text cannot be empty.");
 
-            // 1. Ensure Session ID is valid
+            // 1. Validation
             if (message.ChatSessionId <= 0)
             {
-                // Fallback: If for some reason SessionId is missing but we have GUID/UserId, 
-                // we could try to recover the session here. 
-                // For now, we assume the UI/Hub passes a valid SessionId.
                 throw new InvalidOperationException("Cannot send message without a valid Chat Session ID.");
             }
 
-            // 2. Set Defaults
+            // 2. Set Defaults if missing
             if (message.SentAt == DateTime.MinValue)
                 message.SentAt = DateTime.UtcNow;
 
             // 3. Save via Data Access
             return _chatDataAccess.SaveMessage(message);
         }
-
+        public void UpdateSessionStatus(int sessionId, string newStatus)
+        {
+            var session = _chatDataAccess.GetSessionById(sessionId);
+            if (session != null)
+            {
+                session.Status = newStatus;
+                session.LastMessageAt = DateTime.UtcNow;
+                _chatDataAccess.UpdateSession(session);
+            }
+        }
         public List<ChatMessage> GetChatHistory(int sessionId)
         {
             return _chatDataAccess.GetMessagesBySessionId(sessionId);
@@ -92,20 +107,16 @@ namespace MDUA.Facade
 
         public void MarkMessagesAsRead(int sessionId, bool readerIsAdmin)
         {
-            // If the Reader is Admin, they are reading the User's messages (IsFromAdmin = false)
-            // If the Reader is Customer, they are reading Admin's messages (IsFromAdmin = true)
-            // The 'messagesFromAdmin' parameter in DA expects "Whose messages are we marking as read?"
+            // Logic: If Admin reads, we mark 'Customer' messages as read.
+            // If Customer reads, we mark 'Admin/Bot' messages as read.
 
-            // So if ReaderIsAdmin = true, we mark messages where IsFromAdmin = false (TargetIsAdmin = false)
+            // Param expected by DB: "Which messages should be marked read?"
+            // If Reader=Admin, update messages where IsFromAdmin = false
             bool targetIsAdminMessages = !readerIsAdmin;
 
             _chatDataAccess.MarkMessagesAsRead(sessionId, targetIsAdminMessages);
         }
 
-        public ChatSession GetSessionByGuid(Guid sessionGuid)
-        {
-            return _chatDataAccess.GetSessionByGuid(sessionGuid);
-        }
         #endregion
 
         public void Dispose()
