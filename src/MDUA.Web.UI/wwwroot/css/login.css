@@ -8,7 +8,6 @@
 
 body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    /* Warm gradient background matching dashboard */
     background: radial-gradient(circle at top left, #ffe8e8 0, #fff7e0 50%, #f8f9fa 100%);
     min-height: 100vh;
     display: flex;
@@ -19,7 +18,6 @@ body {
     position: relative;
 }
 
-/* --- Background Decorations --- */
 .decorative-shape {
     position: absolute;
     border-radius: 50%;
@@ -46,7 +44,7 @@ body {
     animation-delay: -4s;
 }
 
-@keyframes float {
+@@keyframes float {
     0%, 100% {
         transform: translate(0, 0);
     }
@@ -56,7 +54,6 @@ body {
     }
 }
 
-/* --- Main Container --- */
 .login-container {
     width: 100%;
     max-width: 400px;
@@ -65,7 +62,6 @@ body {
     z-index: 10;
 }
 
-/* --- Glass Card --- */
 .glass-card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -77,7 +73,6 @@ body {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Brand Icon --- */
 .brand-icon {
     width: 50px;
     height: 50px;
@@ -93,7 +88,6 @@ body {
     box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
 }
 
-/* --- Inputs --- */
 .form-control-glass {
     background: rgba(255, 255, 255, 0.5);
     border: 2px solid transparent;
@@ -109,7 +103,33 @@ body {
         outline: none;
     }
 
-/* --- Checkbox Customization --- */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+    .password-toggle:hover {
+        color: var(--red-main);
+    }
+
+    .password-toggle:focus {
+        outline: none;
+    }
+
 .form-check-input {
     width: 1.1em;
     height: 1.1em;
@@ -133,7 +153,6 @@ body {
     margin-left: 0.2rem;
 }
 
-/* --- Button --- */
 .btn-login {
     background: linear-gradient(135deg, var(--red-main), var(--red-dark));
     color: white;

@@ -285,7 +285,8 @@ namespace MDUA.DataAccess
 				if(!reader.IsDBNull(9)) productObject.IsVariantBased = reader.GetBoolean( start + 9 );			
 				productObject.IsActive = reader.GetBoolean( start + 10 );			
 				if(!reader.IsDBNull(11)) productObject.CreatedBy = reader.GetString( start + 11 );			
-				if(!reader.IsDBNull(12)) productObject.CreatedAt = reader.GetDateTime( start + 12 );			
+				if(!reader.IsDBNull(12)) productObject.CreatedAt = reader.GetDateTime( start + 12 );
+				
 				if(!reader.IsDBNull(13)) productObject.UpdatedBy = reader.GetString( start + 13 );			
 				if(!reader.IsDBNull(14)) productObject.UpdatedAt = reader.GetDateTime( start + 14 );			
 			FillBaseObject(productObject, reader, (start + 15));

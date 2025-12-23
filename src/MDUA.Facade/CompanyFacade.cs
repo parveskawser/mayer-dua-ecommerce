@@ -23,7 +23,11 @@ namespace MDUA.Facade
         {
             return _companyDataAccess.Get(_Id);
         }
-
+// ✅ Add this implementation
+        public long Update(Company company)
+        {
+            return _companyDataAccess.Update(company);
+        }
         #endregion
 
         #region extented implementation

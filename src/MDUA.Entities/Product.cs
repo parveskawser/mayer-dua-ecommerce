@@ -69,6 +69,8 @@ namespace MDUA.Entities
 
         [DataMember]
         public Dictionary<string, List<string>> Specifications { get; set; } = new Dictionary<string, List<string>>();
+        [DataMember]
+        public string ProductVideoUrl { get; set; }
 
     } // ✅ CLASS END (Make sure this brace is here)
 

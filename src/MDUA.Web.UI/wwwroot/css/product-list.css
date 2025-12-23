@@ -90,3 +90,12 @@ html, body {
     font-size: 0.85rem;
     font-weight: 600;
 }
+
+/* Fix nested modal z-index */
+#deleteVideoModal {
+    z-index: 1060 !important;
+}
+
+.modal-backdrop.show:nth-of-type(2) {
+    z-index: 1058 !important;
+}

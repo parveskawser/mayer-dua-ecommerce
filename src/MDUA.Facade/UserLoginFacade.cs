@@ -1,16 +1,21 @@
-﻿using MDUA.DataAccess.Interface;
-using MDUA.Entities.List;
+﻿using MDUA.DataAccess;
+using MDUA.DataAccess.Interface;
 using MDUA.Entities;
+using MDUA.Entities.Bases;
+using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using MDUA.Framework;
+using Microsoft.AspNetCore.DataProtection;
+using OtpNet;
+using OtpNet;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MDUA.Entities.Bases;
-using MDUA.DataAccess;
-
 namespace MDUA.Facade
 {
     public class UserLoginFacade : IUserLoginFacade
@@ -29,15 +34,15 @@ namespace MDUA.Facade
             IPermissionDataAccess permissionDataAccess,
             IPermissionGroupMapDataAccess permissionGroupMapDataAccess,
             IUserSessionDataAccess userSessionDataAccess,
-                IPermissionGroupDataAccess permissionGroupDataAccess) 
+                IPermissionGroupDataAccess permissionGroupDataAccess)
 
         {
             _UserLoginDataAccess = userLoginDataAccess;
             _userPermissionDataAccess = userPermissionDataAccess;
             _permissionDataAccess = permissionDataAccess;
             _IPermissionGroupMapDataAccess = permissionGroupMapDataAccess;
-                _permissionGroupDataAccess = permissionGroupDataAccess;
-            _userSessionDataAccess = userSessionDataAccess; 
+            _permissionGroupDataAccess = permissionGroupDataAccess;
+            _userSessionDataAccess = userSessionDataAccess;
 
         }
 
@@ -290,8 +295,8 @@ namespace MDUA.Facade
                 UserId = userId,
                 IPAddress = ipAddress,
                 DeviceInfo = deviceInfo,
-                CreatedAt = DateTime.Now,
-                LastActiveAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
+                LastActiveAt = DateTime.UtcNow,
                 IsActive = true
             };
 
@@ -302,7 +307,7 @@ namespace MDUA.Facade
         //  Check if session is valid (runs on every request)
         public bool IsSessionValid(Guid sessionKey)
         {
-           
+
             // NOTE: In a high-traffic real app, you might want a specialized "GetBySessionKey" SP for speed.
             var list = _userSessionDataAccess.GetByQuery($"SessionKey = '{sessionKey}' AND IsActive = 1");
 
@@ -326,6 +331,146 @@ namespace MDUA.Facade
 
         #endregion
 
+        #region Two Factor Authentication (OATH / TOTP)
 
+        public (string secretKey, string qrCodeUri) SetupTwoFactor(string username)
+        {
+            var key = KeyGeneration.GenerateRandomKey(20);
+            string base32Secret = Base32Encoding.ToString(key);
+
+            string issuer = "MDUA Admin";
+            string label = $"{issuer}:{username}";
+
+            // ✅ FIX: Use Uri.EscapeDataString to handle spaces/symbols correctly
+            string uri = $"otpauth://totp/{Uri.EscapeDataString(label)}?secret={base32Secret}&issuer={Uri.EscapeDataString(issuer)}";
+
+            return (base32Secret, uri);
+        }
+        public bool EnableTwoFactor(int userId, string secret, string codeInput)
+        {
+            if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(codeInput))
+                return false;
+
+            var bytes = Base32Encoding.ToBytes(secret);
+            var totp = new Totp(bytes);
+
+            var window = new VerificationWindow(previous: 1, future: 1);
+            if (totp.VerifyTotp(codeInput.Trim(), out long matchedStep, window))
+            {
+                _UserLoginDataAccess.EnableTwoFactor(userId, secret);
+                _UserLoginDataAccess.InvalidateAllSessionsByUser(userId);
+                return true;
+            }
+
+            return false;
+        }
+        public void ForceLogoutAllSessions(int userId)
+        {
+            _UserLoginDataAccess.InvalidateAllSessionsByUser(userId);
+        }
+
+
+        public bool VerifyTwoFactor(string dbSecret, string codeInput)
+
+        {
+
+            if (string.IsNullOrWhiteSpace(dbSecret) || string.IsNullOrWhiteSpace(codeInput))
+
+            {
+
+                Console.WriteLine("[2FA] FAIL: secret/code empty");
+
+                return false;
+
+            }
+
+            string secret = dbSecret.Trim().Replace(" ", "");
+
+            string code = codeInput.Trim().Replace(" ", "").Replace("-", "");
+
+            if (code.Length != 6)
+
+            {
+
+                Console.WriteLine($"[2FA] FAIL: code length {code.Length}, raw='{codeInput}'");
+
+                return false;
+
+            }
+
+            try
+
+            {
+
+                var bytes = Base32Encoding.ToBytes(secret);
+
+                var totp = new Totp(bytes);
+
+                var utcNow = DateTime.UtcNow;
+
+                var serverCodeNow = totp.ComputeTotp(utcNow);
+
+                Console.WriteLine($"[2FA] UTC Now: {utcNow:O}");
+
+
+                Console.WriteLine($"[2FA] ServerNow: {serverCodeNow}");
+
+
+                var window = new VerificationWindow(previous: 1, future: 1);
+
+                bool ok = totp.VerifyTotp(code, out long matchedStep, window);
+
+
+                return ok;
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                Console.WriteLine($"[2FA] EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+
+                return false;
+
+            }
+
+        }
+
+        public void DisableTwoFactor(int userId)
+        {
+            _UserLoginDataAccess.DisableTwoFactor(userId);
+        }
+        public bool VerifyTwoFactorByUserId(int userId, string code)
+        {
+            string secret = _UserLoginDataAccess.GetTwoFactorSecretByUserId(userId);
+            return VerifyTwoFactor(secret, code);
+        }
+
+
+
+        #endregion
+
+        public void InvalidateAllUserSessions(int userId)
+        {
+            // Pass this call down to DataAccess
+            _UserLoginDataAccess.InvalidateAllSessions(userId);
+        }
+        public UserLogin GetUserByUsername(string username)
+        {
+            // Add this method to your DataAccess layer too
+            return _UserLoginDataAccess.GetByUsername(username);
+        }
+        public void UpdatePassword(int userId, string newPassword)
+        {
+            // 1. Get User
+            var user = _UserLoginDataAccess.Get(userId);
+            if (user != null)
+            {
+                // 2. Update Password (Plain text based on your previous request)
+                user.Password = newPassword;
+                _UserLoginDataAccess.Update(user);
+            }
+        }
     }
 }

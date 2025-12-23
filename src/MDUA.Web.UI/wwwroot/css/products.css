@@ -2,16 +2,19 @@
 /* Add to products.css */
 /* Add to wwwroot/css/products.css */
 
+/* Price Display Styles */
 .original-price {
     text-decoration: line-through;
-    color: #a0aec0; /* Light Gray */
-    font-size: 0.85em;
-    margin-right: 5px;
+    color: #a0aec0; /* Muted Gray */
+    font-size: 0.9em;
+    margin-right: 8px;
+    font-weight: 500;
 }
 
 .discounted-price {
-    color: #e53e3e; /* Red */
-    font-weight: bold;
+    color: #e53e3e; /* Danger Red */
+    font-weight: 700;
+    font-size: 1.05em;
 }
 .modal-header-warning {
     background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%); /* Orange Gradient */
@@ -1170,3 +1173,4 @@ width: 100%;
     margin-top: 1rem;
     border: 1px solid rgba(226, 232, 240, 0.5);
 }
+

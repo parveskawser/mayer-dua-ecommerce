@@ -24,9 +24,9 @@ namespace MDUA.DataAccess
                 cmd.Parameters.AddWithValue("@PoRequestedId", poReqId);
                 cmd.Parameters.AddWithValue("@ReceivedQuantity", qty);
                 cmd.Parameters.AddWithValue("@BuyingPrice", price);
-                cmd.Parameters.AddWithValue("@ReceivedDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@ReceivedDate", DateTime.UtcNow);
                 cmd.Parameters.AddWithValue("@CreatedBy", "System");
-                cmd.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
+                cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
                 cmd.Parameters.AddWithValue("@UpdatedBy", DBNull.Value);
                 cmd.Parameters.AddWithValue("@UpdatedAt", DBNull.Value);
                 cmd.Parameters.AddWithValue("@Remarks", (object)remarks ?? DBNull.Value);

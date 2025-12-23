@@ -55,6 +55,11 @@ namespace MDUA.Facade.Interface
         void UpdateVariantImageDisplayOrder(int imageId, int displayOrder);
         ProductDiscount GetBestDiscount(int productId, decimal basePrice);
         ProductList SearchProducts(string searchTerm);
-
+        List<ProductVideo> GetProductVideos(int productId);
+        Task<long> AddProductVideo(ProductVideo video, string username);
+        Task<string> ConvertToEmbedUrl(string url);
+        long DeleteProductVideo(int videoId);
+        void SetPrimaryProductVideo(int videoId, int productId, string username);
+        List<LowStockItem> GetLowStockVariants(int topN);
     }
 }

@@ -1,15 +1,23 @@
-﻿using MDUA.Facade;
+﻿using DotNetEnv;
+using MDUA.Facade;
 using MDUA.Facade.Interface;
-using MDUA.Web.UI.Hubs; // ✅ Required for SupportHub
+
+using MDUA.Web.UI.Hubs;
+using MDUA.Web.UI.Services;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
-
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
 
+// 2. Load nvironment Variables into Configuration
+builder.Configuration.AddEnvironmentVariables();
+//System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 // 1. Register Services and Facades
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
 
 // ✅ NEW: Add SignalR Service
 builder.Services.AddSignalR();
@@ -92,7 +100,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddDistributedMemoryCache(); // Stores session in memory
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 var app = builder.Build();
 
 // 3. Middlewares
@@ -103,7 +117,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseSession(); // 👈 THIS MUST BE HERE
 app.UseAuthentication();
 app.UseAuthorization();
 

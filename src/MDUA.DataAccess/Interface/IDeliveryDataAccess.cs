@@ -30,6 +30,15 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IDeliveryDataAccess : ICommonDataAccess<Delivery, DeliveryList, DeliveryBase>
-	{ 
-	}	
+    { 
+        long InsertExtended(Delivery delivery);
+        void UpdateExtended(Delivery delivery);
+        Delivery GetBySalesOrderIdExtended(int salesOrderId);
+        Delivery GetExtended(int id);
+        long InsertDeliveryItem(int deliveryId, int salesOrderDetailId, int quantity);
+        Delivery Get(int id);
+        IList<Delivery> LoadAllWithDetails(); // This specific method fetches the joined data
+        int Update(Delivery delivery);
+
+    }	
 }

@@ -218,10 +218,9 @@
             });
     }
 
-    // ✅ REFRESH FUNCTION: Fetches the partial HTML and replaces the row
-    // ... inside inventory.js ...
+ 
 
-    // ✅ UPDATED REFRESH FUNCTION
+    //  REFRESH FUNCTION
     function refreshVariantRow(variantId) {
         const row = document.getElementById(`row-${variantId}`);
         if (!row) return;
@@ -250,7 +249,18 @@
             })
             .catch(err => console.error("Auto-refresh failed:", err));
     }
+    $('#receiveModal').on('show.bs.modal', function () {
+        // 1. Get client local date
+        const now = new Date();
+        // 2. Format as YYYY-MM-DD manually using local parts
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const localToday = `${year}-${month}-${day}`;
 
+        // 3. Set value
+        $('#recDate').val(localToday);
+    });
     // ✅ NEW HELPER: Recalculates the Parent Group's Total Stock
     function updateGroupTotal(variantId) {
         // 1. Find the newly updated row

@@ -1,12 +1,9 @@
-﻿<!-- change -->
-
-@model MDUA.Entities.List.SalesOrderHeaderList
+﻿@model MDUA.Entities.List.SalesOrderHeaderList
 @{
     var customerId = ViewBag.CustomerId;
 }
 
 <div class="customer-details-modal">
-    <!-- Header Section -->
     <div class="info-section">
         <div class="section-header">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -22,14 +19,13 @@
         </div>
     </div>
 
-    <!-- Order Cards -->
     @if (Model != null && Model.Any())
     {
         foreach (var order in Model)
         {
             decimal netAmount = order.TotalAmount - order.DiscountAmount;
 
-            // ✅ FIX: Map "Draft" to "Pending" for UI Display
+            // Map "Draft" to "Pending" for UI Display
             string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
 
             // Determine CSS Classes based on Display Status
@@ -55,18 +51,18 @@
                     </svg>
                     <span class="order-id">Order #@(order.SalesOrderId ?? order.OnlineOrderId)</span>
 
-                    <!-- Status Badge using Display Status -->
                     <span class="order-status-badge @badgeClass">@displayStatus</span>
                 </div>
                 <div class="section-content">
                     <div class="order-details">
                         <div class="mb-2">
-                            <!-- Date Box -->
                             <span class="order-meta">
                                 <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
                                     <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5z" />
                                 </svg>
-                                @order.OrderDate.ToString("MMM dd, yyyy")
+                                <span class="utc-date" data-utc="@order.OrderDate.ToUtcString()">
+                                    @order.OrderDate.ToString("MMM dd, yyyy")
+                                </span>
                             </span>
                         </div>
 

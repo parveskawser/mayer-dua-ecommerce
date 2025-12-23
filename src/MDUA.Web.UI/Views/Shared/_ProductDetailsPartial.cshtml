@@ -45,7 +45,9 @@
 
                         <div class="detail-group">
                             <label class="small text-muted fw-bold d-block">Description</label>
-                            <p class="small text-secondary mb-0">@(Model.Description ?? "No description provided.")</p>
+                            <div class="small text-secondary mb-0">
+                                @Html.Raw(Model.Description ?? "No description provided.")
+                            </div>
                         </div>
                     </div>
 
@@ -61,25 +63,32 @@
 
                         <hr class="border-secondary opacity-25 my-3" />
 
-                        <h6 class="text-muted text-uppercase small fw-bold mb-3">Audit Trail</h6>
-
                         <div class="detail-group mb-2">
                             <div class="small fw-bold text-dark">Created By</div>
                             <div class="small text-muted">
                                 @(Model.CreatedBy ?? "System")
                                 <br>
-                                <span class="audit-date">@Model.CreatedAt?.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                @if (Model.CreatedAt.HasValue)
+                                {
+                                    @* ✅ FIX: Manually append 'Z' to force UTC interpretation *@
+                                    <span class="utc-date" data-utc="@(Model.CreatedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss"))Z">
+                                        @Model.CreatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                    </span>
+                                }
                             </div>
                         </div>
 
-                        @if (Model.UpdatedAt != null)
+                        @if (Model.UpdatedAt.HasValue)
                         {
                             <div class="detail-group">
                                 <div class="small fw-bold text-dark">Last Updated</div>
                                 <div class="small text-muted">
                                     @(Model.UpdatedBy ?? "Unknown")
                                     <br>
-                                    <span class="audit-date">@Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    @* ✅ FIX: Manually append 'Z' to force UTC interpretation *@
+                                    <span class="utc-date" data-utc="@(Model.UpdatedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss"))Z">
+                                        @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                    </span>
                                 </div>
                             </div>
                         }
@@ -93,3 +102,26 @@
         <div class="error-message">Could not load product details.</div>
     }
 </div>
+
+@* <script>
+    $(".utc-date").each(function () {
+        var utcTime = $(this).data("utc");
+        if (utcTime) {
+            // Because of the 'Z' we added in Razor, new Date() now knows this is UTC
+            // and will automatically add your +06:00 / +11:00 offset correctly.
+            var localDate = new Date(utcTime);
+
+            // Verify date is valid
+            if (!isNaN(localDate.getTime())) {
+                // Format nicely (e.g., 15 Dec 2025, 10:23 PM)
+                var formatted = localDate.toLocaleDateString(undefined, {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }) + ", " + localDate.toLocaleTimeString(undefined, {
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                $(this).text(formatted);
+            }
+        }
+    });
+</script> *@

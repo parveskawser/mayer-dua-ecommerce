@@ -64,9 +64,22 @@ namespace MDUA.DataAccess
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pInt32("Id", _Id));
 
-            return GetObject(cmd);
-        }
+            // 1. Get the object as usual (Dates will come as 'Unspecified')
+            Product product = GetObject(cmd);
 
+            // 2. ✅ FIX: Manually force the DateTimeKind to UTC
+            // This tells .NET: "These dates are definitely UTC, not local."
+            if (product != null)
+            {
+                if (product.CreatedAt.HasValue)
+                    product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc);
+
+                if (product.UpdatedAt.HasValue)
+                    product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc);
+            }
+
+            return product;
+        }
         public ProductList GetLastFiveProducts()
         {
             string SQLQuery = @"
@@ -204,17 +217,25 @@ namespace MDUA.DataAccess
         public ProductList SearchProducts(string searchTerm)
         {
             string SQLQuery = @"
-                SELECT TOP 50
-                    p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
-                    p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
-                    p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
-                    NULL as DummyForBase, -- Index 15: Buffer
-                    ISNULL(c.Name, '') as CategoryName -- Index 16: Data
-                FROM Product p
-                LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
-                WHERE p.IsActive = 1 
-                  AND p.ProductName LIKE @Search
-                ORDER BY p.ProductName ASC";
+        SELECT TOP 50
+            p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+            p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+            NULL as DummyForBase,
+            ISNULL(c.Name, '') as CategoryName
+        FROM Product p
+        LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+        WHERE p.IsActive = 1 
+          AND (
+              p.ProductName LIKE @Search
+              OR p.Id IN (
+                  -- Find products where a variant matches the search term
+                  SELECT ProductId 
+                  FROM ProductVariant pv 
+                  WHERE pv.VariantName LIKE @Search OR pv.SKU LIKE @Search
+              )
+          )
+        ORDER BY p.ProductName ASC";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pNVarChar("Search", 400, $"%{searchTerm}%"));

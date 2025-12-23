@@ -30,6 +30,7 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface ICustomerPaymentDataAccess : ICommonDataAccess<CustomerPayment, CustomerPaymentList, CustomerPaymentBase>
-	{ 
-	}	
+    {
+        decimal GetTotalPaidByOrderRef(string orderRef);
+    }
 }

@@ -64,6 +64,7 @@ namespace MDUA.Web.UI.Controllers
                 // Load Chart Data
                 loginResult.SalesTrend = _orderFacade.GetSalesTrend();
                 loginResult.OrderStatusCounts = _orderFacade.GetOrderStatusCounts();
+                loginResult.LowStockItems = _productFacade.GetLowStockVariants(5);
             }
             catch (Exception ex)
             {
@@ -73,6 +74,7 @@ namespace MDUA.Web.UI.Controllers
                 loginResult.RecentOrders = new List<SalesOrderHeader>();
                 loginResult.SalesTrend = new List<ChartDataPoint>();
                 loginResult.OrderStatusCounts = new List<ChartDataPoint>();
+                loginResult.LowStockItems = new List<LowStockItem>(); // ✅ Init empty list
             }
 
             return View(loginResult);

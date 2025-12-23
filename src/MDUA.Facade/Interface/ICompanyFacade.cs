@@ -7,6 +7,7 @@ namespace MDUA.Facade.Interface
     public interface ICompanyFacade
     {
         Company Get(int _Id); //new
+        long Update(Company company); // ✅ Add this
 
     }
 }

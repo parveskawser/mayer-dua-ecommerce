@@ -6,34 +6,34 @@
     /* The Container for a message (Name + Bubble) */
     .msg-incoming, .msg-outgoing {
         display: flex;
-        flex-direction: column; /* Stack Name on top of Bubble */
-        max-width: 85%; /* Max width relative to chat window */
-        margin-bottom: 10px; /* Space between messages */
-        width: auto; /* Let it shrink/grow naturally */
+        flex-direction: column;
+        max-width: 85%;
+        margin-bottom: 10px;
+        width: auto;
     }
 
     /* Incoming (Left) */
     .msg-incoming {
-        align-self: flex-start; /* Position container to the left */
-        align-items: flex-start; /* 🛑 CRITICAL FIX: Stops bubble from stretching/squashing */
+        align-self: flex-start;
+        align-items: flex-start; /* 🛑 CRITICAL FIX: Stops text squashing */
     }
 
     /* Outgoing (Right) */
     .msg-outgoing {
-        align-self: flex-end; /* Position container to the right */
-        align-items: flex-end; /* 🛑 CRITICAL FIX: Stops bubble from stretching/squashing */
+        align-self: flex-end;
+        align-items: flex-end; /* 🛑 CRITICAL FIX: Stops text squashing */
     }
 
     /* The Bubble Itself */
     .chat-box .msg-bubble {
-        display: inline-block; /* Behaves like text block */
-        width: fit-content; /* 🛑 CRITICAL FIX: Snaps width to text size */
-        min-width: 40px; /* Minimum size */
-        max-width: 100%; /* Don't overflow the container */
+        display: inline-block;
+        width: fit-content !important; /* 🛑 CRITICAL FIX: Snaps width to text */
+        min-width: 40px;
+        max-width: 100%;
         /* Text Handling */
-        word-break: normal; /* 🛑 FIX: Prevents "hel-lo" breaking */
-        overflow-wrap: anywhere; /* Allows long URLs to break, keeps words intact */
-        white-space: pre-wrap; /* Respects user's enter keys/spaces */
+        word-break: normal !important; /* 🛑 FIX: Prevents "hel-lo" breaking */
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
         /* Visuals */
         padding: 10px 14px;
         border-radius: 12px;
@@ -57,7 +57,7 @@
         color: white;
         border-bottom-right-radius: 2px;
         box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
-        text-align: left; /* Keep text left-aligned even on right side */
+        text-align: left;
     }
 
     /* Sender Name */
@@ -92,7 +92,7 @@
         right: 30px;
         width: 60px;
         height: 60px;
-        background: #2563eb;
+        background: #2563eb; /* Default Blue */
         color: white;
         border-radius: 50%;
         display: flex;
@@ -109,9 +109,10 @@
             transform: scale(1.1);
         }
 
+        /* 🛑 NEW: Active State (RED Background when open) */
         .support-btn.active {
             background: #ef4444 !important; /* Force Red */
-            transform: scale(1.1); /* Slight pop, no rotation */
+            transform: scale(1.1); /* Keep slight pop, no rotation */
         }
 
     .support-options-menu {
@@ -298,33 +299,18 @@
             font-size: 16px;
         }
 
-    @@media (max-width: 480px) {
-        .chat-box {
-            width: 100%;
-            height: 100%;
-            bottom: 0;
-            right: 0;
-            border-radius: 0;
-        }
-
-        .support-btn {
-            bottom: 20px;
-            right: 20px;
-        }
-    }
-
     /* Badge Style */
     #chat-notification-badge {
         position: absolute;
         top: -5px;
         right: -5px;
-        background-color: #ef4444; /* Red */
+        background-color: #ef4444;
         color: white;
         border-radius: 50%;
         width: 22px;
         height: 22px;
         font-size: 12px;
-        display: none; /* Hidden by default */
+        display: none;
         align-items: center;
         justify-content: center;
         font-weight: bold;
@@ -332,8 +318,44 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         z-index: 10001;
     }
-</style>
 
+    /* --- MOBILE ADJUSTMENTS --- */
+    /* --- MOBILE ADJUSTMENTS --- */
+    @@media (max-width: 480px) {
+        .chat-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            /* Use dvh to handle mobile address bars correctly */
+            height: 100dvh !important;
+            bottom: 0;
+            right: 0;
+            border-radius: 0;
+            z-index: 10002;
+        }
+
+        .chat-body {
+            /* Ensure messages take up available space */
+            flex: 1;
+        }
+        /* 1. Un-nested selector ensures this rule actually applies */
+        .support-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+            /* 2. HIDE the Red Button when chat is open so it doesn't block Send */
+            .support-btn.active {
+                display: none !important;
+            }
+        /* 3. Remove the 90px padding since the button is hidden */
+        .chat-footer {
+            padding-right: 15px !important;
+            padding-bottom: 20px; /* Safety for iPhone home bar */
+        }
+    }
+</style>
 <div id="support-widget-btn" class="support-btn">
     <i class="fas fa-headset"></i>
     <span id="chat-notification-badge">0</span>

@@ -1,10 +1,5 @@
-﻿<!-- change -->
-
-@model MDUA.Entities.Customer
+﻿@model MDUA.Entities.Customer
 @{
-    string FormatDate(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy") : "N/A";
-    string FormatDateTime(DateTime? date) => date.HasValue ? date.Value.ToString("MMM dd, yyyy HH:mm") : "N/A";
-
     // Determine Status Theme
     string statusCardClass = Model.IsActive ? "card-confirmed" : "card-danger";
     string statusIconColor = Model.IsActive ? "text-success" : "text-danger";
@@ -12,7 +7,6 @@
 
 <div class="customer-details-modal">
 
-    <!-- Status Section (Green/Red based on status) -->
     <div class="info-section order-card @statusCardClass">
         <div class="section-header">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="@statusIconColor">
@@ -30,7 +24,6 @@
         </div>
     </div>
 
-    <!-- Primary Information (Blue Theme) -->
     <div class="info-section address-card">
         <div class="section-header">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -60,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Demographics (Blue Theme) -->
     <div class="info-section address-card">
         <div class="section-header">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -72,7 +64,11 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Date of Birth</span>
-                    <span class="info-value">@FormatDate(Model.DateOfBirth)</span>
+                    <span class="info-value">
+                        <span class="utc-date" data-utc="@Model.DateOfBirth.ToUtcString()">
+                            @(Model.DateOfBirth?.ToString("MMM dd, yyyy") ?? "N/A")
+                        </span>
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Gender</span>
@@ -82,7 +78,6 @@
         </div>
     </div>
 
-    <!-- Notes Section (Amber Theme) -->
     @if (!string.IsNullOrEmpty(Model.Notes))
     {
         <div class="info-section order-card card-pending">
@@ -99,7 +94,6 @@
         </div>
     }
 
-    <!-- Audit Trail (Gray Theme) -->
     <div class="info-section order-card card-other">
         <div class="section-header">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -111,7 +105,11 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Created At</span>
-                    <span class="info-value">@FormatDateTime(Model.CreatedAt)</span>
+                    <span class="info-value">
+                        <span class="utc-date" data-utc="@Model.CreatedAt.ToUtcString()">
+                            @(Model.CreatedAt.ToString("MMM dd, yyyy HH:mm") ?? "N/A")
+                        </span>
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Created By</span>
@@ -119,7 +117,11 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Last Updated</span>
-                    <span class="info-value">@FormatDateTime(Model.UpdatedAt)</span>
+                    <span class="info-value">
+                        <span class="utc-date" data-utc="@Model.UpdatedAt.ToUtcString()">
+                            @(Model.UpdatedAt?.ToString("MMM dd, yyyy HH:mm") ?? "N/A")
+                        </span>
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Updated By</span>

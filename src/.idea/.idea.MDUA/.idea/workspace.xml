@@ -7,10 +7,632 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1e52ecf-6312-45d3-b1fe-e3b15df6c9cb" name="Changes" comment="">
+    <list default="true" id="3e92574c-6b41-4713-b285-b864182a2972" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../../Voot-master/src/MDUA.Web.UI/Controllers/SalesOrderDetsilsController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AccountType_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Account_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Address_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeName_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeValue_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AuditLog_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyCustomer_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyVendor_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Company_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CustomerPayment_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Customer_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Delivery_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/GlobalSetting_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/InventoryTransaction_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntryDetail_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntry_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/LanguageResource_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Language_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentAllocation_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentMethod_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroupMap_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroup_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Permission_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PoReceived_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PoRequested_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PostalCodes_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductAttribute_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductCategory_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductDiscount_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductImage_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductInventory_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductReview_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductVariant_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Product_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/RecruitmentEligible_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesChannel_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderDetail_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderHeader_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserLogin_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserPermission_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserSession_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantAttributeValue_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantImage_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantPriceStock_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Variant_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VendorPayment_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Vendor_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/__EFMigrationsHistory_Procedures.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/script.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/script.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.agent.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.agent.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.ask.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.ask.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.ask2agent.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.edit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/copilot.data.migration.edit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/indexLayout.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/indexLayout.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/material_theme_project_new.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AccountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AccountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AccountTypeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AccountTypeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AddressDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AddressDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AttributeNameDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AttributeNameDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/AuditLogDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/AuditLogDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AccountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AccountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AccountTypeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AccountTypeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AddressDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AddressDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AttributeNameDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AttributeNameDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AuditLogDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/AuditLogDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/BulkPurchaseOrderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/BulkPurchaseOrderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ChatMessageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ChatMessageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ChatSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ChatSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyCustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyCustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyVendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CompanyVendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CustomerPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/CustomerPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryItemDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryItemDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/GlobalSettingDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/GlobalSettingDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/InventoryTransactionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/InventoryTransactionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/JournalEntryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/JournalEntryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/JournalEntryDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/JournalEntryDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/LanguageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/LanguageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/LanguageResourceDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/LanguageResourceDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PaymentAllocationDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PaymentAllocationDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PaymentMethodDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PaymentMethodDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionGroupDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionGroupDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionGroupMapDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PermissionGroupMapDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoReceivedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoReceivedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PostalCodesDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PostalCodesDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductAttributeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductAttributeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductCategoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductCategoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductDiscountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductDiscountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductInventoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductInventoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductReviewDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductReviewDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductVariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/ProductVariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesChannelDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesChannelDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderHeaderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesReturnDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesReturnDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserLoginDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserLoginDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserPermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserPermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/UserSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantAttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantAttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantPriceStockDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VariantPriceStockDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VendorPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/VendorPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/BulkPurchaseOrderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/BulkPurchaseOrderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ChatDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ChatDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ChatMessageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ChatMessageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ChatSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ChatSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/CompanyCustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/CompanyCustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/CompanyDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/CompanyDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/CompanyVendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/CompanyVendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/CustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/CustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/CustomerPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/CustomerPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryItemDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryItemDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/GlobalSettingDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/GlobalSettingDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAccountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAccountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAccountTypeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAccountTypeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAddressDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAddressDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAttributeNameDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAttributeNameDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAuditLogDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IAuditLogDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IBulkPurchaseOrderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IBulkPurchaseOrderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatMessageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatMessageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IChatSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICommonDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICommonDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyCustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyCustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyVendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICompanyVendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICustomerDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICustomerDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICustomerPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ICustomerPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IDeliveryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IDeliveryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IDeliveryItemDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IDeliveryItemDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IGlobalSettingDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IGlobalSettingDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IInventoryTransactionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IInventoryTransactionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IJournalEntryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IJournalEntryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IJournalEntryDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IJournalEntryDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ILanguageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ILanguageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ILanguageResourceDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ILanguageResourceDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPaymentAllocationDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPaymentAllocationDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPaymentMethodDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPaymentMethodDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionGroupDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionGroupDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionGroupMapDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPermissionGroupMapDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoReceivedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoReceivedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPostalCodesDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPostalCodesDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductAttributeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductAttributeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductCategoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductCategoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDiscountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDiscountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductInventoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductInventoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductReviewDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductReviewDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductVariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductVariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesChannelDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesChannelDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderHeaderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesReturnDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesReturnDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserLoginDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserLoginDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserPermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserPermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IUserSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantAttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantAttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantPriceStockDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVariantPriceStockDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVendorPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IVendorPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/InventoryTransactionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/InventoryTransactionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/JournalEntryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/JournalEntryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/JournalEntryDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/JournalEntryDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/LanguageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/LanguageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/LanguageResourceDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/LanguageResourceDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/MDUA.DataAccess.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/MDUA.DataAccess.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/OnlineOrderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/OnlineOrderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PaymentAllocationDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PaymentAllocationDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PaymentMethodDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PaymentMethodDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PermissionGroupDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PermissionGroupDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PermissionGroupMapDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PermissionGroupMapDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PoReceivedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PoReceivedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PostalCodesDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PostalCodesDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductAttributeDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductAttributeDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductCategoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductCategoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductDiscountDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductDiscountDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductInventoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductInventoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductPriceDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductPriceDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductReviewDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductReviewDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductVariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductVariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/SalesChannelDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/SalesChannelDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderDetailDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderDetailDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderHeaderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/SalesReturnDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/SalesReturnDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/UserLoginDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/UserLoginDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/UserPermissionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/UserPermissionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/UserSessionDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/UserSessionDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VariantAttributeValueDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VariantAttributeValueDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VariantDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VariantDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VariantImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VariantImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VariantPriceStockDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VariantPriceStockDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VendorDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VendorDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/VendorPaymentDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/VendorPaymentDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Account.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Account.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/AccountType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/AccountType.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Address.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Address.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Attribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Attribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/AttributeName.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/AttributeName.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/AttributeValue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/AttributeValue.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/AuditLog.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/AuditLog.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Account.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Account.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountType.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountTypeBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AccountTypeBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Address.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Address.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AddressBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AddressBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeName.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeName.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeNameBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeNameBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeValue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeValue.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeValueBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AttributeValueBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AuditLog.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AuditLog.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/AuditLogBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/AuditLogBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/BulkPurchaseOrder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/BulkPurchaseOrder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/BulkPurchaseOrderBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/BulkPurchaseOrderBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatMessage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatMessage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatMessageBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatMessageBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatSession.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatSessionBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ChatSessionBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Company.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Company.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyCustomer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyCustomer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyCustomerBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyCustomerBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyVendor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyVendor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyVendorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CompanyVendorBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Customer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Customer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerPayment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerPayment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerPaymentBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/CustomerPaymentBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Delivery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Delivery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryItem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryItem.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryItemBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryItemBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/GlobalSetting.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/GlobalSetting.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/GlobalSettingBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/GlobalSettingBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/InventoryTransaction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/InventoryTransaction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/InventoryTransactionBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/InventoryTransactionBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryDetail.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryDetail.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryDetailBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/JournalEntryDetailBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Language.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Language.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageResource.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageResource.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageResourceBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/LanguageResourceBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentAllocation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentAllocation.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentAllocationBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentAllocationBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentMethod.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentMethod.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentMethodBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PaymentMethodBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Permission.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Permission.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupMap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupMap.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupMapBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PermissionGroupMapBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PoReceived.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PoReceived.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PoReceivedBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PoReceivedBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PoRequested.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PoRequested.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PoRequestedBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PoRequestedBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PostalCodes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PostalCodes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/PostalCodesBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/PostalCodesBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Product.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Product.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductAttributeBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductAttributeBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductCategory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductCategory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductCategoryBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductCategoryBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductDiscount.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductDiscount.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductDiscountBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductDiscountBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductImage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductImage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductImageBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductImageBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductInventory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductInventory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductInventoryBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductInventoryBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductReview.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductReview.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductReviewBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductReviewBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductVariant.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductVariant.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductVariantBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/ProductVariantBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesChannel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesChannel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesChannelBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesChannelBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderDetail.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderDetail.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderDetailBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderDetailBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeaderBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeaderBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesReturn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesReturn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesReturnBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesReturnBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserLogin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserLogin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserLoginBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserLoginBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserPermission.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserPermission.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserPermissionBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserPermissionBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserSession.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/UserSessionBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/UserSessionBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Variant.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Variant.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantAttributeValue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantAttributeValue.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantAttributeValueBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantAttributeValueBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantImage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantImage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantImageBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantImageBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantPriceStock.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantPriceStock.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantPriceStockBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VariantPriceStockBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Vendor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Vendor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorPayment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorPayment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorPaymentBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/VendorPaymentBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/BulkPurchaseOrder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/BulkPurchaseOrder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ChartDataPoint.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ChartDataPoint.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ChatMessage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ChatMessage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ChatSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ChatSession.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Company.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Company.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/CompanyCustomer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/CompanyCustomer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/CompanyVendor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/CompanyVendor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Customer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Customer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/CustomerPayment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/CustomerPayment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/DashboardStats.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/DashboardStats.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Delivery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Delivery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/DeliveryItem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/DeliveryItem.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/GlobalSetting.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/GlobalSetting.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/InventoryTransaction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/InventoryTransaction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/JournalEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/JournalEntry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/JournalEntryDetail.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/JournalEntryDetail.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Language.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Language.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/LanguageResource.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/LanguageResource.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AccountList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AccountList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AccountTypeList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AccountTypeList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AddressList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AddressList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AttributeNameList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AttributeNameList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AttributeValueList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AttributeValueList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/AuditLogList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/AuditLogList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/BulkPurchaseOrderList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/BulkPurchaseOrderList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ChatMessageList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ChatMessageList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ChatSessionList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ChatSessionList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/CompanyCustomerList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/CompanyCustomerList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/CompanyList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/CompanyList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/CompanyVendorList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/CompanyVendorList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/CustomerList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/CustomerList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/CustomerPaymentList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/CustomerPaymentList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/DeliveryItemList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/DeliveryItemList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/DeliveryList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/DeliveryList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/GlobalSettingList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/GlobalSettingList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/InventoryTransactionList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/InventoryTransactionList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/JournalEntryDetailList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/JournalEntryDetailList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/JournalEntryList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/JournalEntryList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/LanguageList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/LanguageList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/LanguageResourceList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/LanguageResourceList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PaymentAllocationList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PaymentAllocationList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PaymentMethodList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PaymentMethodList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PermissionGroupList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PermissionGroupList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PermissionGroupMapList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PermissionGroupMapList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PermissionList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PermissionList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PoReceivedList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PoReceivedList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PoRequestedList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PoRequestedList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/PostalCodesList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/PostalCodesList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductAttributeList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductAttributeList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductCategoryList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductCategoryList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductDiscountList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductDiscountList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductImageList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductImageList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductInventoryList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductInventoryList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductReviewList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductReviewList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/ProductVariantList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/ProductVariantList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/SalesChannelList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/SalesChannelList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/SalesOrderDetailList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/SalesOrderDetailList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/SalesOrderHeaderList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/SalesOrderHeaderList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/SalesReturnList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/SalesReturnList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/UserLoginList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/UserLoginList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/UserPermissionList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/UserPermissionList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/UserSessionList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/UserSessionList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VariantAttributeValueList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VariantAttributeValueList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VariantImageList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VariantImageList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VariantList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VariantList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VariantPriceStockList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VariantPriceStockList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VendorList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VendorList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/List/VendorPaymentList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/List/VendorPaymentList.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/MDUA.Entities.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/MDUA.Entities.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/OnlineOrder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/OnlineOrder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PaymentAllocation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PaymentAllocation.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PaymentMethod.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PaymentMethod.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Permission.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Permission.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PermissionGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PermissionGroup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PermissionGroupMap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PermissionGroupMap.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PoReceived.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PoReceived.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PoRequested.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PoRequested.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/PostalCodes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/PostalCodes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Product.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Product.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductCategory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductCategory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductDiscount.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductDiscount.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductImage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductImage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductInventory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductInventory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductPrice.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductPrice.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductReview.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductReview.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/ProductVariant.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/ProductVariant.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/SalesChannel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/SalesChannel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/SalesOrderDetail.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/SalesOrderDetail.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/SalesOrderHeader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/SalesOrderHeader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/SalesReturn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/SalesReturn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/UserLogin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/UserLogin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/UserPermission.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/UserPermission.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/UserSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/UserSession.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Variant.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Variant.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/VariantImage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/VariantImage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/VariantPriceStock.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/VariantPriceStock.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Vendor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Vendor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/VendorPayment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/VendorPayment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/ChatFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/ChatFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/CompanyFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/CompanyFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/CustomerFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/CustomerFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/DependencyInjection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/DependencyInjection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IChatFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IChatFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/ICommonFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/ICommonFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/ICompanyFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/ICompanyFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/ICustomerFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/ICustomerFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IOrderFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IOrderFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IProductFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IProductFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IPurchaseFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IPurchaseFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IUserLoginFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IUserLoginFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/MDUA.Facade.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/MDUA.Facade.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/OrderFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/OrderFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/ProductFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/ProductFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/PurchaseFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/PurchaseFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/UserLoginFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/UserLoginFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/BaseBusinessEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/BaseBusinessEntity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/BaseCollection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/BaseCollection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Client.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Client.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/ClientContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/ClientContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/ConfigurationBlock.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/ConfigurationBlock.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/ConversionBlock.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/ConversionBlock.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/CustomProperties.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/CustomProperties.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/DataAccess/BaseDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/DataAccess/BaseDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/DateTimeExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/DateTimeExtension.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/EncryptionDeycryption.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/EncryptionDeycryption.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Encryptor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Encryptor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/EnumCollection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/EnumCollection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DALException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DALException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DataBridgeException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DataBridgeException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DatabaseConnectionException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/DatabaseConnectionException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/LicenseException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/LicenseException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectDeleteException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectDeleteException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectInsertException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectInsertException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectReadOnlyException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectReadOnlyException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectUpdateException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/ObjectUpdateException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/PermissionDeniedException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/PermissionDeniedException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/SecurityException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/SecurityException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/UniqueConstraintException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/UniqueConstraintException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/WorkflowException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/WorkflowException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Extentions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Extentions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/LabelHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/LabelHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/MDUA.Framework.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/MDUA.Framework.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Numberconvert.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Numberconvert.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/OTPGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/OTPGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Objects/PropertyLog.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Objects/PropertyLog.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/PagedRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/PagedRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/PermissionHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/PermissionHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Properties/AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Properties/AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/RMRCacheKey.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/RMRCacheKey.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/ResourcePool.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/ResourcePool.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/UserPermission.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/UserPermission.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/AppConfig.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/AppConfig.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/ConfigurationBlock.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/ConfigurationBlock.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/ConstantCollection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/ConstantCollection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/EmailParser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/EmailParser.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/EmailTemplateKey.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/EmailTemplateKey.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/Modificators.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/Modificators.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/SMSTemplateKey.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/SMSTemplateKey.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/SelectedMenu.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/SelectedMenu.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/SortHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/SortHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Utils/StringCrypto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Utils/StringCrypto.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/packages.config" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/packages.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/AccountController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/BaseController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/BaseController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ChatController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ChatController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/CustomerController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/CustomerController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/HomeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/HomeController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/OrderController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ProductController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ProductController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/PurchaseController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/PurchaseController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Hubs/SupportHub.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Hubs/SupportHub.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Models/ErrorViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Models/ErrorViewModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Account/AccessDenied.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Account/AccessDenied.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Account/LogIn.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Account/LogIn.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Customer/CustomerList.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Customer/CustomerList.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Dashboard.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Dashboard.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Privacy.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Privacy.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/Add.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/Add.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/AllOrders.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/AllOrders.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Add.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Add.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/AllProducts.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/AllProducts.cshtml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/Index.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/_ProductTableRows.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Product/_ProductTableRows.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/BulkOrder.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/BulkOrder.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/BulkOrderReceivedList.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/BulkOrderReceivedList.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/LowStockReport.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/LowStockReport.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/_BulkOrderDetailsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/_BulkOrderDetailsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/_InventoryRow.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Purchase/_InventoryRow.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/Error.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/Error.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_AdminChatWidget.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_AdminChatWidget.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_AdminLayout.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_AdminLayout.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerAddressesPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerAddressesPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerChatWidget.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerChatWidget.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerDetailsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerDetailsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerOrdersPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_CustomerOrdersPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_EditProductPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_EditProductPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_OrderStatusModal.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_OrderStatusModal.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductDetailsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductDetailsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductDiscountsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductDiscountsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductImagesPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductImagesPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductVariantsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ProductVariantsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_Sidebar.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_Sidebar.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ValidationScriptsPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_ValidationScriptsPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_VariantImagesPartial.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_VariantImagesPartial.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/_ViewImports.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/_ViewImports.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/_ViewStart.cshtml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.Development.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/bundle.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/bundle.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/bundleconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/bundleconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/add-product.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/add-product.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/admin-theme.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/admin-theme.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/bulk-order.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/bulk-order.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/combo.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/combo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/customer.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/customer.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/dashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/inventory.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/layout.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/layout.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/login.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/login.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/order-tracking.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/order-tracking.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/orders.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/orders.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-details.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-details.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-image.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-image.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-list.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/product-list.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/products.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/products.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/site.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/css/site.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-chat.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-chat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-order.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-order.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-order.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/admin-order.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bd-locations.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bd-locations.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bd-locations.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bd-locations.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bulk-order.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bulk-order.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bulk-order.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/bulk-order.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/combo.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/combo.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/combo.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/combo.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/customer-list.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/customer-list.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/customer-list.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/customer-list.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/inventory.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/inventory.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/inventory.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/inventory.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-track.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-track.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-track.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-track.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/product.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/product.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/product.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/product.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/products-index.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/products-index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/products-index.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/products-index.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/sidebar-toggle.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/sidebar-toggle.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/sidebar-toggle.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/sidebar-toggle.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/site.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/site.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/css/bootstrap.rtl.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/bootstrap/dist/js/bootstrap.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/LICENSE.md" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/LICENSE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/additional-methods.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/additional-methods.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/additional-methods.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/additional-methods.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/jquery.validate.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/jquery.validate.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/jquery.validate.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery-validation/dist/jquery.validate.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.slim.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.slim.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.slim.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/lib/jquery/dist/jquery.slim.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.sln" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.sln" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,43 +645,47 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;SamAkhtarul&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "SamAkhtarul"
   }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/parveskawser/mayer-dua-ecommerce.git&quot;,
-    &quot;accountId&quot;: &quot;80bd17a7-5088-4e02-bc97-a317b3e9076f&quot;
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/parveskawser/mayer-dua-ecommerce.git",
+    "accountId": "80bd17a7-5088-4e02-bc97-a317b3e9076f"
   }
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 0
-}</component>
-  <component name="ProjectId" id="36XzeTqf4lRyG5T1hmHyWhfSpjW" />
+}]]></component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="37ES5Yn84wDzNpdZel7TiHlGzO2" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET Launch Settings Profile.MDUA.Web.UI: http.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;akhtarul&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.MDUA.Web.UI: http.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "akhtarul",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="MDUA.Web.UI: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" />
@@ -80,17 +706,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="a1e52ecf-6312-45d3-b1fe-e3b15df6c9cb" name="Changes" comment="" />
-      <created>1765167800395</created>
+      <changelist id="3e92574c-6b41-4713-b285-b864182a2972" name="Changes" comment="" />
+      <created>1766466557915</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1765167800395</updated>
-      <workItem from="1765167808039" duration="353000" />
-      <workItem from="1765168223931" duration="14644000" />
-      <workItem from="1765192204708" duration="1404000" />
-      <workItem from="1765203583090" duration="1400000" />
-      <workItem from="1765206211234" duration="954000" />
-      <workItem from="1765240137460" duration="704000" />
+      <updated>1766466557915</updated>
+      <workItem from="1766466563029" duration="12159000" />
     </task>
     <servers />
   </component>
@@ -116,6 +737,16 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Views/Settings/PaymentSettings.cshtml</url>
+          <line>1</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Views/Settings/CompanyProfile.cshtml</url>
+          <line>155</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

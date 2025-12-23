@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IGlobalSettingDataAccess : ICommonDataAccess<GlobalSetting, GlobalSettingList, GlobalSettingBase>
-	{ 
-	}	
+	{
+        string GetValue(int companyId, string key);
+        void SaveValue(int companyId, string key, string value);
+    }	
 }
