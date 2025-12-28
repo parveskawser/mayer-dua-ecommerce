@@ -7,8 +7,7 @@ namespace MDUA.Facade.Interface
 {
     public interface IOrderFacade : ICommonFacade<SalesOrderHeader, SalesOrderHeaderList, SalesOrderHeaderBase>
     {
-        string PlaceGuestOrder(SalesOrderHeader orderData);
-        Customer GetCustomerByPhone(string phone);
+        Task<string> PlaceGuestOrder(SalesOrderHeader orderData);        Customer GetCustomerByPhone(string phone);
         PostalCodes GetPostalCodeDetails(string code);
         Customer GetCustomerByEmail(string email);
         (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone);
@@ -27,7 +26,7 @@ namespace MDUA.Facade.Interface
         List<ChartDataPoint> GetSalesTrend(); //new
         List<ChartDataPoint> GetOrderStatusCounts(); //new
         void UpdateDeliveryStatus(int deliveryId, string newStatus);
-
+        SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, out int totalRows);
         void UpdateOrderStatus(int orderId, string newStatus);
 
     }

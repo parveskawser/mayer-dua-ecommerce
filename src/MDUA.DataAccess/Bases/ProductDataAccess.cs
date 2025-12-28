@@ -1,20 +1,19 @@
-﻿using System;
-using System.Data;
-using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-
-using MDUA.Framework;
-using MDUA.Framework.DataAccess;
-using MDUA.Framework.Exceptions;
+﻿using MDUA.DataAccess.Interface;
 using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Entities.List;
-using MDUA.DataAccess.Interface;
+using MDUA.Framework;
+using MDUA.Framework.DataAccess;
+using MDUA.Framework.Exceptions;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace MDUA.DataAccess
 {
-	public partial class ProductDataAccess : BaseDataAccess, IProductDataAccess
-	{
+    public partial class ProductDataAccess : BaseDataAccess, IProductDataAccess
+    {
 		#region Constants
 		private const string INSERTPRODUCT = "InsertProduct";
 		private const string UPDATEPRODUCT = "UpdateProduct";
@@ -57,6 +56,7 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pDateTime(ProductBase.Property_CreatedAt, productObject.CreatedAt));
 			AddParameter(cmd, pNVarChar(ProductBase.Property_UpdatedBy, 100, productObject.UpdatedBy));
 			AddParameter(cmd, pDateTime(ProductBase.Property_UpdatedAt, productObject.UpdatedAt));
+			AddParameter(cmd, pNVarChar(ProductBase.Property_ExtraInfo, productObject.ExtraInfo));
 		}
 		#endregion
 		
@@ -285,11 +285,11 @@ namespace MDUA.DataAccess
 				if(!reader.IsDBNull(9)) productObject.IsVariantBased = reader.GetBoolean( start + 9 );			
 				productObject.IsActive = reader.GetBoolean( start + 10 );			
 				if(!reader.IsDBNull(11)) productObject.CreatedBy = reader.GetString( start + 11 );			
-				if(!reader.IsDBNull(12)) productObject.CreatedAt = reader.GetDateTime( start + 12 );
-				
+				if(!reader.IsDBNull(12)) productObject.CreatedAt = reader.GetDateTime( start + 12 );			
 				if(!reader.IsDBNull(13)) productObject.UpdatedBy = reader.GetString( start + 13 );			
 				if(!reader.IsDBNull(14)) productObject.UpdatedAt = reader.GetDateTime( start + 14 );			
-			FillBaseObject(productObject, reader, (start + 15));
+				if(!reader.IsDBNull(15)) productObject.ExtraInfo = reader.GetString( start + 15 );			
+			FillBaseObject(productObject, reader, (start + 16));
 
 			
 			productObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

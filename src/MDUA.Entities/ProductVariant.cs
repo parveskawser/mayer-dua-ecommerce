@@ -19,8 +19,7 @@ namespace MDUA.Entities
         public int ImageCount { get; set; }
         [DataMember]
         public virtual Product Product { get; set; }
-        [DataMember]
-        public string Sku { get; set; }
+   
 
     } // ⬅️ CLOSE THE CLASS HERE
 

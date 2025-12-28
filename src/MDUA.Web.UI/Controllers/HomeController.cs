@@ -12,7 +12,7 @@ namespace MDUA.Web.UI.Controllers
         private readonly IUserLoginFacade _userLoginFacade;
         private readonly IProductFacade _productFacade;
         private readonly ILogger<HomeController> _logger;
-        private readonly IOrderFacade _orderFacade; // new
+        private readonly IOrderFacade _orderFacade; 
 
 
         public HomeController(IUserLoginFacade userLoginFacade, IProductFacade productFacade, ILogger<HomeController> logger, IOrderFacade orderFacade)

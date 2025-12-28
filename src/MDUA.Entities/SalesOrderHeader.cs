@@ -47,4 +47,23 @@ namespace MDUA.Entities
         [DataMember]
         public virtual CompanyCustomer CompanyCustomer { get; set; }
     }
-}
+   
+        public class EmailResult
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public string MessageId { get; set; }
+        }
+
+        public class NotificationResult
+        {
+            public bool EmailSent { get; set; }
+            public bool SmsSent { get; set; }
+            public string EmailMessage { get; set; }
+            public string SmsMessage { get; set; }
+            public bool IsSuccess => EmailSent || SmsSent; // At least one succeeded
+        }
+    }
+
+
+

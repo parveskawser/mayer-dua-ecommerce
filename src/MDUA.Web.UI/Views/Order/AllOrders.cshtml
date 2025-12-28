@@ -1,4 +1,4 @@
-﻿@model List<MDUA.Entities.SalesOrderHeader>
+﻿@model MDUA.Web.UI.Models.PagedOrderViewModel
 @{
     ViewData["Title"] = "All Sales Orders";
     Layout = "_AdminLayout";
@@ -9,26 +9,41 @@
     <style>
         /* Animation for the visual cue */
         @@keyframes highlight-pulse {
-            0%
+            0% {
+                background-color: rgba(13, 110, 253, 0.0);
+            }
 
-        {
-            background-color: rgba(13, 110, 253, 0.0);
-        }
+            20% {
+                background-color: rgba(13, 110, 253, 0.2);
+            }
 
-        20% {
-            background-color: rgba(13, 110, 253, 0.2);
-        }
-
-        100% {
-            background-color: rgba(13, 110, 253, 0.0);
-        }
-
+            100% {
+                background-color: rgba(13, 110, 253, 0.0);
+            }
         }
 
         .row-highlight {
             animation: highlight-pulse 2s ease-out;
             border-left: 4px solid #0d6efd !important;
             transition: border-left-color 0.3s ease;
+        }
+
+        /* Filter Styles */
+        .filter-group {
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .page-link {
+            color: #333;
+        }
+
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
         }
     </style>
 }
@@ -37,10 +52,57 @@
 
 <div class="orders-wrapper">
 
-    <div class="orders-header d-flex justify-content-between align-items-center">
+    <div class="orders-header d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+
         <div>
             <h2 class="fw-bold mb-0">Order List</h2>
-            <div class="text-muted small">Total Orders: @(Model?.Count() ?? 0)</div>
+            <div class="text-muted small">
+                @* Shows DB Total + Visible Count *@
+                <span class="text-primary fw-bold">@Model.TotalRows</span> Total Orders
+                (Page @Model.CurrentPage of @Model.TotalPages)
+                | Visible: <span id="visible-count" class="text-dark fw-bold">@Model.Orders.Count</span>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+
+            <form method="get" action="/order/all" class="d-flex align-items-center filter-group">
+                <span class="small fw-bold text-muted me-2">Rows:</span>
+                <select name="pageSize" class="form-select form-select-sm border-0 bg-transparent py-0" style="width: auto;" onchange="this.form.submit()">
+                    <!option value="10" @(Model.PageSize == 10 ? "selected" : "")>10</!option>
+                    <!option value="20" @(Model.PageSize == 20 ? "selected" : "")>20</!option>
+                    <!option value="50" @(Model.PageSize == 50 ? "selected" : "")>50</!option>
+                    <!option value="100" @(Model.PageSize == 100 ? "selected" : "")>100</!option>
+                </select>
+                <input type="hidden" name="page" value="1" />
+            </form>
+
+            <div class="vr text-muted mx-1"></div>
+
+            <div class="d-flex align-items-center gap-2 filter-group">
+                <span class="small fw-bold text-muted">Filter:</span>
+
+                <select id="filter-order-status" class="form-select form-select-sm border-secondary-subtle" style="width: 140px;">
+                    <option value="all">Status: All</option>
+                    <option value="Pending">Pending / Draft</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Returned">Returned</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <select id="filter-pay-status" class="form-select form-select-sm border-secondary-subtle" style="width: 140px;">
+                    <option value="all">Payment: All</option>
+                    <option value="Paid">Fully Paid</option>
+                    <option value="Partial">Partially Paid</option>
+                    <option value="Unpaid">Unpaid</option>
+                </select>
+            </div>
+
+            <button class="btn btn-sm btn-light border shadow-sm" onclick="resetFilters()" title="Reset Filters">
+                <i class="fas fa-undo text-secondary"></i>
+            </button>
         </div>
     </div>
 
@@ -52,9 +114,8 @@
     }
 
     <div class="glass-card-fill">
-
         <div class="table-scroll-lock">
-            <table class="table table-hover mb-0 align-middle products-table">
+            <table class="table table-hover mb-0 align-middle products-table" id="ordersTable">
                 <thead>
                     <tr>
                         <th style="width: 40px;"></th>
@@ -69,9 +130,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
+                    @if (Model.Orders != null && Model.Orders.Any())
                     {
-                        foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                        foreach (var order in Model.Orders)
                         {
                             string collapseId = "collapse_" + order.Id;
                             string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
@@ -83,18 +144,24 @@
                             order.Status == "Returned" ||
                             order.Status == "Shipped";
 
-                            // ✅ REFINED LOGIC: Explicitly handle Cancelled
-                            string statusBadgeClass = "bg-secondary-subtle text-dark"; // Default
+                            string statusBadgeClass = "bg-secondary-subtle text-dark";
 
                             if (order.Status == "Confirmed") statusBadgeClass = "bg-success text-white";
                             else if (order.Status == "Pending" || order.Status == "Draft") statusBadgeClass = "bg-warning text-dark";
-                            else if (order.Status == "Cancelled") statusBadgeClass = "bg-danger text-white"; // Force Red
+                            else if (order.Status == "Cancelled") statusBadgeClass = "bg-danger text-white";
                             else if (order.Status == "Delivered") statusBadgeClass = "bg-primary text-white";
 
-                            // ✅ ADDED ID here for the Javascript to find
-                            <tr class="accordion-toggle" style="cursor: pointer;"
+                            // Logic for Payment Tag
+                            string paymentStatusTag = "Unpaid";
+                            if (order.DueAmount <= 0) { paymentStatusTag = "Paid"; }
+                            else if (order.PaidAmount > 0) { paymentStatusTag = "Partial"; }
+
+                            <tr class="accordion-toggle order-row-item" style="cursor: pointer;"
                                 id="order-row-@order.Id"
+                                data-order-status="@displayStatus"
+                                data-pay-status="@paymentStatusTag"
                                 onclick="document.getElementById('btn-@order.Id').click()">
+
                                 <td onclick="event.stopPropagation();">
                                     <button class="btn btn-sm btn-link text-decoration-none text-dark p-0 transition-icon"
                                             type="button"
@@ -137,7 +204,6 @@
                                 </td>
 
                                 <td>
-                                    @* Added id="status-badge-@order.Id" so JS can find it *@
                                     <span id="status-badge-@order.Id" class="badge @statusBadgeClass">@displayStatus</span>
                                 </td>
                                 <td onclick="event.stopPropagation();">
@@ -146,19 +212,19 @@
                                                id="toggle-@order.Id"
                                                data-id="@order.Id"
                                                @(order.Confirmed ? "checked" : "")
-                                               @(isToggleDisabled ? "disabled" : "")>  @* ✅ NEW: Apply disabled attribute *@
+                                               @(isToggleDisabled ? "disabled" : "")>
                                     </div>
                                 </td>
                             </tr>
 
-                            <tr class="collapse bg-light shadow-sm" id="@collapseId">
+                            <tr class="collapse bg-light shadow-sm order-details-row"
+                                id="@collapseId"
+                                data-parent-row-id="@order.Id">
                                 <td colspan="9" class="p-3 bg-light">
                                     <div class="d-flex align-items-center gap-3 ps-3">
                                         <span class="text-uppercase small fw-bold text-muted">Actions:</span>
 
                                         @{
-                                            // ✅ CONSTRUCT FULL ADDRESS STRING
-                                            // Format: Country, Divison, City, Thana, SubOffice, Street, PostalCode
                                             var addrParts = new List<string>();
                                             if (!string.IsNullOrWhiteSpace(order.Country)) addrParts.Add(order.Country);
                                             if (!string.IsNullOrWhiteSpace(order.Divison)) addrParts.Add(order.Divison);
@@ -176,12 +242,11 @@
                                                 data-id="@orderIdDisplay"
                                                 data-status="@displayStatus"
                                                 data-type="@orderType"
-                                                @* --- Customer & Address IDs + Details --- *@
                                                 data-cust-id="@order.CompanyCustomerId"
-                                                data-cust-name="@order.CustomerName" @* ✅ NEW *@
+                                                data-cust-name="@order.CustomerName"
                                                 data-cust-phone="@(order.CustomerPhone ?? "N/A")"
                                                 data-addr-id="@(order.AddressId == 0 ? "N/A" : order.AddressId.ToString())"
-                                                data-full-addr="@fullAddress" @* ✅ NEW *@
+                                                data-full-addr="@fullAddress"
                                                 data-total="@FormatAmount(order.TotalAmount)"
                                                 data-net="@FormatAmount(order.NetAmount)"
                                                 data-discount="@FormatAmount(order.TotalAmount - order.NetAmount)"
@@ -202,7 +267,6 @@
                                                 data-net="@FormatRaw(order.NetAmount)"
                                                 data-paid="@FormatRaw(order.PaidAmount)"
                                                 data-delivery="@FormatRaw(order.DeliveryCharge)"
-                                                @* ✅ NEW: Passing Product Price and Discount *@
                                                 data-product-price="@FormatRaw(order.TotalAmount - order.DeliveryCharge)"
                                                 data-discount="@FormatRaw(order.DiscountAmount)">
 
@@ -211,7 +275,7 @@
                                         @if (order.Status != "Cancelled" && order.Status != "Delivered" && order.Status != "Returned" && order.Status != "Confirmed")
                                         {
                                             <button type="button" class="btn btn-sm btn-white border shadow-sm text-danger"
-                                                    id="btn-cancel-@order.Id" @* ✅ NEW ID *@
+                                                    id="btn-cancel-@order.Id"
                                                     onclick="cancelOrder(@order.Id, '@orderIdDisplay')"
                                                     title="Cancel this order">
                                                 <i class="fas fa-times-circle me-1"></i> Cancel
@@ -222,38 +286,49 @@
                             </tr>
                         }
                     }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center p-5 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-3 opacity-50"></i>
+                                <div>No orders found.</div>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
-
-            <style>
-                .transition-icon {
-                    transition: transform 0.2s ease;
-                }
-
-                [aria-expanded="true"] .transition-icon {
-                    transform: rotate(90deg);
-                }
-
-                .shadow-inset {
-                    box-shadow: inset 0 4px 6px -4px rgba(0,0,0,0.1);
-                }
-
-                .modal-backdrop {
-                    z-index: 1040 !important;
-                }
-
-                .modal {
-                    z-index: 1050 !important;
-                }
-
-                .modal-dialog {
-                    z-index: 1060 !important;
-                }
-            </style>
         </div>
-    </div>
 
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex justify-content-center p-3 bg-white border-top">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 shadow-sm">
+                        <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage - 1)&pageSize=@Model.PageSize">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="/order/all?page=@i&pageSize=@Model.PageSize">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage + 1)&pageSize=@Model.PageSize">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
 </div>
+
 <div class="modal fade" id="advanceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -267,7 +342,7 @@
                     <input type="hidden" id="adv_customerId" name="CustomerId" />
                     <input type="hidden" id="adv_orderRef" name="TransactionReference" />
 
-                    @* ✅ NEW ROW: Product Price & Discount *@
+                    @* Product Price & Discount *@
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small text-muted">Product Price</label>
@@ -363,7 +438,6 @@
                     </div>
 
                     <div class="mb-3">
-                        @* ✅ ADDED: ID 'adv_note_star' and class 'd-none' *@
                         <label class="form-label small">Note / Remarks <span id="adv_note_star" class="text-danger d-none">*</span></label>
                         <textarea id="adv_note" name="Notes" class="form-control form-control-sm" rows="2" placeholder="e.g. Bkash Trx ID..."></textarea>
                     </div>
@@ -385,113 +459,67 @@
             <div class="modal-body">
                 <div class="info-section status-section">
                     <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
-                        </svg>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" /><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" /></svg>
                         <span>Order Status</span>
                     </div>
                     <div class="section-content">
                         <h4 id="m-status" class="mb-0"></h4>
                     </div>
                 </div>
+
                 <div class="info-section">
                     <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                        </svg>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /></svg>
                         <span>General Information</span>
                     </div>
                     <div class="section-content">
                         <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Order Type</span>
-                                <span class="info-value" id="m-type"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Customer ID</span>
-                                <span class="info-value" id="m-cust-id"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Phone Number</span>
-                                <span class="info-value" id="m-cust-phone"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Address ID</span>
-                                <span class="info-value" id="m-addr-id"></span>
-                            </div>
+                            <div class="info-item"><span class="info-label">Order Type</span><span class="info-value" id="m-type"></span></div>
+                            <div class="info-item"><span class="info-label">Customer ID</span><span class="info-value" id="m-cust-id"></span></div>
+                            <div class="info-item"><span class="info-label">Phone Number</span><span class="info-value" id="m-cust-phone"></span></div>
+                            <div class="info-item"><span class="info-label">Address ID</span><span class="info-value" id="m-addr-id"></span></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="info-section financial-section">
                     <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" />
-                        </svg>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" /></svg>
                         <span>Financial Breakdown</span>
                     </div>
                     <div class="section-content">
                         <div class="finance-grid">
-                            <div class="finance-item">
-                                <span class="finance-label">Total Amount</span>
-                                <span class="finance-value">Tk. <span id="m-total"></span></span>
-                            </div>
-                            <div class="finance-item discount">
-                                <span class="finance-label">Discount</span>
-                                <span class="finance-value">- Tk. <span id="m-discount"></span></span>
-                            </div>
-                            <div class="finance-item net">
-                                <span class="finance-label">Net Amount</span>
-                                <span class="finance-value">Tk. <span id="m-net"></span></span>
-                            </div>
+                            <div class="finance-item"><span class="finance-label">Total Amount</span><span class="finance-value">Tk. <span id="m-total"></span></span></div>
+                            <div class="finance-item discount"><span class="finance-label">Discount</span><span class="finance-value">- Tk. <span id="m-discount"></span></span></div>
+                            <div class="finance-item net"><span class="finance-label">Net Amount</span><span class="finance-value">Tk. <span id="m-net"></span></span></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="info-section">
                     <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" />
-                        </svg>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" /></svg>
                         <span>System & Audit</span>
                     </div>
                     <div class="section-content">
                         <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Created By</span>
-                                <span class="info-value" id="m-created-by"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Created At</span>
-                                <span class="info-value" id="m-created-at"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Updated By</span>
-                                <span class="info-value" id="m-updated-by"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Updated At</span>
-                                <span class="info-value" id="m-updated-at"></span>
-                            </div>
+                            <div class="info-item"><span class="info-label">Created By</span><span class="info-value" id="m-created-by"></span></div>
+                            <div class="info-item"><span class="info-label">Created At</span><span class="info-value" id="m-created-at"></span></div>
+                            <div class="info-item"><span class="info-label">Updated By</span><span class="info-value" id="m-updated-by"></span></div>
+                            <div class="info-item"><span class="info-label">Updated At</span><span class="info-value" id="m-updated-at"></span></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="info-section">
                     <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z" />
-                        </svg>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z" /></svg>
                         <span>Technical Data</span>
                     </div>
                     <div class="section-content">
                         <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">IP Address</span>
-                                <span class="info-value code" id="m-ip"></span>
-                            </div>
-                            <div class="info-item full-width">
-                                <span class="info-label">Session ID</span>
-                                <span class="info-value code" id="m-session"></span>
-                            </div>
+                            <div class="info-item"><span class="info-label">IP Address</span><span class="info-value code" id="m-ip"></span></div>
+                            <div class="info-item full-width"><span class="info-label">Session ID</span><span class="info-value code" id="m-session"></span></div>
                         </div>
                     </div>
                 </div>
@@ -501,46 +529,164 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="~/js/order-details.js" asp-append-version="true"></script>
     <script src="~/js/order-actions.js" asp-append-version="true"></script>
 
-    @*   Handles scrolling and highlighting *@
     <script>
+        let applyFilters; // Global Reference
+
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Check URL for highlightId
+
+            // --- 1. FILTER LOGIC ---
+            const filterOrder = document.getElementById('filter-order-status');
+            const filterPay = document.getElementById('filter-pay-status');
+            const visibleCountEl = document.getElementById('visible-count');
+
+            // Define Function
+            applyFilters = function() {
+                const oVal = filterOrder ? filterOrder.value : 'all';
+                const pVal = filterPay ? filterPay.value : 'all';
+                let visible = 0;
+
+                const rows = document.querySelectorAll('.order-row-item');
+
+                rows.forEach(row => {
+                    // Logic reads these attributes. We must keep them updated!
+                    const rowStatus = row.getAttribute('data-order-status');
+                    const rowPay = row.getAttribute('data-pay-status');
+                    const rowId = row.getAttribute('id').replace('order-row-', '');
+
+                    const collapseEl = document.getElementById('collapse_' + rowId);
+
+                    const matchOrder = (oVal === 'all') || (oVal === rowStatus);
+                    const matchPay = (pVal === 'all') || (pVal === rowPay);
+
+                    if (matchOrder && matchPay) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                        if(collapseEl && collapseEl.classList.contains('show')){
+                            collapseEl.classList.remove('show');
+                        }
+                    }
+                });
+
+                if(visibleCountEl) visibleCountEl.textContent = visible;
+            }
+
+            // Bind Events
+            if(filterOrder) filterOrder.addEventListener('change', applyFilters);
+            if(filterPay) filterPay.addEventListener('change', applyFilters);
+
+            // Assign to Global Window for external JS calls
+            window.applyFilters = applyFilters;
+            window.resetFilters = function() {
+                if(filterOrder) filterOrder.value = 'all';
+                if(filterPay) filterPay.value = 'all';
+                applyFilters();
+            };
+
+            // --- 2. HIGHLIGHT LOGIC ---
             const urlParams = new URLSearchParams(window.location.search);
             const highlightId = urlParams.get('highlightId');
 
             if (highlightId) {
                 const targetRow = document.getElementById('order-row-' + highlightId);
-
                 if (targetRow) {
-                    // Scroll into view
                     targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                    // Apply visual highlight
                     targetRow.classList.add('row-highlight');
-
-                    // Remove the query param from URL instantly so refresh doesn't trigger it
                     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                     window.history.replaceState({ path: newUrl }, '', newUrl);
                 }
             }
 
-            //  Remove highlight when clicking ANY row
             const tableBody = document.querySelector('tbody');
             if (tableBody) {
                 tableBody.addEventListener('click', function(e) {
-                    // Find the currently highlighted row
                     const highlightedRow = document.querySelector('.row-highlight');
-
-                    // If one exists, remove the class
-                    if (highlightedRow) {
-                        highlightedRow.classList.remove('row-highlight');
-                    }
+                    if (highlightedRow) highlightedRow.classList.remove('row-highlight');
                 });
             }
         });
+
+        // --- 3. OVERRIDE CANCEL FUNCTION (SweetAlert + Filter Fix) ---
+        window.cancelOrder = function(orderId, orderDisplayId) {
+
+            Swal.fire({
+                title: 'Cancel Order?',
+                text: `Are you sure you want to cancel ${orderDisplayId}? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({ title: 'Processing...', didOpen: () => { Swal.showLoading() } });
+
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+
+                    const formData = new URLSearchParams();
+                    formData.append('id', orderId);
+                    formData.append('status', 'Cancelled');
+
+                    fetch('/SalesOrder/UpdateStatus', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': token
+                        },
+                        body: formData.toString()
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Cancelled!', 'Order has been cancelled.', 'success');
+
+                            // 1. Update Badge
+                            const badge = document.getElementById(`status-badge-${orderId}`);
+                            if (badge) {
+                                badge.textContent = "Cancelled";
+                                badge.className = "badge bg-danger text-white";
+                            }
+
+                            // 2. Hide Cancel Button & Disable Toggle
+                            const cancelBtn = document.getElementById(`btn-cancel-${orderId}`);
+                            if (cancelBtn) cancelBtn.remove();
+
+                            const toggle = document.getElementById(`toggle-${orderId}`);
+                            if (toggle) {
+                                toggle.disabled = true;
+                                toggle.checked = false;
+                            }
+
+                            // 3. ✅ Update Data Attribute
+                            const row = document.getElementById(`order-row-${orderId}`);
+                            if (row) {
+                                row.setAttribute('data-order-status', 'Cancelled');
+                                row.classList.add('row-highlight');
+                            }
+
+                            // 4. ✅ Re-run filter logic
+                            if (typeof window.applyFilters === 'function') {
+                                window.applyFilters();
+                            }
+
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Network Error.', 'error');
+                    });
+                }
+            });
+        };
     </script>
 }
 

@@ -48,28 +48,44 @@ namespace MDUA.DataAccess
         public List<string> GetDistricts(string division)
         {
             var list = new List<string>();
-            string sql = "SELECT DISTINCT DistrictEn FROM PostalCodes WHERE DivisionEn = @Div ORDER BY DistrictEn";
+
+            // 1. Build SQL dynamically based on whether 'division' is provided
+            string sql;
+            if (string.IsNullOrWhiteSpace(division))
+            {
+                // NO Division provided -> Return ALL unique districts
+                sql = "SELECT DISTINCT DistrictEn FROM PostalCodes ORDER BY DistrictEn";
+            }
+            else
+            {
+                // Division provided -> Filter by that division
+                sql = "SELECT DISTINCT DistrictEn FROM PostalCodes WHERE DivisionEn = @Div ORDER BY DistrictEn";
+            }
 
             using (var cmd = GetSQLCommand(sql))
             {
-                // ✅ FIX: Open Connection
                 if (cmd.Connection.State != ConnectionState.Open)
                     cmd.Connection.Open();
 
-                AddParameter(cmd, pNVarChar("Div", 100, division));
+                // 2. Only add the parameter if we are using the WHERE clause
+                if (!string.IsNullOrWhiteSpace(division))
+                {
+                    AddParameter(cmd, pNVarChar("Div", 100, division));
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         if (reader["DistrictEn"] != DBNull.Value)
+                        {
                             list.Add(reader["DistrictEn"].ToString());
+                        }
                     }
                 }
             }
             return list;
         }
-
         // 3. Get Thanas by District
         public List<string> GetThanas(string district)
         {

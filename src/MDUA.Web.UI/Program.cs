@@ -1,6 +1,8 @@
 ﻿using DotNetEnv;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
+using Fido2NetLib;
+
 
 using MDUA.Web.UI.Hubs;
 using MDUA.Web.UI.Services;
@@ -14,12 +16,12 @@ Env.Load();
 // 2. Load nvironment Variables into Configuration
 builder.Configuration.AddEnvironmentVariables();
 //System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
-// 1. Register Services and Facades
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
+builder.Services.AddHttpClient<ISmsService, SmsService>();
 
-// ✅ NEW: Add SignalR Service
+// ✅ Add SignalR Service
 builder.Services.AddSignalR();
 
 // 2. Configure Authentication with "Real World" Validation
@@ -98,6 +100,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             }
         };
     });
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache(); // Stores session in memory
@@ -107,7 +111,79 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddSingleton<IFido2>(_ =>
+{
+    // 1. Load raw values
+    var serverDomain = builder.Configuration["Fido2:ServerDomain"];
+    var serverName = builder.Configuration["Fido2:ServerName"];
+    var originsStr = builder.Configuration["Fido2:Origins"];
+    var driftConfig = builder.Configuration["Fido2:TimestampDriftTolerance"];
+    var driftTolerance = int.Parse(driftConfig ?? "300000");
+
+    // 2. Parse Origins
+    var originsSet = new HashSet<string>(originsStr?.Split(',') ?? Array.Empty<string>());
+
+    // 3. Check for missing config (Graceful Failure)
+    if (string.IsNullOrEmpty(serverDomain) || originsSet.Count == 0)
+    {
+        // LOG the error, but DO NOT CRASH the app.
+        Console.WriteLine("****************************************************************");
+        Console.WriteLine("WARNING: Fido2 configuration is missing! Passkeys will not work.");
+        Console.WriteLine("Check your .env file or environment variables.");
+        Console.WriteLine("****************************************************************");
+
+        // Use fallbacks to prevent null reference crashes later, 
+        // though Fido2 logic will likely reject requests.
+        serverDomain = serverDomain ?? "localhost";
+        serverName = serverName ?? "Unknown App";
+    }
+
+    return new Fido2(new Fido2Configuration
+    {
+        ServerDomain = serverDomain,
+        ServerName = serverName,
+        Origins = new HashSet<string>(originsStr?.Split(',') ?? Array.Empty<string>()),
+        TimestampDriftTolerance = driftTolerance
+    });
+}); 
 var app = builder.Build();
+
+// 🔍 STARTUP CONFIGURATION DEEP DIVE
+// =========================================================
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine($"\n[CONFIG] Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine("[CONFIG] Loaded Configuration Providers:");
+
+// 👇 This loop prints EVERY source .NET is reading from (JSON, Secrets, Env, etc.)
+foreach (var provider in ((IConfigurationRoot)app.Configuration).Providers)
+{
+    Console.WriteLine($"   - {provider}");
+}
+Console.ResetColor();
+
+var config = app.Configuration;
+string apiKey = config["TextBee:ApiKey"];
+string deviceId = config["TextBee:DeviceId"];
+
+if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(deviceId))
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("\n/***************************************************/");
+    Console.WriteLine(" ❌ CRITICAL ERROR: SMS Configuration is MISSING!");
+    Console.WriteLine(" ---------------------------------------------------");
+    Console.WriteLine($" Key 'TextBee:ApiKey'   : {(string.IsNullOrWhiteSpace(apiKey) ? "MISSING" : "FOUND")}");
+    Console.WriteLine($" Key 'TextBee:DeviceId' : {(string.IsNullOrWhiteSpace(deviceId) ? "MISSING" : "FOUND")}");
+    Console.WriteLine("/***************************************************/\n");
+    Console.ResetColor();
+}
+else
+{
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"\n✅ SUCCESS: SMS Config Loaded! (Device: {deviceId})\n");
+    Console.ResetColor();
+}
+// =========================================================
 
 // 3. Middlewares
 if (!app.Environment.IsDevelopment())

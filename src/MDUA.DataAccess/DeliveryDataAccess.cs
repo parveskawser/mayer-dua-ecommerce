@@ -241,7 +241,7 @@ namespace MDUA.DataAccess
                                     ProductVariant = new ProductVariant
                                     {
                                         VariantName = reader.IsDBNull(reader.GetOrdinal("VariantName")) ? "" : reader.GetString(reader.GetOrdinal("VariantName")),
-                                        Sku = reader.IsDBNull(reader.GetOrdinal("Sku")) ? "" : reader.GetString(reader.GetOrdinal("Sku")),
+                                        SKU = reader.IsDBNull(reader.GetOrdinal("Sku")) ? "" : reader.GetString(reader.GetOrdinal("Sku")),
                                         Product = new Product
                                         {
                                             ProductName = reader.IsDBNull(reader.GetOrdinal("ProductName")) ? "Unknown" : reader.GetString(reader.GetOrdinal("ProductName"))

@@ -367,53 +367,58 @@ namespace MDUA.Web.UI.Controllers
 
         [Route("/order/all")]
         [HttpGet]
-        public IActionResult AllOrders()
+        public IActionResult AllOrders(int page = 1, int pageSize = 10)
         {
             if (!HasPermission("Order.View")) return HandleAccessDenied();
 
             try
             {
-                int companyId = 1;
-                var claim = User.FindFirst("CompanyId") ?? User.FindFirst("TargetCompanyId");
-                if (claim != null && int.TryParse(claim.Value, out int parsedId))
+                int totalRows;
+                // Call the NEW Facade method
+                var orders = _orderFacade.GetPagedOrdersForAdmin(page, pageSize, out totalRows);
+
+                var viewModel = new MDUA.Web.UI.Models.PagedOrderViewModel
                 {
-                    companyId = parsedId;
-                }
+                    Orders = orders,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalRows = totalRows
+                };
 
-                var orders = _orderFacade.GetAllOrdersForAdmin();
-                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
-                ViewBag.PaymentMethods = paymentMethods;
-
+                // Load specific settings for UI
+                int companyId = 1; // Logic to get company ID...
                 var deliverySettings = _settingsFacade.GetDeliverySettings(companyId);
-
                 ViewBag.DeliveryDhaka = deliverySettings["dhaka"];
                 ViewBag.DeliveryOutside = deliverySettings["outside"];
 
-                return View(orders);
+                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
+                ViewBag.PaymentMethods = paymentMethods;
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
                 ViewData["ErrorMessage"] = "Failed to load: " + ex.Message;
-                return View(new List<SalesOrderHeader>());
+                return View(new MDUA.Web.UI.Models.PagedOrderViewModel());
             }
         }
 
 
         [HttpPost]
         [Route("order/place")]
-        public IActionResult PlaceOrder([FromBody] SalesOrderHeader model)
+        public async Task<IActionResult> PlaceOrder([FromBody] SalesOrderHeader model)
         {
-            // 1. Safety Check: If JSON binding failed (e.g., sending null for an int), model will be null.
             if (model == null)
             {
-
-                return BadRequest(new { success = false, message = "Invalid Data: Please select a product variant and fill all required fields." });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid Data: Please select a product variant and fill all required fields."
+                });
             }
 
             try
             {
-                // ✅ MOVED HERE (Outside the 'if' block)
-
                 // ---------------------------------------------------------
                 // 1. CAPTURE IP ADDRESS
                 // ---------------------------------------------------------
@@ -424,7 +429,6 @@ namespace MDUA.Web.UI.Controllers
                     ipAddress = Request.Headers["X-Forwarded-For"].FirstOrDefault();
                 }
 
-                // Handle Localhost IPv6
                 if (ipAddress == "::1") ipAddress = "127.0.0.1";
 
                 if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Length > 45)
@@ -437,7 +441,6 @@ namespace MDUA.Web.UI.Controllers
                 // ---------------------------------------------------------
                 // 2. CAPTURE SESSION ID
                 // ---------------------------------------------------------
-                // "Kickstart" session if empty to ensure the ID is stable
                 if (string.IsNullOrEmpty(HttpContext.Session.GetString("IsActive")))
                 {
                     HttpContext.Session.SetString("IsActive", "true");
@@ -446,17 +449,30 @@ namespace MDUA.Web.UI.Controllers
                 model.SessionId = HttpContext.Session.Id;
 
                 // ---------------------------------------------------------
-                // 3. PROCEED
+                // 3. PROCEED (✅ AWAIT REQUIRED)
                 // ---------------------------------------------------------
-                var orderId = _orderFacade.PlaceGuestOrder(model);
-                return Json(new { success = true, orderId = orderId });
+                string orderId = await _orderFacade.PlaceGuestOrder(model);
+
+                return Json(new
+                {
+                    success = true,
+                    orderId = orderId
+                });
             }
             catch (Exception ex)
             {
-                var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return Json(new { success = false, message = realError });
+                var realError = ex.InnerException != null
+                    ? ex.InnerException.Message
+                    : ex.Message;
+
+                return Json(new
+                {
+                    success = false,
+                    message = realError
+                });
             }
         }
+
 
 
         [HttpPost]
@@ -542,11 +558,9 @@ namespace MDUA.Web.UI.Controllers
 
                 // 2. Call Facade to update DB
 
-                // We reuse the update logic. You might need to add a method to your Facade 
 
                 // if UpdateOrderConfirmation is too specific.
 
-                // Let's assume we add a generic UpdateStatus method to Facade
 
                 _orderFacade.UpdateOrderStatus(id, status);
 

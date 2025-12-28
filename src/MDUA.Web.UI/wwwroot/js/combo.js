@@ -632,6 +632,24 @@ $(document).ready(function () {
 
     populateDivisions();
 
+    // NEW: Load all districts immediately
+    function populateAllDistricts() {
+        // We assume your controller can return ALL districts if no division is passed
+        // OR you might need to create a specific endpoint like '/order/get-all-districts'
+        // For now, we try calling get-districts without parameters.
+        $.get('/order/get-districts', function (data) {
+            enableSelect('#district-select', data, 'Select District');
+        }).fail(function () {
+            $('#district-select').empty().append('<option>Error loading districts</option>');
+        });
+    }
+
+    // Call this instead of populateDivisions
+    populateAllDistricts();
+
+    // REMOVED: $('#division-select').change(...) logic is no longer needed 
+    // because we don't have a visible division dropdown.
+
     $('#division-select').change(function () {
         let division = $(this).val();
 
@@ -654,9 +672,15 @@ $(document).ready(function () {
     $('#district-select').change(function () {
         let district = $(this).val();
 
+        // NEW: Try to find the division for this district from the option data
+        // (Assuming your API returns division info, if not, this part is optional but good for data integrity)
+        // If your API data doesn't have 'division' in the option dataset, the backend usually figures it out from City anyway.
+        // $('#hidden-division').val("..."); 
+
         resetSelect('#thana-select', 'Loading...');
         resetSelect('#suboffice-select', 'Select Thana first');
 
+        // Delivery Charge Logic (This remains exactly the same)
         let charge = delivery.outside;
         if (district && (district.toLowerCase().includes('dhaka') || district.trim() === 'Dhaka')) {
             charge = delivery.dhaka;
@@ -675,7 +699,6 @@ $(document).ready(function () {
             resetSelect('#thana-select', 'Select District first');
         }
     });
-
     $('#thana-select').change(function () {
         let thana = $(this).val();
 
@@ -1059,31 +1082,39 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
             if (data.found) {
                 $input.css('border-color', '#2ecc71');
 
-                let $divSelect = $('#division-select');
-                $divSelect.val(data.division).trigger('change');
+                // 1. Set Hidden Division
+                $('#hidden-division').val(data.division);
 
-                setTimeout(() => {
-                    let $distSelect = $('#district-select');
-                    $distSelect.val(data.district).trigger('change');
-                }, 500);
+                // 2. Set District Directly (No timeout needed anymore)
+                let $distSelect = $('#district-select');
+                $distSelect.val(data.district).trigger('change');
 
+                // 3. Load Thana and Suboffice (Keep timeout slightly to allow Thana API to load after District change triggers)
                 setTimeout(() => {
                     if (data.thana) {
                         let $thanaSelect = $('#thana-select');
+                        // Force load the specific thana option immediately
                         $thanaSelect.empty()
                             .append(`<option value="${data.thana}" selected>${data.thana}</option>`)
                             .prop('disabled', false);
+
+                        // Trigger change to load suboffices
+                        $thanaSelect.trigger('change');
                     }
 
-                    if (data.subOffice) {
-                        let $subSelect = $('#suboffice-select');
-                        $subSelect.empty()
-                            .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
+                    // 4. Load SubOffice
+                    setTimeout(() => {
+                        if (data.subOffice) {
+                            let $subSelect = $('#suboffice-select');
+                            $subSelect.empty()
+                                .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
 
-                        $subSelect.find(':selected').data('code', code);
-                        $subSelect.prop('disabled', false);
-                    }
-                }, 800);
+                            $subSelect.find(':selected').data('code', code);
+                            $subSelect.prop('disabled', false);
+                        }
+                    }, 300); // Small delay for SubOffice API
+
+                }, 500); // Delay for Thana API (triggered by district change)
 
             } else {
                 $input.css('border-color', '#e74c3c');
@@ -1215,6 +1246,17 @@ $(document).ready(function () {
         const msg = $('#chat-input-field').val().trim();
         const currentName = chatUserName || "Guest";
 
+        // ✅ Capture the current page's Product ID
+        let contextProductId = null;
+        if (typeof window.baseProductInfo !== 'undefined' && window.baseProductInfo.id) {
+            contextProductId = window.baseProductInfo.id;
+        }
+
+        // 🔍 DEBUG: Log what we're about to send
+        console.log('[CHAT DEBUG] Sending message:', msg);
+        console.log('[CHAT DEBUG] Product ID:', contextProductId);
+        console.log('[CHAT DEBUG] baseProductInfo:', window.baseProductInfo);
+
         if (msg) {
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
 
@@ -1222,30 +1264,29 @@ $(document).ready(function () {
             appendCustomerMessage("You", msg, 'outgoing');
             $('#chat-input-field').val('');
 
-            // 2. Send to HTTP Endpoint (Triggers AI)
+            // 2. Build message data
             const messageData = {
                 SessionGuid: chatSessionId,
                 SenderName: currentName,
-                MessageText: msg
+                MessageText: msg,
+                ContextProductId: contextProductId // ✅ Sends the specific Product ID
             };
 
+            // 🔍 DEBUG: Log the actual payload
+            console.log('[CHAT DEBUG] Full payload:', JSON.stringify(messageData, null, 2));
+
+            // 3. Send to HTTP Endpoint
             $.ajax({
                 url: '/chat/send',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(messageData),
                 success: function (response) {
-                    console.log('✅ Message sent successfully');
-
-                    // If human handoff occurred, show notification
-                    if (response.handedOff) {
-                        appendCustomerMessage("System",
-                            "🔔 A support agent will join shortly.",
-                            'incoming');
-                    }
+                    console.log('[CHAT DEBUG] ✅ Message sent successfully', response);
                 },
                 error: function (xhr, status, error) {
-                    console.error('❌ Error sending message:', error);
+                    console.error('[CHAT DEBUG] ❌ Error sending message:', error);
+                    console.error('[CHAT DEBUG] Response:', xhr.responseText);
                     appendCustomerMessage("System",
                         "⚠️ Failed to send message. Please check your connection.",
                         'incoming');
@@ -1253,6 +1294,7 @@ $(document).ready(function () {
             });
         }
     }
+
 
     // ==================================================
     // 5. UI HELPERS

@@ -8,17 +8,16 @@ namespace MDUA.Facade.Interface
     {
         UserLoginResult GetUserLoginBy(string email, string password);
 
-        // New method to fetch user by Id
+        // fetch user by Id
         UserLoginResult GetUserLoginById(int userId);
 
         bool IsEmailExists(string email);
-
+        UserLogin GetUserByEmail(string email);
         List<string> GetUserPermissionNamesByUserId(int userId);
         bool IsUserAuthorized(int userId, string actionName);
         List<string> GetAllUserPermissionNames(int userId);
 
-        Guid CreateUserSession(int userId, string ipAddress, string deviceInfo);
-        bool IsSessionValid(Guid sessionKey);
+        Guid CreateUserSession(int userId, string ipAddress, string deviceInfo, string loginMethod); bool IsSessionValid(Guid sessionKey);
         void InvalidateSession(Guid sessionKey);
 
         (string secretKey, string qrCodeUri) SetupTwoFactor(string username);
@@ -33,5 +32,13 @@ namespace MDUA.Facade.Interface
         void InvalidateAllUserSessions(int userId);
         UserLogin GetUserByUsername(string username);
         void UpdatePassword(int userId, string newPassword);
+
+
+        UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId);
+        void UpdatePasskeyCounter(int id, uint counter);
+
+        void AddUserPasskey(UserPasskey passkey);
+        List<UserPasskey> GetPasskeysByUserId(int userId);
+        void DeleteUserPasskey(int id);
     }
 }

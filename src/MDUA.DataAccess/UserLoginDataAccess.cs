@@ -3,12 +3,14 @@ using System.Data;
 using System.Data.SqlClient;
 using MDUA.Entities;
 using MDUA.Framework;
-using MDUA.DataAccess.Interface; // ✅ Required to find the interface
+using MDUA.DataAccess.Interface; 
 
 namespace MDUA.DataAccess
 {
     public partial class UserLoginDataAccess : IUserLoginDataAccess
     {
+        private const string GET_USER_PASSKEY_BY_CRED_ID = "GetUserPasskeyByCredentialId";
+        private const string UPDATE_USER_PASSKEY_COUNTER = "UpdateUserPasskeyCounter";
         public UserLogin GetUserLogin(string email, string password)
 
         {
@@ -75,7 +77,6 @@ namespace MDUA.DataAccess
 
                         var user = new UserLogin();
 
-                        // --- map required fields (add more if your entity has them) ---
 
                         user.Id = reader.GetInt32(reader.GetOrdinal("Id"));
 
@@ -107,7 +108,7 @@ namespace MDUA.DataAccess
 
                             user.UpdatedAt = reader.GetDateTime(updatedAtIdx);
 
-                        // ✅ THE TWO IMPORTANT ONES
+                        // THE TWO IMPORTANT ONES
 
                         int tfaIdx = reader.GetOrdinal("IsTwoFactorEnabled");
 
@@ -158,7 +159,6 @@ namespace MDUA.DataAccess
             }
         }
 
-        // 🔐 THIS is the important part
         public void InvalidateAllSessionsByUser(int userId)
         {
             string sql = """
@@ -190,7 +190,6 @@ namespace MDUA.DataAccess
 
         public void InvalidateAllSessions(int userId)
         {
-            // Corrected SQL matching your [dbo].[UserSession] table
             string sql = @"
         UPDATE [dbo].[UserSession] 
         SET [IsActive] = 0, 
@@ -208,7 +207,6 @@ namespace MDUA.DataAccess
 
         public UserLogin GetByUsername(string username)
         {
-            // ✅ FIX: Removed 'AND [IsActive] = 1' because your table doesn't have that column
             string sql = "SELECT * FROM [UserLogin] WHERE [UserName] = @UserName";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
@@ -255,5 +253,139 @@ namespace MDUA.DataAccess
 
             return null;
         }
+        public void AddUserPasskey(UserPasskey passkey)
+        {
+            // Matches SP: [dbo].[InsertUserPasskey]
+            using (SqlCommand cmd = GetSPCommand("InsertUserPasskey"))
+            {
+                // Output Parameter
+                SqlParameter outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outId);
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = passkey.UserId });
+                cmd.Parameters.Add(new SqlParameter("@CredentialId", SqlDbType.VarBinary, 450) { Value = passkey.CredentialId });
+                cmd.Parameters.Add(new SqlParameter("@PublicKey", SqlDbType.VarBinary) { Value = passkey.PublicKey });
+                cmd.Parameters.Add(new SqlParameter("@SignatureCounter", SqlDbType.Int) { Value = passkey.SignatureCounter });
+                cmd.Parameters.Add(new SqlParameter("@CredType", SqlDbType.NVarChar, 50) { Value = passkey.CredType ?? "public-key" });
+                cmd.Parameters.Add(new SqlParameter("@RegDate", SqlDbType.DateTime) { Value = passkey.RegDate });
+                cmd.Parameters.Add(new SqlParameter("@AaGuid", SqlDbType.UniqueIdentifier) { Value = passkey.AaGuid });
+
+                ExecuteCommand(cmd);
+                passkey.Id = (int)outId.Value;
+            }
+        }
+
+        public List<UserPasskey> GetPasskeysByUserId(int userId)
+        {
+            List<UserPasskey> list = new List<UserPasskey>();
+            using (SqlCommand cmd = GetSPCommand("GetUserPasskeyByUserId"))
+            {
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+                // ✅ CRITICAL FIX: Open the connection before reading
+                if (cmd.Connection.State == ConnectionState.Closed)
+                    cmd.Connection.Open();
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new UserPasskey
+                        {
+                            Id = (int)reader["Id"],
+                            UserId = (int)reader["UserId"],
+                            CredentialId = (byte[])reader["CredentialId"],
+                            PublicKey = (byte[])reader["PublicKey"],
+                            SignatureCounter = (int)reader["SignatureCounter"],
+                            CredType = reader["CredType"] != DBNull.Value ? (string)reader["CredType"] : "public-key",
+                            RegDate = reader["RegDate"] != DBNull.Value ? (DateTime)reader["RegDate"] : DateTime.MinValue,
+                            AaGuid = reader["AaGuid"] != DBNull.Value ? (Guid)reader["AaGuid"] : Guid.Empty
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+        public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
+        {
+            UserPasskeyResult result = null;
+
+            // Use GetSPCommand from BaseDataAccess
+            using (SqlCommand cmd = GetSPCommand(GET_USER_PASSKEY_BY_CRED_ID))
+            {
+                // Assuming pVarBinary is available or we add the parameter manually
+                var p = new SqlParameter("@CredentialId", SqlDbType.VarBinary) { Value = credentialId };
+                cmd.Parameters.Add(p);
+
+                // Use SelectRecords from BaseDataAccess
+                SqlDataReader reader;
+                SelectRecords(cmd, out reader);
+
+                using (reader)
+                {
+                    if (reader.Read())
+                    {
+                        result = new UserPasskeyResult
+                        {
+                            Id = (int)reader["Id"],
+                            UserId = (int)reader["UserId"],
+                            PublicKey = (byte[])reader["PublicKey"],
+                            SignatureCounter = (int)reader["SignatureCounter"],
+                            CredentialId = (byte[])reader["CredentialId"]
+                        };
+                    }
+                }
+            }
+            return result;
+        }
+       
+        public void UpdatePasskeyCounter(int id, uint counter)
+        {
+            using (SqlCommand cmd = GetSPCommand(UPDATE_USER_PASSKEY_COUNTER))
+            {
+                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+                cmd.Parameters.Add(new SqlParameter("@SignatureCounter", SqlDbType.Int) { Value = (int)counter });
+
+                // Execute update
+                UpdateRecord(cmd);
+            }
+        }
+
+        public UserLogin GetByEmail(string email)
+        {
+            string sql = "SELECT * FROM [UserLogin] WHERE [Email] = @Email";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                cmd.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar, 255) { Value = email });
+
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        // Reuse your mapping logic or create a private MapUser(reader) helper
+                        var user = new UserLogin();
+                        user.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+                        user.UserName = reader["UserName"] as string;
+                        user.Email = reader["Email"] as string;
+                        user.Password = reader["Password"] as string; // Needed for internal logic
+                        user.CompanyId = reader.GetInt32(reader.GetOrdinal("CompanyId"));
+
+                        // Critical 2FA Mapping
+                        int tfaIdx = reader.GetOrdinal("IsTwoFactorEnabled");
+                        user.IsTwoFactorEnabled = !reader.IsDBNull(tfaIdx) && reader.GetBoolean(tfaIdx);
+
+                        int secretIdx = reader.GetOrdinal("TwoFactorSecret");
+                        user.TwoFactorSecret = reader.IsDBNull(secretIdx) ? null : reader.GetString(secretIdx);
+
+                        return user;
+                    }
+                }
+            }
+            return null;
+        }
     }
+
 }

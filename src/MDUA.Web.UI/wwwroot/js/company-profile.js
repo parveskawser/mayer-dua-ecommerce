@@ -1,4 +1,11 @@
 $(document).ready(function () {
+
+    // --- MAGIC FIX: Move Modal to Body ---
+    // This prevents the "backdrop over modal" issue in Admin Templates
+    if ($('#cropModal').length > 0) {
+        $('#cropModal').appendTo("body");
+    }
+
     var $modal = $('#cropModal');
     var image = document.getElementById('imageToCrop');
     var cropper;
@@ -16,7 +23,7 @@ $(document).ready(function () {
         }
     });
 
-    // 2. Initialize Cropper
+    // 2. Initialize Cropper & Clean up
     $modal.on('shown.bs.modal', function () {
         cropper = new Cropper(image, {
             aspectRatio: 1,
@@ -32,18 +39,21 @@ $(document).ready(function () {
             cropper.destroy();
             cropper = null;
         }
+        // FAILSAFE: Remove any stuck backdrops just in case
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
     });
 
     // 3. Handle Ratio Buttons
-    window.setRatio = function(ratio) {
-        if(cropper) cropper.setAspectRatio(ratio);
+    window.setRatio = function (ratio) {
+        if (cropper) cropper.setAspectRatio(ratio);
         $(".fluffy-btn-option").removeClass("active");
         $(event.target).addClass("active");
     };
 
     // 4. Manual Dimension Update
-    $("#cropWidth, #cropHeight").on('change keyup', function() {
-        if(cropper) {
+    $("#cropWidth, #cropHeight").on('change keyup', function () {
+        if (cropper) {
             cropper.setData({
                 width: parseFloat($("#cropWidth").val()),
                 height: parseFloat($("#cropHeight").val())
@@ -51,12 +61,10 @@ $(document).ready(function () {
         }
     });
 
-    // 5. Apply Crop
-// 5. Apply Crop (Optimized)
+    // 5. Apply Crop (Optimized)
     $("#btnCropApply").click(function () {
         if (!cropper) return;
 
-        // Force a maximum size (e.g., 500px) to prevent huge uploads
         var canvas = cropper.getCroppedCanvas({
             width: 500,
             height: 500,
@@ -66,14 +74,13 @@ $(document).ready(function () {
 
         if (canvas) {
             $("#logoPreview").attr("src", canvas.toDataURL());
-
-            // Convert to Blob (Use PNG to keep transparency, or JPEG for smaller size)
             canvas.toBlob(function (blob) {
                 croppedBlob = blob;
                 $modal.modal('hide');
-            }, 'image/png'); // You can change to 'image/jpeg' and add 0.8 quality if needed
+            }, 'image/png');
         }
     });
+
     // 6. Submit Form
     $("#companyProfileForm").submit(function (e) {
         e.preventDefault();
@@ -97,20 +104,14 @@ $(document).ready(function () {
                 "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
             },
             success: function (response) {
-                $btn.prop("disabled", false).html('<span>💾</span> Save Changes');
+                $btn.prop("disabled", false).html('<span>📝</span> Save Changes');
 
                 if (response.success) {
-                    // Update Sidebar Text
                     $(".sidebar .fw-bold").text(response.newName);
 
-                    // Update Sidebar Logo with timestamp to force refresh
                     var $sidebarImg = $(".sidebar img.rounded-circle");
                     if ($sidebarImg.length > 0) {
                         $sidebarImg.attr("src", response.newLogoUrl + "?t=" + new Date().getTime());
-                    } else {
-                        // Reload if no image existed previously
-                        location.reload();
-                        return;
                     }
 
                     Swal.fire({
@@ -132,17 +133,13 @@ $(document).ready(function () {
                     });
                 }
             },
-            // ✅ UPDATED ERROR HANDLING
             error: function (xhr, status, error) {
-                $btn.prop("disabled", false).html('<span>💾</span> Save Changes');
+                $btn.prop("disabled", false).html('<span>📝</span> Save Changes');
 
                 let errorMessage = "An unexpected error occurred.";
-
-                // Check for "Payload Too Large" (413) or Connection Reset (0)
                 if (xhr.status === 413 || xhr.status === 0) {
-                    errorMessage = "Upload failed! The image is too large. Max size allowed is 100MB.";
+                    errorMessage = "Upload failed! The image is too large.";
                 } else if (xhr.responseText) {
-                    // Try to show server error if available
                     errorMessage = xhr.responseText;
                 }
 
@@ -154,5 +151,6 @@ $(document).ready(function () {
                     background: '#fff0f0'
                 });
             }
-        });    });
+        });
+    });
 });

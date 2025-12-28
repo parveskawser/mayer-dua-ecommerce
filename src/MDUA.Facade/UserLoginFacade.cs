@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +25,7 @@ namespace MDUA.Facade
         private readonly IPermissionGroupMapDataAccess _IPermissionGroupMapDataAccess;
         private readonly IPermissionGroupDataAccess _permissionGroupDataAccess;
         private readonly IUserSessionDataAccess _userSessionDataAccess;
-
+        private readonly IUserPasskeyDataAccess _userPasskeyDataAccess;
 
         public UserLoginFacade(
             IUserLoginDataAccess userLoginDataAccess,
@@ -34,8 +33,8 @@ namespace MDUA.Facade
             IPermissionDataAccess permissionDataAccess,
             IPermissionGroupMapDataAccess permissionGroupMapDataAccess,
             IUserSessionDataAccess userSessionDataAccess,
-                IPermissionGroupDataAccess permissionGroupDataAccess)
-
+            IPermissionGroupDataAccess permissionGroupDataAccess,
+            IUserPasskeyDataAccess userPasskeyDataAccess)
         {
             _UserLoginDataAccess = userLoginDataAccess;
             _userPermissionDataAccess = userPermissionDataAccess;
@@ -43,6 +42,7 @@ namespace MDUA.Facade
             _IPermissionGroupMapDataAccess = permissionGroupMapDataAccess;
             _permissionGroupDataAccess = permissionGroupDataAccess;
             _userSessionDataAccess = userSessionDataAccess;
+            _userPasskeyDataAccess = userPasskeyDataAccess;
 
         }
 
@@ -84,25 +84,11 @@ namespace MDUA.Facade
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
 
-            // Option 1: If your DataAccess supports a specific query string
-            // This is usually more efficient than fetching GetAll()
-            string query = $"Email = '{email.Replace("'", "''")}'";
-            var users = _UserLoginDataAccess.GetByQuery(query);
+            var user = _UserLoginDataAccess.GetByEmail(email);
 
-            if (users != null && users.Count > 0)
-            {
-                return true;
-            }
-
-            // Option 2: Fallback (Load all and check in memory - use only if Option 1 fails)
-            /*
-            var allUsers = _UserLoginDataAccess.GetAll();
-            return allUsers.Any(u => u.Email.Trim().Equals(email.Trim(), StringComparison.OrdinalIgnoreCase));
-            */
-
-            return false;
+            // If user is not null, the email exists
+            return user != null;
         }
-
         public UserLoginResult GetUserLoginById(int userId)
         {
             UserLoginResult result = new UserLoginResult();
@@ -282,10 +268,16 @@ namespace MDUA.Facade
                                         .ToList();
         }
 
-
+        public UserLogin GetUserByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+            return _UserLoginDataAccess.GetByEmail(email);
+        }
 
         //  Create a session in SQL when user logs in
-        public Guid CreateUserSession(int userId, string ipAddress, string deviceInfo)
+        // In MDUA.Facade.UserLoginFacade
+
+        public Guid CreateUserSession(int userId, string ipAddress, string deviceInfo, string loginMethod)
         {
             Guid sessionKey = Guid.NewGuid();
 
@@ -297,13 +289,14 @@ namespace MDUA.Facade
                 DeviceInfo = deviceInfo,
                 CreatedAt = DateTime.UtcNow,
                 LastActiveAt = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                LoginMethod = loginMethod
             };
 
             _userSessionDataAccess.Insert(session);
+
             return sessionKey;
         }
-
         //  Check if session is valid (runs on every request)
         public bool IsSessionValid(Guid sessionKey)
         {
@@ -392,7 +385,6 @@ namespace MDUA.Facade
 
             {
 
-                Console.WriteLine($"[2FA] FAIL: code length {code.Length}, raw='{codeInput}'");
 
                 return false;
 
@@ -410,10 +402,7 @@ namespace MDUA.Facade
 
                 var serverCodeNow = totp.ComputeTotp(utcNow);
 
-                Console.WriteLine($"[2FA] UTC Now: {utcNow:O}");
-
-
-                Console.WriteLine($"[2FA] ServerNow: {serverCodeNow}");
+              
 
 
                 var window = new VerificationWindow(previous: 1, future: 1);
@@ -471,6 +460,33 @@ namespace MDUA.Facade
                 user.Password = newPassword;
                 _UserLoginDataAccess.Update(user);
             }
+
+
         }
+        public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
+        {
+            // Call new DataAccess method
+            return _UserLoginDataAccess.GetPasskeyByCredentialId(credentialId);
+        }
+
+        public void UpdatePasskeyCounter(int id, uint counter)
+        {
+            _UserLoginDataAccess.UpdatePasskeyCounter(id, counter);
+        }
+
+
+        public void AddUserPasskey(UserPasskey passkey)
+        {
+            _UserLoginDataAccess.AddUserPasskey(passkey);
+        }
+        public void DeleteUserPasskey(int id)
+        {
+            _userPasskeyDataAccess.DeleteUserPasskey(id);
+        }
+        public List<UserPasskey> GetPasskeysByUserId(int userId)
+        {
+            return _UserLoginDataAccess.GetPasskeysByUserId(userId);
+        }
+
     }
 }

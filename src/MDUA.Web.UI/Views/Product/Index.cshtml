@@ -1,5 +1,7 @@
 ﻿@model MDUA.Entities.Product
 @using System.Text.RegularExpressions
+@using MDUA.DataAccess
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Model.ProductName ?? "Combo Offer";
     Layout = null;
@@ -16,6 +18,29 @@
     var galleryImages = Model.Images?
          .Where(i => !string.IsNullOrEmpty(i.ImageUrl) && i.ImageUrl != mainImageUrl)
          .ToList();
+    
+    // ... existing code ...
+
+    // --- NEW: FETCH LOGO FROM DB ---
+    string finalLogoUrl = Model.CompanyLogoUrl; // Default to existing Model value
+    try
+    {
+        // Instantiate DataAccess using the injected Configuration
+        var companyDa = new CompanyDataAccess(Configuration);
+
+        // Fetch Company using the Safe method provided in CompanyDataAccess.cs
+        // Assuming Model.CompanyId exists in your Product entity
+        var companyObj = companyDa.GetCompanySafe(Model.CompanyId);
+
+        if (companyObj != null && !string.IsNullOrEmpty(companyObj.LogoImg))
+        {
+            finalLogoUrl = companyObj.LogoImg;
+        }
+    }
+    catch
+    {
+        // If DB fetch fails, finalLogoUrl remains as Model.CompanyLogoUrl
+    }
 
 }
 
@@ -40,11 +65,16 @@
 </head>
 <body>
     <header class="header">
-        <div class="container">
-            <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <img src="@Url.Content(string.IsNullOrEmpty(finalLogoUrl) ? "~/images/logo.jpg" : $"~{finalLogoUrl}")"
                  alt="@(Model.CompanyName ?? "Company") Logo"
                  class="logo"
                  onerror="this.onerror=null; this.src='/images/logo.jpg';" />
+
+            <div class="header-actions">
+                <a href="#order" class="btn combo-btn">Order Now</a>
+                <button id="open-status-modal" class="btn status-btn">Track My Order</button>
+            </div>
         </div>
     </header>
 
@@ -53,10 +83,6 @@
             <h1> @Model.ProductName </h1>
             <div class="product-description-content">
                 @Html.Raw(Model.Description)
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <a href="#order" class="btn combo-btn">Order Now</a>
-                <button id="open-status-modal" class="btn status-btn">Track My Order</button>
             </div>
         </section>
 
@@ -265,16 +291,15 @@
                             <textarea name="Street" placeholder="House No, Road No, Area..." rows="2" required></textarea>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <input type="hidden" id="hidden-division" name="Divison" value="" />
                                 <div>
-                                    <label>Division <span class="required-star">*</span></label>
-                                    <select id="division-select" name="Divison" required>
-                                        <option value="">Select Division</option>
-                                    </select>
+                                    <label>Postal Code </label>
+                                    <input type="text" name="PostalCode" placeholder="Enter code to autofill location..." required />
                                 </div>
                                 <div>
                                     <label>District <span class="required-star">*</span></label>
-                                    <select id="district-select" name="City" disabled required>
-                                        <option value="">Select...</option>
+                                    <select id="district-select" name="City" required>
+                                        <option value="">Loading Districts...</option>
                                     </select>
                                 </div>
                             </div>
@@ -283,13 +308,13 @@
                                 <div>
                                     <label>Thana <span class="required-star">*</span></label>
                                     <select id="thana-select" name="Thana" disabled required>
-                                        <option value="">Select...</option>
+                                        <option value="">Select district first...</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label>Sub-Office <span class="required-star">*</span></label>
                                     <select id="suboffice-select" name="SubOffice" disabled required>
-                                        <option value="">Select...</option>
+                                        <option value="">Select thana first...</option>
                                     </select>
                                 </div>
                             </div>
@@ -300,7 +325,7 @@
                         </div>
 
                         <div class="qty-row">
-                            <label style="margin:0;">Quantity</label>
+                            <label style="margin:0;">Quantity <span class="required-star">*</span></label>
                             <div style="text-align: right;">
                                 <div class="quantity-wrapper">
                                     <button type="button" id="decrease">-</button>
@@ -488,34 +513,34 @@
         window.productVariants = [
             @if (Model.Variants != null)
             {
-                    foreach (var v in Model.Variants.Where(x => x.IsActive))
-                    {
-                            var attrs = new Dictionary<string, string>();
-                            // Only use Specifications to ensure 1:1 match with HTML buttons
-                            if (Model.Specifications != null)
-                            {
-                                    foreach (var spec in Model.Specifications)
+                        foreach (var v in Model.Variants.Where(x => x.IsActive))
+                        {
+                                    var attrs = new Dictionary<string, string>();
+                                    // Only use Specifications to ensure 1:1 match with HTML buttons
+                                    if (Model.Specifications != null)
                                     {
-                                            foreach (var val in spec.Value)
-                                            {
-                                                    if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
-                                                    {
-                                                            attrs[spec.Key] = val;
-                                                    }
-                                            }
+                                                foreach (var spec in Model.Specifications)
+                                                {
+                                                            foreach (var val in spec.Value)
+                                                            {
+                                                                        if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                                                        {
+                                                                                    attrs[spec.Key] = val;
+                                                                        }
+                                                            }
+                                                }
                                     }
-                            }
 
-                            <text>,
-                            {
-                                id: @v.Id,
-                                price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
-                                stock: @v.StockQty,
-                                image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
-                                attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
-                            },
-                            </text>
-                    }
+                                    <text>,
+                                    {
+                                        id: @v.Id,
+                                        price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
+                                        stock: @v.StockQty,
+                                        image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
+                                        attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
+                                    },
+                                    </text>
+                        }
             }
         ];
 

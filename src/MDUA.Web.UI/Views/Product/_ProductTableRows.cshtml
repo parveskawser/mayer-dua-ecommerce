@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MDUA.Entities.Product>
+﻿﻿
+@model IEnumerable<MDUA.Entities.Product>
 
 @if (Model != null && Model.Any())
 {
@@ -111,10 +112,10 @@
                                         </td>
 
                                         <td class="text-muted" data-col="sku">
-                                            <span class="display-value">@(string.IsNullOrEmpty(v.Sku) ? "-" : v.Sku)</span>
+                                            <span class="display-value">@(string.IsNullOrEmpty(v.SKU) ? "-" : v.SKU)</span>
                                             <input type="text"
                                                    class="form-control form-control-sm edit-input"
-                                                   value="@(string.IsNullOrEmpty(v.Sku) ? "-" : v.Sku)"
+                                                   value="@(string.IsNullOrEmpty(v.SKU) ? "-" : v.SKU)"
                                                    style="display:none; width: 100px;">
                                         </td>
 
