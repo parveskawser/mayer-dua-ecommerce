@@ -79,6 +79,46 @@ namespace MDUA.DataAccess
 
             return list;
         }
+        public List<VariantAttributeDto> GetVariantAttributesByProductId(int productId)
+        {
+            string SQLQuery = @"
+        SELECT 
+            vav.VariantId,
+            an.Name AS AttributeName,
+            av.Value AS AttributeValue
+        FROM VariantAttributeValue vav
+        INNER JOIN AttributeName an ON vav.AttributeId = an.Id
+        INNER JOIN AttributeValue av ON vav.AttributeValueId = av.Id
+        INNER JOIN ProductVariant pv ON vav.VariantId = pv.Id
+        WHERE pv.ProductId = @ProductId
+        ORDER BY vav.VariantId, vav.DisplayOrder";
+
+    using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            AddParameter(cmd, pInt32("ProductId", productId));
+
+            // ✅ FIX: Open connection before calling ExecuteReader
+            if (cmd.Connection.State != System.Data.ConnectionState.Open)
+            
+                cmd.Connection.Open();
+            
+
+    var list = new List<VariantAttributeDto>();
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    list.Add(new VariantAttributeDto
+                    {
+                        VariantId = reader.GetInt32(0),
+                        AttributeName = reader.GetString(1),
+                        AttributeValue = reader.GetString(2)
+                   
+                    }); 
+        }
+            }
+            return list;
+        }
         public int Insert(ProductVariant variant)
         {
             using SqlCommand cmd = GetSPCommand("InsertProductVariant");

@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertInventoryTransaction    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertInventoryTransaction    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertInventoryTransaction]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertInventoryTransaction]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateInventoryTransaction    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateInventoryTransaction    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateInventoryTransaction]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateInventoryTransaction]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteInventoryTransaction    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteInventoryTransaction    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteInventoryTransaction]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteInventoryTransaction]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllInventoryTransaction    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllInventoryTransaction    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllInventoryTransaction]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllInventoryTransaction]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetInventoryTransactionById    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetInventoryTransactionById    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionBySalesOrderDetailId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionBySalesOrderDetailId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionBySalesOrderDetailId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionBySalesOrderDetailId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionByPoReceivedId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionByPoReceivedId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionByPoReceivedId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionByPoReceivedId]
 GO
@@ -248,7 +248,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionByProductVariantId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllInventoryTransactionByProductVariantId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionByProductVariantId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionByProductVariantId]
 GO
@@ -269,7 +269,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetInventoryTransactionMaximumId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetInventoryTransactionMaximumId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionMaximumId]
 GO
@@ -298,7 +298,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetInventoryTransactionRowCount    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetInventoryTransactionRowCount    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionRowCount]
 GO
@@ -317,7 +317,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedInventoryTransaction    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedInventoryTransaction    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedInventoryTransaction]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedInventoryTransaction]
 GO
@@ -417,7 +417,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetInventoryTransactionByQuery    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetInventoryTransactionByQuery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetInventoryTransactionByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetInventoryTransactionByQuery]
 GO

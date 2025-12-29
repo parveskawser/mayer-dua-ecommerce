@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPostalCodes    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPostalCodes    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPostalCodes]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPostalCodes]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePostalCodes    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePostalCodes    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePostalCodes]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePostalCodes]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePostalCodes    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePostalCodes    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePostalCodes]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePostalCodes]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPostalCodes    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPostalCodes    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPostalCodes]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPostalCodes]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPostalCodesById    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPostalCodesById    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPostalCodesById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPostalCodesById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPostalCodesMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPostalCodesMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPostalCodesMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPostalCodesMaximumId]
 GO
@@ -220,7 +220,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPostalCodesRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPostalCodesRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPostalCodesRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPostalCodesRowCount]
 GO
@@ -239,7 +239,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPostalCodes    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPostalCodes    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPostalCodes]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPostalCodes]
 GO
@@ -333,7 +333,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPostalCodesByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPostalCodesByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPostalCodesByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPostalCodesByQuery]
 GO

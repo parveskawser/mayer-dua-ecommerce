@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductAttribute    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductAttribute    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductAttribute]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductAttribute]
 GO
@@ -56,7 +56,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductAttribute    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductAttribute    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductAttribute]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductAttribute]
 GO
@@ -92,7 +92,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductAttribute    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductAttribute    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductAttribute]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductAttribute]
 GO
@@ -123,7 +123,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductAttribute    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductAttribute    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductAttribute]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductAttribute]
 GO
@@ -140,7 +140,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductAttributeById    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductAttributeById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeById]
 GO
@@ -161,7 +161,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductAttributeByProductId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductAttributeByProductId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeByProductId]
 GO
@@ -182,7 +182,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductAttributeByAttributeId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductAttributeByAttributeId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeByAttributeId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeByAttributeId]
 GO
@@ -203,7 +203,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductAttributeMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductAttributeMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeMaximumId]
 GO
@@ -232,7 +232,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductAttributeRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductAttributeRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeRowCount]
 GO
@@ -251,7 +251,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductAttribute    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductAttribute    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductAttribute]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductAttribute]
 GO
@@ -333,7 +333,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductAttributeByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductAttributeByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductAttributeByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductAttributeByQuery]
 GO

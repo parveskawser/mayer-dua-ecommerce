@@ -13,7 +13,7 @@ window.openAdvanceModal = function (element) {
     const btn = element;
     const orderRef = btn.getAttribute('data-order-ref');
     const custId = btn.getAttribute('data-cust-id');
-    const orderId = btn.getAttribute('data-order-id');
+
     const parseVal = (val) => {
         if (!val) return 0;
         return parseFloat(val.toString().replace(/,/g, '')) || 0;
@@ -32,7 +32,7 @@ window.openAdvanceModal = function (element) {
     // Populate hidden/meta fields
     document.getElementById('adv_orderRef').value = orderRef;
     document.getElementById('adv_customerId').value = custId;
-    document.getElementById('adv_orderId').value = orderId;
+
     // Visual-only fields
     document.getElementById('adv_productPrice').value =
         productPrice.toLocaleString('en-BD', { minimumFractionDigits: 2 });
@@ -185,9 +185,6 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // =====================================================
-    // COD TOGGLE
-    // =====================================================
-    // =====================================================
     // COD TOGGLE (Improved to force switch if COD is selected)
     // =====================================================
     window.toggleCOD = function () {
@@ -291,7 +288,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const payload = {
-                OrderId: parseInt(document.getElementById('adv_orderId').value),
                 CustomerId: parseInt(document.getElementById('adv_customerId').value),
                 PaymentMethodId: parseInt(document.getElementById('adv_paymentMethod').value),
                 PaymentType: document.getElementById('adv_paymentType').value,
@@ -309,18 +305,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(r => r.json())
                 .then(data => {
                     if (!data.success) {
-                        // Error case: Just show the alert. 
-                        // No .then() needed here because we aren't reloading immediately after.
                         alert(data.message);
                         return;
                     }
-
-                    // Success case: We MUST wait for the user to click "OK" before reloading
-                    alert("Payment Added & Order Updated Successfully!")
-                        .then(() => {
-                            // This code only runs AFTER the user clicks the "OK" button
-                            location.reload();
-                        });
+                    alert("Payment Added & Order Updated Successfully!");
+                    location.reload();
                 })
                 .catch(() => alert("Network Error"));
         });
@@ -355,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(r => r.json()).then(data => {
                 if (data.success && statusBadge) {
 
-                    // ✅ FIX: Check if status is "Draft" and change text to "Pending"
+                    // Check if status is "Draft" and change text to "Pending"
                     const displayStatus = data.newStatus === 'Draft' ? 'Pending' : data.newStatus;
 
                     statusBadge.textContent = displayStatus;
@@ -374,13 +363,41 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
     // =========================================================
-    // CANCEL ORDER ACTION
+    // CANCEL ORDER ACTION (UPDATED: SweetAlert + Filter Fix)
     // =========================================================
     window.cancelOrder = function (orderId, orderDisplayId) {
-        if (!confirm(`Are you sure you want to CANCEL Order #${orderDisplayId}? This action cannot be undone.`)) {
-            return;
+
+        // 1. Check if SweetAlert is loaded
+        if (typeof Swal === 'undefined') {
+            if (!confirm(`Are you sure you want to CANCEL Order #${orderDisplayId}?`)) return;
+            // Fallback to old flow if CDN fails...
+        } else {
+            // 2. Use Sweet Alert
+            Swal.fire({
+                title: 'Cancel Order?',
+                text: `Are you sure you want to cancel ${orderDisplayId}? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545', // Red
+                cancelButtonColor: '#6c757d', // Grey
+                confirmButtonText: 'Yes, Cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performCancel(orderId, orderDisplayId);
+                }
+            });
+            return; // Exit here, let performCancel handle the rest
         }
+
+        // Fallback for native alert flow
+        performCancel(orderId, orderDisplayId);
+    };
+
+    function performCancel(orderId, orderDisplayId) {
+        // Show Loading if Swal exists
+        if (typeof Swal !== 'undefined') Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
 
         const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
         const token = tokenInput ? tokenInput.value : '';
@@ -400,6 +417,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Cancelled!', `Order ${orderDisplayId} has been cancelled.`, 'success');
+                    } else {
+                        alert("Order Cancelled Successfully.");
+                    }
+
                     // 1. Update Badge to Red immediately
                     const badge = document.getElementById(`status-badge-${orderId}`);
                     if (badge) {
@@ -409,9 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // 2. Hide the Cancel Button immediately
                     const cancelBtn = document.getElementById(`btn-cancel-${orderId}`);
-                    if (cancelBtn) {
-                        cancelBtn.style.display = 'none';
-                    }
+                    if (cancelBtn) cancelBtn.remove();
 
                     // 3. Disable the Toggle Switch
                     const toggle = document.getElementById(`toggle-${orderId}`);
@@ -420,11 +441,26 @@ document.addEventListener('DOMContentLoaded', function () {
                         toggle.checked = false;
                     }
 
-                    alert("Order Cancelled Successfully.");
+                    // 4. ✅ CRITICAL FIX: Update the Data Attribute for Filter
+                    const row = document.getElementById(`order-row-${orderId}`);
+                    if (row) {
+                        row.setAttribute('data-order-status', 'Cancelled');
+                        row.classList.add('row-highlight');
+                    }
+
+                    // 5. ✅ CRITICAL FIX: Re-run global filter logic
+                    if (typeof window.applyFilters === 'function') {
+                        window.applyFilters();
+                    }
+
                 } else {
-                    alert("Error: " + data.message);
+                    if (typeof Swal !== 'undefined') Swal.fire('Error', data.message, 'error');
+                    else alert("Error: " + data.message);
                 }
             })
-            .catch(err => alert("Network Error: Could not cancel order."));
-    };
+            .catch(err => {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Network connection failed.', 'error');
+                else alert("Network Error");
+            });
+    }
 });

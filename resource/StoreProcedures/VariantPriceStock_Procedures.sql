@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVariantPriceStock    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVariantPriceStock    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVariantPriceStock]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVariantPriceStock]
 GO
@@ -69,7 +69,7 @@ AS
 	
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVariantPriceStock    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVariantPriceStock    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVariantPriceStock]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVariantPriceStock]
 GO
@@ -113,7 +113,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVariantPriceStock    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVariantPriceStock    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVariantPriceStock]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVariantPriceStock]
 GO
@@ -144,7 +144,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantPriceStock    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantPriceStock    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVariantPriceStock]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVariantPriceStock]
 GO
@@ -161,7 +161,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantPriceStockById    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantPriceStockById    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantPriceStockById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantPriceStockById]
 GO
@@ -182,7 +182,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantPriceStockMaximumId    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantPriceStockMaximumId    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantPriceStockMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantPriceStockMaximumId]
 GO
@@ -211,7 +211,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantPriceStockRowCount    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantPriceStockRowCount    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantPriceStockRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantPriceStockRowCount]
 GO
@@ -230,7 +230,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVariantPriceStock    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVariantPriceStock    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVariantPriceStock]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVariantPriceStock]
 GO
@@ -320,7 +320,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantPriceStockByQuery    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantPriceStockByQuery    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantPriceStockByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantPriceStockByQuery]
 GO

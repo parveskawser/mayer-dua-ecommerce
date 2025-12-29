@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertCustomerPayment    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertCustomerPayment    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertCustomerPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertCustomerPayment]
 GO
@@ -23,7 +23,8 @@ CREATE PROCEDURE InsertCustomerPayment
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@TransactionReference nvarchar(100)
 )
 AS
     INSERT INTO [dbo].[CustomerPayment] 
@@ -39,7 +40,8 @@ AS
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[TransactionReference]
     ) 
 	VALUES 
 	(
@@ -54,7 +56,8 @@ AS
 	@CreatedBy,
 	@CreatedAt,
 	@UpdatedBy,
-	@UpdatedAt
+	@UpdatedAt,
+	@TransactionReference
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -83,7 +86,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateCustomerPayment    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateCustomerPayment    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateCustomerPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateCustomerPayment]
 GO
@@ -105,7 +108,8 @@ CREATE PROCEDURE UpdateCustomerPayment
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@TransactionReference nvarchar(100)
 )
 AS
     UPDATE [dbo].[CustomerPayment] 
@@ -121,7 +125,8 @@ AS
 	[CreatedBy] = @CreatedBy,
 	[CreatedAt] = @CreatedAt,
 	[UpdatedBy] = @UpdatedBy,
-	[UpdatedAt] = @UpdatedAt
+	[UpdatedAt] = @UpdatedAt,
+	[TransactionReference] = @TransactionReference
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -137,7 +142,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteCustomerPayment    Script Date: 12/2/2025 4:44:56 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteCustomerPayment    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteCustomerPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteCustomerPayment]
 GO
@@ -168,7 +173,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCustomerPayment    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCustomerPayment    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllCustomerPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllCustomerPayment]
 GO
@@ -185,7 +190,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerPaymentById    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerPaymentById    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentById]
 GO
@@ -206,7 +211,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByCustomerId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByCustomerId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentByCustomerId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentByCustomerId]
 GO
@@ -227,7 +232,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByPaymentMethodId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByPaymentMethodId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentByPaymentMethodId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentByPaymentMethodId]
 GO
@@ -248,7 +253,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByInventoryTransactionId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCustomerPaymentByInventoryTransactionId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentByInventoryTransactionId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentByInventoryTransactionId]
 GO
@@ -269,7 +274,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerPaymentMaximumId    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerPaymentMaximumId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentMaximumId]
 GO
@@ -298,7 +303,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerPaymentRowCount    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerPaymentRowCount    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentRowCount]
 GO
@@ -317,7 +322,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedCustomerPayment    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedCustomerPayment    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedCustomerPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedCustomerPayment]
 GO
@@ -380,7 +385,8 @@ SET @SQL1 = 'WITH CustomerPaymentEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[TransactionReference]
 				FROM 
 				[dbo].[CustomerPayment]
 					'+ @WhereClause +'
@@ -398,7 +404,8 @@ SET @SQL1 = 'WITH CustomerPaymentEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[TransactionReference]
 				FROM 
 					CustomerPaymentEntries
 				WHERE 
@@ -417,7 +424,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerPaymentByQuery    Script Date: 12/2/2025 4:44:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerPaymentByQuery    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerPaymentByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerPaymentByQuery]
 GO

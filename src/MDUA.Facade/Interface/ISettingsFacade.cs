@@ -12,5 +12,6 @@ namespace MDUA.Facade.Interface
         void SaveDeliverySettings(int companyId, int dhaka, int outside);
         void ChangePassword(int userId, string oldPassword, string newPassword);
         UserLogin GetUserById(int userId);
+        string GetGlobalSetting(int companyId, string key);
     }
 }

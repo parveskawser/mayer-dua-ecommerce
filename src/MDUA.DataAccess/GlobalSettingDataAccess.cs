@@ -29,10 +29,10 @@ namespace MDUA.DataAccess
             // UPSERT Query: Updates if exists, Inserts if new
             string sql = @"
                 MERGE GlobalSetting AS target
-                USING (SELECT @CompanyId AS CompanyId, @Key AS GKey) AS source
                 ON (target.CompanyId = source.CompanyId AND target.GKey = source.GKey)
                 WHEN MATCHED THEN
                     UPDATE SET GContent = @Value
+                USING (SELECT @CompanyId AS CompanyId, @Key AS GKey) AS source
                 WHEN NOT MATCHED THEN
                     INSERT (Id, CompanyId, GKey, GContent)
                     VALUES ((SELECT ISNULL(MAX(Id),0)+1 FROM GlobalSetting), @CompanyId, @Key, @Value);";
@@ -47,7 +47,47 @@ namespace MDUA.DataAccess
                 ExecuteCommand(cmd);
             }
         }
+        public string GetSetting(int companyId, string key)
+        {
+            string sql = "SELECT GContent FROM [GlobalSetting] WHERE CompanyId = @CompanyId AND GKey = @GKey";
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, new SqlParameter("@CompanyId", companyId));
+                AddParameter(cmd, new SqlParameter("@GKey", key));
+                var result = SelectScaler(cmd);
+                return result != null ? result.ToString() : null;
+            }
+        }
 
+        public void SaveSetting(int companyId, string key, string content)
+        {
+            // Logic: 
+            // 1. Check if the setting exists.
+            // 2. If yes, UPDATE it.
+            // 3. If no, INSERT it with a manually calculated ID (Max(Id) + 1).
+            string sql = @"
+        IF EXISTS (SELECT 1 FROM [dbo].[GlobalSetting] WHERE CompanyId = @CompanyId AND GKey = @GKey)
+        BEGIN
+            UPDATE [dbo].[GlobalSetting]
+            SET GContent = @GContent
+            WHERE CompanyId = @CompanyId AND GKey = @GKey;
+        END
+        ELSE
+        BEGIN
+            DECLARE @NewId int;
+            SELECT @NewId = ISNULL(MAX(Id), 0) + 1 FROM [dbo].[GlobalSetting];
 
+            INSERT INTO [dbo].[GlobalSetting] (Id, CompanyId, GKey, GContent)
+            VALUES (@NewId, @CompanyId, @GKey, @GContent);
+        END";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, new SqlParameter("@CompanyId", companyId));
+                AddParameter(cmd, new SqlParameter("@GKey", key));
+                AddParameter(cmd, new SqlParameter("@GContent", content ?? ""));
+                ExecuteCommand(cmd);
+            }
+        }
     }
 }

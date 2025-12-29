@@ -18,6 +18,7 @@ namespace MDUA.Facade
             services.AddScoped<IUserPermissionDataAccess, UserPermissionDataAccess>();
             services.AddScoped<IPostalCodesDataAccess, PostalCodesDataAccess>();
             services.AddScoped<IUserSessionDataAccess, UserSessionDataAccess>();
+            services.AddScoped<IUserPasskeyDataAccess, UserPasskeyDataAccess>();
 
             // Product-related Data Access
             services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
@@ -89,8 +90,10 @@ namespace MDUA.Facade
             services.AddScoped<IPaymentMethodFacade, PaymentMethodFacade>(); // Admin setup facade
             services.AddScoped<ISettingsFacade, SettingsFacade>();
             services.AddScoped<IDeliveryFacade, DeliveryFacade>();
+            
             // ✅ ADDED THIS (Required for OrderController)
             services.AddScoped<IPaymentFacade, PaymentFacade>();
+           // services.AddScoped<ISmsService, SmsService>();
         }
     }
 }

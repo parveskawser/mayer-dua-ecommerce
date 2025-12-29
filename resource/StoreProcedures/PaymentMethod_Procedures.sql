@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPaymentMethod    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPaymentMethod    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPaymentMethod]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPaymentMethod]
 GO
@@ -17,7 +17,13 @@ CREATE PROCEDURE InsertPaymentMethod
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@SystemCode nvarchar(20),
+	@LogoUrl nvarchar(255),
+	@DisplayOrder int,
+	@SupportsManual bit,
+	@SupportsGateway bit,
+	@ManualInstruction nvarchar(max)
 )
 AS
     INSERT INTO [dbo].[PaymentMethod] 
@@ -27,7 +33,13 @@ AS
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[SystemCode],
+	[LogoUrl],
+	[DisplayOrder],
+	[SupportsManual],
+	[SupportsGateway],
+	[ManualInstruction]
     ) 
 	VALUES 
 	(
@@ -36,7 +48,13 @@ AS
 	@CreatedBy,
 	@CreatedAt,
 	@UpdatedBy,
-	@UpdatedAt
+	@UpdatedAt,
+	@SystemCode,
+	@LogoUrl,
+	@DisplayOrder,
+	@SupportsManual,
+	@SupportsGateway,
+	@ManualInstruction
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -65,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePaymentMethod    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePaymentMethod    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePaymentMethod]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePaymentMethod]
 GO
@@ -81,7 +99,13 @@ CREATE PROCEDURE UpdatePaymentMethod
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@SystemCode nvarchar(20),
+	@LogoUrl nvarchar(255),
+	@DisplayOrder int,
+	@SupportsManual bit,
+	@SupportsGateway bit,
+	@ManualInstruction nvarchar(max)
 )
 AS
     UPDATE [dbo].[PaymentMethod] 
@@ -91,7 +115,13 @@ AS
 	[CreatedBy] = @CreatedBy,
 	[CreatedAt] = @CreatedAt,
 	[UpdatedBy] = @UpdatedBy,
-	[UpdatedAt] = @UpdatedAt
+	[UpdatedAt] = @UpdatedAt,
+	[SystemCode] = @SystemCode,
+	[LogoUrl] = @LogoUrl,
+	[DisplayOrder] = @DisplayOrder,
+	[SupportsManual] = @SupportsManual,
+	[SupportsGateway] = @SupportsGateway,
+	[ManualInstruction] = @ManualInstruction
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -107,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePaymentMethod    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePaymentMethod    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePaymentMethod]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePaymentMethod]
 GO
@@ -138,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPaymentMethod    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPaymentMethod    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPaymentMethod]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPaymentMethod]
 GO
@@ -155,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentMethodById    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentMethodById    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentMethodById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentMethodById]
 GO
@@ -176,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentMethodMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentMethodMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentMethodMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentMethodMaximumId]
 GO
@@ -205,7 +235,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentMethodRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentMethodRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentMethodRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentMethodRowCount]
 GO
@@ -224,7 +254,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPaymentMethod    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPaymentMethod    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPaymentMethod]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPaymentMethod]
 GO
@@ -281,7 +311,13 @@ SET @SQL1 = 'WITH PaymentMethodEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[SystemCode],
+	[LogoUrl],
+	[DisplayOrder],
+	[SupportsManual],
+	[SupportsGateway],
+	[ManualInstruction]
 				FROM 
 				[dbo].[PaymentMethod]
 					'+ @WhereClause +'
@@ -293,7 +329,13 @@ SET @SQL1 = 'WITH PaymentMethodEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[SystemCode],
+	[LogoUrl],
+	[DisplayOrder],
+	[SupportsManual],
+	[SupportsGateway],
+	[ManualInstruction]
 				FROM 
 					PaymentMethodEntries
 				WHERE 
@@ -312,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPaymentMethodByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPaymentMethodByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPaymentMethodByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPaymentMethodByQuery]
 GO

@@ -76,5 +76,14 @@ namespace MDUA.Facade
             return _userDataAccess.Get(userId);
         }
 
+        // Inject IGlobalSettingDataAccess in constructor if not already present
+        // private readonly IGlobalSettingDataAccess _globalSettingDataAccess;
+
+        public string GetGlobalSetting(int companyId, string key)
+        {
+            // Assuming you have implemented GetSetting in GlobalSettingDataAccess as discussed
+            return _globalSettingDataAccess.GetSetting(companyId, key);
+        }
+
     }
 }

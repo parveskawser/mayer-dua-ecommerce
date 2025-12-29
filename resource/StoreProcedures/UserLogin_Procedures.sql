@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertUserLogin    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertUserLogin]
 GO
@@ -20,7 +20,9 @@ CREATE PROCEDURE InsertUserLogin
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@IsTwoFactorEnabled bit,
+	@TwoFactorSecret nvarchar(50)
 )
 AS
     INSERT INTO [dbo].[UserLogin] 
@@ -33,7 +35,9 @@ AS
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[IsTwoFactorEnabled],
+	[TwoFactorSecret]
     ) 
 	VALUES 
 	(
@@ -45,7 +49,9 @@ AS
 	@CreatedBy,
 	@CreatedAt,
 	@UpdatedBy,
-	@UpdatedAt
+	@UpdatedAt,
+	@IsTwoFactorEnabled,
+	@TwoFactorSecret
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -74,7 +80,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateUserLogin    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateUserLogin]
 GO
@@ -93,7 +99,9 @@ CREATE PROCEDURE UpdateUserLogin
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@IsTwoFactorEnabled bit,
+	@TwoFactorSecret nvarchar(50)
 )
 AS
     UPDATE [dbo].[UserLogin] 
@@ -106,7 +114,9 @@ AS
 	[CreatedBy] = @CreatedBy,
 	[CreatedAt] = @CreatedAt,
 	[UpdatedBy] = @UpdatedBy,
-	[UpdatedAt] = @UpdatedAt
+	[UpdatedAt] = @UpdatedAt,
+	[IsTwoFactorEnabled] = @IsTwoFactorEnabled,
+	[TwoFactorSecret] = @TwoFactorSecret
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -122,7 +132,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteUserLogin    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteUserLogin    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteUserLogin]
 GO
@@ -153,7 +163,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserLogin    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserLogin    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllUserLogin]
 GO
@@ -170,7 +180,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginById    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginById    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginById]
 GO
@@ -191,7 +201,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserLoginByCompanyId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserLoginByCompanyId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginByCompanyId]
 GO
@@ -212,7 +222,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginMaximumId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginMaximumId]
 GO
@@ -241,7 +251,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginRowCount    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginRowCount]
 GO
@@ -260,7 +270,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedUserLogin    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedUserLogin    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedUserLogin]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedUserLogin]
 GO
@@ -320,7 +330,9 @@ SET @SQL1 = 'WITH UserLoginEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[IsTwoFactorEnabled],
+	[TwoFactorSecret]
 				FROM 
 				[dbo].[UserLogin]
 					'+ @WhereClause +'
@@ -335,7 +347,9 @@ SET @SQL1 = 'WITH UserLoginEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[IsTwoFactorEnabled],
+	[TwoFactorSecret]
 				FROM 
 					UserLoginEntries
 				WHERE 
@@ -354,7 +368,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserLoginByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserLoginByQuery    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserLoginByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserLoginByQuery]
 GO

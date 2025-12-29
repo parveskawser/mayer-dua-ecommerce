@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductReview    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductReview    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductReview]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductReview]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductReview    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductReview    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductReview]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductReview]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductReview    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductReview    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductReview]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductReview]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductReview    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductReview    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductReview]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductReview]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductReviewById    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductReviewById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductReviewById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductReviewById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductReviewByProductId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductReviewByProductId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductReviewByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductReviewByProductId]
 GO
@@ -212,7 +212,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductReviewMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductReviewMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductReviewMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductReviewMaximumId]
 GO
@@ -241,7 +241,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductReviewRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductReviewRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductReviewRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductReviewRowCount]
 GO
@@ -260,7 +260,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductReview    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductReview    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductReview]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductReview]
 GO
@@ -354,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductReviewByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductReviewByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductReviewByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductReviewByQuery]
 GO

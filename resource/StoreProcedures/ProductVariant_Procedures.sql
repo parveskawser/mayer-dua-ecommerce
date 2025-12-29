@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductVariant    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductVariant    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductVariant]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductVariant    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductVariant    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductVariant]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductVariant    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductVariant    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductVariant]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductVariant    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductVariant    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductVariant]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVariantById    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVariantById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVariantById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVariantById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductVariantByProductId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductVariantByProductId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVariantByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVariantByProductId]
 GO
@@ -217,7 +217,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVariantMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVariantMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVariantMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVariantMaximumId]
 GO
@@ -246,7 +246,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVariantRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVariantRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVariantRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVariantRowCount]
 GO
@@ -265,7 +265,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductVariant    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductVariant    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductVariant]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductVariant]
 GO
@@ -361,7 +361,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVariantByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVariantByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVariantByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVariantByQuery]
 GO

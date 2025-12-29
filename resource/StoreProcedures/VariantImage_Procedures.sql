@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVariantImage    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVariantImage    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVariantImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVariantImage]
 GO
@@ -59,7 +59,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVariantImage    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVariantImage    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVariantImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVariantImage]
 GO
@@ -97,7 +97,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVariantImage    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVariantImage    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVariantImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVariantImage]
 GO
@@ -128,7 +128,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantImage    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantImage    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVariantImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVariantImage]
 GO
@@ -145,7 +145,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantImageById    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantImageById    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantImageById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantImageById]
 GO
@@ -166,7 +166,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantImageByVariantId    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantImageByVariantId    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantImageByVariantId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantImageByVariantId]
 GO
@@ -187,7 +187,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantImageMaximumId    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantImageMaximumId    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantImageMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantImageMaximumId]
 GO
@@ -216,7 +216,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantImageRowCount    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantImageRowCount    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantImageRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantImageRowCount]
 GO
@@ -235,7 +235,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVariantImage    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVariantImage    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVariantImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVariantImage]
 GO
@@ -319,7 +319,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantImageByQuery    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantImageByQuery    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantImageByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantImageByQuery]
 GO
