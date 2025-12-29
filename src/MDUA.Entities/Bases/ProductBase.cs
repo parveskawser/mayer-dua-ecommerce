@@ -28,7 +28,8 @@ namespace MDUA.Entities.Bases
 			CreatedBy = 11,
 			CreatedAt = 12,
 			UpdatedBy = 13,
-			UpdatedAt = 14
+			UpdatedAt = 14,
+			ExtraInfo = 15
 		}
 		#endregion
 	
@@ -48,6 +49,7 @@ namespace MDUA.Entities.Bases
 		public const string Property_CreatedAt = "CreatedAt";		            
 		public const string Property_UpdatedBy = "UpdatedBy";		            
 		public const string Property_UpdatedAt = "UpdatedAt";		            
+		public const string Property_ExtraInfo = "ExtraInfo";		            
 		#endregion
 		
 		#region Private Data Types
@@ -66,6 +68,7 @@ namespace MDUA.Entities.Bases
 		private Nullable<DateTime> _CreatedAt;	            
 		private String _UpdatedBy;	            
 		private Nullable<DateTime> _UpdatedAt;	            
+		private String _ExtraInfo;	            
 		#endregion
 		
 		#region Properties		
@@ -294,6 +297,21 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public String ExtraInfo
+		{	
+			get{ return _ExtraInfo; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ExtraInfo, value, _ExtraInfo);
+				if (PropertyChanging(args))
+				{
+					_ExtraInfo = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -316,6 +334,7 @@ namespace MDUA.Entities.Bases
 			newObj.CreatedAt = this.CreatedAt;						
 			newObj.UpdatedBy = this.UpdatedBy;						
 			newObj.UpdatedAt = this.UpdatedAt;						
+			newObj.ExtraInfo = this.ExtraInfo;						
 			
 			return newObj;
 		}
@@ -340,6 +359,7 @@ namespace MDUA.Entities.Bases
 			info.AddValue(ProductBase.Property_CreatedAt, CreatedAt);				
 			info.AddValue(ProductBase.Property_UpdatedBy, UpdatedBy);				
 			info.AddValue(ProductBase.Property_UpdatedAt, UpdatedAt);				
+			info.AddValue(ProductBase.Property_ExtraInfo, ExtraInfo);				
 		}
 		#endregion
 

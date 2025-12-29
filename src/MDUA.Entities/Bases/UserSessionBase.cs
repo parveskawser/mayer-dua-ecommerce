@@ -21,8 +21,9 @@ namespace MDUA.Entities.Bases
 			DeviceInfo = 4,
 			CreatedAt = 5,
 			LastActiveAt = 6,
-			IsActive = 7
-		}
+			IsActive = 7,
+            LoginMethod = 8
+        }
 		#endregion
 	
 		#region Constants
@@ -33,22 +34,24 @@ namespace MDUA.Entities.Bases
 		public const string Property_DeviceInfo = "DeviceInfo";		            
 		public const string Property_CreatedAt = "CreatedAt";		            
 		public const string Property_LastActiveAt = "LastActiveAt";		            
-		public const string Property_IsActive = "IsActive";		            
-		#endregion
-		
-		#region Private Data Types
-		private Int32 _Id;	            
+		public const string Property_IsActive = "IsActive";
+        public const string Property_LoginMethod = "LoginMethod";
+        #endregion
+
+        #region Private Data Types
+        private Int32 _Id;	            
 		private Guid _SessionKey;	            
 		private Int32 _UserId;	            
 		private String _IPAddress;	            
 		private String _DeviceInfo;	            
 		private Nullable<DateTime> _CreatedAt;	            
 		private Nullable<DateTime> _LastActiveAt;	            
-		private Nullable<Boolean> _IsActive;	            
-		#endregion
-		
-		#region Properties		
-		[DataMember]
+		private Nullable<Boolean> _IsActive;
+        private String _LoginMethod;
+        #endregion
+
+        #region Properties		
+        [DataMember]
 		public Int32 Id
 		{	
 			get{ return _Id; }			
@@ -167,11 +170,24 @@ namespace MDUA.Entities.Bases
 				}	
 			}
         }
+        [DataMember]
+        public String LoginMethod
+        {
+            get { return _LoginMethod; }
+            set
+            {
+                PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_LoginMethod, value, _LoginMethod);
+                if (PropertyChanging(args))
+                {
+                    _LoginMethod = value;
+                    PropertyChanged(args);
+                }
+            }
+        }
+        #endregion
 
-		#endregion
-		
-		#region Cloning Base Objects
-		public  UserSessionBase Clone()
+        #region Cloning Base Objects
+        public  UserSessionBase Clone()
 		{
 			UserSessionBase newObj = new  UserSessionBase();
 			base.CloneBase(newObj);
@@ -182,9 +198,9 @@ namespace MDUA.Entities.Bases
 			newObj.DeviceInfo = this.DeviceInfo;						
 			newObj.CreatedAt = this.CreatedAt;						
 			newObj.LastActiveAt = this.LastActiveAt;						
-			newObj.IsActive = this.IsActive;						
-			
-			return newObj;
+			newObj.IsActive = this.IsActive;
+            newObj.LoginMethod = this.LoginMethod;
+            return newObj;
 		}
 		#endregion
 		
@@ -199,8 +215,9 @@ namespace MDUA.Entities.Bases
 			info.AddValue(UserSessionBase.Property_DeviceInfo, DeviceInfo);				
 			info.AddValue(UserSessionBase.Property_CreatedAt, CreatedAt);				
 			info.AddValue(UserSessionBase.Property_LastActiveAt, LastActiveAt);				
-			info.AddValue(UserSessionBase.Property_IsActive, IsActive);				
-		}
+			info.AddValue(UserSessionBase.Property_IsActive, IsActive);
+            info.AddValue(UserSessionBase.Property_LoginMethod, LoginMethod);
+        }
 		#endregion
 
 		

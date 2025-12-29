@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertRecruitmentEligible    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertRecruitmentEligible    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertRecruitmentEligible]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertRecruitmentEligible]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateRecruitmentEligible    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateRecruitmentEligible    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateRecruitmentEligible]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateRecruitmentEligible]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteRecruitmentEligible    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteRecruitmentEligible    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteRecruitmentEligible]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteRecruitmentEligible]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllRecruitmentEligible    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllRecruitmentEligible    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllRecruitmentEligible]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllRecruitmentEligible]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleById    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetRecruitmentEligibleById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetRecruitmentEligibleById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetRecruitmentEligibleMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetRecruitmentEligibleMaximumId]
 GO
@@ -225,7 +225,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetRecruitmentEligibleRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetRecruitmentEligibleRowCount]
 GO
@@ -244,7 +244,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedRecruitmentEligible    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedRecruitmentEligible    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedRecruitmentEligible]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedRecruitmentEligible]
 GO
@@ -340,7 +340,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetRecruitmentEligibleByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetRecruitmentEligibleByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetRecruitmentEligibleByQuery]
 GO

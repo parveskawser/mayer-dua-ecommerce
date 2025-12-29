@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPermissionGroupMap    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPermissionGroupMap    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPermissionGroupMap]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPermissionGroupMap]
 GO
@@ -53,7 +53,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePermissionGroupMap    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePermissionGroupMap    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePermissionGroupMap]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePermissionGroupMap]
 GO
@@ -87,7 +87,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePermissionGroupMap    Script Date: 12/2/2025 4:44:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePermissionGroupMap    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePermissionGroupMap]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePermissionGroupMap]
 GO
@@ -118,7 +118,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMap    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMap    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPermissionGroupMap]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPermissionGroupMap]
 GO
@@ -135,7 +135,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapById    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapById    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapById]
 GO
@@ -156,7 +156,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMapByPermissionId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMapByPermissionId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapByPermissionId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapByPermissionId]
 GO
@@ -177,7 +177,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMapByPermissionGroupId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPermissionGroupMapByPermissionGroupId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapByPermissionGroupId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapByPermissionGroupId]
 GO
@@ -198,7 +198,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapMaximumId    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapMaximumId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapRowCount    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapRowCount]
 GO
@@ -246,7 +246,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPermissionGroupMap    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPermissionGroupMap    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPermissionGroupMap]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPermissionGroupMap]
 GO
@@ -326,7 +326,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapByQuery    Script Date: 12/2/2025 4:44:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupMapByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMapByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMapByQuery]
 GO

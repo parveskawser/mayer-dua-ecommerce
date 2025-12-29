@@ -41,6 +41,23 @@ namespace MDUA.DataAccess.Interface
 
         void DisableTwoFactor(int userId);
         void InvalidateAllSessions(int userId);
-        UserLogin GetByUsername(string username); // ✅ Add this
+        UserLogin GetByUsername(string username);
+
+        
+        UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId);
+
+        void UpdatePasskeyCounter(int id, uint counter);
+
+        void AddUserPasskey(UserPasskey passkey);
+
+        List<UserPasskey> GetPasskeysByUserId(int userId);
+
+        UserLogin GetByEmail(string email);
+
+        List<UserPasskey> GetPasskeysWithDeviceNames(int userId);
+
+        void DeleteSpecificUserPasskey(int id, int userId);
+
+
     }
 }

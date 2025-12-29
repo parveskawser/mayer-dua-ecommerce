@@ -49,7 +49,8 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pDateTime(UserSessionBase.Property_CreatedAt, userSessionObject.CreatedAt));
 			AddParameter(cmd, pDateTime(UserSessionBase.Property_LastActiveAt, userSessionObject.LastActiveAt));
 			AddParameter(cmd, pBool(UserSessionBase.Property_IsActive, userSessionObject.IsActive));
-		}
+            AddParameter(cmd, pNVarChar(UserSessionBase.Property_LoginMethod, 50, userSessionObject.LoginMethod));
+        }
 		#endregion
 		
 		#region Insert Method
@@ -252,39 +253,40 @@ namespace MDUA.DataAccess
 			}
 			return _UserSessionRowCount;
 		}
-		
-		#endregion
-	
-		#region Fill Methods
-		/// <summary>
+
+        #endregion
+
+        #region Fill Methods
+        /// <summary>
         /// Fills UserSession object
         /// </summary>
         /// <param name="userSessionObject">The object to be filled</param>
         /// <param name="reader">The reader to use to fill a single object</param>
         /// <param name="start">The ordinal position from which to start reading the reader</param>
-		protected void FillObject(UserSessionBase userSessionObject, SqlDataReader reader, int start)
-		{
-			
-				userSessionObject.Id = reader.GetInt32( start + 0 );			
-				userSessionObject.SessionKey = reader.GetGuid( start + 1 );			
-				userSessionObject.UserId = reader.GetInt32( start + 2 );			
-				if(!reader.IsDBNull(3)) userSessionObject.IPAddress = reader.GetString( start + 3 );			
-				if(!reader.IsDBNull(4)) userSessionObject.DeviceInfo = reader.GetString( start + 4 );			
-				if(!reader.IsDBNull(5)) userSessionObject.CreatedAt = reader.GetDateTime( start + 5 );			
-				if(!reader.IsDBNull(6)) userSessionObject.LastActiveAt = reader.GetDateTime( start + 6 );			
-				if(!reader.IsDBNull(7)) userSessionObject.IsActive = reader.GetBoolean( start + 7 );			
-			FillBaseObject(userSessionObject, reader, (start + 8));
+        protected void FillObject(UserSessionBase userSessionObject, SqlDataReader reader, int start)
+        {
 
-			
-			userSessionObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	
-		}
-		
-		/// <summary>
+            userSessionObject.Id = reader.GetInt32(start + 0);
+            userSessionObject.SessionKey = reader.GetGuid(start + 1);
+            userSessionObject.UserId = reader.GetInt32(start + 2);
+            if (!reader.IsDBNull(3)) userSessionObject.IPAddress = reader.GetString(start + 3);
+            if (!reader.IsDBNull(4)) userSessionObject.DeviceInfo = reader.GetString(start + 4);
+            if (!reader.IsDBNull(5)) userSessionObject.CreatedAt = reader.GetDateTime(start + 5);
+            if (!reader.IsDBNull(6)) userSessionObject.LastActiveAt = reader.GetDateTime(start + 6);
+            if (!reader.IsDBNull(7)) userSessionObject.IsActive = reader.GetBoolean(start + 7);
+            if (!reader.IsDBNull(8)) userSessionObject.LoginMethod = reader.GetString(start + 8);
+
+            FillBaseObject(userSessionObject, reader, (start + 9));
+
+
+            userSessionObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
+        }
+        /// <summary>
         /// Fills UserSession object
         /// </summary>
         /// <param name="userSessionObject">The object to be filled</param>
         /// <param name="reader">The reader to use to fill a single object</param>
-		protected void FillObject(UserSessionBase userSessionObject, SqlDataReader reader)
+        protected void FillObject(UserSessionBase userSessionObject, SqlDataReader reader)
 		{
 			FillObject(userSessionObject, reader, 0);
 		}

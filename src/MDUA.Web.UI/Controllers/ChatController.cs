@@ -1,4 +1,5 @@
 ﻿using MDUA.Entities;
+using MDUA.Facade;
 using MDUA.Facade.Interface;
 using MDUA.Web.UI.Hubs; // Ensure this namespace matches your Hub location
 using Microsoft.AspNetCore.Authorization;
@@ -17,15 +18,18 @@ namespace MDUA.Web.UI.Controllers
         private readonly IChatFacade _chatFacade;
         private readonly IAiChatService _aiChatService;
         private readonly IHubContext<SupportHub> _hubContext;
-
+        public readonly IProductFacade _productFacade; // Add this line
         public ChatController(
             IChatFacade chatFacade,
             IAiChatService aiChatService,
-            IHubContext<SupportHub> hubContext)
+            IHubContext<SupportHub> hubContext,
+            IProductFacade productFacade)
         {
             _chatFacade = chatFacade;
             _aiChatService = aiChatService;
             _hubContext = hubContext;
+            _productFacade = productFacade;
+
         }
 
         // ====================================================================
@@ -93,7 +97,6 @@ namespace MDUA.Web.UI.Controllers
                     botMessage.SenderName,
                     botMessage.MessageText);
         }
-
         [HttpPost]
         [Route("chat/send")]
         [AllowAnonymous]
@@ -106,99 +109,48 @@ namespace MDUA.Web.UI.Controllers
             {
                 // 1. Resolve Session
                 ChatSession session = null;
-
                 if (!string.IsNullOrEmpty(request.SessionGuid) && Guid.TryParse(request.SessionGuid, out Guid guid))
-                {
                     session = _chatFacade.InitGuestSession(guid);
-                }
-                else if (request.ChatSessionId > 0)
-                {
-                    session = _chatFacade.GetSessionById(request.ChatSessionId);
-                }
 
-                if (session == null)
-                    return BadRequest("Invalid session.");
+                if (session == null) return BadRequest("Invalid session.");
 
-                // 2. Create User Message
+                // 2. Save User Message
                 var message = new ChatMessage
                 {
                     ChatSessionId = session.Id,
                     SenderName = request.SenderName ?? "Guest",
                     MessageText = request.MessageText,
-                    IsFromAdmin = false,
-                    IsRead = false,
-                    SenderType = "Customer",
-                    SentAt = DateTime.UtcNow
+                    SentAt = DateTime.UtcNow,
+                    SenderType = "Customer"
                 };
-
-                // 3. Save User Message
                 _chatFacade.SendMessage(message);
 
-                // 4. Broadcast to Admins
-                await _hubContext.Clients.Group("Admins").SendAsync(
-                    "ReceiveMessage",
-                    message.SenderName,
-                    message.MessageText,
-                    session.SessionGuid.ToString().ToLower());
+                // 3. Get AI Response
+                var history = _chatFacade.GetChatHistory(session.Id)
+                                         .OrderByDescending(m => m.SentAt)
+                                         .Take(10)
+                                         .OrderBy(m => m.SentAt)
+                                         .Select(m => $"{m.SenderName}: {m.MessageText}")
+                                         .ToList();
 
-                // 5. AI BOT LOGIC
-                if (session.Status == "New" || session.Status == "BotActive")
-                {
-                    if (ContainsHandoffKeyword(request.MessageText))
-                    {
-                        await TransferToHuman(session, "Customer requested human agent");
+                // ✅ PASS THE CONTEXT PRODUCT ID HERE
+                string aiResponse = await _aiChatService.GetResponseAsync(
+                    request.MessageText,
+                    history,
+                    request.ContextProductId
+                );
 
-                        await SendBotReply(
-                            session,
-                            "👋 I've notified a support agent. Please hold on — a human will join shortly."
-                        );
-
-                        return Ok(new { success = true, handedOff = true });
-                    }
-
-                    var history = _chatFacade.GetChatHistory(session.Id)
-                                             .OrderByDescending(m => m.SentAt)
-                                             .Take(10)
-                                             .OrderBy(m => m.SentAt)
-                                             .Select(m => $"{m.SenderName}: {m.MessageText}")
-                                             .ToList();
-
-                    string aiResponse = await _aiChatService.GetResponseAsync(
-                        request.MessageText,
-                        history
-                    );
-
-                    if (ContainsHandoffTrigger(aiResponse))
-                    {
-                        await TransferToHuman(session, "AI unable to assist");
-                    }
-
-                    if (session.Status == "New")
-                    {
-                        session.Status = "BotActive";
-                        _chatFacade.UpdateSessionStatus(session.Id, "BotActive");
-                    }
-
-                    // Use the helper method
-                    await SendBotReply(session, aiResponse);
-
-
-
-                }
-
-
-
-
-
+                // 4. Save and Send Bot Reply
+                await SendBotReply(session, aiResponse);
 
                 return Ok(new { success = true });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error: " + ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
-
+      
         // 🆕 HUMAN HANDOFF LOGIC
         private async Task TransferToHuman(ChatSession session, string reason)
         {
@@ -265,6 +217,7 @@ namespace MDUA.Web.UI.Controllers
             public string SessionGuid { get; set; }
             public string SenderName { get; set; }
             public string MessageText { get; set; }
+            public int? ContextProductId { get; set; }
         }
 
         [HttpGet]

@@ -1,9 +1,11 @@
-﻿using MDUA.Entities;
+﻿using Google.Apis.Auth;
+using MDUA.Entities;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SqlServer.Server;
 using System.Security.Claims;
 
 namespace MDUA.Web.UI.Controllers
@@ -11,10 +13,12 @@ namespace MDUA.Web.UI.Controllers
     public class AccountController : Controller
     {
         private readonly IUserLoginFacade _userLoginFacade;
-
-        public AccountController(IUserLoginFacade userLoginFacade)
+        private readonly IConfiguration _configuration; 
+        public AccountController(IUserLoginFacade userLoginFacade, IConfiguration configuration)
         {
             _userLoginFacade = userLoginFacade;
+            _configuration = configuration;
+
         }
 
         [HttpGet]
@@ -112,18 +116,19 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = "An error occurred." });
             }
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyTwoFactor(VerifyTwoFactorVm model)
         {
+            // 1. Session Check
             if (TempData["PreAuthUserId"] is not int userId) return RedirectToAction("LogIn");
 
+            // 2. Validate User
             var result = _userLoginFacade.GetUserLoginById(userId);
             if (!result.IsSuccess) return RedirectToAction("LogIn");
 
-            Console.WriteLine($"[2FA-POST] Code null? {model?.Code == null}, len={(model?.Code?.Length ?? 0)}, raw='{model?.Code}'");
 
+            // 3. Verify Code
             bool isValid = _userLoginFacade.VerifyTwoFactorByUserId(userId, model.Code);
 
             if (isValid)
@@ -131,50 +136,72 @@ namespace MDUA.Web.UI.Controllers
                 bool rememberMe = (bool)(TempData["RememberMe"] ?? false);
                 string returnUrl = TempData["ReturnUrl"] as string;
 
-                await CompleteSignInAsync(result, rememberMe);
+                //  Retrieve LoginMethod (set by GoogleCallback or Password Login)
+                // Default to "Password" if missing (e.g. legacy flows)
+                string loginMethod = (TempData["LoginMethod"] as string) ?? "Password";
 
+                //   Pass loginMethod to CompleteSignInAsync
+                await CompleteSignInAsync(result, rememberMe, loginMethod);
+
+                // 4. Cleanup TempData
                 TempData.Remove("PreAuthUserId");
                 TempData.Remove("RememberMe");
                 TempData.Remove("ReturnUrl");
+                TempData.Remove("LoginMethod"); 
 
+                // 5. Redirect
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
                 return RedirectToAction("Dashboard", "Home");
             }
 
+            // 6. Handle Failure
             ModelState.AddModelError("", "Invalid authenticator code.");
+
+            //  Keep ALL TempData keys so the user can try again
             TempData.Keep("PreAuthUserId");
             TempData.Keep("RememberMe");
             TempData.Keep("ReturnUrl");
+            TempData.Keep("LoginMethod"); 
+
             return View(model);
         }
 
 
 
 
-        private async Task CompleteSignInAsync(UserLoginResult loginResult, bool rememberMe)
+
+        private async Task CompleteSignInAsync(UserLoginResult loginResult, bool rememberMe, string loginMethod = "Password")
         {
-            // 3. DB AUTH: Create User Session in SQL
+            // 1. Get Environment Info
             string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             string deviceInfo = Request.Headers["User-Agent"].ToString();
 
-            // This writes to the UserSession table and returns a unique SessionKey (Guid)
-            Guid sessionKey = _userLoginFacade.CreateUserSession(loginResult.UserLogin.Id, ipAddress, deviceInfo);
+            // 2. DB AUTH: Create User Session in SQL (Passing the new LoginMethod)
+            Guid sessionKey = _userLoginFacade.CreateUserSession(
+                loginResult.UserLogin.Id,
+                ipAddress,
+                deviceInfo,
+                loginMethod 
+            );
 
-            // 4. Build Claims List
+            // 3. Build Claims List 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, loginResult.UserLogin.Id.ToString()),
-                new Claim(ClaimTypes.Name, loginResult.UserLogin.UserName),
-                new Claim("CompanyId", loginResult.UserLogin.CompanyId.ToString()),
-                
-                // actual RoleName from DB
-                new Claim(ClaimTypes.Role, !string.IsNullOrEmpty(loginResult.RoleName) ? loginResult.RoleName : "User"),
+    {
+        new Claim(ClaimTypes.NameIdentifier, loginResult.UserLogin.Id.ToString()),
+        new Claim(ClaimTypes.Name, loginResult.UserLogin.UserName),
+        new Claim("CompanyId", loginResult.UserLogin.CompanyId.ToString()),
+        
+        // Role Logic
+        new Claim(ClaimTypes.Role, !string.IsNullOrEmpty(loginResult.RoleName) ? loginResult.RoleName : "User"),
 
-                // Add the SessionKey to the cookie claims.
-                new Claim("SessionKey", sessionKey.ToString())
-            };
+        // Session Key Claim
+        new Claim("SessionKey", sessionKey.ToString()),
+        
+        //  Helpful for UI to know how they logged in without querying DB
+        new Claim("LoginMethod", loginMethod)
+    };
 
-            // 5. Add Permissions to Claims
+            // 4. Add Permissions to Claims (EXISTING LOGIC PRESERVED)
             if (loginResult.AuthorizedActions != null)
             {
                 foreach (var permission in loginResult.AuthorizedActions)
@@ -183,10 +210,10 @@ namespace MDUA.Web.UI.Controllers
                 }
             }
 
-            // 6. Create Identity
+            // 5. Create Identity
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // 7. Configure Cookie Properties
+            // 6. Configure Cookie Properties
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = rememberMe,
@@ -194,13 +221,12 @@ namespace MDUA.Web.UI.Controllers
                 AllowRefresh = true
             };
 
-            // 8. Sign In
+            // 7. Sign In
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -216,7 +242,101 @@ namespace MDUA.Web.UI.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("LogIn", "Account");
         }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GoogleCallback(string credential)
+        {
+            try
+            {
+                var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
 
+                if (string.IsNullOrEmpty(clientId))
+                {
+                    return View("LogIn", new MDUA.Entities.UserLoginResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Server Config Error: Missing GOOGLE_CLIENT_ID in .env"
+                    });
+                }
+
+                var settings = new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { clientId }
+                };
+
+                var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+
+                if (payload == null)
+                {
+                    return View("LogIn", new MDUA.Entities.UserLoginResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Google authentication failed (Invalid Token)."
+                    });
+                }
+
+                // B. Find User
+                var user = _userLoginFacade.GetUserByEmail(payload.Email);
+
+                if (user == null)
+                {
+                    return View("LogIn", new MDUA.Entities.UserLoginResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = $"Access Denied. No account found for {payload.Email}."
+                    });
+                }
+
+                // C. Get Full Context
+                var loginResult = _userLoginFacade.GetUserLoginById(user.Id);
+                if (!loginResult.IsSuccess)
+                {
+                    return View("LogIn", new MDUA.Entities.UserLoginResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Account is disabled or invalid."
+                    });
+                }
+
+                // D. 2FA Check
+                if (user.IsTwoFactorEnabled)
+                {
+                    TempData["PreAuthUserId"] = user.Id;
+                    TempData["RememberMe"] = true;
+                    TempData["ReturnUrl"] = "/";
+                    TempData["LoginMethod"] = "Google";
+
+                    return RedirectToAction("VerifyTwoFactor");
+                }
+
+                // E. Complete Login
+                // Ensure your DB has the 'LoginMethod' column or this will throw!
+                await CompleteSignInAsync(loginResult, rememberMe: true, loginMethod: "Google");
+
+                return RedirectToAction("Dashboard", "Home");
+
+            }
+            catch (Google.Apis.Auth.InvalidJwtException)
+            {
+                return View("LogIn", new MDUA.Entities.UserLoginResult
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "Security Alert: Invalid Google Token received."
+                });
+            }
+            catch (Exception ex)
+            {
+                // Check your server logs/console for the real error details
+                Console.WriteLine($"Google Login Error: {ex.Message}");
+
+                return View("LogIn", new MDUA.Entities.UserLoginResult
+                {
+                    IsSuccess = false,
+                    ErrorMessage = $"System Error: {ex.Message}"
+                });
+            }
+        }
         [HttpGet]
         public IActionResult AccessDenied(string missingPermission = null)
         {
@@ -227,7 +347,6 @@ namespace MDUA.Web.UI.Controllers
 
 
 
-        // ... inside AccountController ...
 
         #region Forgot Password via 2FA
 

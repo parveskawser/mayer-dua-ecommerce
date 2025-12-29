@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertSalesChannel    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertSalesChannel    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertSalesChannel]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertSalesChannel]
 GO
@@ -62,7 +62,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateSalesChannel    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateSalesChannel    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateSalesChannel]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateSalesChannel]
 GO
@@ -102,7 +102,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteSalesChannel    Script Date: 12/2/2025 4:44:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteSalesChannel    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteSalesChannel]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteSalesChannel]
 GO
@@ -133,7 +133,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesChannel    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesChannel    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllSalesChannel]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllSalesChannel]
 GO
@@ -150,7 +150,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesChannelById    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesChannelById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesChannelById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesChannelById]
 GO
@@ -171,7 +171,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesChannelMaximumId    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesChannelMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesChannelMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesChannelMaximumId]
 GO
@@ -200,7 +200,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesChannelRowCount    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesChannelRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesChannelRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesChannelRowCount]
 GO
@@ -219,7 +219,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedSalesChannel    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedSalesChannel    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedSalesChannel]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedSalesChannel]
 GO
@@ -305,7 +305,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesChannelByQuery    Script Date: 12/2/2025 4:44:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesChannelByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesChannelByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesChannelByQuery]
 GO

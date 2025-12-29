@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertSalesReturn    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertSalesReturn    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertSalesReturn]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertSalesReturn]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateSalesReturn    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateSalesReturn    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateSalesReturn]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateSalesReturn]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteSalesReturn    Script Date: 12/10/2025 2:32:53 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteSalesReturn    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteSalesReturn]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteSalesReturn]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesReturn    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesReturn    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllSalesReturn]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllSalesReturn]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesReturnById    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesReturnById    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesReturnById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesReturnById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSalesReturnBySalesOrderDetailId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSalesReturnBySalesOrderDetailId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesReturnBySalesOrderDetailId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesReturnBySalesOrderDetailId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesReturnMaximumId    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesReturnMaximumId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesReturnMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesReturnMaximumId]
 GO
@@ -256,7 +256,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesReturnRowCount    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesReturnRowCount    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesReturnRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesReturnRowCount]
 GO
@@ -275,7 +275,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedSalesReturn    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedSalesReturn    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedSalesReturn]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedSalesReturn]
 GO
@@ -375,7 +375,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSalesReturnByQuery    Script Date: 12/10/2025 2:32:53 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetSalesReturnByQuery    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSalesReturnByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSalesReturnByQuery]
 GO

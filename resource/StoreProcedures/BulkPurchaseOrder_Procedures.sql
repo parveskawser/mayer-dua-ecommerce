@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertBulkPurchaseOrder    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertBulkPurchaseOrder    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertBulkPurchaseOrder]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertBulkPurchaseOrder]
 GO
@@ -86,7 +86,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateBulkPurchaseOrder    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateBulkPurchaseOrder    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateBulkPurchaseOrder]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateBulkPurchaseOrder]
 GO
@@ -142,7 +142,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteBulkPurchaseOrder    Script Date: 12/10/2025 2:32:48 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteBulkPurchaseOrder    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteBulkPurchaseOrder]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteBulkPurchaseOrder]
 GO
@@ -173,7 +173,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllBulkPurchaseOrder    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllBulkPurchaseOrder    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllBulkPurchaseOrder]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllBulkPurchaseOrder]
 GO
@@ -190,7 +190,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderById    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderById    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetBulkPurchaseOrderById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetBulkPurchaseOrderById]
 GO
@@ -211,7 +211,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllBulkPurchaseOrderByVendorId    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllBulkPurchaseOrderByVendorId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetBulkPurchaseOrderByVendorId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetBulkPurchaseOrderByVendorId]
 GO
@@ -232,7 +232,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderMaximumId    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderMaximumId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetBulkPurchaseOrderMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetBulkPurchaseOrderMaximumId]
 GO
@@ -261,7 +261,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderRowCount    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderRowCount    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetBulkPurchaseOrderRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetBulkPurchaseOrderRowCount]
 GO
@@ -280,7 +280,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedBulkPurchaseOrder    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedBulkPurchaseOrder    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedBulkPurchaseOrder]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedBulkPurchaseOrder]
 GO
@@ -382,7 +382,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderByQuery    Script Date: 12/10/2025 2:32:48 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetBulkPurchaseOrderByQuery    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetBulkPurchaseOrderByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetBulkPurchaseOrderByQuery]
 GO

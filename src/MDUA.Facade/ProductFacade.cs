@@ -438,7 +438,10 @@ namespace MDUA.Facade
             return productId;
 
         }
-
+        public List<VariantAttributeDto> GetVariantAttributes(int productId)
+        {
+            return _ProductVariantDataAccess.GetVariantAttributesByProductId(productId);
+        }
         public ProductList GetLastFiveProducts()
         {
             return _ProductDataAccess.GetLastFiveProducts();

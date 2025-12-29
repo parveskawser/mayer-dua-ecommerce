@@ -159,29 +159,29 @@
                                     <span class="d-inline-block" tabindex="0"
                                           @if (isLocked)
                                           {
-                                                    <text>
-                                                        data-bs-toggle="popover"
-                                                        data-bs-trigger="hover"
-                                                        data-bs-html="true"
-                                                        data-bs-placement="top"
-                                                        data-bs-custom-class="popover-custom"
-                                                        data-bs-title="Action Required"
-                                                        data-bs-delay='{"show":0, "hide":500}'
-                                                        data-bs-content="@popoverContent"
-                                                    </text>
-                                            }
-        >
-                                                <select class="form-select form-select-sm"
-                                                        onchange="updateStatus(@item.Id, this.value)"
-                                                        @(isLocked ? "disabled" : "")
-                                                        style="width: 140px; font-weight: 500; border-color: #dee2e6; @(isLocked ? "cursor: not-allowed; opacity: 0.6;" : "")">
-                                                    <option value="Pending" selected="@(item.Status == "Pending")">Pending</option>
-                                                    <option value="Shipped" selected="@(item.Status == "Shipped")">Shipped</option>
-                                                    <option value="Delivered" selected="@(item.Status == "Delivered")">Delivered</option>
-                                                    <option value="Returned" selected="@(item.Status == "Returned")">Returned</option>
-                                                    <option value="Cancelled" selected="@(item.Status == "Cancelled")">Cancelled</option>
-                                                </select>
-                                            </span>
+                                                                <text>
+                                                                    data-bs-toggle="popover"
+                                                                    data-bs-trigger="hover"
+                                                                    data-bs-html="true"
+                                                                    data-bs-placement="top"
+                                                                    data-bs-custom-class="popover-custom"
+                                                                    data-bs-title="Action Required"
+                                                                    data-bs-delay='{"show":0, "hide":500}'
+                                                                    data-bs-content="@popoverContent"
+                                                                </text>
+                                                    }
+                >
+                                                        <select class="form-select form-select-sm"
+                                                                onchange="updateStatus(@item.Id, this.value)"
+                                                                @(isLocked ? "disabled" : "")
+                                                                style="width: 140px; font-weight: 500; border-color: #dee2e6; @(isLocked ? "cursor: not-allowed; opacity: 0.6;" : "")">
+                                                            <option value="Pending" selected="@(item.Status == "Pending")">Pending</option>
+                                                            <option value="Shipped" selected="@(item.Status == "Shipped")">Shipped</option>
+                                                            <option value="Delivered" selected="@(item.Status == "Delivered")">Delivered</option>
+                                                            <option value="Returned" selected="@(item.Status == "Returned")">Returned</option>
+                                                            <option value="Cancelled" selected="@(item.Status == "Cancelled")">Cancelled</option>
+                                                        </select>
+                                                    </span>
                                 </td>
 
                                 <td>

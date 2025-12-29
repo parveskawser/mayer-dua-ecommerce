@@ -17,6 +17,7 @@ namespace MDUA.DataAccess.Interface
         ProductVariantList GetProductVariantsByProductId(int productId);
         void UpdateVariantName(int variantId, string newName);
         ProductVariant GetWithStock(int id);
+        List<VariantAttributeDto> GetVariantAttributesByProductId(int productId);
 
     }
 }

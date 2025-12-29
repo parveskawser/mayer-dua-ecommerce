@@ -28,86 +28,71 @@ namespace MDUA.DataAccess
         {
             string SQLQuery = @"
         SELECT 
-            p.Id,
-            p.CompanyId,
-            p.ProductName,
-            p.ReorderLevel,
-            p.Barcode,
-            p.CategoryId,
-            p.Description,
-            p.Slug,
-            p.BasePrice,
-            p.IsVariantBased,
-            p.IsActive,
-            p.CreatedBy,
-            p.CreatedAt,
-            p.UpdatedBy,
-            p.UpdatedAt,
+            p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+            p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
             c.CompanyName,
             ISNULL(SUM(vps.StockQty), 0) AS TotalStockQuantity
-        FROM 
-            Product p
-        LEFT JOIN 
-            Company c ON p.CompanyId = c.Id
-        LEFT JOIN 
-            ProductVariant pv ON pv.ProductId = p.Id
-        LEFT JOIN 
-            VariantPriceStock vps ON vps.Id = pv.Id
-        WHERE 
-            p.Id = @Id
+        FROM Product p
+        LEFT JOIN Company c ON p.CompanyId = c.Id
+        LEFT JOIN ProductVariant pv ON pv.ProductId = p.Id
+        LEFT JOIN VariantPriceStock vps ON vps.Id = pv.Id
+        WHERE p.Id = @Id
         GROUP BY 
             p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode, 
             p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased, 
-            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt, c.CompanyName;
-    ";
+            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt, c.CompanyName;";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pInt32("Id", _Id));
 
-            // 1. Get the object as usual (Dates will come as 'Unspecified')
-            Product product = GetObject(cmd);
+            // ✅ FIX: Ensure the connection is open for async/AI service calls
+            if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                cmd.Connection.Open();
 
-            // 2. ✅ FIX: Manually force the DateTimeKind to UTC
-            // This tells .NET: "These dates are definitely UTC, not local."
-            if (product != null)
+    // 1. Get the object
+     Product product = GetObject(cmd); 
+
+    // 2. Force the DateTimeKind to UTC
+    if (product != null)
             {
                 if (product.CreatedAt.HasValue)
-                    product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc);
+                     product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc); 
 
-                if (product.UpdatedAt.HasValue)
-                    product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc);
-            }
+        if (product.UpdatedAt.HasValue)
+                  product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc); 
+    }
 
             return product;
         }
         public ProductList GetLastFiveProducts()
         {
             string SQLQuery = @"
-        SELECT TOP 5
-            Id,
-            CompanyId,
-            ProductName,
-            ReorderLevel,
-            Barcode,
-            CategoryId,
-            Description,
-            Slug,
-            BasePrice,
-            IsVariantBased,
-            IsActive,
-            CreatedBy,
-            CreatedAt,
-            UpdatedBy,
-            UpdatedAt
-        FROM Product
-        WHERE IsActive = 1
-        ORDER BY CreatedAt DESC";
+    SELECT TOP 5
+        Id,
+        CompanyId,
+        ProductName,
+        ReorderLevel,
+        Barcode,
+        CategoryId,
+        Description,
+        Slug,
+        BasePrice,
+        IsVariantBased,
+        IsActive,
+        CreatedBy,
+        CreatedAt,
+        UpdatedBy,
+        UpdatedAt,
+        ExtraInfo -- <--- ADDED THIS COLUMN
+    FROM Product
+    WHERE IsActive = 1
+    ORDER BY CreatedAt DESC";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
 
             return GetList(cmd, 5);
         }
-
         public bool? ToggleStatus(int productId)
         {
             // --- QUERY 1: UPDATE the product ---
@@ -216,7 +201,21 @@ namespace MDUA.DataAccess
         // 2. SEARCH PRODUCTS
         public ProductList SearchProducts(string searchTerm)
         {
-            string SQLQuery = @"
+            // 1. Sanitize and Tokenize
+            if (string.IsNullOrWhiteSpace(searchTerm)) return new ProductList();
+
+            // Split the search term into individual words
+            var keywords = searchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // If no valid keywords, return empty
+            if (keywords.Length == 0) return new ProductList();
+
+            // 2. Build Dynamic SQL
+            // We want: (ProductName LIKE '%Word1%' AND ProductName LIKE '%Word2%')
+            // This allows "Combo - 3" to match "Combo" AND "3" even if the dash is missing in the search.
+
+            var sqlBuilder = new System.Text.StringBuilder();
+            sqlBuilder.Append(@"
         SELECT TOP 50
             p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
             p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
@@ -227,18 +226,42 @@ namespace MDUA.DataAccess
         LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
         WHERE p.IsActive = 1 
           AND (
-              p.ProductName LIKE @Search
-              OR p.Id IN (
-                  -- Find products where a variant matches the search term
-                  SELECT ProductId 
-                  FROM ProductVariant pv 
-                  WHERE pv.VariantName LIKE @Search OR pv.SKU LIKE @Search
-              )
-          )
-        ORDER BY p.ProductName ASC";
+            (");
 
-            using SqlCommand cmd = GetSQLCommand(SQLQuery);
-            AddParameter(cmd, pNVarChar("Search", 400, $"%{searchTerm}%"));
+            // Loop through keywords to build the "AND LIKE" clauses for Product Name
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (i > 0) sqlBuilder.Append(" AND ");
+                sqlBuilder.Append($"p.ProductName LIKE @Word{i}");
+            }
+
+            sqlBuilder.Append(@") 
+            OR p.Id IN (
+                -- Also check variants (OR logic inside variants is usually safer, but let's stick to AND for precision)
+                SELECT ProductId 
+                FROM ProductVariant pv 
+                WHERE ");
+
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (i > 0) sqlBuilder.Append(" AND ");
+                // Check both VariantName and SKU
+                sqlBuilder.Append($"(pv.VariantName LIKE @Word{i} OR pv.SKU LIKE @Word{i})");
+            }
+
+            sqlBuilder.Append(@")
+          )
+        ORDER BY p.ProductName ASC");
+
+            // 3. Execute
+            using SqlCommand cmd = GetSQLCommand(sqlBuilder.ToString());
+
+            // Add Parameters dynamically
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                // Wrap each word in wildcards: %word%
+                AddParameter(cmd, pNVarChar($"Word{i}", 100, $"%{keywords[i]}%"));
+            }
 
             return GetListWithCategory(cmd);
         }

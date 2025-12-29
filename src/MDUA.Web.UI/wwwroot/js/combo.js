@@ -1119,7 +1119,8 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
             } else {
                 $input.css('border-color', '#e74c3c');
             }
-        });    }
+        });
+    }
 });
 /* =========================================================
     (Customer Chat Logic)
@@ -1245,6 +1246,17 @@ $(document).ready(function () {
         const msg = $('#chat-input-field').val().trim();
         const currentName = chatUserName || "Guest";
 
+        // ✅ Capture the current page's Product ID
+        let contextProductId = null;
+        if (typeof window.baseProductInfo !== 'undefined' && window.baseProductInfo.id) {
+            contextProductId = window.baseProductInfo.id;
+        }
+
+        // 🔍 DEBUG: Log what we're about to send
+        console.log('[CHAT DEBUG] Sending message:', msg);
+        console.log('[CHAT DEBUG] Product ID:', contextProductId);
+        console.log('[CHAT DEBUG] baseProductInfo:', window.baseProductInfo);
+
         if (msg) {
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
 
@@ -1252,30 +1264,29 @@ $(document).ready(function () {
             appendCustomerMessage("You", msg, 'outgoing');
             $('#chat-input-field').val('');
 
-            // 2. Send to HTTP Endpoint (Triggers AI)
+            // 2. Build message data
             const messageData = {
                 SessionGuid: chatSessionId,
                 SenderName: currentName,
-                MessageText: msg
+                MessageText: msg,
+                ContextProductId: contextProductId // ✅ Sends the specific Product ID
             };
 
+            // 🔍 DEBUG: Log the actual payload
+            console.log('[CHAT DEBUG] Full payload:', JSON.stringify(messageData, null, 2));
+
+            // 3. Send to HTTP Endpoint
             $.ajax({
                 url: '/chat/send',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(messageData),
                 success: function (response) {
-                    console.log('✅ Message sent successfully');
-
-                    // If human handoff occurred, show notification
-                    if (response.handedOff) {
-                        appendCustomerMessage("System",
-                            "🔔 A support agent will join shortly.",
-                            'incoming');
-                    }
+                    console.log('[CHAT DEBUG] ✅ Message sent successfully', response);
                 },
                 error: function (xhr, status, error) {
-                    console.error('❌ Error sending message:', error);
+                    console.error('[CHAT DEBUG] ❌ Error sending message:', error);
+                    console.error('[CHAT DEBUG] Response:', xhr.responseText);
                     appendCustomerMessage("System",
                         "⚠️ Failed to send message. Please check your connection.",
                         'incoming');
@@ -1283,6 +1294,7 @@ $(document).ready(function () {
             });
         }
     }
+
 
     // ==================================================
     // 5. UI HELPERS

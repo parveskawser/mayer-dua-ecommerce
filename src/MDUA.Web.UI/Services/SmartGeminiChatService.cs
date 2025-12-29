@@ -1,4 +1,6 @@
-﻿using MDUA.Facade.Interface;
+﻿using MDUA.Entities;
+using MDUA.Facade;
+using MDUA.Facade.Interface;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -6,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MDUA.Web.UI.Services
@@ -17,68 +20,60 @@ namespace MDUA.Web.UI.Services
         private readonly IProductFacade _productFacade;
         private readonly IOrderFacade _orderFacade;
         private readonly IChatFacade _chatFacade;
+        private readonly ISettingsFacade _settingsFacade;
+        private readonly IPaymentFacade _paymentFacade;
+        private const string ModelUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-        private const string ModelUrl ="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
         public SmartGeminiChatService(
             IConfiguration config,
             HttpClient httpClient,
             IProductFacade productFacade,
             IOrderFacade orderFacade,
-            IChatFacade chatFacade)
+            IChatFacade chatFacade,
+            ISettingsFacade settingsFacade,
+            IPaymentFacade paymentFacade)
         {
             _httpClient = httpClient;
             _productFacade = productFacade;
             _orderFacade = orderFacade;
             _chatFacade = chatFacade;
 
-            // Inside SmartGeminiChatService constructor
             _apiKey = config["GEMINI_API_KEY"];
 
-            // ADD THIS CLEANUP:
             if (!string.IsNullOrEmpty(_apiKey))
                 _apiKey = _apiKey.Trim();
 
             if (string.IsNullOrEmpty(_apiKey))
                 throw new Exception("Gemini API Key is missing.");
+            _settingsFacade = settingsFacade;
+            _paymentFacade = paymentFacade;
         }
 
-        public async Task<string> GetResponseAsync(string userMessage, List<string> history)
+        public async Task<string> GetResponseAsync(string userMessage, List<string> history, int? contextProductId = null)
         {
             var sb = new StringBuilder();
 
-            // 🔥 SYSTEM PROMPT with Instructions
-            // 🔥 MERGED SYSTEM PROMPT
-            sb.AppendLine(@"You are MDUA Assistant, a helpful AI for MDUA - an e-commerce platform in Bangladesh.
+            // 🧠 SYSTEM PROMPT: Instructions for ordering and tool usage
+            sb.AppendLine(@"You are MDUA Assistant. Use 'REAL-TIME DATA' to help users.
+⛔ CRITICAL OPERATIONAL RULES:
+1. ORDERING FORM & AUTOFILL:
+   - Phone Numbers: Customers can enter any format (e.g., 01780..., +88017..., or 17...). Reassure them that our system cleans and accepts all these formats automatically.
+   - Welcome Back: Tell users that entering their registered phone number will automatically fill in their Name and Email.
+   - Postal Code: If they enter a 4-digit Postal Code, our system will automatically find their Division, District, and Thana for them.
+2. EMAIL & SECURITY:
+   - Every phone number must have a unique email. If an email is already used by someone else, the system will ask for a new one.
+3. PRICING:
+   - Always use the 'Calculated Price' provided in the data. This price already includes active discounts.
+4. PROCESS:
+   - Encourage users to fill out the form on the page for the fastest checkout.
+   - We send a confirmation Email and SMS after the order is placed.
+⛔ ORDERING RULES:
+1. When a user wants to buy, collect: Name, Phone, Address (Street, City, Division, Thana, SubOffice), Variant ID, and Quantity.
+2. If they provide a 4-digit Postal Code, tell them you've automatically identified their location.
+3. Once ALL info is collected, use the 'place_guest_order' tool.
+4. Inform them they will receive an Email/SMS confirmation after the order is placed.");
 
-⛔ STRICT DATA RULES (CRITICAL):
-1. You have access to a section called 'REAL-TIME DATA' below.
-2. ONLY recommend products listed in that data. Do NOT invent or hallucinate product names.
-3. If a product is NOT in the 'REAL-TIME DATA', explicitly say: 'I couldn't find that item in our catalog.'
-4. If data says 'Stock: 0', you MUST say it is currently out of stock.
-
-CAPABILITIES:
-✅ Search and recommend products (from provided data only)
-✅ Check stock availability
-✅ Explain prices and discounts
-✅ Track orders by Order ID
-✅ Guide customers through checkout
-✅ Answer delivery questions
-
-BUSINESS RULES & PRICING:
-1. Delivery Charge: Inside Dhaka: ৳60 | Outside Dhaka: ৳120 
-2. Prices: Always format as ৳1,500 (use commas).
-3. If a product is out of stock, you SHOULD still mention its price if known, but clearly state it is unavailable.
-4. Order Tracking: Ask for Order ID (format: ONXXXXXXXX or DOXXXXXXXX)[cite: 145].
-5. Human Handoff: If you cannot help, say: 'Let me connect you with our support team for personalized assistance.'
-
-RESPONSE STYLE:
-- Be friendly, concise, and use emojis occasionally 😊
-- Keep answers under 3 sentences when possible
-- Use bullet points for product lists
-- Be conversational, not robotic");
-
-            // 🆕 DYNAMIC CONTEXT INJECTION
-            string contextData = await GetRelevantContext(userMessage);
+            string contextData = await GetRelevantContext(userMessage, contextProductId);
             if (!string.IsNullOrEmpty(contextData))
             {
                 sb.AppendLine("\n--- REAL-TIME DATA FROM DATABASE ---");
@@ -86,223 +81,281 @@ RESPONSE STYLE:
                 sb.AppendLine("--- END DATA ---\n");
             }
 
-            // Add conversation history
-            if (history != null && history.Count > 0)
-            {
-                sb.AppendLine("Conversation history:");
-                foreach (var line in history.Take(5)) // Last 5 messages only
-                {
-                    sb.AppendLine(line);
-                }
-            }
-
-            sb.AppendLine($"\nCustomer: {userMessage}");
-            sb.AppendLine("AI:");
-
+            // --- BUILD THE GEMINI REQUEST WITH TOOLS ---
             var requestBody = new
             {
-                contents = new[] { new { parts = new[] { new { text = sb.ToString() } } } }
+                contents = new[] {
+                    new { role = "user", parts = new[] { new { text = sb.ToString() + "\n" + string.Join("\n", history) + "\nCustomer: " + userMessage } } }
+                },
+                tools = new[] {
+                    new {
+                        function_declarations = new[] {
+                            new {
+                                name = "place_guest_order",
+                                description = "Creates a new guest order in the system.",
+                                parameters = new {
+                                    type = "object",
+                                    properties = new {
+                                        customerName = new { type = "string" },
+                                        customerPhone = new { type = "string" },
+                                        customerEmail = new { type = "string" },
+                                        productVariantId = new { type = "integer" },
+                                        orderQuantity = new { type = "integer" },
+                                        street = new { type = "string" },
+                                        city = new { type = "string" },
+                                        division = new { type = "string" },
+                                        thana = new { type = "string" },
+                                        subOffice = new { type = "string" },
+                                        postalCode = new { type = "string" },
+                                        paymentMethod = new { type = "string", @enum = new[] { "cod", "bkash" } }
+                                    },
+                                    required = new[] { "customerName", "customerPhone", "productVariantId", "orderQuantity", "street", "city", "division", "thana", "subOffice" }
+                                }
+                            }
+                        }
+                    }
+                }
             };
 
-            var jsonContent = new StringContent(
-                JsonConvert.SerializeObject(requestBody),
-                Encoding.UTF8,
-                "application/json");
-
-            var response = await _httpClient.PostAsync($"{ModelUrl}?key={_apiKey}", jsonContent);
+            var response = await _httpClient.PostAsync($"{ModelUrl}?key={_apiKey}",
+                new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json"));
 
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
-                dynamic jsonResponse = JsonConvert.DeserializeObject(responseString);
-                string aiText = jsonResponse?.candidates?[0]?.content?.parts?[0]?.text;
+                dynamic jsonRes = JsonConvert.DeserializeObject(responseString);
+                var part = jsonRes?.candidates?[0]?.content?.parts?[0];
 
-                // 🔍 Check if AI is requesting human help
-                if (ContainsHandoffTrigger(aiText))
+                // 🔧 CHECK FOR FUNCTION CALL
+                if (part?.functionCall != null)
                 {
-                    return aiText + "\n\n🔔 *I've notified our team. A support agent will join shortly.*";
+                    string functionName = part.functionCall.name;
+                    var args = part.functionCall.args;
+
+                    if (functionName == "place_guest_order")
+                    {
+                        return await HandleOrderToolCall(args);
+                    }
                 }
 
-                return aiText ?? "I'm sorry, I couldn't generate a response.";
+                return part?.text ?? "I'm here to help with your order!";
             }
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var err = await response.Content.ReadAsStringAsync();
-                return $"Gemini error {(int)response.StatusCode}: {err}";
-            }
-
-            return $"AI is currently unavailable. Please try again or contact support.";
+            return "System is currently busy. Please try again.";
         }
+        private async Task<string> HandleOrderToolCall(dynamic args)
+        {
+            try
+            {
+                // Note: PaymentMethod is ignored here because SalesOrderHeader doesn't contain it,
+                // but the AI has already collected the user's preference.
+                var order = new SalesOrderHeader
+                {
+                    CustomerName = (string)args.customerName,
+                    CustomerPhone = (string)args.customerPhone,
+                    CustomerEmail = (string)args.customerEmail,
+                    ProductVariantId = (int)args.productVariantId,
+                    OrderQuantity = (int)args.orderQuantity,
+                    Street = (string)args.street,
+                    City = (string)args.city,
+                    Divison = (string)args.division, 
+                    Thana = (string)args.thana,
+                    SubOffice = (string)args.subOffice,
+                    PostalCode = (string)args.postalCode,
+                    TargetCompanyId = 1
+                };
 
-        // 🧠 INTELLIGENCE ENGINE: Detects intent and fetches relevant data
-        private async Task<string> GetRelevantContext(string message)
+               // Calculate Delivery Charge based on Division [cite: 122, 273, 863-864]
+                var settings = _settingsFacade.GetDeliverySettings(order.TargetCompanyId);
+                bool isDhaka = order.Divison.ToLower().Contains("dhaka") || order.City.ToLower().Contains("dhaka");
+                order.DeliveryCharge = isDhaka ? settings["dhaka"] : settings["outside"];
+
+                // EXECUTE BUSINESS LOGIC 
+                string orderNo = await _orderFacade.PlaceGuestOrder(order);
+
+                return $"✅ Success! I have placed your order. Your Order ID is **{orderNo}**. You will receive a confirmation SMS/Email shortly.";
+            }
+            catch (Exception ex)
+            {
+                return $"❌ I encountered an error while placing the order: {ex.Message}. Please check your details and try again.";
+            }
+        }
+        private async Task<string> GetRelevantContext(string message, int? activeProductId)
         {
             var lowerMsg = message.ToLower();
             var context = new StringBuilder();
 
             try
             {
-                // =========================================================
-                // 🆕 REPLACE THE OLD "PRODUCT SEARCH" BLOCK WITH YOUR NEW CODE HERE
-                // =========================================================
+                // Resolve CompanyId (Default to 1)
+                int companyId = 1;
 
-                // 0️⃣ CHECK FOR GENERIC "SHOW PRODUCTS" QUERY
-                // If user asks "Show me available products" or "What do you have?", don't run a keyword search.
-                // Inside GetRelevantContext ...
+                // 1️ DYNAMIC BUSINESS KNOWLEDGE (Delivery & Payment Methods)
+                // This ensures the AI always knows the CURRENT prices and methods set in Admin settings
+                var delivery = _settingsFacade.GetDeliverySettings(companyId);
+                context.AppendLine("🚚 SHIPPING INFORMATION:");
+                context.AppendLine($"- Inside Dhaka: ৳{delivery["dhaka"]}");
+                context.AppendLine($"- Outside Dhaka: ৳{delivery["outside"]}");
 
-                // 0️⃣ GENERIC REQUEST (e.g. "List", "What is available")
-                bool isGenericRequest = ContainsAny(lowerMsg, "available products", "list", "what do you have", "show me items", "catalogue");
-
-                if (isGenericRequest)
+                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
+                if (paymentMethods != null && paymentMethods.Any())
                 {
-                    var trending = GetTrendingProducts();
-                    if (!string.IsNullOrEmpty(trending))
+                    context.AppendLine("\n💳 AVAILABLE PAYMENT METHODS:");
+                    foreach (var pm in paymentMethods)
                     {
-                        context.AppendLine("User asked for a list. Here are our top items:");
-                        context.AppendLine(trending);
-                    }
-                    else
-                    {
-                        // FAILSAFE: If trending is empty, tell AI to apologize
-                        context.AppendLine("User asked for a list, but no trending data was returned from DB.");
+                        context.AppendLine($"- {pm.MethodName}");
                     }
                 }
-                // 1️⃣ SPECIFIC SEARCH (Only if NOT generic)
-                else if (ContainsAny(lowerMsg, "product", "item", "buy", "purchase", "find", "search", "price", "stock", "is "))
+
+                // 2️ PAGE SPECIFIC CONTEXT (Preserved existing logic)
+                if (activeProductId.HasValue && activeProductId.Value > 0)
                 {
-                    // Added "is " to the keywords trigger
+                    var pageContext = await GetPageSpecificContext(activeProductId.Value);
+                    if (!string.IsNullOrEmpty(pageContext))
+                    {
+                        context.AppendLine("\n🔴 CURRENT PAGE CONTEXT (The product the user is seeing):");
+                        context.AppendLine(pageContext);
+                    }
+                }
+
+                // 3️ SEARCH LOGIC 
+                if (!lowerMsg.Contains("this") && !lowerMsg.Contains("it") &&
+                    ContainsAny(lowerMsg, "product", "item", "search", "find", "price", "stock"))
+                {
                     var productInfo = await GetProductContext(message);
-                    if (!string.IsNullOrEmpty(productInfo))
-                        context.AppendLine(productInfo);
+                    if (!string.IsNullOrEmpty(productInfo)) context.AppendLine(productInfo);
                 }
 
-                // =========================================================
-                // 👇 KEEP THE REST OF THE EXISTING CODE BELOW UNTOUCHED
-                // =========================================================
-
-                // 2️⃣ ORDER TRACKING
-                if (ContainsAny(lowerMsg, "order", "track", "delivery", "shipped", "on", "do") &&
-                    (lowerMsg.Contains("on") || lowerMsg.Contains("do")))
+                // 4️ ORDER TRACKING (Preserved existing logic)
+                if (Regex.IsMatch(lowerMsg, @"(on|do)\d{8}"))
                 {
                     var orderInfo = await GetOrderContext(message);
-                    if (!string.IsNullOrEmpty(orderInfo))
-                        context.AppendLine(orderInfo);
-                }
-
-                // 3️⃣ LOW STOCK ALERTS (Optional: You can keep this for specific "recommend" keywords)
-                if (ContainsAny(lowerMsg, "recommend", "suggest", "popular", "trending", "best"))
-                {
-                    var trending = GetTrendingProducts();
-                    if (!string.IsNullOrEmpty(trending))
-                        context.AppendLine(trending);
+                    if (!string.IsNullOrEmpty(orderInfo)) context.AppendLine(orderInfo);
                 }
             }
             catch (Exception ex)
             {
-                context.AppendLine($"Note: Some data couldn't be retrieved ({ex.Message})");
+                context.AppendLine($"Note: Dynamic data lookup limited ({ex.Message})");
             }
 
             return context.ToString();
         }
-        // 📦 PRODUCT CONTEXT BUILDER
+        private async Task<string> GetPageSpecificContext(int productId)
+        {
+            var p = _productFacade.GetProductDetails(productId);
+            if (p == null) return null;
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Product: {p.ProductName}");
+
+           // ✅ Fetch discount once for product
+            var bestDiscount = _productFacade.GetBestDiscount(p.Id, p.BasePrice ?? 0);
+
+            var allAttributes = _productFacade.GetVariantAttributes(productId);
+            if (p.Variants != null && p.Variants.Any())
+            {
+                sb.AppendLine("Variations:");
+                foreach (var v in p.Variants)
+                {
+                    var myAttrs = allAttributes.Where(a => a.VariantId == v.Id)
+                                               .Select(a => $"{a.AttributeName}: {a.AttributeValue}");
+
+                   // ✅ DYNAMIC PRICE CALCULATION (Sync with OrderFacade) [cite: 23-26]
+                    decimal basePrice = v.VariantPrice ?? p.SellingPrice;
+                    decimal calculatedPrice = basePrice;
+
+                    if (bestDiscount != null)
+                    {
+                        if (bestDiscount.DiscountType == "Flat")
+                            calculatedPrice -= bestDiscount.DiscountValue;
+                        else if (bestDiscount.DiscountType == "Percentage")
+                            calculatedPrice -= (basePrice * (bestDiscount.DiscountValue / 100));
+                    }
+                    calculatedPrice = Math.Max(calculatedPrice, 0);
+
+                    string name = myAttrs.Any() ? string.Join(", ", myAttrs) : v.VariantName;
+                    sb.AppendLine($"- {name}: ৳{calculatedPrice:N0} [Stock: {v.StockQty}, ID: {v.Id}]");
+                }
+            }
+            return sb.ToString();
+        }
+        private async Task<string> GetBusinessRulesContext(int companyId)
+        {
+            var sb = new StringBuilder();
+
+            // ✅ Fetch Delivery Charges dynamically from DB [cite: 698]
+            var delivery = _settingsFacade.GetDeliverySettings(companyId);
+            sb.AppendLine("🚚 DELIVERY CHARGES:");
+            sb.AppendLine($"- Inside Dhaka: ৳{delivery["dhaka"]}");
+            sb.AppendLine($"- Outside Dhaka: ৳{delivery["outside"]}");
+
+           // ✅ Fetch Payment Methods dynamically from DB 
+            var payments = _settingsFacade.GetCompanyPaymentSettings(companyId);
+            var enabledPayments = payments.Where(p => p.IsEnabled).ToList();
+
+            if (enabledPayments.Any())
+            {
+                sb.AppendLine("\n💳 ACCEPTED PAYMENT METHODS:");
+                foreach (var pm in enabledPayments)
+                {
+                    string mode = pm.IsManualEnabled && pm.IsGatewayEnabled ? "Mobile Banking & Online Gateway" :
+                                 pm.IsGatewayEnabled ? "Online Gateway" : "Manual/Cash";
+                    sb.AppendLine($"- {pm.MethodName} ({mode})");
+                    if (!string.IsNullOrEmpty(pm.CustomInstruction))
+                        sb.AppendLine($"  Instruction: {pm.CustomInstruction}"); // This shows the Bkash number [cite: 729]
+                }
+            }
+
+            return sb.ToString();
+        }
+        // 📦 PRODUCT CONTEXT BUILDER (Corrected with Attribute Lookup)
         private async Task<string> GetProductContext(string query)
         {
             try
             {
                 var searchTerm = ExtractSearchTerm(query);
                 var products = _productFacade.SearchProducts(searchTerm);
-
-                if (products == null || products.Count == 0)
-                    return $"❌ No products found matching '{searchTerm}'";
+                if (products == null || products.Count == 0) return "";
 
                 var sb = new StringBuilder();
                 sb.AppendLine($"📦 **Search Results for '{searchTerm}':**\n");
 
-                int count = 0;
-                foreach (var p in products.Take(5))
+                foreach (var p in products.Take(3))
                 {
-                    try
+                    // Fetch discount once per product
+                    var bestDiscount = _productFacade.GetBestDiscount(p.Id, p.BasePrice ?? 0);
+                    var variants = _productFacade.GetVariantsByProductId(p.Id);
+                    var allAttributes = _productFacade.GetVariantAttributes(p.Id);
+
+                    sb.AppendLine($"Product: {p.ProductName}");
+                    foreach (var v in variants)
                     {
-                        count++;
+                        var myAttributes = allAttributes.Where(a => a.VariantId == v.Id)
+                                                        .Select(a => $"{a.AttributeName}: {a.AttributeValue}");
 
-                        // 1. Get Variants
-                        var variants = _productFacade.GetVariantsByProductId(p.Id);
+                        // Apply the same calculation used in PlaceGuestOrder
+                        decimal basePrice = v.VariantPrice ?? p.BasePrice ?? 0;
+                        decimal discountedPrice = basePrice;
 
-                        // 2. Calculate Total Stock Safely
-                        int totalStock = 0;
-                        string variantDetails = "";
-
-                        if (variants != null && variants.Count > 0)
+                        if (bestDiscount != null)
                         {
-                            totalStock = variants.Sum(v => v.StockQty);
-
-                            // 3. DYNAMIC NAME BUILDING (Prevents Crashes)
-                            // We iterate and try to find a valid name property dynamically
-                            var vList = new List<string>();
-                            foreach (var v in variants)
-                            {
-                                // Try to read "VariantName", "Name", or "Title" dynamically
-                                // This fixes the "ProductVariant does not contain..." error
-                                string name = "Option";
-
-                                // Reflection check for properties
-                                var props = v.GetType().GetProperties();
-                                var nameProp = props.FirstOrDefault(x =>
-                                    x.Name.Equals("VariantName", StringComparison.OrdinalIgnoreCase) ||
-                                    x.Name.Equals("Name", StringComparison.OrdinalIgnoreCase) ||
-                                    x.Name.Equals("Title", StringComparison.OrdinalIgnoreCase) ||
-                                    x.Name.Equals("Size", StringComparison.OrdinalIgnoreCase)); // Fallback to Size if it exists
-
-                                if (nameProp != null)
-                                {
-                                    var val = nameProp.GetValue(v);
-                                    if (val != null) name = val.ToString();
-                                }
-
-                                vList.Add($"{name} ({v.StockQty})");
-                            }
-                            variantDetails = string.Join(", ", vList);
+                            if (bestDiscount.DiscountType == "Flat")
+                                discountedPrice -= bestDiscount.DiscountValue;
+                            else if (bestDiscount.DiscountType == "Percentage")
+                                discountedPrice -= (basePrice * (bestDiscount.DiscountValue / 100));
                         }
-                        else
-                        {
-                            // No variants? Use product stock if available, or default to 0
-                            // Check if Product entity has a generic Stock property
-                            var pStock = p.GetType().GetProperty("StockQty")?.GetValue(p);
-                            if (pStock != null) totalStock = (int)pStock;
-                        }
+                        discountedPrice = Math.Max(discountedPrice, 0);
 
-                        // 4. Formatting Output
-                        var discount = _productFacade.GetBestDiscount(p.Id, p.BasePrice ?? 0);
-                        string priceDisplay = discount != null
-                            ? $"৳{p.SellingPrice:N0} (was ৳{p.BasePrice:N0})"
-                            : $"৳{p.BasePrice:N0}";
-
-                        string stockStatus = totalStock > 0
-                            ? $"✅ In Stock ({totalStock} available)"
-                            : "❌ Out of Stock";
-
-                        sb.AppendLine($"{count}. **{p.ProductName}**");
-                        sb.AppendLine($"   Price: {priceDisplay}");
-                        sb.AppendLine($"   Stock: {stockStatus}");
-
-                        if (!string.IsNullOrEmpty(variantDetails))
-                            sb.AppendLine($"   Details: {variantDetails}");
-
-                        sb.AppendLine();
+                        string name = myAttributes.Any() ? string.Join(", ", myAttributes) : (v.VariantName ?? "Option");
+                        sb.AppendLine($" - [{name}]: ৳{discountedPrice:N0} (Stock: {v.StockQty}, ID: {v.Id})");
                     }
-                    catch (Exception innerEx)
-                    {
-                        // If one product fails, log it but DON'T stop the loop
-                        sb.AppendLine($"   (Error loading details for {p.ProductName}: {innerEx.Message})\n");
-                    }
+                    sb.AppendLine();
                 }
-
                 return sb.ToString();
             }
             catch (Exception ex)
             {
-                return $"Error fetching products: {ex.Message}";
+                return $"Error fetching price details: {ex.Message}";
             }
         }
         // 📋 ORDER TRACKING CONTEXT
@@ -311,10 +364,10 @@ RESPONSE STYLE:
             try
             {
                 // Extract Order ID (format: ON12345678 or DO12345678)
-                var orderIdMatch = System.Text.RegularExpressions.Regex.Match(
+                var orderIdMatch = Regex.Match(
                     message,
                     @"(ON|DO)\d{8}",
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    RegexOptions.IgnoreCase);
 
                 if (!orderIdMatch.Success)
                     return "💡 To track your order, please provide your Order ID (e.g., ON12345678 or DO12345678)";
@@ -347,7 +400,6 @@ RESPONSE STYLE:
         }
 
         // 🔥 TRENDING PRODUCTS
-        // 🔥 TRENDING / ALL PRODUCTS LIST
         private string GetTrendingProducts()
         {
             try
@@ -357,7 +409,7 @@ RESPONSE STYLE:
                 // 1. Try to get ALL products (using a space " " to bypass empty-string checks)
                 var products = _productFacade.SearchProducts(" ");
 
-                // 2. If " " didn't work, try a very common letter like "a" or just null
+                // 2. If " " didn't work, try empty string
                 if (products == null || products.Count == 0)
                     products = _productFacade.SearchProducts("");
 
@@ -368,7 +420,6 @@ RESPONSE STYLE:
 
                 foreach (var p in products.Take(10))
                 {
-                    // Simple display for the list
                     sb.AppendLine($"• {p.ProductName} - ৳{p.SellingPrice:N0}");
                 }
 
@@ -379,10 +430,10 @@ RESPONSE STYLE:
                 return $"Error fetching list: {ex.Message}";
             }
         }
+
         private string ExtractSearchTerm(string message)
         {
             // 1. Clean the message first (To Lower + Remove Punctuation)
-            // We replace punctuation with spaces to ensure words don't get stuck together (e.g., "stock?iphone" -> "stock iphone")
             var sb = new StringBuilder();
             foreach (char c in message.ToLower())
             {
@@ -392,14 +443,14 @@ RESPONSE STYLE:
 
             // 2. Define the "Stop Words" (Words to completely delete)
             var stopWords = new HashSet<string>
-    {
-        "show", "me", "find", "search", "looking", "look", "for", "want", "need", "get",
-        "do", "you", "have", "is", "are", "can", "i", "buy", "purchase", "shop",
-        "price", "cost", "rate", "amount", "how", "much",
-        "stock", "available", "availability", "status", "count", "left", "many",
-        "details", "info", "information", "about", "desc", "description",
-        "product", "item", "unit", "article", "of", "the", "a", "an", "this", "that"
-    };
+            {
+                "show", "me", "find", "search", "looking", "look", "for", "want", "need", "get",
+                "do", "you", "have", "is", "are", "can", "i", "buy", "purchase", "shop",
+                "price", "cost", "rate", "amount", "how", "much",
+                "stock", "available", "availability", "status", "count", "left", "many",
+                "details", "info", "information", "about", "desc", "description",
+                "product", "item", "unit", "article", "of", "the", "a", "an", "this", "that"
+            };
 
             // 3. Split into words and filter
             var words = cleanMessage.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -413,12 +464,9 @@ RESPONSE STYLE:
                 }
             }
 
-            // 4. Join back together
-            // Result: "dsadsa231 stock?" -> "dsadsa231"
-            // Result: "stock of dsadsa231" -> "dsadsa231"
-            // Result: "price for iphone 15" -> "iphone 15"
             return string.Join(" ", validWords).Trim();
         }
+
         private bool ContainsAny(string text, params string[] keywords)
         {
             return keywords.Any(k => text.Contains(k));

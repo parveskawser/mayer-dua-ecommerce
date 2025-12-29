@@ -160,7 +160,7 @@ namespace MDUA.DataAccess
             
             p.ProductName, 
             pv.VariantName, 
-            pv.SKU
+            pv.Sku
         FROM Delivery d
         INNER JOIN SalesOrderHeader soh ON d.SalesOrderId = soh.Id
         INNER JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
@@ -241,7 +241,7 @@ namespace MDUA.DataAccess
                                     ProductVariant = new ProductVariant
                                     {
                                         VariantName = reader.IsDBNull(reader.GetOrdinal("VariantName")) ? "" : reader.GetString(reader.GetOrdinal("VariantName")),
-                                        SKU = reader.IsDBNull(reader.GetOrdinal("SKU")) ? "" : reader.GetString(reader.GetOrdinal("SKU")),
+                                        SKU = reader.IsDBNull(reader.GetOrdinal("Sku")) ? "" : reader.GetString(reader.GetOrdinal("Sku")),
                                         Product = new Product
                                         {
                                             ProductName = reader.IsDBNull(reader.GetOrdinal("ProductName")) ? "Unknown" : reader.GetString(reader.GetOrdinal("ProductName"))

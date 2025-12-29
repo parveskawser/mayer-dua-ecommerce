@@ -1,5 +1,7 @@
 ﻿@model MDUA.Entities.Product
 @using System.Text.RegularExpressions
+@using MDUA.DataAccess
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Model.ProductName ?? "Combo Offer";
     Layout = null;
@@ -17,6 +19,37 @@
          .Where(i => !string.IsNullOrEmpty(i.ImageUrl) && i.ImageUrl != mainImageUrl)
          .ToList();
 
+    // --- 1. FETCH LOGO ---
+    string finalLogoUrl = Model.CompanyLogoUrl;
+    string finalFaviconUrl = "/favicon.ico"; // Default fallback
+
+    try
+    {
+        var companyDa = new CompanyDataAccess(Configuration);
+        var companyObj = companyDa.GetCompanySafe(Model.CompanyId);
+
+        if (companyObj != null)
+        {
+            if (!string.IsNullOrEmpty(companyObj.LogoImg))
+            {
+                finalLogoUrl = companyObj.LogoImg;
+            }
+        }
+
+        // --- 2. NEW: FETCH FAVICON ---
+        // Instantiate GlobalSettingDataAccess manually since we can't inject Facades into Views easily without Layout
+        var globalSettingsDa = new MDUA.DataAccess.GlobalSettingDataAccess(Configuration);
+        string dbFavicon = globalSettingsDa.GetSetting(Model.CompanyId, "FaviconUrl");
+
+        if (!string.IsNullOrEmpty(dbFavicon))
+        {
+            finalFaviconUrl = dbFavicon + "?v=" + DateTime.UtcNow.Ticks; // Add Cache Busting
+        }
+    }
+    catch
+    {
+        // Fail silently and use defaults
+    }
 }
 
 <!DOCTYPE html>
@@ -25,6 +58,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@Model.ProductName | @(Model.CompanyName ?? "Shop")</title>
+    <link rel="icon" type="image/png" href="@finalFaviconUrl">
     <link rel="stylesheet" href="~/css/combo.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
@@ -41,12 +75,12 @@
 <body>
     <header class="header">
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-            <img src="@Url.Content(string.IsNullOrEmpty(Model.CompanyLogoUrl) ? "~/images/logo.jpg" : $"~{Model.CompanyLogoUrl}")"
+            <img src="@Url.Content(string.IsNullOrEmpty(finalLogoUrl) ? "~/images/logo.jpg" : $"~{finalLogoUrl}")"
                  alt="@(Model.CompanyName ?? "Company") Logo"
                  class="logo"
                  onerror="this.onerror=null; this.src='/images/logo.jpg';" />
 
-            <div class="header-actions" style="display: flex; gap: 10px;">
+            <div class="header-actions">
                 <a href="#order" class="btn combo-btn">Order Now</a>
                 <button id="open-status-modal" class="btn status-btn">Track My Order</button>
             </div>
@@ -325,17 +359,31 @@
 
                     <h3 style="margin-top:0;">Your Receipt</h3>
                     <table class="receipt-table">
-                        <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th style="white-space: nowrap;">Price</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr>
-                                <td><div class="receipt-item-name">@Model.ProductName</div></td>
+                                <td>
+                                    <div class="receipt-item-name">@Model.ProductName</div>
+                                </td>
                                 <td id="summary-qty">1</td>
-                                <td id="summary-subtotal">Tk. 0</td>
+                                <td id="summary-subtotal" style="white-space: nowrap;">Tk. 0</td>
                             </tr>
                         </tbody>
                         <tfoot>
-                            <tr><th colspan="2">Delivery</th><th id="receipt-delivery">Tk. 0</th></tr>
-                            <tr class="grand-total"><th colspan="2">Total</th><th id="receipt-grand-total">Tk. 0</th></tr>
+                            <tr>
+                                <th colspan="2">Delivery</th>
+                                <th id="receipt-delivery" style="white-space: nowrap;">Tk. 0</th>
+                            </tr>
+                            <tr class="grand-total">
+                                <th colspan="2">Total</th>
+                                <th id="receipt-grand-total" style="white-space: nowrap;">Tk. 0</th>
+                            </tr>
                         </tfoot>
                     </table>
                 </div>
@@ -488,34 +536,34 @@
         window.productVariants = [
             @if (Model.Variants != null)
             {
-                    foreach (var v in Model.Variants.Where(x => x.IsActive))
-                    {
-                            var attrs = new Dictionary<string, string>();
-                            // Only use Specifications to ensure 1:1 match with HTML buttons
-                            if (Model.Specifications != null)
+                            foreach (var v in Model.Variants.Where(x => x.IsActive))
                             {
-                                    foreach (var spec in Model.Specifications)
-                                    {
-                                            foreach (var val in spec.Value)
+                                            var attrs = new Dictionary<string, string>();
+                                            // Only use Specifications to ensure 1:1 match with HTML buttons
+                                            if (Model.Specifications != null)
                                             {
-                                                    if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
-                                                    {
-                                                            attrs[spec.Key] = val;
-                                                    }
+                                                            foreach (var spec in Model.Specifications)
+                                                            {
+                                                                            foreach (var val in spec.Value)
+                                                                            {
+                                                                                            if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                                                                            {
+                                                                                                            attrs[spec.Key] = val;
+                                                                                            }
+                                                                            }
+                                                            }
                                             }
-                                    }
-                            }
 
-                            <text>,
-                            {
-                                id: @v.Id,
-                                price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
-                                stock: @v.StockQty,
-                                image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
-                                attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
-                            },
-                            </text>
-                    }
+                                            <text>,
+                                            {
+                                                id: @v.Id,
+                                                price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
+                                                stock: @v.StockQty,
+                                                image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
+                                                attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
+                                            },
+                                            </text>
+                            }
             }
         ];
 

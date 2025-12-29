@@ -632,24 +632,6 @@ $(document).ready(function () {
 
     populateDivisions();
 
-    // NEW: Load all districts immediately
-    function populateAllDistricts() {
-        // We assume your controller can return ALL districts if no division is passed
-        // OR you might need to create a specific endpoint like '/order/get-all-districts'
-        // For now, we try calling get-districts without parameters.
-        $.get('/order/get-districts', function (data) {
-            enableSelect('#district-select', data, 'Select District');
-        }).fail(function () {
-            $('#district-select').empty().append('<option>Error loading districts</option>');
-        });
-    }
-
-    // Call this instead of populateDivisions
-    populateAllDistricts();
-
-    // REMOVED: $('#division-select').change(...) logic is no longer needed 
-    // because we don't have a visible division dropdown.
-
     $('#division-select').change(function () {
         let division = $(this).val();
 
@@ -672,15 +654,9 @@ $(document).ready(function () {
     $('#district-select').change(function () {
         let district = $(this).val();
 
-        // NEW: Try to find the division for this district from the option data
-        // (Assuming your API returns division info, if not, this part is optional but good for data integrity)
-        // If your API data doesn't have 'division' in the option dataset, the backend usually figures it out from City anyway.
-        // $('#hidden-division').val("..."); 
-
         resetSelect('#thana-select', 'Loading...');
         resetSelect('#suboffice-select', 'Select Thana first');
 
-        // Delivery Charge Logic (This remains exactly the same)
         let charge = delivery.outside;
         if (district && (district.toLowerCase().includes('dhaka') || district.trim() === 'Dhaka')) {
             charge = delivery.dhaka;
@@ -699,6 +675,7 @@ $(document).ready(function () {
             resetSelect('#thana-select', 'Select District first');
         }
     });
+
     $('#thana-select').change(function () {
         let thana = $(this).val();
 
@@ -1082,63 +1059,55 @@ $('input[name="PostalCode"]').on('input keyup blur', function () {
             if (data.found) {
                 $input.css('border-color', '#2ecc71');
 
-                // 1. Set Hidden Division
-                $('#hidden-division').val(data.division);
+                let $divSelect = $('#division-select');
+                $divSelect.val(data.division).trigger('change');
 
-                // 2. Set District Directly (No timeout needed anymore)
-                let $distSelect = $('#district-select');
-                $distSelect.val(data.district).trigger('change');
+                setTimeout(() => {
+                    let $distSelect = $('#district-select');
+                    $distSelect.val(data.district).trigger('change');
+                }, 500);
 
-                // 3. Load Thana and Suboffice (Keep timeout slightly to allow Thana API to load after District change triggers)
                 setTimeout(() => {
                     if (data.thana) {
                         let $thanaSelect = $('#thana-select');
-                        // Force load the specific thana option immediately
                         $thanaSelect.empty()
                             .append(`<option value="${data.thana}" selected>${data.thana}</option>`)
                             .prop('disabled', false);
-
-                        // Trigger change to load suboffices
-                        $thanaSelect.trigger('change');
                     }
 
-                    // 4. Load SubOffice
-                    setTimeout(() => {
-                        if (data.subOffice) {
-                            let $subSelect = $('#suboffice-select');
-                            $subSelect.empty()
-                                .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
+                    if (data.subOffice) {
+                        let $subSelect = $('#suboffice-select');
+                        $subSelect.empty()
+                            .append(`<option value="${data.subOffice}" selected>${data.subOffice}</option>`);
 
-                            $subSelect.find(':selected').data('code', code);
-                            $subSelect.prop('disabled', false);
-                        }
-                    }, 300); // Small delay for SubOffice API
-
-                }, 500); // Delay for Thana API (triggered by district change)
+                        $subSelect.find(':selected').data('code', code);
+                        $subSelect.prop('disabled', false);
+                    }
+                }, 800);
 
             } else {
                 $input.css('border-color', '#e74c3c');
             }
-        });    }
+        });
+    }
 });
 /* =========================================================
-    (Customer Chat Logic)
+   FILENAME: wwwroot/js/combo.js (Customer Logic)
    ========================================================= */
 
 $(document).ready(function () {
-    // --- Shared Variables ---
     let chatConnection = null;
     let chatSessionId = localStorage.getItem("chatSessionId");
     let chatUserName = localStorage.getItem("chatUserName");
     let sessionTimestamp = localStorage.getItem("chatSessionTimestamp");
 
-    const ONE_HOUR = 60 * 60 * 1000;
+    // --- 1. SESSION MANAGEMENT (1 Hour Expiration) ---
+    const ONE_HOUR = 60 * 60 * 1000; // ms
 
-    // ==================================================
-    // 1. SESSION MANAGEMENT
-    // ==================================================
     function checkSessionExpiry() {
         const now = new Date().getTime();
+
+        // If expired or no timestamp, clear session
         if (sessionTimestamp && (now - sessionTimestamp > ONE_HOUR)) {
             console.log("⚠️ Session expired. Starting fresh.");
             localStorage.removeItem("chatSessionId");
@@ -1147,14 +1116,19 @@ $(document).ready(function () {
             chatSessionId = null;
             chatUserName = null;
         }
+
+
     }
 
+    // Initialize Session
     checkSessionExpiry();
 
     if (!chatSessionId) {
+        // Create new session
+        //chatSessionId = crypto.randomUUID()
         chatSessionId = generateUUID();
         localStorage.setItem("chatSessionId", chatSessionId);
-        localStorage.setItem("chatSessionTimestamp", new Date().getTime());
+        localStorage.setItem("chatSessionTimestamp", new Date().getTime()); // Save start time
     }
 
     function generateUUID() {
@@ -1172,59 +1146,59 @@ $(document).ready(function () {
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
     }
-
-    // ==================================================
-    // 2. LOAD HISTORY
-    // ==================================================
+    // --- 2. LOAD HISTORY ON REFRESH ---
     function loadChatHistory() {
         $.get('/chat/guest-history?sessionGuid=' + chatSessionId, function (messages) {
             if (messages && messages.length > 0) {
+                // If we have history, show the chat box button as "active" or just load them silently
+                // render messages
                 messages.forEach(function (m) {
+                    // m.isFromAdmin determines the side
                     let type = m.isFromAdmin ? 'incoming' : 'outgoing';
                     let senderName = m.isFromAdmin ? (m.senderName || "Support") : "You";
                     appendCustomerMessage(senderName, m.messageText, type);
                 });
 
+                // If there is history, assume user is "logged in"
                 if (!chatUserName) {
+                    // Try to guess or just set state to active without name if history exists
                     showChatInterface();
                 }
             }
         });
     }
 
+    // Call history loader immediately
     loadChatHistory();
 
-    // ==================================================
-    // 3. SIGNALR CONNECTION
-    // ==================================================
+    // --- 3. SignalR Connection Logic ---
     function initSignalR() {
         if (chatConnection) return;
 
+        // Initialize Builder
         chatConnection = new signalR.HubConnectionBuilder()
             .withUrl("/supportHub?sessionId=" + chatSessionId)
             .withAutomaticReconnect()
             .build();
 
-        // ✅ LISTENER 1: Admin Reply (AI or Human)
+        // Listener: Admin Reply
         chatConnection.on("ReceiveReply", function (adminName, message) {
+            // Update Timestamp on activity to keep session alive
             localStorage.setItem("chatSessionTimestamp", new Date().getTime());
 
-            // Play sound
+            // 🔔 Sound
             var audio = document.getElementById("chat-notification-sound");
-            if (audio) {
-                audio.play().catch(e => console.log("Audio blocked"));
-            }
+            if (audio) { audio.play().catch(e => console.log("Audio blocked")); }
 
-            // Display message
+            // UI
             appendCustomerMessage(adminName, message, 'incoming');
 
-            // Badge logic if chat is closed
             if (!$('#live-chat-box').is(':visible')) {
                 $('#support-widget-btn').addClass('active');
             }
         });
 
-        // ✅ LISTENER 2: System Messages
+        // Listener: System Message
         chatConnection.on("ReceiveSystemMessage", function (message) {
             const html = `<div class="msg-system">${message}</div>`;
             $('#chat-messages-list').append(html);
@@ -1236,57 +1210,10 @@ $(document).ready(function () {
             .catch(err => console.error(err));
     }
 
+    // Auto-connect SignalR so we receive messages even if window was refreshed
     initSignalR();
 
-    // ==================================================
-    // 4. SEND MESSAGE LOGIC
-    // ==================================================
-    function sendCustomerMessage() {
-        const msg = $('#chat-input-field').val().trim();
-        const currentName = chatUserName || "Guest";
-
-        if (msg) {
-            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
-
-            // 1. Show Local
-            appendCustomerMessage("You", msg, 'outgoing');
-            $('#chat-input-field').val('');
-
-            // 2. Send to HTTP Endpoint (Triggers AI)
-            const messageData = {
-                SessionGuid: chatSessionId,
-                SenderName: currentName,
-                MessageText: msg
-            };
-
-            $.ajax({
-                url: '/chat/send',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(messageData),
-                success: function (response) {
-                    console.log('✅ Message sent successfully');
-
-                    // If human handoff occurred, show notification
-                    if (response.handedOff) {
-                        appendCustomerMessage("System",
-                            "🔔 A support agent will join shortly.",
-                            'incoming');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('❌ Error sending message:', error);
-                    appendCustomerMessage("System",
-                        "⚠️ Failed to send message. Please check your connection.",
-                        'incoming');
-                }
-            });
-        }
-    }
-
-    // ==================================================
-    // 5. UI HELPERS
-    // ==================================================
+    // --- 4. Message UI Functions ---
     function appendCustomerMessage(sender, text, type) {
         const container = $('#chat-messages-list');
         let senderHtml = type === 'incoming' ? `<div class="msg-sender-name">${sender}</div>` : '';
@@ -1306,10 +1233,82 @@ $(document).ready(function () {
         if (body) body.scrollTop = body.scrollHeight;
     }
 
+    function sendCustomerMessage() {
+        const msg = $('#chat-input-field').val().trim();
+        const currentName = chatUserName || "Guest";
+
+        if (msg) {
+            // Refresh timestamp
+            localStorage.setItem("chatSessionTimestamp", new Date().getTime());
+
+            // 1. Show Local
+            appendCustomerMessage("You", msg, 'outgoing');
+            $('#chat-input-field').val('');
+
+            // 2. Send to Server
+            if (chatConnection) {
+                chatConnection.invoke("SendMessageToAdmin", currentName, msg, chatSessionId)
+                    .catch(err => console.error(err));
+            }
+        }
+    }
+
+    // --- 5. UI Interactions ---
+    $('#chat-send-btn').click(sendCustomerMessage);
+    $('#chat-input-field').keypress(function (e) { if (e.which == 13) sendCustomerMessage(); });
+
+    $('#support-widget-btn').click(function () {
+        // Toggle Red/Blue State
+        $(this).toggleClass('active');
+        const menu = $('#support-options');
+        const icon = $(this).find('i');
+
+        if (menu.hasClass('show')) {
+            // Closing
+            menu.removeClass('show');
+            $('#live-chat-box').fadeOut();
+            icon.removeClass('fa-times').addClass('fa-headset');
+        } else {
+            // Opening
+            menu.addClass('show');
+            $('#live-chat-box').hide();
+            icon.removeClass('fa-headset').addClass('fa-times');
+        }
+    });
+
+    $('#btn-open-live-chat').click(function () {
+        $('#support-options').removeClass('show');
+
+        // Ensure Main Button stays Red/X
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.addClass('active');
+        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
+
+        $('#live-chat-box').fadeIn().css('display', 'flex');
+        checkChatState();
+    });
+
+    $('#chat-close-btn').click(function () {
+        $('#live-chat-box').fadeOut();
+        // Reset Button
+        const mainBtn = $('#support-widget-btn');
+        mainBtn.removeClass('active');
+        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
+    });
+
+    $('#chat-start-btn').click(function () {
+        const name = $('#chat-guest-name').val().trim();
+        if (name) setUserName(name);
+        else $('#chat-guest-name').css('border-color', 'red');
+    });
+
+    $('#chat-skip-btn').click(function () { setUserName("Guest"); });
+
     function setUserName(name) {
         chatUserName = name;
         localStorage.setItem("chatUserName", name);
         showChatInterface();
+        // Update session timestamp
         localStorage.setItem("chatSessionTimestamp", new Date().getTime());
     }
 
@@ -1330,65 +1329,21 @@ $(document).ready(function () {
         $('#chat-footer').css('display', 'flex');
     }
 
+    if (chatSessionId) {
+        initSignalR();
+    }
     // ==================================================
-    // 6. EVENT BINDINGS
+    // 12. SCROLL TO TOP WITH PROGRESS RING
     // ==================================================
-    $('#chat-send-btn').click(sendCustomerMessage);
 
-    $('#chat-input-field').keypress(function (e) {
-        if (e.which == 13) sendCustomerMessage();
-    });
-
-    $('#support-widget-btn').click(function () {
-        $(this).toggleClass('active');
-        const menu = $('#support-options');
-        const icon = $(this).find('i');
-
-        if (menu.hasClass('show')) {
-            menu.removeClass('show');
-            $('#live-chat-box').fadeOut();
-            icon.removeClass('fa-times').addClass('fa-headset');
-        } else {
-            menu.addClass('show');
-            $('#live-chat-box').hide();
-            icon.removeClass('fa-headset').addClass('fa-times');
-        }
-    });
-
-    $('#btn-open-live-chat').click(function () {
-        $('#support-options').removeClass('show');
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.addClass('active');
-        mainBtn.find('i').removeClass('fa-headset').addClass('fa-times');
-        $('#live-chat-box').fadeIn().css('display', 'flex');
-        checkChatState();
-    });
-
-    $('#chat-close-btn').click(function () {
-        $('#live-chat-box').fadeOut();
-        const mainBtn = $('#support-widget-btn');
-        mainBtn.removeClass('active');
-        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
-    });
-
-    $('#chat-start-btn').click(function () {
-        const name = $('#chat-guest-name').val().trim();
-        if (name) setUserName(name);
-        else $('#chat-guest-name').css('border-color', 'red');
-    });
-
-    $('#chat-skip-btn').click(function () {
-        setUserName("Guest");
-    });
-
-    // ==================================================
-    // 7. SCROLL TO TOP WITH PROGRESS RING
-    // ==================================================
+    // Select the SVG path
     var progressPath = document.querySelector('.progress-wrap path');
 
+    // Only run if element exists
     if (progressPath) {
         var pathLength = progressPath.getTotalLength();
 
+        // Initialize CSS transitions
         progressPath.style.transition = progressPath.style.WebkitTransition = 'none';
         progressPath.style.strokeDasharray = pathLength + ' ' + pathLength;
         progressPath.style.strokeDashoffset = pathLength;
@@ -1405,7 +1360,7 @@ $(document).ready(function () {
         updateProgress();
         $(window).scroll(updateProgress);
 
-        var offset = 50;
+        var offset = 50; // Show after 50px scroll
 
         $(window).on('scroll', function () {
             if ($(this).scrollTop() > offset) {

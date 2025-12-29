@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVendor    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVendor    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVendor]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVendor]
 GO
@@ -68,7 +68,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVendor    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVendor    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVendor]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVendor]
 GO
@@ -112,7 +112,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVendor    Script Date: 12/2/2025 4:44:59 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVendor    Script Date: 12/21/2025 8:58:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVendor]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVendor]
 GO
@@ -143,7 +143,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVendor    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendor    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVendor]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVendor]
 GO
@@ -160,7 +160,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorById    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorById    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorById]
 GO
@@ -181,7 +181,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorMaximumId    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorMaximumId    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorMaximumId]
 GO
@@ -210,7 +210,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorRowCount    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorRowCount    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorRowCount]
 GO
@@ -229,7 +229,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVendor    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVendor    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVendor]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVendor]
 GO
@@ -319,7 +319,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorByQuery    Script Date: 12/2/2025 4:44:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorByQuery    Script Date: 12/21/2025 8:58:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorByQuery]
 GO

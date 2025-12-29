@@ -1,16 +1,20 @@
-﻿using MDUA.Facade;
+﻿using Fido2NetLib;
+using Fido2NetLib.Objects;
+using MDUA.Facade;
 using MDUA.Facade.Interface;
-using Microsoft.AspNetCore.Hosting; // ✅ Required for file upload
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using QRCoder;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Security.Claims;
+using System.Text;
 
 namespace MDUA.Web.UI.Controllers
 {
@@ -20,28 +24,29 @@ namespace MDUA.Web.UI.Controllers
         private readonly ISettingsFacade _settingsFacade;
         private readonly IPaymentFacade _paymentFacade;
         private readonly IUserLoginFacade _userLoginFacade;
-
-        // ✅ Add CompanyFacade and Environment
+        private readonly IFido2 _fido2;
         private readonly ICompanyFacade _companyFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
-
 
         public SettingsController(
             ISettingsFacade settingsFacade,
             IPaymentFacade paymentFacade,
             IUserLoginFacade userLoginFacade,
-            ICompanyFacade companyFacade,     // Injected
-            IWebHostEnvironment webHostEnvironment // Injected
-        )
+            IFido2 fido2,
+            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment // Injected
+
+            )
         {
             _settingsFacade = settingsFacade;
             _paymentFacade = paymentFacade;
             _userLoginFacade = userLoginFacade;
+            _fido2 = fido2;
             _companyFacade = companyFacade;
             _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
+        [Route("settings/payment-method")]
         public IActionResult PaymentSettings()
         {
             var model = _settingsFacade.GetCompanyPaymentSettings(CurrentCompanyId);
@@ -55,6 +60,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
+        [Route("settings/payment-method/save")]
         [ValidateAntiForgeryToken]
         public IActionResult SavePaymentConfig(int methodId, bool isEnabled, bool isManual, bool isGateway, string instruction)
         {
@@ -80,6 +86,7 @@ namespace MDUA.Web.UI.Controllers
 
 
         [HttpPost]
+        [Route("settings/payment-method/save-delivery")]
         [ValidateAntiForgeryToken]
         public IActionResult SaveDeliverySettings(int dhakaCharge, int outsideCharge)
         {
@@ -94,49 +101,48 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
-        // ✅ NEW: Security Settings Page
+        //  Security Settings Page
+
         [HttpGet]
-        // No changes needed here, but ensure this is your code:
-        [HttpGet]
+        [Route("settings/security")]
         public IActionResult Security()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return RedirectToAction("LogIn", "Account");
+            if (userIdClaim == null)
+                return RedirectToAction("LogIn", "Account");
 
             int userId = int.Parse(userIdClaim.Value);
 
-            // Now this returns the User with IsTwoFactorEnabled = true
             var userResult = _userLoginFacade.GetUserLoginById(userId);
-
-            // This will now be TRUE
             ViewBag.IsTwoFactorEnabled = userResult.UserLogin.IsTwoFactorEnabled;
 
-            // The QR code logic will be skipped if enabled
             if (!userResult.UserLogin.IsTwoFactorEnabled)
             {
                 var setupInfo = _userLoginFacade.SetupTwoFactor(userResult.UserLogin.UserName);
                 ViewBag.ManualEntryKey = setupInfo.secretKey;
-                ViewBag.QrCodeImage = $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={Uri.EscapeDataString(setupInfo.qrCodeUri)}";
+                ViewBag.QrCodeImage =
+                    $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={Uri.EscapeDataString(setupInfo.qrCodeUri)}";
             }
+
+            var passkeys = _userLoginFacade.GetPasskeysWithDeviceNames(userId);
+            ViewBag.PasskeyList = passkeys;
+            ViewBag.HasPasskeys = passkeys != null && passkeys.Any();
 
             return View();
         }
-        // ✅ NEW: Enable 2FA Action
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EnableTwoFactor(string entryKey, string code)
+        public IActionResult EnableTwoFactor(string entryKey, string code)
         {
-            bool success = _userLoginFacade.EnableTwoFactor(CurrentUserId, entryKey, code);
-
-            if (success)
+            try
             {
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return Json(new { success = true, message = "2FA Enabled. Please log in again." });
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                bool success = _userLoginFacade.EnableTwoFactor(userId, entryKey, code);
+                if (success) return Json(new { success = true });
+                return Json(new { success = false, message = "Invalid authentication code." });
             }
-            return Json(new { success = false, message = "Invalid Code. Please try again." });
+            catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
         }
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(string CurrentPassword, string NewPassword, string ConfirmPassword, bool LogoutAllDevices)
@@ -210,27 +216,164 @@ namespace MDUA.Web.UI.Controllers
 
             // 5. Redirect to the 2FA Verify Screen
             return RedirectToAction("VerifyReset2FA", "Account");
-
         }
 
-        // ✅ 1. GET: Show Company Profile
-        [HttpGet]
-        public IActionResult CompanyProfile()
-        {
-            var company = _companyFacade.Get(CurrentCompanyId);
-            return View(company);
-        }
-
-        // ✅ 2. POST: Update Profile & Upload Image
         [HttpPost]
+[Route("Settings/MakeCredentialOptions")]
         [ValidateAntiForgeryToken]
-        [RequestSizeLimit(100 * 1024 * 1024)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
-        public async Task<IActionResult> UpdateCompanyProfile(string CompanyName, IFormFile LogoFile)
+        public IActionResult MakeCredentialOptions()
         {
             try
             {
-                // 1. Get existing data to preserve other fields
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                // 1. Business Logic: Enforce 2-device limit
+                var existingKeys = _userLoginFacade.GetPasskeysByUserId(userId);
+                if (existingKeys != null && existingKeys.Count >= 2)
+                {
+                    return BadRequest(new { message = "Maximum of 2 devices allowed. Please remove one to add another." });
+                }
+
+                var user = _userLoginFacade.Get(userId);
+                var fidoUser = new Fido2User
+                {
+                    Id = Encoding.UTF8.GetBytes(user.Id.ToString()),
+                    Name = user.Email,
+                    DisplayName = user.UserName
+                };
+
+                var excludeCredentials = existingKeys.Select(k => new PublicKeyCredentialDescriptor(k.CredentialId)).ToList();
+
+                var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
+                {
+                    User = fidoUser,
+                    ExcludeCredentials = excludeCredentials,
+                    AuthenticatorSelection = new AuthenticatorSelection
+                    {
+                        ResidentKey = ResidentKeyRequirement.Preferred,
+                        UserVerification = UserVerificationRequirement.Preferred
+                    },
+                    AttestationPreference = AttestationConveyancePreference.None
+                });
+
+                HttpContext.Session.SetString("fido2.attestationOptions", options.ToJson());
+                return Content(options.ToJson(), "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
+        [Route("Settings/MakeCredential")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MakeCredential([FromBody] PasskeyRegistrationRequest request)
+        {
+            try
+            {
+                var jsonOptions = HttpContext.Session.GetString("fido2.attestationOptions");
+                if (string.IsNullOrEmpty(jsonOptions)) return BadRequest(new { message = "Session expired" });
+
+                var options = CredentialCreateOptions.FromJson(jsonOptions);
+
+                // 1. Verify the Attestation
+                var result = await _fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
+                {
+                    AttestationResponse = request.AttestationResponse,
+                    OriginalOptions = options,
+                    IsCredentialIdUniqueToUserCallback = (args, cancellationToken) =>
+                    {
+                        var exists = _userLoginFacade.GetPasskeyByCredentialId(args.CredentialId) != null;
+                        return Task.FromResult(!exists);
+                    }
+                });
+
+                // 2. Business Logic: Device Detection
+                string userAgent = Request.Headers["User-Agent"].ToString();
+                string detectedDevice;
+
+                if (request.AuthenticatorAttachment == "platform")
+                {
+                    // Registration happened on THIS device - trust User-Agent
+                    detectedDevice = ParseDeviceFromUserAgent(userAgent);
+                }
+                else
+                {
+                    // Phone/security key was used remotely
+                    detectedDevice = "Android Phone (Remote)";
+                }
+
+                // 3. Save to DB with Metadata
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                _userLoginFacade.AddUserPasskey(new MDUA.Entities.UserPasskey
+                {
+                    UserId = userId,
+                    CredentialId = result.Id,
+                    PublicKey = result.PublicKey,
+                    SignatureCounter = (int)result.SignCount,
+                    CredType = "public-key",
+                    RegDate = DateTime.UtcNow,
+                    AaGuid = result.AaGuid,
+                    FriendlyName = string.IsNullOrWhiteSpace(request.FriendlyName) ? null : request.FriendlyName,
+                    DeviceType = detectedDevice
+                });
+
+                HttpContext.Session.Remove("fido2.attestationOptions");
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public class PasskeyRegistrationRequest
+        {
+            public AuthenticatorAttestationRawResponse AttestationResponse { get; set; }
+            public string FriendlyName { get; set; }
+            public string AuthenticatorAttachment { get; set; } 
+
+        }
+        private string ParseDeviceFromUserAgent(string ua)
+        {
+            if (ua.Contains("iPhone")) return "iPhone";
+            if (ua.Contains("Android")) return "Android Device";
+            if (ua.Contains("Windows")) return "Windows PC";
+            if (ua.Contains("Macintosh")) return "MacBook";
+            if (ua.Contains("Linux")) return "Linux Device";
+            return "Unknown Device";
+        }
+       
+
+        // ✅ 1. GET: Show Company Profile (Updated to fetch Favicon)
+
+
+        [HttpGet]
+        [Route("settings/company-profile")]
+        public IActionResult CompanyProfile()
+        {
+            var company = _companyFacade.Get(CurrentCompanyId);
+
+            // Fetch Favicon from Global Settings
+            string faviconUrl = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "FaviconUrl");
+            ViewBag.FaviconUrl = faviconUrl;
+
+            return View(company);
+        }
+
+        // ✅ 2. POST: Update Profile & Upload Images (Logo + Favicon)
+        [HttpPost]
+        [Route("settings/company-profile")]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
+        public IActionResult UpdateCompanyProfile(string CompanyName, IFormFile LogoFile, IFormFile FaviconFile)
+        {
+            try
+            {
+                // 1. Get existing data
                 var company = _companyFacade.Get(CurrentCompanyId);
                 if (company == null) return Json(new { success = false, message = "Company not found." });
 
@@ -240,40 +383,87 @@ namespace MDUA.Web.UI.Controllers
                     company.CompanyName = CompanyName;
                 }
 
-                // 3. Handle File Upload (if provided)
-                if (LogoFile != null && LogoFile.Length > 0)
-                {
-                    // Create folder if not exists
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "company-logos");
-                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                    // Generate unique filename
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + LogoFile.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    // Save file
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await LogoFile.CopyToAsync(fileStream);
-                    }
-
-                    // Store relative path in DB (e.g., "/uploads/company-logos/abc.png")
-                    company.LogoImg = "/uploads/company-logos/" + uniqueFileName;
-                }
-
-                // 4. Update Database
-                // Note: Ensure UpdatedBy/At are set if your BaseDataAccess doesn't handle them automatically
+                // 3. Update Audit Fields
                 company.UpdatedBy = CurrentUserName;
-                company.UpdatedAt = DateTime.Now;
+                company.UpdatedAt = DateTime.UtcNow;
 
-                _companyFacade.Update(company);
+                // 4. Call Facade to handle Files & Database Updates
+                // This handles saving Logo to [Company] and Favicon to [GlobalSetting]
+                _companyFacade.UpdateCompanyProfile(company, LogoFile, FaviconFile, _webHostEnvironment.WebRootPath);
 
-                return Json(new { success = true, message = "Profile updated successfully!", newLogoUrl = company.LogoImg, newName = company.CompanyName });
+                // 5. Return Success (Frontend will reload or update visuals)
+                return Json(new
+                {
+                    success = true,
+                    message = "Profile updated successfully!",
+                    newLogoUrl = company.LogoImg,
+                    newName = company.CompanyName
+                });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteSinglePasskey(int id)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                // Securely delete only if the key belongs to the logged-in user
+                _userLoginFacade.DeleteSpecificUserPasskey(id, userId);
+                return Json(new { success = true, message = "Device removed successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
+
+        [ValidateAntiForgeryToken]
+
+        public IActionResult DisablePasskeys()
+
+        {
+
+            try
+
+            {
+
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                var keys = _userLoginFacade.GetPasskeysByUserId(userId);
+
+                foreach (var key in keys)
+
+                {
+
+                    _userLoginFacade.DeleteUserPasskey(key.Id);
+
+                }
+
+                return Json(new { success = true, message = "All passkeys removed." });
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return Json(new { success = false, message = ex.Message });
+
+            }
+
+        }
+
     }
 }

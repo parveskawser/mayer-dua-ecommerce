@@ -28,6 +28,8 @@ namespace MDUA.Facade.Interface
         long UpdateProduct(Product product, string username);
         long UpdateVariantPrice(int variantId, decimal newPrice, string newSku);
         long DeleteVariant(int variantId);
+
+        List<VariantAttributeDto> GetVariantAttributes(int productId);
         List<AttributeName> GetAttributesForProduct(int productId);
         long AddVariantToExistingProduct(ProductVariant variant);
         ProductVariantResult GetVariantsWithAttributes(int productId);

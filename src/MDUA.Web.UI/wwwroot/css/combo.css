@@ -38,34 +38,237 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* --- Layout Wrappers --- */
-.container {
-    width: 100%;
-    max-width: var(--container-width);
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-/* --- Header --- */
+/* --- Layout Wrappers --- */ /* --- Header --- */
 .header {
-    background: rgba(255, 255, 255, 0.85); /* Semi-transparent */
-    backdrop-filter: blur(12px); /* Frosted glass effect */
-    padding: 1rem 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 0.5rem 0; /* Reduced padding since we enforce min-height */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     text-align: center;
-    position: sticky;
+    position: fixed; /* consolidated 'fixed' */
     top: 0;
+    width: 100%;
     z-index: 100;
     border-bottom: 1px solid rgba(255,255,255,0.5);
+    /* CRITICAL FIX: Enforce height so it doesn't collapse when logo is absolute */
+    min-height: 70px;
+    display: flex;
+    align-items: center; /* Vertically centers the content inside */
 }
 
+    /* Ensure the container inside the header fills the height for alignment */
+    .header .container {
+        position: relative; /* Needed for the absolute children to position correctly */
+        height: 100%;
+        display: flex;
+        align-items: center; /* Align items vertically */
+        width: 100%; /* Ensure container spans full width */
+    }
+
+/* --- Header Actions (Buttons) --- */
+.header-actions {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+/* --- Logo Styles --- */
+.logo {
+    height: 50px; /* Fixed height */
+    width: auto; /* Maintain aspect ratio */
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transition: all 0.3s ease; /* Smooth transition when resizing window */
+}
+
+/* 1. Mobile Styles (Default) */
+/* Keeps logo on left, but prevents it from hitting the buttons */
+/* --- Logo Styles --- */
 .logo {
     height: 50px;
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transition: all 0.3s ease;
+    /* Base Positioning (Mobile Default) */
+    position: absolute;
+    top: 50%; /* Center vertically */
+    left: 10px; /* 10px from the LEFT on Mobile */
+    transform: translateY(-50%); /* Adjust vertical alignment */
+    /* Prevent overlapping with buttons on small screens */
+    max-width: calc(100% - 160px);
 }
 
+/* 2. PC / Desktop Styles (Wider screens) */
+@media (min-width: 768px) {
+    .logo {
+        left: 50%; /* Move to horizontal center */
+        transform: translate(-50%, -50%); /* Center BOTH Horizontally & Vertically */
+        max-width: none; /* Remove width restriction */
+    }
+}
+
+/* --- Header Button Sizing --- */
+/* =========================================
+   1. DEFINE ANIMATIONS (Blue & Green)
+   ========================================= */
+
+/* Blue Glow for Order Now */
+@keyframes glow-blue {
+    0% {
+        box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.8), 0 0 10px rgba(37, 99, 235, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+    }
+}
+
+/* Green Glow for Track Order */
+@keyframes glow-green {
+    0% {
+        box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 10px rgba(16, 185, 129, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+    }
+}
+
+/* =========================================
+   2. SHARED BUTTON STYLES (Shape & Layout)
+   ========================================= */
+/* =========================================
+   1. SHARED BUTTON STYLES (Shape & 3D Structure)
+   ========================================= */
+.header-actions .btn {
+    /* Layout */
+    padding: 8px 24px; /* Slightly wider for the pill shape */
+    font-size: 14px;
+    font-weight: 700; /* Thicker text stands out better on 3D */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    /* Rounded Pill Shape */
+    border-radius: 50px;
+    border: none;
+    color: white;
+    /* 3D Transitions */
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative; /* Necessary for click effects */
+    top: 0;
+}
+
+/* =========================================
+   2. COLOR VARIANTS (Order Now & Track Order)
+   ========================================= */
+
+/* --- A. Order Now (Blue Fluffy) --- */
+.combo-btn {
+    /* Gradient: Light Top to Dark Bottom for Volume */
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    /* The "Fluffy 3D" Stack: 
+       1. Top inner white highlight (Puffiness)
+       2. Bottom inner dark shadow (Depth)
+       3. Outer soft blue shadow (Glow) 
+    */
+    box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.5), /* Top Highlight */
+    inset 0 -4px 6px rgba(0, 0, 0, 0.1), /* Bottom Shade */
+    0 8px 15px rgba(37, 99, 235, 0.4); /* Soft Drop Shadow */
+}
+
+/* --- B. Track My Order (Green Fluffy) --- */
+.status-btn {
+    /* Gradient: Light Top to Dark Bottom */
+    background: linear-gradient(180deg, #6ee7b7 0%, #10b981 100%);
+    /* The "Fluffy 3D" Stack */
+    box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.1), 0 8px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* =========================================
+   3. INTERACTIONS (Hover & Click)
+   ========================================= */
+
+/* Hover: Float Up slightly + Intensity Shadow */
+.header-actions .btn:hover {
+    transform: translateY(-2px); /* Moves up */
+    filter: brightness(1.1); /* Gets slightly brighter */
+}
+
+/* Active (Click): Press Down + Squish Shadow */
+.header-actions .btn:active {
+    transform: translateY(1px); /* Moves down (pressed look) */
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2), /* Inner shadow gets darker */
+    0 2px 5px rgba(0, 0, 0, 0.1); /* Outer shadow shrinks */
+}
+
+/* =========================================
+   4. MOBILE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 8px 16px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 8px !important;
+    }
+}
+
+/* =========================================
+   3. SPECIFIC COLORS
+   ========================================= */
+
+/* Order Now - BLUE */
+.combo-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb); /* Bright Blue */
+    animation: glow-blue 2s infinite alternate;
+}
+
+/* Track My Order - LIGHT GREEN */
+.status-btn {
+    background: linear-gradient(135deg, #34d399, #10b981); /* Light/Emerald Green */
+    animation: glow-green 2s infinite alternate;
+}
+
+/* =========================================
+   4. MOBILE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 6px 14px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 5px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 5px !important;
+    }
+}
 /* --- Sections Common --- */
 section {
     margin-bottom: 2.5rem;
@@ -1029,3 +1232,6 @@ SCROLL TO TOP (Soft Bubble)
         pointer-events: none;
     }
 }
+
+/* Ensure the parent header allows absolute positioning relative to itself */
+

@@ -12,53 +12,42 @@ namespace MDUA.DataAccess
         public ProductDiscountList GetProductDiscountsByProductId(int productId)
         {
             string SQLQuery = @"
-                SELECT
-                    Id,
-                    ProductId,
-                    DiscountType,
-                    DiscountValue,
-                    MinQuantity,
-                    EffectiveFrom,
-                    EffectiveTo,
-                    IsActive,
-                    CreatedBy,
-                    CreatedAt,
-                    UpdatedBy,
-                    UpdatedAt
-                FROM ProductDiscount
-                WHERE ProductId = @ProductId
-                ORDER BY EffectiveFrom DESC";
+            SELECT Id, ProductId, DiscountType, DiscountValue, MinQuantity, 
+                   EffectiveFrom, EffectiveTo, IsActive, CreatedBy, CreatedAt, 
+                   UpdatedBy, UpdatedAt
+            FROM ProductDiscount
+            WHERE ProductId = @ProductId
+            ORDER BY EffectiveFrom DESC";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pInt32("ProductId", productId));
+
+            // ✅ FIX: Ensure connection is open for AI service
+            if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                cmd.Connection.Open();
+
             return GetList(cmd, ALL_AVAILABLE_RECORDS);
         }
-
         public ProductDiscount GetActiveDiscount(int productId)
         {
             string SQLQuery = @"
-                SELECT TOP 1
-                    Id,
-                    ProductId,
-                    DiscountType,
-                    DiscountValue,
-                    MinQuantity,
-                    EffectiveFrom,
-                    EffectiveTo,
-                    IsActive,
-                    CreatedBy,
-                    CreatedAt,
-                    UpdatedBy,
-                    UpdatedAt
-                FROM ProductDiscount
-                WHERE ProductId = @ProductId
-                  AND IsActive = 1
-                  AND EffectiveFrom <= SYSUTCDATETIME()
-                  AND (EffectiveTo IS NULL OR EffectiveTo >= SYSUTCDATETIME())
-                ORDER BY EffectiveFrom DESC";
+            SELECT TOP 1 Id, ProductId, DiscountType, DiscountValue, MinQuantity, 
+                   EffectiveFrom, EffectiveTo, IsActive, CreatedBy, CreatedAt, 
+                   UpdatedBy, UpdatedAt
+            FROM ProductDiscount
+            WHERE ProductId = @ProductId
+              AND IsActive = 1
+              AND EffectiveFrom <= SYSUTCDATETIME()
+              AND (EffectiveTo IS NULL OR EffectiveTo >= SYSUTCDATETIME())
+            ORDER BY EffectiveFrom DESC";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             AddParameter(cmd, pInt32("ProductId", productId));
+
+            // ✅ FIX: Ensure connection is open for AI service
+            if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                cmd.Connection.Open();
+
             return GetObject(cmd);
         }
     }

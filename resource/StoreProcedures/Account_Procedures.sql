@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertAccount    Script Date: 12/2/2025 4:44:55 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertAccount    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertAccount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertAccount]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateAccount    Script Date: 12/2/2025 4:44:55 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateAccount    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateAccount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateAccount]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteAccount    Script Date: 12/2/2025 4:44:55 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteAccount    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteAccount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteAccount]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAccount    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAccount    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllAccount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllAccount]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAccountById    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAccountById    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAccountById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAccountById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAccountByAccountTypeId    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAccountByAccountTypeId    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAccountByAccountTypeId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAccountByAccountTypeId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAccountMaximumId    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAccountMaximumId    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAccountMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAccountMaximumId]
 GO
@@ -256,7 +256,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAccountRowCount    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAccountRowCount    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAccountRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAccountRowCount]
 GO
@@ -275,7 +275,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedAccount    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedAccount    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedAccount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedAccount]
 GO
@@ -375,7 +375,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAccountByQuery    Script Date: 12/2/2025 4:44:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAccountByQuery    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAccountByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAccountByQuery]
 GO
