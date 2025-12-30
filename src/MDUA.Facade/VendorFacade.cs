@@ -1,7 +1,8 @@
+using System;
+using System.Collections.Generic;
+using MDUA.Framework;
 using MDUA.DataAccess.Interface;
 using MDUA.Entities;
-using MDUA.Framework; // <--- ADD THIS LINE
-
 using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 
@@ -10,22 +11,27 @@ namespace MDUA.Facade
     public class VendorFacade : IVendorFacade
     {
         private readonly IVendorDataAccess _vendorDataAccess;
+        // 1. Define the private field
+        private readonly IPoRequestedDataAccess _poRequestedDataAccess; 
 
-        public VendorFacade(IVendorDataAccess vendorDataAccess)
+        // 2. Inject it in the constructor
+        public VendorFacade(IVendorDataAccess vendorDataAccess, IPoRequestedDataAccess poRequestedDataAccess)
         {
             _vendorDataAccess = vendorDataAccess;
+            
+            // ✅ FIX FOR CS0103: Assign the parameter to the field
+            _poRequestedDataAccess = poRequestedDataAccess;
         }
 
         public long Insert(Vendor vendor)
         {
-            // Set audit fields if necessary or handle in logic
-            vendor.CreatedAt = System.DateTime.Now; 
+            vendor.CreatedAt = DateTime.Now; 
             return _vendorDataAccess.Insert(vendor);
         }
 
         public long Update(Vendor vendor)
         {
-            vendor.UpdatedAt = System.DateTime.Now;
+            vendor.UpdatedAt = DateTime.Now;
             return _vendorDataAccess.Update(vendor);
         }
 
@@ -47,6 +53,12 @@ namespace MDUA.Facade
         public VendorList GetPaged(PagedRequest request)
         {
             return _vendorDataAccess.GetPaged(request);
+        }
+
+        // ✅ FIX FOR CS1061: This will now work because the Interface has the method
+        public List<dynamic> GetVendorOrderHistory(int vendorId)
+        {
+            return _poRequestedDataAccess.GetVendorHistory(vendorId);
         }
     }
 }

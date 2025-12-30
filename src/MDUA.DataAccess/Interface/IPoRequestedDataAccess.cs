@@ -37,5 +37,6 @@ namespace MDUA.DataAccess.Interface
         void UpdateStatus(int poId, string status, SqlTransaction transaction);
         dynamic GetVariantStatus(int variantId);
         long Insert(PoRequestedBase obj, SqlTransaction trans);
+        List<dynamic> GetVendorHistory(int vendorId);
     }	
 }

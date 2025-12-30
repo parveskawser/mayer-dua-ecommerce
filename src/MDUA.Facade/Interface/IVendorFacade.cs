@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic; // <--- ADD THIS LINE (Required for List<dynamic>)
 using MDUA.Entities;
 using MDUA.Entities.List;
-using MDUA.Framework; // <--- ADD THIS LINE
-
+using MDUA.Framework;
 
 namespace MDUA.Facade.Interface
 {
@@ -14,5 +14,8 @@ namespace MDUA.Facade.Interface
         Vendor Get(int id);
         VendorList GetAll();
         VendorList GetPaged(PagedRequest request);
+        
+        // This method fetches the history
+        List<dynamic> GetVendorOrderHistory(int vendorId);
     }
 }

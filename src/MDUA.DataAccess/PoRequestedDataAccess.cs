@@ -7,7 +7,7 @@ using MDUA.Framework;
 using MDUA.Entities;
 using MDUA.Entities.Bases;        // Required for PoRequestedBase
 using MDUA.Framework.Exceptions;  // Required for ObjectInsertException
-
+using MDUA.DataAccess.Interface; // Ensure this is present
 namespace MDUA.DataAccess
 {
     public partial class PoRequestedDataAccess
@@ -212,6 +212,53 @@ namespace MDUA.DataAccess
                 }
             }
             return null;
+        }
+        
+        public List<dynamic> GetVendorHistory(int vendorId)
+        {
+            var list = new List<dynamic>();
+            string SQL = @"
+                SELECT 
+                    pr.Id,
+                    pr.RequestDate,
+                    pr.Quantity AS RequestedQty,
+                    pr.Status,
+                    CASE WHEN pr.BulkPurchaseOrderId IS NOT NULL AND pr.BulkPurchaseOrderId > 0 THEN 1 ELSE 0 END AS IsBulkOrder,
+                    p.ProductName,
+                    ISNULL(pv.VariantName, 'Standard') AS VariantName,
+                    ISNULL((SELECT SUM(rcv.ReceivedQuantity) FROM PoReceived rcv WHERE rcv.PoRequestedId = pr.Id), 0) AS ReceivedQty
+                FROM PoRequested pr
+                JOIN ProductVariant pv ON pr.ProductVariantId = pv.Id
+                JOIN Product p ON pv.ProductId = p.Id
+                WHERE pr.VendorId = @VendorId
+                ORDER BY pr.RequestDate DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(SQL))
+            {
+                AddParameter(cmd, pInt32("VendorId", vendorId));
+                
+                if (cmd.Connection.State != ConnectionState.Open) 
+                    cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        dynamic item = new ExpandoObject();
+                        ((IDictionary<string, object>)item)["PoId"] = reader.GetInt32(0);
+                        ((IDictionary<string, object>)item)["RequestDate"] = reader.GetDateTime(1).ToString("dd MMM yyyy");
+                        ((IDictionary<string, object>)item)["RequestedQty"] = reader.GetInt32(2);
+                        ((IDictionary<string, object>)item)["Status"] = reader.GetString(3);
+                        ((IDictionary<string, object>)item)["IsBulkOrder"] = reader.GetInt32(4) == 1;
+                        ((IDictionary<string, object>)item)["ProductName"] = reader.GetString(5) + " (" + reader.GetString(6) + ")";
+                        ((IDictionary<string, object>)item)["ReceivedQty"] = reader.GetInt32(7);
+                        
+                        list.Add(item);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return list;
         }
     }
 }

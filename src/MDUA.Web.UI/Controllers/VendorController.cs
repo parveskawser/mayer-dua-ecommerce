@@ -82,5 +82,19 @@ namespace MDUA.Web.Controllers
                 return Json(new { success = false, message = "Error deleting vendor." });
             }
         }
+        
+        [HttpGet]
+        public IActionResult GetHistory(int id)
+        {
+            try
+            {
+                var history = _vendorFacade.GetVendorOrderHistory(id);
+                return Json(new { success = true, data = history });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
