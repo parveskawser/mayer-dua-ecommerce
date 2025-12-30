@@ -463,30 +463,66 @@ namespace MDUA.Facade
 
 
         }
-        public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
+   public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
+
         {
+
             // Call new DataAccess method
+
             return _UserLoginDataAccess.GetPasskeyByCredentialId(credentialId);
+
         }
 
         public void UpdatePasskeyCounter(int id, uint counter)
+
         {
+
             _UserLoginDataAccess.UpdatePasskeyCounter(id, counter);
+
         }
 
 
         public void AddUserPasskey(UserPasskey passkey)
+
         {
+
             _UserLoginDataAccess.AddUserPasskey(passkey);
+
         }
+
         public void DeleteUserPasskey(int id)
+
         {
+
             _userPasskeyDataAccess.DeleteUserPasskey(id);
+
         }
+
         public List<UserPasskey> GetPasskeysByUserId(int userId)
+
         {
+
             return _UserLoginDataAccess.GetPasskeysByUserId(userId);
+
         }
+
+        public void DeleteSpecificUserPasskey(int id, int userId)
+
+        {
+
+            _UserLoginDataAccess.DeleteSpecificUserPasskey(id, userId);
+
+        }
+
+        public List<UserPasskey> GetPasskeysWithDeviceNames(int userId)
+
+        {
+
+            return _UserLoginDataAccess.GetPasskeysWithDeviceNames(userId);
+
+        }
+
+              
 
     }
 }

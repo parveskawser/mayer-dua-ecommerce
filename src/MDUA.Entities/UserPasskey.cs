@@ -13,12 +13,11 @@ using MDUA.Entities.List;
 namespace MDUA.Entities
 
 {
-
     public partial class UserPasskey
 
     {
-
-
+        public string FriendlyName { get; set; }
+        public string DeviceType { get; set; }
 
     }
 

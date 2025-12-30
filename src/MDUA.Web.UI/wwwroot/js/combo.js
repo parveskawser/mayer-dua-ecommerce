@@ -458,20 +458,20 @@ $(document).ready(function () {
 
         $msg.hide().removeClass('text-danger').removeClass('text-success');
 
-        // 1. If empty, reset button and exit
+        // 1. Empty Check
         if (!email) {
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
-        // 2. If it matches the autofilled email exactly, it's valid
-        if (isEmailAutofilled && email === currentCustomerEmail) {
+        // 2. Autofill match (Case insensitive safety)
+        if (isEmailAutofilled && currentCustomerEmail && email.toLowerCase() === currentCustomerEmail.toLowerCase()) {
             $msg.text("✓ Using your registered email").css('color', 'green').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
             return;
         }
 
-        // 3. Basic validation
+        // 3. Format Validation
         if (!email.includes('@')) {
             $msg.text("⚠ Please enter a valid email address").css('color', 'orange').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
@@ -482,35 +482,32 @@ $(document).ready(function () {
         $msg.text("⏳ Checking email...").css('color', 'blue').show();
         $('.submit-btn').prop('disabled', true).text('Verifying...');
 
-        $.get('/order/check-email', { email: email }, function (res) {
+        // ✅ CAPTURE PHONE NUMBER TO SEND
+        // Use iti.getNumber() if available for best formatting, otherwise raw value
+        var phoneVal = (typeof iti !== 'undefined') ? iti.getNumber() : $('#customerPhone').val();
+
+        // ✅ SEND PHONE IN REQUEST
+        $.get('/order/check-email', { email: email, phone: phoneVal }, function (res) {
             isCheckingEmail = false;
 
             if (res.exists) {
-                // LOGIC UPDATE:
-                // Since the backend blocks an email if it belongs to a different phone,
-                // we must treat `exists` as an ERROR unless it matches `currentCustomerEmail`.
+                // If backend returns true, it effectively means "Conflict with ANOTHER user"
+                // because we handled the "Same User" case in the C# controller.
 
-                if (currentCustomerEmail && email === currentCustomerEmail) {
-                    // It exists and matches the current phone number -> OK
-                    $msg.text("✓ Using your registered email").css('color', 'green').show();
-                    $('.submit-btn').prop('disabled', false).text('Confirm Order');
-                } else {
-                    // It exists but does NOT match the phone number (or no phone entered) -> ERROR
-                    $msg.text("⚠ This email is already registered with a different phone number.").css('color', 'red').show();
-                    $('.submit-btn').prop('disabled', true).text('Fix Email');
-                }
+                $msg.text("⚠ This email is already registered with a different phone number.").css('color', 'red').show();
+                $('.submit-btn').prop('disabled', true).text('Fix Email');
             } else {
-                // Email is new -> OK
+                // Email is available OR belongs to this user -> OK
                 $msg.text("✓ Email available").css('color', 'green').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
         }).fail(function () {
             isCheckingEmail = false;
+            // In case of network error, don't block the user
             $msg.text("⚠ Could not verify email, but you can proceed.").css('color', 'orange').show();
             $('.submit-btn').prop('disabled', false).text('Confirm Order');
         });
     });
-
     // Handle Phone Input with Debounce
 
     // 1. INPUT EVENT: Handles Auto-Discovery & Immediate "Too Long" checks
@@ -846,211 +843,232 @@ $(document).ready(function () {
     // 9. SUBMIT ORDER (MERGED VALIDATION & PAYMENTS)
     // ==================================================
 
-    $('#order-form').submit(function (e) {
-        e.preventDefault();
-        if (!iti.isValidNumber()) {
-            Swal.fire('Error', 'Please enter a valid phone number for the selected country.', 'error');
-            return;
+$('#order-form').submit(function (e) {
+    e.preventDefault();
+    
+    // ============================================================
+    // 1. EXISTING VALIDATIONS (UNTOUCHED)
+    // ============================================================
+    
+    // Capture form reference to use inside SweetAlert later
+    var $form = $(this); 
+
+    if (!iti.isValidNumber()) {
+        Swal.fire('Error', 'Please enter a valid phone number for the selected country.', 'error');
+        return;
+    }
+    // 1. Reset previous error styles
+    $('.input-error').removeClass('input-error');
+    $('.variant-chips-container').css({ 'border': 'none', 'padding': '0' });
+
+    // 2. CHECK: Is Email check pending?
+    if (isCheckingEmail) {
+        Swal.fire({
+            title: 'Please wait',
+            text: 'Validating email address...',
+            icon: 'info',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        return;
+    }
+
+    // 3. CHECK: Email Error Visible
+    const $emailStatus = $('#email-status');
+    if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') {
+        $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
+        $('#customerEmail').focus();
+        return;
+    }
+
+    // 4. CHECK: Variant Selected
+    let isValid = true;
+    let firstErrorField = null;
+
+    if (!$('#selected-variant-id').val()) {
+        isValid = false;
+        const $variantContainer = $('.variant-chips-container');
+        $variantContainer.css({
+            'border': '2px solid #dc3545',
+            'padding': '5px',
+            'border-radius': '5px'
+        });
+        firstErrorField = $(".variant-selection-area");
+    }
+
+    // 5. CHECK: General Required Fields
+    $form.find('input[required], select[required], textarea[required]')
+        .filter(':visible')
+        .each(function () {
+            if ($(this).prop('disabled')) return;
+            if (!$(this).val() || $(this).val().trim() === "") {
+                isValid = false;
+                $(this).addClass('input-error');
+                if (!firstErrorField) firstErrorField = $(this);
+            }
+        });
+
+    // 6. IF INVALID: Scroll to error
+    if (!isValid || firstErrorField) {
+        if (firstErrorField && firstErrorField.length) {
+            const elementTop = firstErrorField[0].getBoundingClientRect().top + window.scrollY;
+            $('html, body').animate({ scrollTop: elementTop - 120 }, 600);
         }
-        // 1. Reset previous error styles
-        $('.input-error').removeClass('input-error');
-        $('.variant-chips-container').css({ 'border': 'none', 'padding': '0' });
+        return; // STOP HERE IF INVALID
+    }
 
-        // 2. CHECK: Is Email check pending?
-        if (isCheckingEmail) {
-            Swal.fire({
-                title: 'Please wait',
-                text: 'Validating email address...',
-                icon: 'info',
-                timer: 1500,
-                showConfirmButton: false
-            });
-            return;
+    // 7. CHECK: Stock Limits
+    let requestedQty = parseInt($('#quantity').val());
+    if (maxAvailableStock > 0 && requestedQty > maxAvailableStock) {
+        $('#stock-error-message').text(`ERROR: Requested quantity exceeds limit.`);
+        return;
+    }
+
+    // --- PAYMENT METHOD & MODE LOGIC ---
+    const $selectedCard = $('.payment-option.selected');
+    const correctMethodCode = $selectedCard.data('payment');
+    const mode = $selectedCard.data('mode');
+
+    // 8. Validation: Manual Mode MUST have a TrxID
+    if (mode === 'Manual') {
+        const trxId = $('#trx-id-input').val().trim();
+        if (!trxId) {
+            Swal.fire('Required', 'Please enter the Transaction ID (TrxID).', 'warning');
+            $('#trx-id-input').focus().addClass('input-error');
+            return; // Stop submission
         }
+    }
 
-        // 3. CHECK: Email Error Visible
-        const $emailStatus = $('#email-status');
-        if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') {
-            $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
-            $('#customerEmail').focus();
-            return;
-        }
+    // ============================================================
+    // ✅ NEW STEP: CONFIRMATION ALERT
+    // ============================================================
+    Swal.fire({
+        title: 'Confirm Order?',
+        text: "Are you sure you want to place this order?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2ebf91', // Matches your theme
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Place Order',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            // ============================================================
+            // 🧱 EXECUTE YOUR EXISTING SUBMISSION LOGIC HERE
+            // ============================================================
 
-        // 4. CHECK: Variant Selected
-        let isValid = true;
-        let firstErrorField = null;
+            // --- PREPARE DATA ---
+            let formData = {};
+            // Note: Use $form instead of $(this) because inside .then(), 'this' changes context
+            $form.serializeArray().forEach(item => formData[item.name] = item.value);
 
-        if (!$('#selected-variant-id').val()) {
-            isValid = false;
-            const $variantContainer = $('.variant-chips-container');
-            $variantContainer.css({
-                'border': '2px solid #dc3545',
-                'padding': '5px',
-                'border-radius': '5px'
-            });
-            firstErrorField = $(".variant-selection-area");
-        }
+            // ✅ ROBUST DELIVERY CHARGE CAPTURE
+            let deliveryCost = parseFloat($('#receipt-delivery').data('cost'));
 
-        // 5. CHECK: General Required Fields
-        $(this).find('input[required], select[required], textarea[required]')
-            .filter(':visible')
-            .each(function () {
-                if ($(this).prop('disabled')) return;
-                if (!$(this).val() || $(this).val().trim() === "") {
-                    isValid = false;
-                    $(this).addClass('input-error');
-                    if (!firstErrorField) firstErrorField = $(this);
+            if (isNaN(deliveryCost) || deliveryCost === 0) {
+                const dist = $('#district-select').val();
+                if (dist && (dist.toLowerCase().includes('dhaka') || dist.trim() === 'Dhaka')) {
+                    deliveryCost = delivery.dhaka;
+                } else {
+                    deliveryCost = delivery.outside;
                 }
-            });
-
-        // 6. IF INVALID: Scroll to error
-        if (!isValid || firstErrorField) {
-            if (firstErrorField && firstErrorField.length) {
-                const elementTop = firstErrorField[0].getBoundingClientRect().top + window.scrollY;
-                $('html, body').animate({ scrollTop: elementTop - 120 }, 600);
             }
-            return; // STOP HERE IF INVALID
-        }
 
-        // 7. CHECK: Stock Limits
-        let requestedQty = parseInt($('#quantity').val());
-        if (maxAvailableStock > 0 && requestedQty > maxAvailableStock) {
-            $('#stock-error-message').text(`ERROR: Requested quantity exceeds limit.`);
-            return;
-        }
+            formData.DeliveryCharge = deliveryCost; 
 
-        // --- PAYMENT METHOD & MODE LOGIC ---
-        // We must define these BEFORE using them for validation
-        const $selectedCard = $('.payment-option.selected');
+            // Apply Payment Values
+            formData.PaymentMethod = correctMethodCode;
+            formData.CustomerPhone = iti.getNumber();
+            formData.PaymentMode = mode;
 
-        // Get correct SystemCode (e.g., 'bkash') and Mode ('Manual', 'Gateway')
-        const correctMethodCode = $selectedCard.data('payment');
-        const mode = $selectedCard.data('mode');
-
-        // 8. Validation: Manual Mode MUST have a TrxID
-        if (mode === 'Manual') {
-            const trxId = $('#trx-id-input').val().trim();
-            if (!trxId) {
-                Swal.fire('Required', 'Please enter the Transaction ID (TrxID).', 'warning');
-                $('#trx-id-input').focus().addClass('input-error');
-                return; // Stop submission
+            if (mode === 'Manual') {
+                formData.TransactionReference = $('#trx-id-input').val();
             }
-        }
 
-        // --- PREPARE DATA ---
-        let formData = {};
-        $(this).serializeArray().forEach(item => formData[item.name] = item.value);
+            // Ensure numeric types
+            formData.TargetCompanyId = 1;
+            formData.ProductVariantId = parseInt(formData.ProductVariantId);
+            formData.OrderQuantity = parseInt(formData.OrderQuantity);
+            
+            // Disable Button
+            let $btn = $('#final-submit-btn');
+            $btn.prop('disabled', true);
 
-        // ✅ ROBUST DELIVERY CHARGE CAPTURE
-        // 1. Try getting from UI data
-        let deliveryCost = parseFloat($('#receipt-delivery').data('cost'));
-
-        // 2. If 0 or NaN (e.g. user didn't change dropdown), calculate manually
-        // This prevents sending 0 if the UI state is stale
-        if (isNaN(deliveryCost) || deliveryCost === 0) {
-            const dist = $('#district-select').val();
-            // Use the global 'delivery' object (dhaka/outside) from Index.cshtml
-            if (dist && (dist.toLowerCase().includes('dhaka') || dist.trim() === 'Dhaka')) {
-                deliveryCost = delivery.dhaka;
+            // Update text based on payment
+            if (formData.PaymentMode === 'Gateway') {
+                $btn.text('Redirecting...');
             } else {
-                deliveryCost = delivery.outside;
+                $btn.text('Processing...');
             }
-        }
 
-        formData.DeliveryCharge = deliveryCost; // Send to server
-
-        // Apply Payment Values
-        formData.PaymentMethod = correctMethodCode;
-        formData.CustomerPhone = iti.getNumber();
-        formData.PaymentMode = mode;
-
-        if (mode === 'Manual') {
-            formData.TransactionReference = $('#trx-id-input').val();
-        }
-
-        // Ensure numeric types
-        formData.TargetCompanyId = 1;
-        formData.ProductVariantId = parseInt(formData.ProductVariantId);
-        formData.OrderQuantity = parseInt(formData.OrderQuantity);
-        formData.CustomerPhone = iti.getNumber();
-        // Disable Button
-        let $btn = $('#final-submit-btn');
-        $btn.prop('disabled', true);
-
-        // Update text based on payment
-        if (formData.PaymentMode === 'Gateway') {
-            $btn.text('Redirecting...');
-        } else {
-            $btn.text('Processing...');
-        }
-
-        // SEND TO SERVER
-        $.ajax({
-            url: '/order/place',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            success: function (res) {
-                if (res.success) {
-                    // Success Logic
-                    if (formData.PaymentMethod === 'cod' || formData.PaymentMode === 'Manual') {
-                        // COD / Manual Success
-                        Swal.fire({
-                            title: 'Success!',
-                            text: "Order Placed Successfully! Order ID: " + (res.orderId || 'Check DB'),
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#2563eb'
-                        }).then((result) => {
-                            location.reload();
-                        });
-                    } else {
-                        // Online Payment Redirect
-                        if (res.paymentUrl) {
-                            window.location.href = res.paymentUrl;
-                        } else {
-                            Swal.fire({
-                                title: 'Payment Pending',
-                                text: 'Order created. Redirecting to payment...',
-                                icon: 'info',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                location.reload();
-                            });
+            // 
+            // SEND TO SERVER
+            $.ajax({
+                url: '/order/place',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (res) {
+                    if (res.success) {
+                        // 1. HANDLE COD / MANUAL PAYMENT
+                        if (formData.PaymentMethod === 'cod' || formData.PaymentMode === 'Manual') {
+                            showOrderSuccessAlert(
+                                res.orderId || 'PENDING',
+                                formData.CustomerName,
+                                formData.CustomerPhone
+                            );
+                        }
+                        // 2. HANDLE ONLINE PAYMENT GATEWAY
+                        else {
+                            if (res.paymentUrl) {
+                                window.location.href = res.paymentUrl;
+                            } else {
+                                Swal.fire({
+                                    title: 'Payment Pending',
+                                    text: 'Order created. Redirecting to payment...',
+                                    icon: 'info',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
                         }
                     }
-                } else {
-                    // Server returned failure
+                    // 3. SERVER RETURNED FALSE
+                    else {
+                        Swal.fire({
+                            title: 'Order Failed',
+                            text: res.message || "Failed to place order.",
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                        $btn.prop('disabled', false);
+                        updateSubmitButtonText();
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = "Network Error.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        errorMessage = xhr.responseText.substring(0, 200);
+                    }
+
                     Swal.fire({
-                        title: 'Order Failed',
-                        text: res.message || "Failed to place order.",
+                        title: 'Server Error',
+                        text: errorMessage,
                         icon: 'error',
-                        confirmButtonText: 'Try Again'
+                        confirmButtonText: 'Close'
                     });
                     $btn.prop('disabled', false);
                     updateSubmitButtonText();
                 }
-            },
-            error: function (xhr) {
-                let errorMessage = "Network Error.";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    errorMessage = xhr.responseText.substring(0, 200);
-                }
-
-                Swal.fire({
-                    title: 'Server Error',
-                    text: errorMessage,
-                    icon: 'error',
-                    confirmButtonText: 'Close'
-                });
-                $btn.prop('disabled', false);
-                updateSubmitButtonText();
-            }
-        });
+            });
+        }
     });
-    // ==================================================
+});    // ==================================================
     // 10. IMAGE GALLERY SLIDER
     // ==================================================
     let currentSlide = 0;
@@ -1434,3 +1452,52 @@ $(document).ready(function () {
         });
     }
 });
+
+
+function showOrderSuccessAlert(orderId, customerName, customerPhone) {
+    Swal.fire({
+        title: 'Order Placed Successfully! 🎉',
+        icon: 'success',
+        // HTML Content for the "Receipt" look
+        html: `
+            <div style="text-align: left; margin-top: 10px;">
+                <p style="font-size: 1.1em; color: #333;">Dear <b>${customerName}</b>,</p>
+                <p style="color: #666;">Thank you for your order! We have received your request.</p>
+                
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 2px dashed #2ebf91; margin: 15px 0; text-align: center;">
+                    <p style="margin: 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; color: #555;">Order Tracking ID</p>
+                    <h2 style="margin: 5px 0 0 0; color: #2ebf91; font-family: monospace; font-size: 24px;">${orderId}</h2>
+                </div>
+
+                <p style="font-size: 0.9em; color: #666; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-phone-alt" style="color: #2ebf91;"></i> 
+                    We will contact you at <b>${customerPhone}</b> shortly.
+                </p>
+            </div>
+        `,
+        // Button Styling
+        confirmButtonText: '<i class="fas fa-search-location"></i> Track Order',
+        confirmButtonColor: '#2ebf91', // Your Theme Green
+        showCancelButton: true,
+        cancelButtonText: 'Close',
+        cancelButtonColor: '#6c757d',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        customClass: {
+            popup: 'animated fadeInDown' // Optional animation
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 1. Click the "Track My Order" button in your header to open the modal
+            $('#open-status-modal').click();
+
+            // 2. Pre-fill the input inside that modal (if input has id="track-order-id")
+            setTimeout(() => {
+                $('#track-order-id').val(orderId);
+            }, 300);
+        } else {
+            // Reload if they click Close
+            window.location.reload();
+        }
+    });
+}

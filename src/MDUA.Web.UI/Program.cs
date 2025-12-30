@@ -24,6 +24,18 @@ builder.Services.AddHttpClient<ISmsService, SmsService>();
 // ✅ Add SignalR Service
 builder.Services.AddSignalR();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+
+    // TRUST EVERYTHING (Only safe if the server is not directly exposed to the internet, 
+    // but sits behind IIS/Nginx). exact setting depends on your setup.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // 2. Configure Authentication with "Real World" Validation
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -50,7 +62,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     return;
                 }
 
-                // B. Resolve Services (Cannot use Constructor Injection here)
+                // B. Resolve Services
                 var userFacade = context.HttpContext.RequestServices.GetRequiredService<IUserLoginFacade>();
 
                 // C. Parse Session Key
@@ -67,11 +79,41 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     }
                     else
                     {
-                        // ✅ VALID: Now force-refresh Permissions (Real-Time Authorization)
+                        // ✅ VALID SESSION
                         var userIdClaim = context.Principal.FindFirst(ClaimTypes.NameIdentifier);
                         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                         {
                             var identity = (ClaimsIdentity)context.Principal.Identity;
+
+                            // ---------------------------------------------------------
+                            // E. REFRESH USER DATA (Username & CompanyId)
+                            // ---------------------------------------------------------
+
+                            // 1. Fetch the actual User Object from DB
+                            var freshUser = userFacade.Get(userId);
+
+                            if (freshUser != null)
+                            {
+                                // 2. Refresh Username (ClaimTypes.Name)
+                                var oldNameClaim = identity.FindFirst(ClaimTypes.Name);
+                                if (oldNameClaim != null)
+                                {
+                                    identity.RemoveClaim(oldNameClaim); 
+                                }
+                                // Add fresh name
+                                identity.AddClaim(new Claim(ClaimTypes.Name, freshUser.UserName));
+
+                                var oldCompanyClaim = identity.FindFirst("CompanyId");
+                                if (oldCompanyClaim != null)
+                                {
+                                    identity.RemoveClaim(oldCompanyClaim); // Remove stale company
+                                }
+                                identity.AddClaim(new Claim("CompanyId", freshUser.CompanyId.ToString()));
+                            }
+
+                            // ---------------------------------------------------------
+                            // F. REFRESH PERMISSIONS
+                            // ---------------------------------------------------------
 
                             // 1. Remove OLD permissions (stale data from cookie)
                             var oldPermissionClaims = identity.FindAll("Permission").ToList();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using MDUA.Framework;
@@ -19,7 +20,9 @@ namespace MDUA.Entities.Bases
             SignatureCounter = 4,
             CredType = 5,
             RegDate = 6,
-            AaGuid = 7
+            AaGuid = 7,
+            FriendlyName=8,
+            DeviceType=9
         }
         #endregion
 
@@ -32,6 +35,8 @@ namespace MDUA.Entities.Bases
         public const string Property_CredType = "CredType";
         public const string Property_RegDate = "RegDate";
         public const string Property_AaGuid = "AaGuid";
+        public const string Property_FriendlyName = "FriendlyName";
+        public const string Property_DeviceType = "DeviceType";
         #endregion
 
         #region Private Data Types
@@ -43,6 +48,8 @@ namespace MDUA.Entities.Bases
         private String _CredType;
         private Nullable<DateTime> _RegDate;
         private Nullable<Guid> _AaGuid;
+        private String _FriendlyName;
+        private String _DeviceType;
         #endregion
 
         #region Properties        
@@ -165,6 +172,37 @@ namespace MDUA.Entities.Bases
                 }
             }
         }
+        [DataMember]
+        public string FriendlyName
+        {
+            get { return _FriendlyName; }
+            set
+            {
+                PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_FriendlyName, value, _FriendlyName);
+                if (PropertyChanging(args))
+                {
+                    _FriendlyName = value;
+                    PropertyChanged(args);
+                }
+            }
+        }
+
+        [DataMember]
+        public string DeviceType
+        {
+            get { return _DeviceType; }
+            set
+            {
+                PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_DeviceType, value, _DeviceType);
+                if (PropertyChanging(args))
+                {
+                    _DeviceType = value;
+                    PropertyChanged(args);
+                }
+            }
+        }
+
+
         #endregion
 
         #region Cloning Base Objects
@@ -180,6 +218,8 @@ namespace MDUA.Entities.Bases
             newObj.CredType = this.CredType;
             newObj.RegDate = this.RegDate;
             newObj.AaGuid = this.AaGuid;
+            newObj.FriendlyName=this.FriendlyName;
+            newObj.DeviceType=this.DeviceType;
 
             return newObj;
         }
@@ -197,6 +237,8 @@ namespace MDUA.Entities.Bases
             info.AddValue(UserPasskeyBase.Property_CredType, CredType);
             info.AddValue(UserPasskeyBase.Property_RegDate, RegDate);
             info.AddValue(UserPasskeyBase.Property_AaGuid, AaGuid);
+            info.AddValue(UserPasskeyBase.Property_FriendlyName, FriendlyName);
+            info.AddValue(UserPasskeyBase.Property_DeviceType, DeviceType);
         }
         #endregion
     }

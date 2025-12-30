@@ -46,6 +46,8 @@ namespace MDUA.DataAccess
             AddParameter(cmd, pNVarChar(UserPasskeyBase.Property_CredType, 50, userPasskeyObject.CredType));
             AddParameter(cmd, pDateTime(UserPasskeyBase.Property_RegDate, userPasskeyObject.RegDate));
             AddParameter(cmd, pGuid(UserPasskeyBase.Property_AaGuid, userPasskeyObject.AaGuid));
+            AddParameter(cmd, pNVarChar(UserPasskeyBase.Property_FriendlyName, 100, userPasskeyObject.FriendlyName));
+            AddParameter(cmd, pNVarChar(UserPasskeyBase.Property_DeviceType, 100, userPasskeyObject.DeviceType));
         }
 
         // Helper if pVarBinary/pGuid is missing in your base class
@@ -204,8 +206,10 @@ namespace MDUA.DataAccess
             if (!reader.IsDBNull(start + 5)) userPasskeyObject.CredType = reader.GetString(start + 5);
             if (!reader.IsDBNull(start + 6)) userPasskeyObject.RegDate = reader.GetDateTime(start + 6);
             if (!reader.IsDBNull(start + 7)) userPasskeyObject.AaGuid = reader.GetGuid(start + 7);
+            if(!reader.IsDBNull(start + 8)) userPasskeyObject.FriendlyName=reader.GetString(start + 8);
+            if(!reader.IsDBNull(start + 9)) userPasskeyObject.DeviceType=reader.GetString(start + 9);
 
-            FillBaseObject(userPasskeyObject, reader, (start + 8));
+            FillBaseObject(userPasskeyObject, reader, (start + 10));
 
             userPasskeyObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
         }

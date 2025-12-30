@@ -34,11 +34,20 @@ namespace MDUA.Facade.Interface
         void UpdatePassword(int userId, string newPassword);
 
 
+
         UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId);
+
         void UpdatePasskeyCounter(int id, uint counter);
 
         void AddUserPasskey(UserPasskey passkey);
+
         List<UserPasskey> GetPasskeysByUserId(int userId);
+
         void DeleteUserPasskey(int id);
+
+        void DeleteSpecificUserPasskey(int id, int userId);
+
+        List<UserPasskey> GetPasskeysWithDeviceNames(int userId);
+
     }
 }

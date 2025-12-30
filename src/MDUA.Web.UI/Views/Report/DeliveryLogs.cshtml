@@ -1,0 +1,199 @@
+﻿
+
+@{
+    ViewData["Title"] = "Delivery & Order Audit Logs";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 fw-bold text-dark">Audit Logs</h2>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/Dashboard" class="text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item active">Delivery Logs</li>
+    </ol>
+
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-white border-bottom fw-bold py-3">
+            <i class="fas fa-filter me-1 text-primary"></i> Filter Logs
+        </div>
+        <div class="card-body bg-light">
+            <form method="get" action="@Url.Action("DeliveryLogs", "Report")" class="row g-3 align-items-end">
+
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">From Date</label>
+                    <input type="date" name="from" class="form-control form-control-sm" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">To Date</label>
+                    <input type="date" name="to" class="form-control form-control-sm" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small text-muted fw-bold">Source</label>
+                    <select name="type" class="form-select form-select-sm">
+                        <!option value="All" @(Model.EntityType == "All" ? "selected" : "")>All Sources</!option>
+                        <!option value="SalesOrderHeader" @(Model.EntityType == "SalesOrderHeader" ? "selected" : "")>Order Status</!option>
+                        <!option value="Delivery" @(Model.EntityType == "Delivery" ? "selected" : "")>Delivery Update</!option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted fw-bold">Search (Order # or User)</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="e.g. 10024 or 'Admin'" value="@Model.SearchTerm" />
+                    </div>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold shadow-sm">
+                        Apply
+                    </button>
+                    <a href="@Url.Action("DeliveryLogs", "Report")" class="btn btn-white btn-sm border w-50" title="Reset Filters">
+                        <i class="fas fa-undo text-secondary"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="fas fa-list-ul me-2 text-primary"></i> Activity History</span>
+            <span class="badge bg-light text-dark border">
+                @(Model.Logs?.Count ?? 0) Records Found
+            </span>
+        </div>
+
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light text-uppercase small text-muted">
+                    <tr>
+                        <th class="ps-3" style="width: 160px;">Time (UTC)</th>
+                        <th style="width: 120px;">Order Ref</th>
+                        <th style="width: 120px;">Source</th>
+                        <th>Status Change</th>
+                        <th style="width: 150px;">Changed By</th>
+                        <th>Details / Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Logs != null && Model.Logs.Count > 0)
+                    {
+                        foreach (var log in Model.Logs)
+                        {
+                            // --- VISUAL LOGIC ---
+                            string rowClass = "";
+                            string badgeClass = "bg-secondary-subtle text-dark";
+                            string icon = "fa-circle-notch";
+
+                            // Badge Logic
+                            if (log.NewStatus == "Confirmed") { badgeClass = "bg-success text-white"; icon = "fa-check-circle"; }
+                            else if (log.NewStatus == "Cancelled") { badgeClass = "bg-danger text-white"; icon = "fa-times-circle"; rowClass = "bg-danger-subtle bg-opacity-10"; }
+                            else if (log.NewStatus == "Shipped") { badgeClass = "bg-info text-dark"; icon = "fa-truck"; }
+                            else if (log.NewStatus == "Delivered") { badgeClass = "bg-primary text-white"; icon = "fa-box-open"; }
+                            else if (log.NewStatus == "Returned") { badgeClass = "bg-warning text-dark"; icon = "fa-undo"; }
+
+                            // User vs System Logic
+                            bool isSystem = log.IsSystemGenerated;
+                            string userIcon = isSystem ? "fa-robot text-primary" : "fa-user text-success";
+                            string userDisplay = isSystem ? "System (Auto)" : log.ChangedBy;
+
+                            <tr class="@rowClass">
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark">@log.ChangedAt.ToString("MMM dd, yyyy")</div>
+                                    <div class="small text-muted font-monospace">@log.ChangedAt.ToString("HH:mm:ss")</div>
+                                </td>
+
+                                <td>
+                                    @if (log.SalesOrderId > 0){
+                                        <a href="/Order/All?highlightId=@log.SalesOrderId" class="fw-bold text-decoration-none font-monospace">
+                                            #@log.SalesOrderId
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (log.EntityType == "SalesOrderHeader")
+                                    {
+                                        <span class="badge border text-primary bg-primary-subtle"><i class="fas fa-file-invoice me-1"></i> Order</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge border text-dark bg-warning-subtle"><i class="fas fa-truck me-1"></i> Delivery</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (!string.IsNullOrEmpty(log.OldStatus))
+                                        {
+                                            <span class="text-muted small">@log.OldStatus</span>
+                                            <i class="fas fa-arrow-right small text-muted opacity-50"></i>
+                                        }
+                                        <span class="badge @badgeClass shadow-sm d-flex align-items-center gap-1">
+                                            <i class="fas @icon small"></i> @log.NewStatus
+                                        </span>
+
+                                        @if (log.EntityType == "SalesOrderHeader" && log.NewConfirmed == false && log.NewStatus != "Cancelled")
+                                        {
+                                            // Warning for unconfirmed orders that aren't cancelled
+                                            <i class="fas fa-exclamation-triangle text-warning" title="Order is Unconfirmed"></i>
+                                        }
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-light rounded-circle p-1 border d-flex justify-content-center align-items-center" style="width: 28px; height: 28px;">
+                                            <i class="fas @userIcon small"></i>
+                                        </div>
+                                        <span class="fw-medium small text-dark">@userDisplay</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(log.IPAddress))
+                                    {
+                                        <div class="text-muted" style="font-size: 0.7rem; margin-left: 36px;">IP: @log.IPAddress</div>
+                                    }
+                                </td>
+
+                                <td class="small text-muted">
+                                    <div class="text-dark">@log.ChangeReason</div>
+                                    @if (!string.IsNullOrEmpty(log.SourceAction))
+                                    {
+                                        <div class="fst-italic opacity-75" style="font-size: 0.75rem;">
+                                            <i class="fas fa-code me-1"></i> @log.SourceAction
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted opacity-50">
+                                    <i class="fas fa-search fa-3x mb-3"></i>
+                                    <h5>No logs found</h5>
+                                    <p class="small">Try adjusting the date range or search filters.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-white py-2">
+            <div class="row align-items-center">
+                <div class="col small text-muted">
+                    Showing top results ordered by latest activity.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

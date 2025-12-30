@@ -74,7 +74,7 @@ namespace MDUA.DataAccess
 
         public void UpdateStatus(int poId, string status, SqlTransaction transaction)
         {
-            string SQL = "UPDATE PoRequested SET Status = @Status, UpdatedAt = GETDATE() WHERE Id = @Id";
+            string SQL = "UPDATE PoRequested SET Status = @Status, UpdatedAt = GETUTCDATE() WHERE Id = @Id";
 
             using (SqlCommand cmd = new SqlCommand(SQL, transaction.Connection, transaction))
             {

@@ -138,7 +138,6 @@ namespace MDUA.DataAccess
         }
 
         // --- 2. Fix for "Does not implement LoadAllWithDetails" ---
-        // --- 2. Fix for "Does not implement LoadAllWithDetails" ---
         public System.Collections.Generic.IList<Delivery> LoadAllWithDetails()
         {
             var result = new System.Collections.Generic.List<Delivery>();

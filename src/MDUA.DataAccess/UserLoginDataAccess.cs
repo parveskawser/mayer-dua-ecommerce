@@ -253,91 +253,7 @@ namespace MDUA.DataAccess
 
             return null;
         }
-        public void AddUserPasskey(UserPasskey passkey)
-        {
-            // Matches SP: [dbo].[InsertUserPasskey]
-            using (SqlCommand cmd = GetSPCommand("InsertUserPasskey"))
-            {
-                // Output Parameter
-                SqlParameter outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
-                cmd.Parameters.Add(outId);
 
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = passkey.UserId });
-                cmd.Parameters.Add(new SqlParameter("@CredentialId", SqlDbType.VarBinary, 450) { Value = passkey.CredentialId });
-                cmd.Parameters.Add(new SqlParameter("@PublicKey", SqlDbType.VarBinary) { Value = passkey.PublicKey });
-                cmd.Parameters.Add(new SqlParameter("@SignatureCounter", SqlDbType.Int) { Value = passkey.SignatureCounter });
-                cmd.Parameters.Add(new SqlParameter("@CredType", SqlDbType.NVarChar, 50) { Value = passkey.CredType ?? "public-key" });
-                cmd.Parameters.Add(new SqlParameter("@RegDate", SqlDbType.DateTime) { Value = passkey.RegDate });
-                cmd.Parameters.Add(new SqlParameter("@AaGuid", SqlDbType.UniqueIdentifier) { Value = passkey.AaGuid });
-
-                ExecuteCommand(cmd);
-                passkey.Id = (int)outId.Value;
-            }
-        }
-
-        public List<UserPasskey> GetPasskeysByUserId(int userId)
-        {
-            List<UserPasskey> list = new List<UserPasskey>();
-            using (SqlCommand cmd = GetSPCommand("GetUserPasskeyByUserId"))
-            {
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
-
-                // ✅ CRITICAL FIX: Open the connection before reading
-                if (cmd.Connection.State == ConnectionState.Closed)
-                    cmd.Connection.Open();
-
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        list.Add(new UserPasskey
-                        {
-                            Id = (int)reader["Id"],
-                            UserId = (int)reader["UserId"],
-                            CredentialId = (byte[])reader["CredentialId"],
-                            PublicKey = (byte[])reader["PublicKey"],
-                            SignatureCounter = (int)reader["SignatureCounter"],
-                            CredType = reader["CredType"] != DBNull.Value ? (string)reader["CredType"] : "public-key",
-                            RegDate = reader["RegDate"] != DBNull.Value ? (DateTime)reader["RegDate"] : DateTime.MinValue,
-                            AaGuid = reader["AaGuid"] != DBNull.Value ? (Guid)reader["AaGuid"] : Guid.Empty
-                        });
-                    }
-                }
-            }
-            return list;
-        }
-        public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
-        {
-            UserPasskeyResult result = null;
-
-            // Use GetSPCommand from BaseDataAccess
-            using (SqlCommand cmd = GetSPCommand(GET_USER_PASSKEY_BY_CRED_ID))
-            {
-                // Assuming pVarBinary is available or we add the parameter manually
-                var p = new SqlParameter("@CredentialId", SqlDbType.VarBinary) { Value = credentialId };
-                cmd.Parameters.Add(p);
-
-                // Use SelectRecords from BaseDataAccess
-                SqlDataReader reader;
-                SelectRecords(cmd, out reader);
-
-                using (reader)
-                {
-                    if (reader.Read())
-                    {
-                        result = new UserPasskeyResult
-                        {
-                            Id = (int)reader["Id"],
-                            UserId = (int)reader["UserId"],
-                            PublicKey = (byte[])reader["PublicKey"],
-                            SignatureCounter = (int)reader["SignatureCounter"],
-                            CredentialId = (byte[])reader["CredentialId"]
-                        };
-                    }
-                }
-            }
-            return result;
-        }
        
         public void UpdatePasskeyCounter(int id, uint counter)
         {
@@ -386,6 +302,231 @@ namespace MDUA.DataAccess
             }
             return null;
         }
+
+        public void AddUserPasskey(UserPasskey passkey)
+
+        {
+
+            // Matches SP: [dbo].[InsertUserPasskey]
+
+            using (SqlCommand cmd = GetSPCommand("InsertUserPasskey"))
+
+            {
+
+                // Output Parameter
+
+                SqlParameter outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(outId);
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = passkey.UserId });
+
+                cmd.Parameters.Add(new SqlParameter("@CredentialId", SqlDbType.VarBinary, 450) { Value = passkey.CredentialId });
+
+                cmd.Parameters.Add(new SqlParameter("@PublicKey", SqlDbType.VarBinary) { Value = passkey.PublicKey });
+
+                cmd.Parameters.Add(new SqlParameter("@SignatureCounter", SqlDbType.Int) { Value = passkey.SignatureCounter });
+
+                cmd.Parameters.Add(new SqlParameter("@CredType", SqlDbType.NVarChar, 50) { Value = passkey.CredType ?? "public-key" });
+
+                cmd.Parameters.Add(new SqlParameter("@RegDate", SqlDbType.DateTime) { Value = passkey.RegDate });
+
+                cmd.Parameters.Add(new SqlParameter("@AaGuid", SqlDbType.UniqueIdentifier) { Value = passkey.AaGuid });
+
+                cmd.Parameters.Add(new SqlParameter("@FriendlyName", SqlDbType.NVarChar, 100) { Value = (object)passkey.FriendlyName ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@DeviceType", SqlDbType.NVarChar, 100) { Value = (object)passkey.DeviceType ?? DBNull.Value });
+                ExecuteCommand(cmd);
+
+                passkey.Id = (int)outId.Value;
+
+            }
+
+        }
+
+        public List<UserPasskey> GetPasskeysByUserId(int userId)
+
+        {
+
+            List<UserPasskey> list = new List<UserPasskey>();
+
+            using (SqlCommand cmd = GetSPCommand("GetUserPasskeyByUserId"))
+
+            {
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+                // ✅ CRITICAL FIX: Open the connection before reading
+
+                if (cmd.Connection.State == ConnectionState.Closed)
+
+                    cmd.Connection.Open();
+
+                using (var reader = cmd.ExecuteReader())
+
+                {
+
+                    while (reader.Read())
+
+                    {
+
+                        list.Add(new UserPasskey
+
+                        {
+
+                            Id = (int)reader["Id"],
+
+                            UserId = (int)reader["UserId"],
+
+                            CredentialId = (byte[])reader["CredentialId"],
+
+                            PublicKey = (byte[])reader["PublicKey"],
+
+                            SignatureCounter = (int)reader["SignatureCounter"],
+
+                            CredType = reader["CredType"] != DBNull.Value ? (string)reader["CredType"] : "public-key",
+
+                            RegDate = reader["RegDate"] != DBNull.Value ? (DateTime)reader["RegDate"] : DateTime.MinValue,
+
+                            AaGuid = reader["AaGuid"] != DBNull.Value ? (Guid)reader["AaGuid"] : Guid.Empty,
+                            FriendlyName = reader["FriendlyName"] != DBNull.Value ? reader["FriendlyName"].ToString() : null,
+                            DeviceType = reader["DeviceType"] != DBNull.Value ? reader["DeviceType"].ToString() : "Unknown Device"
+
+                        });
+
+                    }
+
+                }
+
+            }
+
+            return list;
+
+        }
+
+        public UserPasskeyResult GetPasskeyByCredentialId(byte[] credentialId)
+
+        {
+
+            UserPasskeyResult result = null;
+
+            // Use GetSPCommand from BaseDataAccess
+
+            using (SqlCommand cmd = GetSPCommand(GET_USER_PASSKEY_BY_CRED_ID))
+
+            {
+
+                // Assuming pVarBinary is available or we add the parameter manually
+
+                var p = new SqlParameter("@CredentialId", SqlDbType.VarBinary) { Value = credentialId };
+
+                cmd.Parameters.Add(p);
+
+                // Use SelectRecords from BaseDataAccess
+
+                SqlDataReader reader;
+
+                SelectRecords(cmd, out reader);
+
+                using (reader)
+
+                {
+
+                    if (reader.Read())
+
+                    {
+
+                        result = new UserPasskeyResult
+
+                        {
+
+                            Id = (int)reader["Id"],
+
+                            UserId = (int)reader["UserId"],
+
+                            PublicKey = (byte[])reader["PublicKey"],
+
+                            SignatureCounter = (int)reader["SignatureCounter"],
+
+                            CredentialId = (byte[])reader["CredentialId"]
+
+                        };
+
+                    }
+
+                }
+
+            }
+
+            return result;
+
+        }
+
+
+        public void DeleteSpecificUserPasskey(int id, int userId)
+
+        {
+
+            using (SqlCommand cmd = GetSPCommand("DeleteSpecificUserPasskey"))
+
+            {
+
+                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+                ExecuteCommand(cmd); // Inherited from BaseDataAccess [cite: 172]
+
+            }
+
+        }
+
+        public List<UserPasskey> GetPasskeysWithDeviceNames(int userId)
+
+        {
+
+            var list = new List<UserPasskey>();
+
+            using (SqlCommand cmd = GetSPCommand("GetPasskeysWithDeviceInfo"))
+
+            {
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+                if (cmd.Connection.State == ConnectionState.Closed)
+
+                    cmd.Connection.Open();
+
+                using (var reader = cmd.ExecuteReader())
+
+                {
+
+                    while (reader.Read())
+
+                    {
+
+                        list.Add(new UserPasskey
+
+                        {
+
+                            Id = (int)reader["Id"],
+                            RegDate = reader["RegDate"] != DBNull.Value ? (DateTime)reader["RegDate"] : (DateTime?)null,
+
+                            FriendlyName = reader["FriendlyName"] != DBNull.Value ? reader["FriendlyName"].ToString() : null,
+                            DeviceType = reader["DeviceType"] != DBNull.Value ? reader["DeviceType"].ToString() : "Unknown Device"
+
+                        });
+
+                    }
+
+                }
+
+            }
+
+            return list;
+
+        }
+
+
     }
 
 }

@@ -26,6 +26,11 @@ namespace MDUA.Facade
             
             return _deliveryDataAccess.LoadAllWithDetails();
         }
-
+        // Implement the method
+        public Delivery Get(int id)
+        {
+            // This calls the existing DataAccess.Get() method
+            return _deliveryDataAccess.Get(id);
+        }
     }
 }

@@ -76,7 +76,7 @@ namespace MDUA.Facade
                 {
                     string updateSql = @"
                 UPDATE BulkPurchaseOrder 
-                SET Status = 'Inactive', UpdatedAt = GETDATE()
+                SET Status = 'Inactive', UpdatedAt = GETUTCDATE()
                 WHERE Id = @BulkId";
 
                     using (var cmdUpdate = new SqlCommand(updateSql, conn, trans))
