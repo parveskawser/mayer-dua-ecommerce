@@ -1,0 +1,193 @@
+@using MDUA.Entities
+@model List<Vendor>
+
+@{
+    ViewData["Title"] = "Vendors List";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/vendor.css" rel="stylesheet" />
+}
+
+<div class="container-fluid h-100">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 sticky-page-header">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark">Vendor Management</h4>
+            <p class="text-muted small mb-0">Manage your suppliers and partners</p>
+        </div>
+        <a href="/Vendor/Add" class="btn btn-primary rounded-pill shadow-sm px-4">
+            <i class="fas fa-plus me-2"></i> Add Vendor
+        </a>
+    </div>
+
+    <div class="glass-card p-0">
+        <div class="table-responsive table-wrapper">
+            <table class="table table-hover mb-0 products-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Vendor Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tbody class="border-bottom">
+                            <tr id="parent-row-@item.Id" class="vendor-header-row">
+                                <td class="ps-4 fw-bold text-dark">@item.VendorName</td>
+                                <td class="text-muted">@item.Email</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Phone))
+                                    {
+                                        <span class="pill-tag"><i class="fas fa-phone me-1"></i> @item.Phone</span>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button onclick="toggleHistory(@item.Id)" class="btn btn-sm btn-light border text-info me-1" title="View History">
+                                        <i class="fas fa-chevron-down" id="icon-@item.Id"></i> History
+                                    </button>
+
+                                    <a href="/Vendor/Add?id=@item.Id" class="btn btn-sm btn-light border text-primary me-1" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <button onclick="deleteVendor(@item.Id)" class="btn btn-sm btn-light border text-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr id="history-row-@item.Id" class="d-none bg-light history-row">
+                                <td colspan="4" class="p-3 history-cell">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-0" id="history-content-@item.Id">
+                                            <div class="text-center py-3 text-muted">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div> Loading history...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    }
+                }
+                else
+                {
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-box-open fa-3x mb-3 opacity-25"></i>
+                                <p>No vendors found.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleHistory(vendorId) {
+            var row = document.getElementById('history-row-' + vendorId);
+            var icon = document.getElementById('icon-' + vendorId);
+            var contentDiv = document.getElementById('history-content-' + vendorId);
+
+            var isHidden = row.classList.contains('d-none');
+
+            if (isHidden) {
+                row.classList.remove('d-none');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+
+                $.get('/Vendor/GetHistory?id=' + vendorId, function(response) {
+                    if (response.success && response.data.length > 0) {
+                        var html = `
+                                <table class="table table-sm table-bordered mb-0 history-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="small text-uppercase text-muted ps-3">Date</th>
+                                            <th class="small text-uppercase text-muted">Product</th>
+                                            <th class="small text-uppercase text-muted text-center">Type</th>
+                                            <th class="small text-uppercase text-muted text-center">Status</th>
+                                            <th class="small text-uppercase text-muted text-center">Requested</th>
+                                            <th class="small text-uppercase text-muted text-center">Received</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                        response.data.forEach(function(item) {
+                            var statusBadge = item.Status === 'Pending' ? '<span class="badge bg-warning text-dark">Pending</span>' :
+                                item.Status === 'Received' ? '<span class="badge bg-success">Received</span>' :
+                                    '<span class="badge bg-secondary">' + item.Status + '</span>';
+
+                            var typeBadge = item.IsBulkOrder
+                                ? '<span class="badge bg-info text-dark">Bulk</span>'
+                                : '<span class="badge bg-light text-muted border">Standard</span>';
+
+                            var qtyColor = item.ReceivedQty < item.RequestedQty ? 'text-danger' : 'text-success';
+
+                            html += `
+                                    <tr>
+                                        <td class="ps-3">${item.RequestDate}</td>
+                                        <td class="fw-bold product-name-truncate"
+                                            title="${item.ProductName}"
+                                            onclick="this.classList.toggle('product-name-expanded')">
+                                            ${item.ProductName}
+                                        </td>
+                                        <td class="text-center">${typeBadge}</td>
+                                        <td class="text-center">${statusBadge}</td>
+                                        <td class="text-center">${item.RequestedQty}</td>
+                                        <td class="text-center fw-bold ${qtyColor}">${item.ReceivedQty}</td>
+                                    </tr>`;
+                        });
+
+                        html += `</tbody></table>`;
+                        contentDiv.innerHTML = html;
+                    } else {
+                        contentDiv.innerHTML = '<div class="text-center py-3 text-muted small">No history found for this vendor.</div>';
+                    }
+                }).fail(function() {
+                    contentDiv.innerHTML = '<div class="text-center py-3 text-danger small">Error loading history.</div>';
+                });
+
+            } else {
+                row.classList.add('d-none');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+
+        function deleteVendor(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Vendor/Delete', { id: id }, function(response) {
+                        if (response.success) {
+                            Swal.fire('Deleted!', response.message, 'success')
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error!', 'Something went wrong.', 'error');
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

@@ -5,10 +5,11 @@ using MDUA.Entities.Bases;
 using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using MDUA.Framework;
+using Microsoft.Extensions.Configuration; // ✅ Required for appsettings.json access
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;             // Required for SqlConnection
-using Microsoft.Extensions.Configuration; // ✅ Required for appsettings.json access
                
 namespace MDUA.Facade
 {
@@ -24,8 +25,9 @@ namespace MDUA.Facade
         private readonly IPostalCodesDataAccess _postalCodesDataAccess;
         private readonly ISettingsFacade _settingsFacade;
         private readonly IDeliveryItemDataAccess _deliveryItemDataAccess;
+        private readonly IEmailService _emailService;
 
-      
+
         private readonly IConfiguration _configuration;
         private readonly IDeliveryDataAccess _deliveryDataAccess;
         private readonly ISmsService _smsService;
@@ -43,7 +45,7 @@ namespace MDUA.Facade
             ISettingsFacade settingsFacade,
             IDeliveryDataAccess deliveryDataAccess,IDeliveryItemDataAccess deliveryItemDataAccess,
             ISmsService smsService,
-            INotificationService notificationService)
+            INotificationService notificationService, IEmailService emailService)
         {
             _salesOrderHeaderDataAccess = salesOrderHeaderDataAccess;
             _salesOrderDetailDataAccess = salesOrderDetailDataAccess;
@@ -59,6 +61,7 @@ namespace MDUA.Facade
             _deliveryItemDataAccess = deliveryItemDataAccess;
             _smsService = smsService;
             _notificationService = notificationService;
+            _emailService = emailService;
 
         }
 
@@ -94,6 +97,11 @@ namespace MDUA.Facade
             if (string.IsNullOrWhiteSpace(orderData.CustomerPhone))
                 throw new Exception("Phone number is required.");
 
+            // Determine who is performing the action (System/Admin or the Guest themselves)
+            string actionUser = !string.IsNullOrEmpty(orderData.CreatedBy)
+                ? orderData.CreatedBy
+                : orderData.CustomerName;
+
             orderData.CustomerName = orderData.CustomerName.Trim();
             orderData.CustomerPhone = orderData.CustomerPhone.Trim();
 
@@ -116,6 +124,7 @@ namespace MDUA.Facade
             decimal baseVariantPrice = variant.VariantPrice ?? 0;
             int quantity = orderData.OrderQuantity;
 
+            // Calculate Discounts
             var bestDiscount = _productFacade.GetBestDiscount(variant.ProductId, baseVariantPrice);
             decimal finalUnitPrice = baseVariantPrice;
             decimal totalDiscountAmount = 0;
@@ -137,11 +146,15 @@ namespace MDUA.Facade
                 }
             }
 
+            // Calculate Totals
             decimal totalProductPrice = baseVariantPrice * quantity;
             decimal deliveryCharge = orderData.DeliveryCharge;
 
+            // Explicitly set calculations
+            orderData.DeliveryCharge = deliveryCharge;
             orderData.TotalAmount = totalProductPrice + deliveryCharge;
             orderData.DiscountAmount = totalDiscountAmount;
+            orderData.NetAmount = orderData.TotalAmount - orderData.DiscountAmount;
 
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
 
@@ -161,15 +174,17 @@ namespace MDUA.Facade
                         int companyId = orderData.TargetCompanyId;
                         int customerId;
 
+                        // 2. CUSTOMER LOGIC (Check, Create, or Update)
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         if (customer == null)
                         {
+                            // CREATE NEW CUSTOMER
                             string emailToCheck = !string.IsNullOrEmpty(orderData.CustomerEmail)
                                 ? orderData.CustomerEmail
                                 : $"{orderData.CustomerPhone}@guest.local";
 
-                            if (transCustomerDA.GetByEmail(emailToCheck) != null)
-                                throw new Exception($"Email {emailToCheck} is already registered.");
+                            if (!string.IsNullOrEmpty(orderData.CustomerEmail) && transCustomerDA.GetByEmail(emailToCheck) != null)
+                                throw new Exception($"Email {emailToCheck} is already registered to another number.");
 
                             transCustomerDA.Insert(new Customer
                             {
@@ -178,14 +193,41 @@ namespace MDUA.Facade
                                 Email = emailToCheck,
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
-                                CreatedBy = orderData.CustomerName
+                                CreatedBy = actionUser
                             });
 
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
+                        else
+                        {
+                            // UPDATE EXISTING CUSTOMER
+                            bool isUpdated = false;
+
+                            if (!string.IsNullOrWhiteSpace(orderData.CustomerName) &&
+                                !string.Equals(customer.CustomerName, orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                customer.CustomerName = orderData.CustomerName;
+                                isUpdated = true;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail) &&
+                                !string.Equals(customer.Email, orderData.CustomerEmail, StringComparison.OrdinalIgnoreCase))
+                            {
+                                customer.Email = orderData.CustomerEmail;
+                                isUpdated = true;
+                            }
+
+                            if (isUpdated)
+                            {
+                                customer.UpdatedAt = DateTime.UtcNow;
+                                customer.UpdatedBy = actionUser;
+                                transCustomerDA.Update(customer);
+                            }
+                        }
 
                         customerId = customer.Id;
 
+                        // Link to Company
                         if (!transCompanyCustomerDA.IsLinked(companyId, customerId))
                         {
                             transCompanyCustomerDA.Insert(new CompanyCustomer
@@ -195,6 +237,7 @@ namespace MDUA.Facade
                             });
                         }
 
+                        // 3. ADDRESS LOGIC
                         var addr = new Address
                         {
                             CustomerId = customerId,
@@ -205,7 +248,7 @@ namespace MDUA.Facade
                             SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
-                            CreatedBy = orderData.CustomerName,
+                            CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? orderData.PostalCode ?? "0000").ToCharArray()
@@ -216,81 +259,85 @@ namespace MDUA.Facade
                             ? existingAddress.Id
                             : (int)transAddressDA.InsertAddressSafe(addr);
 
+                        // 4. PREPARE ORDER HEADER
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(companyId, customerId);
                         orderData.AddressId = addressId;
-                        orderData.SalesChannelId = 1;
+                        orderData.SalesChannelId = 1; // Online/Guest
                         orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
-                        orderData.CreatedBy = orderData.CustomerName;
+                        orderData.CreatedBy = actionUser;
                         orderData.CreatedAt = DateTime.UtcNow;
                         orderData.Confirmed = false;
 
+                        // 5. INSERT ORDER
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
                         if (orderId <= 0)
                             throw new Exception("Failed to create Order Header.");
 
+                        // 6. INSERT ORDER DETAILS
                         transDetailDA.InsertSalesOrderDetailSafe(new SalesOrderDetail
                         {
                             SalesOrderId = orderId,
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
                             UnitPrice = finalUnitPrice,
-                            CreatedBy = orderData.CustomerName,
+                            CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow
                         });
 
-                        transaction.Commit(); // ✅ Database is now safe. Order is real.
+                        transaction.Commit(); // ✅ DB Transaction Complete
 
                         string orderNo = "ON" + orderId.ToString("D8");
 
                         // =================================================================
-                        // 🚀 UNIFIED NOTIFICATION (Email First, SMS Fallback)
+                        // 🚀 UNIFIED NOTIFICATION (Direct Await - No Task.Run)
                         // =================================================================
-                        _ = Task.Run(async () =>
+                        try
                         {
-                            try
-                            {
-                                // Send notification with intelligent fallback
-                                var notificationResult = await _notificationService.SendOrderConfirmationAsync(
-                                    customerName: orderData.CustomerName,
-                                    customerPhone: orderData.CustomerPhone,
-                                    customerEmail: orderData.CustomerEmail, // Can be null - will fallback to SMS
-                                    orderNumber: orderNo,
-                                    quantity: orderData.OrderQuantity,
-                                    totalAmount: orderData.TotalAmount
-                                );
+                            bool emailSuccess = false;
 
-                                // Optional: Log results for monitoring
-                                if (notificationResult.EmailSent)
+                            // 1. EMAIL: Check if we have an email to send to
+                            if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail))
+                            {
+                                // MAP DATA TO DATABASE TEMPLATE (mailToOrderPlace)
+                                var templateParams = new Hashtable
                                 {
-                                    Console.WriteLine($"[Order {orderNo}] Email sent successfully");
-                                }
+                                    { "ToEmail", orderData.CustomerEmail },
+                                    { "UserName", orderData.CustomerName },
+                                    { "OrderId", orderNo },
+                                    { "OrderQty", orderData.OrderQuantity },
+                                    { "OrderTotal", orderData.TotalAmount }
+                                };
+
+                                // CALL THE SERVICE DIRECTLY
+                                emailSuccess = await _emailService.SendEmail(templateParams, "mailToOrderPlace");
+
+                                if (emailSuccess)
+                                    Console.WriteLine($"[Order {orderNo}] Template Email sent successfully.");
                                 else
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] Email failed: {notificationResult.EmailMessage}");
-                                }
-
-                                if (notificationResult.SmsSent)
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] SMS sent successfully");
-                                }
-                                else if (!notificationResult.EmailSent) // Only log SMS failure if email also failed
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] SMS failed: {notificationResult.SmsMessage}");
-                                }
-
-                                if (!notificationResult.IsSuccess)
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] ⚠️ All notification methods failed!");
-                                }
+                                    Console.WriteLine($"[Order {orderNo}] ❌ Template Email failed to send.");
                             }
-                            catch (Exception ex)
+
+                            // 2. SMS FALLBACK
+                            if (!emailSuccess && !string.IsNullOrWhiteSpace(orderData.CustomerPhone))
                             {
-                                Console.WriteLine($"[Order {orderNo}] Notification error: {ex.Message}");
+                                Console.WriteLine($"[Order {orderNo}] Email failed or missing. Attempting SMS Fallback...");
+
+                                await _notificationService.SendSmsOnlyAsync(
+                                    orderData.CustomerPhone,
+                                    $"Order {orderNo} Confirmed. Total: {orderData.TotalAmount}"
+                                );
                             }
-                        });
-                        // =================================================================
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("========== Notification Error ==========");
+                            Console.WriteLine(ex);                 // includes stack trace
+                            Console.WriteLine(ex.InnerException);   // if any
+                            Console.WriteLine("========================================");
+                        }
+
 
                         return orderNo;
                     }
@@ -313,7 +360,7 @@ namespace MDUA.Facade
                 throw new Exception($"Stock Error: Only {variantInfo.Value.StockQty} available.");
 
             decimal basePrice = variantInfo.Value.Price;
-
+            string actionUser = !string.IsNullOrEmpty(orderData.CreatedBy) ? orderData.CreatedBy : "Admin";
             // 2. Discount Calculation
             var variantBasic = _productVariantDataAccess.Get(orderData.ProductVariantId);
             decimal finalUnitPrice = basePrice;
@@ -335,30 +382,18 @@ namespace MDUA.Facade
                 }
             }
 
-            // -------------------------------------------------------------
-            // ✅ DELIVERY FEE LOGIC (Revenue)
-            // -------------------------------------------------------------
-            // We trust the "DeliveryCharge" sent from the UI (Editable Input)
+            // DELIVERY FEE
             decimal deliveryFeeToCharge = orderData.DeliveryCharge;
-
-            // A. Detect "In-Store" based on street naming convention from JS
             bool isStoreSale = !string.IsNullOrEmpty(orderData.Street) &&
                                 orderData.Street.IndexOf("Counter Sale", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            // B. Apply to Totals
             decimal grossProductCost = basePrice * orderData.OrderQuantity;
-
-            // DB Logic: [NetAmount] = [TotalAmount] - [DiscountAmount]
-            // We want: [NetAmount] = (Product + Delivery) - Discount
             orderData.TotalAmount = grossProductCost + deliveryFeeToCharge;
             orderData.DiscountAmount = totalDiscount;
 
-            // For Return Object
             decimal netAmount = orderData.TotalAmount - totalDiscount;
 
-            // -------------------------------------------------------------
             // 3. SAVE TO DATABASE
-            // -------------------------------------------------------------
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -372,8 +407,6 @@ namespace MDUA.Facade
                         var transAddressDA = new AddressDataAccess(transaction);
                         var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
-
-                        // ✅ Delivery DA for snapshot
                         var transDeliveryDA = new DeliveryDataAccess(transaction);
 
                         // A. Customer Logic
@@ -392,17 +425,36 @@ namespace MDUA.Facade
                                 Email = finalEmail,
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
-                                CreatedBy = "Admin"
+                                CreatedBy = actionUser // ✅ Use Logged In User
                             };
                             transCustomerDA.Insert(newCust);
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
                         else
                         {
+                            // ✅ UPDATE LOGIC FOR ADMIN (Force Update Name and Email)
+                            bool isUpdated = false;
+
+                            // Update Name
+                            if (!string.IsNullOrWhiteSpace(orderData.CustomerName) &&
+                                !string.Equals(customer.CustomerName, orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                customer.CustomerName = orderData.CustomerName;
+                                isUpdated = true;
+                            }
+
+                            // Update Email (If provided and different)
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
-                                (string.IsNullOrEmpty(customer.Email) || customer.Email.EndsWith(".local")))
+                                !string.Equals(customer.Email, orderData.CustomerEmail, StringComparison.OrdinalIgnoreCase))
                             {
                                 customer.Email = orderData.CustomerEmail;
+                                isUpdated = true;
+                            }
+
+                            if (isUpdated)
+                            {
+                                customer.UpdatedBy = actionUser; // ✅ Use Logged In User
+                                customer.UpdatedAt = DateTime.UtcNow;
                                 transCustomerDA.Update(customer);
                             }
                         }
@@ -425,7 +477,7 @@ namespace MDUA.Facade
                             SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
-                            CreatedBy = "Admin",
+                            CreatedBy = actionUser, // ✅ Use Logged In User
                             CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
@@ -440,7 +492,7 @@ namespace MDUA.Facade
                         orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = orderData.Confirmed ? "Confirmed" : "Draft";
                         orderData.IsActive = true;
-                        orderData.CreatedBy = "Admin";
+                        orderData.CreatedBy = actionUser;
                         orderData.CreatedAt = DateTime.UtcNow;
 
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
@@ -451,18 +503,14 @@ namespace MDUA.Facade
                             SalesOrderId = orderId,
                             ProductVariantId = orderData.ProductVariantId,
                             Quantity = orderData.OrderQuantity,
-                            UnitPrice = finalUnitPrice, // Store Net Unit Price
-                            CreatedBy = "Admin",
+                            UnitPrice = finalUnitPrice,
+                            CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow
                         });
 
-                        // ------------------------------------------------------------------
-                        // ✅ 4. EXPENSE SNAPSHOT (If Confirmed, Freeze Cost in Delivery Table)
-                        // ------------------------------------------------------------------
-                        // Note: Only create delivery record if it's NOT a Store Pickup
+                        // 4. EXPENSE SNAPSHOT
                         if (orderData.Confirmed && !isStoreSale)
                         {
-                            // Logic to retrieve Standard Cost from Settings (Expense Tracking)
                             int companyId = orderData.TargetCompanyId > 0 ? orderData.TargetCompanyId : 1;
                             var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
 
@@ -471,11 +519,8 @@ namespace MDUA.Facade
                                             || (!string.IsNullOrEmpty(orderData.City) &&
                                             orderData.City.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0);
 
-                            // Fetch ACTUAL COST (Expense) from Settings
-                            // If keys don't exist, fallback to revenue defaults or 0
                             decimal costInside = settings.ContainsKey("Cost_InsideDhaka") ? settings["Cost_InsideDhaka"] : (settings.ContainsKey("dhaka") ? settings["dhaka"] : 60);
                             decimal costOutside = settings.ContainsKey("Cost_OutsideDhaka") ? settings["Cost_OutsideDhaka"] : (settings.ContainsKey("outside") ? settings["outside"] : 120);
-
                             decimal actualCost = isDhaka ? costInside : costOutside;
 
                             var delivery = new Delivery
@@ -483,12 +528,10 @@ namespace MDUA.Facade
                                 SalesOrderId = orderId,
                                 TrackingNumber = "DO-" + DateTime.UtcNow.Ticks.ToString().Substring(12),
                                 Status = "Pending",
-                                ShippingCost = actualCost, // ✅ EXPENSE (Standard Cost)
-                                CreatedBy = "Admin_Direct",
+                                ShippingCost = actualCost,
+                                CreatedBy = actionUser,
                                 CreatedAt = DateTime.UtcNow
                             };
-
-                            // Use the Extended Insert logic
                             transDeliveryDA.InsertExtended(delivery);
                         }
 
@@ -500,7 +543,7 @@ namespace MDUA.Facade
                             NetAmount = netAmount,
                             DiscountAmount = totalDiscount,
                             TotalAmount = orderData.TotalAmount,
-                            DeliveryFee = deliveryFeeToCharge // Return the charged amount
+                            DeliveryFee = deliveryFeeToCharge
                         };
                     }
                     catch
@@ -511,7 +554,9 @@ namespace MDUA.Facade
                 }
             }
         }
-
+       
+        
+        
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {
             var customer = _customerDataAccess.GetByPhone(phone);
@@ -838,21 +883,83 @@ namespace MDUA.Facade
         }
 
 
-        public SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, out int totalRows)
+        public SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, out int totalRows)
         {
-            // Call the extended DataAccess method we created earlier
-            // Note: Ensure _salesOrderHeaderDataAccess is cast to the concrete class if it's defined in the interface as the base interface
-            // Or better, update ISalesOrderHeaderDataAccess to include GetPagedOrdersExtended as well.
-
-            // If ISalesOrderHeaderDataAccess doesn't have the method signature yet, use this casting trick:
             if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concreteDA)
             {
-                return concreteDA.GetPagedOrdersExtended(pageIndex, pageSize, out totalRows);
+                // Pass the whereClause to the extended method
+                return concreteDA.GetPagedOrdersExtended(pageIndex, pageSize, whereClause, out totalRows);
             }
-
-            // Fallback (Should not happen if DI is set up correctly)
             totalRows = 0;
             return new SalesOrderHeaderList();
+        }
+        public int GetOrderPageNumber(int orderId, int pageSize)
+        {
+            // No casting needed anymore!
+            return _salesOrderHeaderDataAccess.GetOrderPageNumber(orderId, pageSize);
+        }
+
+        // Inside MDUA.Facade/OrderFacade.cs
+
+        public List<Dictionary<string, object>> GetExportData(MDUA.Entities.ExportRequest request)
+        {
+            var sb = new System.Text.StringBuilder("1=1");
+
+            // --- SCOPE 1: Selected Rows (Specific IDs) ---
+            if (request.Scope == "selected" && request.SelectedIds != null && request.SelectedIds.Any())
+            {
+                string ids = string.Join(",", request.SelectedIds);
+                sb.Append($" AND soh.Id IN ({ids})");
+            }
+            // --- SCOPE 2: Filtered Rows (Re-use your Controller filter logic) ---
+            else if (request.Scope == "filtered")
+            {
+                // 1. Status
+                if (!string.IsNullOrEmpty(request.Status) && request.Status != "all")
+                {
+                    string status = (request.Status == "Pending") ? "Draft" : request.Status;
+                    sb.Append($" AND soh.Status = '{status}'");
+                }
+
+                // 2. Payment Status
+                if (!string.IsNullOrEmpty(request.PayStatus) && request.PayStatus != "all")
+                {
+                    if (request.PayStatus == "Paid")
+                        sb.Append(" AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) <= 0");
+                    else if (request.PayStatus == "Partial")
+                        sb.Append(" AND (SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId) > 0 AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) > 0");
+                    else if (request.PayStatus == "Unpaid")
+                        sb.Append(" AND ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0) = 0");
+                }
+
+                // 3. Order Type
+                if (!string.IsNullOrEmpty(request.OrderType) && request.OrderType != "all")
+                {
+                    if (request.OrderType == "Online") sb.Append(" AND soh.SalesChannelId = 1");
+                    else if (request.OrderType == "Direct") sb.Append(" AND soh.SalesChannelId <> 1");
+                }
+
+                // 4. Amount Range
+                if (request.MinAmount.HasValue) sb.Append($" AND soh.NetAmount >= {request.MinAmount}");
+                if (request.MaxAmount.HasValue) sb.Append($" AND soh.NetAmount <= {request.MaxAmount}");
+
+                // 5. Search (ID)
+                if (!string.IsNullOrEmpty(request.Search))
+                {
+                    string cleanSearch = request.Search.Replace("'", "''");
+                    sb.Append($" AND (soh.SalesOrderId LIKE '%{cleanSearch}%' OR CAST(soh.Id AS NVARCHAR) LIKE '%{cleanSearch}%')");
+                }
+
+                // 6. Date Range
+                if (request.FromDate.HasValue)
+                    sb.Append($" AND soh.OrderDate >= '{request.FromDate.Value:yyyy-MM-dd HH:mm:ss}'");
+
+                if (request.ToDate.HasValue)
+                    sb.Append($" AND soh.OrderDate <= '{request.ToDate.Value:yyyy-MM-dd HH:mm:ss}'");
+            }
+
+            // Call Data Access
+            return _salesOrderHeaderDataAccess.GetExportDataDynamic(sb.ToString(), request.Columns);
         }
     }
     #endregion

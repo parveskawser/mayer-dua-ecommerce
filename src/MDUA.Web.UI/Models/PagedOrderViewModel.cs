@@ -11,7 +11,7 @@ namespace MDUA.Web.UI.Models
         public int PageSize { get; set; }
         public int TotalRows { get; set; }
 
-        public int TotalPages => (int)Math.Ceiling((double)TotalRows / PageSize);
+        public int TotalPages { get; set; }
         public bool HasPrevious => CurrentPage > 1;
         public bool HasNext => CurrentPage < TotalPages;
     }

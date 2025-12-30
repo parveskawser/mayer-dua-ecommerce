@@ -265,5 +265,24 @@ namespace MDUA.DataAccess
 
             return GetListWithCategory(cmd);
         }
+
+        public ProductList GetRecentProductsWithImages(int count)
+        {
+            // Fetches the latest active products
+            string SQLQuery = $@"
+        SELECT TOP ({count}) 
+            p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+            p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+            NULL as DummyForBase,
+            ISNULL(c.Name, '') as CategoryName
+        FROM Product p
+        LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+        WHERE p.IsActive = 1
+        ORDER BY p.CreatedAt DESC";
+
+            using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            return GetListWithCategory(cmd); // Reuse your existing private helper
+        }
     }
 }

@@ -763,88 +763,194 @@ SELECT @@ROWCOUNT;";
             }
         }
 
-        // In MDUA.DataAccess/SalesOrderHeaderDataAccess.Partial.cs
+        public int GetOrderPageNumber(int orderId, int pageSize)
+        {
+            // Logic: Find the rank of this order when sorted by OrderDate DESC
+            // Then calculate: Page = Ceiling(Rank / PageSize)
 
-        public SalesOrderHeaderList GetPagedOrdersExtended(int pageIndex, int pageSize, out int totalRows)
+            string sql = @"
+        WITH OrderedOrders AS (
+            SELECT Id, ROW_NUMBER() OVER (ORDER BY OrderDate DESC) as RowNum 
+            FROM SalesOrderHeader
+        )
+        SELECT RowNum FROM OrderedOrders WHERE Id = @OrderId";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, pInt32("OrderId", orderId));
+
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+
+                object result = cmd.ExecuteScalar();
+                cmd.Connection.Close();
+
+                if (result != null && int.TryParse(result.ToString(), out int rowNum))
+                {
+                    // Calculate Page Number (1-based)
+                    return (int)Math.Ceiling((double)rowNum / pageSize);
+                }
+            }
+            return 1; // Default to page 1 if not found
+        }
+        // In MDUA.DataAccess/SalesOrderHeaderDataAccess.cs
+
+        public SalesOrderHeaderList GetPagedOrdersExtended(int pageIndex, int pageSize, string whereClause, out int totalRows)
         {
             SalesOrderHeaderList list = new SalesOrderHeaderList();
             totalRows = 0;
 
-            using (SqlCommand cmd = GetSPCommand("GetPagedSalesOrderHeader"))
+            string sql = $@"
+        SELECT 
+            soh.Id, 
+            soh.CompanyCustomerId, 
+            soh.AddressId, 
+            soh.SalesChannelId, 
+            soh.OrderDate, 
+            soh.TotalAmount, 
+            soh.DiscountAmount, 
+            soh.Status, 
+            soh.IsActive, 
+            soh.Confirmed, 
+            soh.CreatedBy, 
+            soh.CreatedAt, 
+            soh.UpdatedBy, 
+            soh.UpdatedAt,
+            soh.SalesOrderId, 
+            soh.OnlineOrderId,
+            soh.DirectOrderId,
+            
+            c.CustomerName,
+            c.Phone as CustomerPhone,
+            
+            ISNULL((SELECT SUM(cp.Amount) FROM CustomerPayment cp WHERE cp.TransactionReference = soh.SalesOrderId), 0) AS PaidAmount,
+            
+            COUNT(*) OVER() AS TotalCount
+        FROM SalesOrderHeader soh
+        LEFT JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
+        LEFT JOIN Customer c ON cc.CustomerId = c.Id
+        WHERE {whereClause}
+        ORDER BY soh.OrderDate DESC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
             {
-                // Inputs
-                AddParameter(cmd, pInt32("PageIndex", pageIndex));
-                AddParameter(cmd, pInt32("RowPerPage", pageSize));
-                AddParameter(cmd, pNVarChar("WhereClause", 4000, "")); // Optional
-                AddParameter(cmd, pNVarChar("SortColumn", 128, "OrderDate"));
-                AddParameter(cmd, pNVarChar("SortOrder", 4, "DESC"));
+                AddParameter(cmd, pInt32("Offset", (pageIndex - 1) * pageSize));
+                AddParameter(cmd, pInt32("PageSize", pageSize));
 
-                // Output
-                SqlParameter pTotal = new SqlParameter("@TotalRows", SqlDbType.Int);
-                pTotal.Direction = ParameterDirection.Output;
-                cmd.Parameters.Add(pTotal);
+                if (cmd.Connection.State != System.Data.ConnectionState.Open) cmd.Connection.Open();
 
-                SqlDataReader reader;
-                SelectRecords(cmd, out reader);
-
-                using (reader)
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        SalesOrderHeader order = new SalesOrderHeader();
-                        int i = 0;
+                        if (totalRows == 0) totalRows = (int)reader["TotalCount"];
 
-                        // 1. Base Fields
-                        order.Id = reader.GetInt32(i++);
-                        order.CompanyCustomerId = reader.GetInt32(i++);
-                        order.AddressId = reader.GetInt32(i++);
-                        order.SalesChannelId = reader.GetInt32(i++);
-                        order.OnlineOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.DirectOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.OrderDate = reader.GetDateTime(i++);
-                        order.TotalAmount = reader.GetDecimal(i++);
-                        order.DiscountAmount = reader.GetDecimal(i++);
-                        order.NetAmount = reader.GetDecimal(i++);
-                        order.SessionId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.IPAddress = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.Status = reader.GetString(i++);
-                        order.IsActive = reader.GetBoolean(i++);
-                        order.Confirmed = reader.GetBoolean(i++);
-                        order.CreatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.CreatedAt = reader.GetDateTime(i++);
-                        order.UpdatedBy = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
-                        order.UpdatedAt = reader.IsDBNull(i) ? (DateTime?)null : reader.GetDateTime(i); i++;
-                        order.SalesOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
+                        var order = new SalesOrderHeader();
 
-                        // 2. Extended Fields
-                        order.Street = reader.GetString(i++);
-                        order.City = reader.GetString(i++);
-                        order.Divison = reader.GetString(i++);
-                        order.Thana = reader.GetString(i++);
-                        order.SubOffice = reader.GetString(i++);
-                        order.PostalCode = reader.GetString(i++);
-                        order.Country = reader.GetString(i++);
+                        order.Id = (int)reader["Id"];
+                        order.SalesOrderId = reader["SalesOrderId"].ToString();
+                        order.OrderDate = (DateTime)reader["OrderDate"];
+                        order.Status = reader["Status"].ToString();
+                        order.Confirmed = (bool)reader["Confirmed"];
 
-                        order.CustomerName = reader.GetString(i++);
-                        order.CustomerPhone = reader.GetString(i++);
-                        order.CustomerEmail = reader.GetString(i++);
+                        order.CustomerName = reader["CustomerName"] != DBNull.Value ? reader["CustomerName"].ToString() : "Guest";
+                        order.CustomerPhone = reader["CustomerPhone"] != DBNull.Value ? reader["CustomerPhone"].ToString() : "";
+                        order.SalesChannelId = (int)reader["SalesChannelId"];
 
-                        order.PaidAmount = reader.GetDecimal(i++);
-                        order.DueAmount = reader.GetDecimal(i++);
+                        // --- Amounts ---
+                        order.TotalAmount = reader["TotalAmount"] != DBNull.Value ? (decimal)reader["TotalAmount"] : 0m;
+                        order.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? (decimal)reader["DiscountAmount"] : 0m;
+
+                        // Calculate Net
+                        order.NetAmount = order.TotalAmount - order.DiscountAmount;
+
+                        // Paid Amount
+                        order.PaidAmount = reader["PaidAmount"] != DBNull.Value ? (decimal)reader["PaidAmount"] : 0m;
+
+                        // ✅ FIX: Handle Nullable NetAmount safely using (?? 0m)
+                        order.DueAmount = (order.NetAmount ?? 0m) - order.PaidAmount;
+
+                        order.CreatedBy = reader["CreatedBy"] != DBNull.Value ? reader["CreatedBy"].ToString() : "";
 
                         list.Add(order);
                     }
-                    reader.Close();
                 }
+                cmd.Connection.Close();
+            }
 
-                // Retrieve output after reader is closed
-                if (cmd.Parameters["@TotalRows"].Value != DBNull.Value)
+            return list;
+        }        // Inside MDUA.DataAccess/SalesOrderHeaderDataAccess.cs
+
+        public List<Dictionary<string, object>> GetExportDataDynamic(string whereClause, List<string> columns)
+        {
+            var results = new List<Dictionary<string, object>>();
+            var selectParts = new List<string>();
+
+            // Define the subquery for "Paid Amount" string to reuse it safely
+            string paidSql = "ISNULL((SELECT SUM(cp.Amount) FROM CustomerPayment cp WHERE cp.TransactionReference = soh.SalesOrderId), 0)";
+
+            foreach (var col in columns)
+            {
+                switch (col)
                 {
-                    totalRows = Convert.ToInt32(cmd.Parameters["@TotalRows"].Value);
+                    case "Id": selectParts.Add("soh.SalesOrderId AS Id"); break;
+                    case "OrderDate": selectParts.Add("FORMAT(soh.OrderDate, 'yyyy-MM-dd HH:mm') AS OrderDate"); break;
+                    case "TotalAmount": selectParts.Add("soh.TotalAmount"); break;
+                    case "Status": selectParts.Add("soh.Status"); break;
+                    case "CustomerName": selectParts.Add("ISNULL(c.CustomerName, 'Guest') AS CustomerName"); break;
+                    case "CustomerPhone": selectParts.Add("ISNULL(c.Phone, 'N/A') AS CustomerPhone"); break;
+                    case "ShippingAddress": selectParts.Add("CONCAT(a.Street, ', ', a.City, '-', a.PostalCode) AS ShippingAddress"); break;
+                    case "PaymentStatus":
+                        selectParts.Add($@"CASE 
+                    WHEN (soh.NetAmount - {paidSql}) <= 0 THEN 'Paid' 
+                    WHEN {paidSql} > 0 THEN 'Partial' 
+                    ELSE 'Unpaid' END AS PaymentStatus");
+                        break;
+                    default: break;
                 }
             }
-            return list;
-        }
 
+            if (selectParts.Count == 0) selectParts.Add("soh.SalesOrderId");
+
+            string selectClause = string.Join(", ", selectParts);
+
+            string sql = $@"
+        SELECT {selectClause}
+        FROM SalesOrderHeader soh
+        LEFT JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
+        LEFT JOIN Customer c ON cc.CustomerId = c.Id
+        LEFT JOIN Address a ON soh.AddressId = a.Id
+        WHERE {whereClause}
+        ORDER BY soh.OrderDate DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                if (cmd.Connection.State != System.Data.ConnectionState.Open) cmd.Connection.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var row = new Dictionary<string, object>();
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string key = reader.GetName(i);
+                            object val = reader.IsDBNull(i) ? "" : reader.GetValue(i);
+
+                            // ✅ FIX: Ensure Decimals are converted to string if needed by the frontend, 
+                            // or keep them as objects (JsonSerializer handles types well).
+                            // The error "Unable to cast object of type 'System.Decimal' to type 'System.String'" 
+                            // usually happens if you do: (string)reader["TotalAmount"]
+
+                            row[key] = val;
+                        }
+                        results.Add(row);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+
+            return results;
+        }
     }
 }

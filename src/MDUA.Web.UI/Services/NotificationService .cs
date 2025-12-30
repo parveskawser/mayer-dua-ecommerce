@@ -72,8 +72,12 @@ namespace MDUA.Web.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    result.EmailMessage = $"Email error: {ex.Message}";
+                    Console.WriteLine("========== Notification Error ==========");
+                    Console.WriteLine(ex);                 // includes stack trace
+                    Console.WriteLine(ex.InnerException);   // if any
+                    Console.WriteLine("========================================");
                 }
+
             }
             else
             {
@@ -96,8 +100,12 @@ namespace MDUA.Web.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    result.SmsMessage = $"SMS error: {ex.Message}";
+                    Console.WriteLine("========== Notification Error ==========");
+                    Console.WriteLine(ex);                 // includes stack trace
+                    Console.WriteLine(ex.InnerException);   // if any
+                    Console.WriteLine("========================================");
                 }
+
             }
             else
             {
@@ -185,6 +193,21 @@ namespace MDUA.Web.UI.Services
     </div>
 </body>
 </html>";
+        }
+        public async Task<bool> SendSmsOnlyAsync(string phone, string message)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return false;
+
+            try
+            {
+                // Delegates directly to the low-level SMS service
+                return await _smsService.SendSmsAsync(phone, message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SMS Error] {ex.Message}");
+                return false;
+            }
         }
 
         private string GenerateOrderSms(string orderNumber, int quantity, decimal totalAmount)

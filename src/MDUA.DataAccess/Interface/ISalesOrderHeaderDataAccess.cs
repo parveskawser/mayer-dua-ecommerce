@@ -54,8 +54,8 @@ namespace MDUA.DataAccess.Interface
 
         SalesOrderHeader GetBySalesOrderRef(string salesOrderRef);
         SalesOrderHeader GetOrderTotalsSafe(int orderId);
-
+        List<Dictionary<string, object>> GetExportDataDynamic(string whereClause, List<string> columns);
         bool GetConfirmedFlag(int orderId);
-
+        int GetOrderPageNumber(int orderId, int pageSize);
     }
 }
