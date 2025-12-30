@@ -1,4 +1,5 @@
 ﻿@using MDUA.Entities
+@using MDUA.Web.UI.Extensions
 @{
     ViewData["Title"] = "Security Settings";
     Layout = "_AdminLayout";
@@ -97,7 +98,20 @@
                                             {
                                                 <small class="text-muted ms-2">(@key.DeviceType)</small>
                                             }
-                                            <small class="text-muted d-block">Added: @(key.RegDate?.ToString("MMM dd, yyyy") ?? "N/A")</small>
+                                            @* ✅ FIXED: Using your Extension Method ToUtcString() *@
+                                            <small class="text-muted d-block">
+                                                Added:
+                                                @if (key.RegDate.HasValue)
+                                                {
+                                                    <span class="local-datetime" data-utc="@key.RegDate.ToUtcString()">
+                                                        @key.RegDate.Value.ToString("MMM dd, yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>N/A</span>
+                                                }
+                                            </small>
                                         </div>
                                         <button class="btn btn-sm btn-outline-danger border-0" onclick="window.deletePasskey(@key.Id)">
                                             <i class="fas fa-trash-alt"></i>
@@ -298,6 +312,23 @@
                 });
             };
 
+        // ✅ AUTO-CONVERT UTC TO LOCAL TIME
+              // This runs immediately when page loads
+              $('.local-datetime').each(function () {
+                  var utcStr = $(this).data('utc'); // "2025-12-29T06:10:00Z"
+                  if (utcStr) {
+                      var date = new Date(utcStr);
+                      // Formats to user's local format (e.g., "Dec 29, 2025, 12:10 PM")
+                      var localDate = date.toLocaleString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                      });
+                      $(this).text(localDate);
+                  }
+              });
             // --- Passkey Registration (Production Logic) ---
         $(document).on('click', '#btnRegisterPasskey', async function () {
             // 1. Prompt for Friendly Name (Optional)

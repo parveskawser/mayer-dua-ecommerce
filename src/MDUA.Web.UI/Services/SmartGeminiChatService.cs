@@ -158,14 +158,14 @@ namespace MDUA.Web.UI.Services
                     OrderQuantity = (int)args.orderQuantity,
                     Street = (string)args.street,
                     City = (string)args.city,
-                    Divison = (string)args.division, 
+                    Divison = (string)args.division,
                     Thana = (string)args.thana,
                     SubOffice = (string)args.subOffice,
                     PostalCode = (string)args.postalCode,
                     TargetCompanyId = 1
                 };
 
-               // Calculate Delivery Charge based on Division [cite: 122, 273, 863-864]
+                // Calculate Delivery Charge based on Division [cite: 122, 273, 863-864]
                 var settings = _settingsFacade.GetDeliverySettings(order.TargetCompanyId);
                 bool isDhaka = order.Divison.ToLower().Contains("dhaka") || order.City.ToLower().Contains("dhaka");
                 order.DeliveryCharge = isDhaka ? settings["dhaka"] : settings["outside"];
@@ -248,7 +248,7 @@ namespace MDUA.Web.UI.Services
             var sb = new StringBuilder();
             sb.AppendLine($"Product: {p.ProductName}");
 
-           // ✅ Fetch discount once for product
+            // ✅ Fetch discount once for product
             var bestDiscount = _productFacade.GetBestDiscount(p.Id, p.BasePrice ?? 0);
 
             var allAttributes = _productFacade.GetVariantAttributes(productId);
@@ -260,7 +260,7 @@ namespace MDUA.Web.UI.Services
                     var myAttrs = allAttributes.Where(a => a.VariantId == v.Id)
                                                .Select(a => $"{a.AttributeName}: {a.AttributeValue}");
 
-                   // ✅ DYNAMIC PRICE CALCULATION (Sync with OrderFacade) [cite: 23-26]
+                    // ✅ DYNAMIC PRICE CALCULATION (Sync with OrderFacade) [cite: 23-26]
                     decimal basePrice = v.VariantPrice ?? p.SellingPrice;
                     decimal calculatedPrice = basePrice;
 
@@ -289,7 +289,7 @@ namespace MDUA.Web.UI.Services
             sb.AppendLine($"- Inside Dhaka: ৳{delivery["dhaka"]}");
             sb.AppendLine($"- Outside Dhaka: ৳{delivery["outside"]}");
 
-           // ✅ Fetch Payment Methods dynamically from DB 
+            // ✅ Fetch Payment Methods dynamically from DB 
             var payments = _settingsFacade.GetCompanyPaymentSettings(companyId);
             var enabledPayments = payments.Where(p => p.IsEnabled).ToList();
 

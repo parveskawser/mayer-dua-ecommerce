@@ -36,6 +36,6 @@ namespace MDUA.DataAccess.Interface
         bool? ToggleStatus(int productId);
         Product GetProductById(int id);
         ProductList SearchProducts(string searchTerm);
-
+        ProductList GetRecentProductsWithImages(int count); // ✅ Add this
     }
 }

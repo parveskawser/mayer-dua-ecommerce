@@ -1,5 +1,4 @@
-﻿﻿
-@model dynamic
+﻿@model dynamic
 @using System.Security.Claims
 @using MDUA.Facade.Interface
 @inject ICompanyFacade CompanyFacade
@@ -16,7 +15,7 @@
     bool isCustomerPage = currentController == "Customer";
     bool isOrderPage = currentController == "Order";
     bool isSettingsPage = currentController == "Settings";
-
+    bool isReportPage = currentController == "Report";
     // --- COMPANY LOGO LOGIC (Kept as is) ---
     string companyName = "MDUA Admin";
     string companyLogo = null;
@@ -104,6 +103,32 @@
         </li>
 
         <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse" href="#vendorSubMenu" role="button" aria-expanded="false" aria-controls="vendorSubMenu">
+
+                <span>
+                    <i class="fas fa-store"></i> <span class="ms-2">Vendors</span>
+                </span>
+
+                <span class="dropdown-arrow">▾</span>
+            </a>
+
+            <div class="collapse" id="vendorSubMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm" href="/Vendor/Index">
+                            <i class="fas fa-list me-2"></i> Vendors List
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm" href="/Vendor/Add">
+                            <i class="fas fa-plus me-2"></i> Add Vendor
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isOrderPage ? "active-parent" : "collapsed")"
                data-bs-toggle="collapse" href="#OrdersMenu" role="button" aria-expanded="@(isOrderPage ? "true" : "false")" aria-controls="OrdersMenu">
                 <span><span>🛒</span> Orders</span>
@@ -138,6 +163,33 @@
                 </ul>
             </div>
         </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center @(isReportPage ? "active-parent" : "collapsed")"
+               data-bs-toggle="collapse"
+               href="#reportsMenu"
+               role="button"
+               aria-expanded="@(isReportPage ? "true" : "false")"
+               aria-controls="reportsMenu">
+                <span><span>📈</span> Reports & Audit</span>
+                <span class="dropdown-arrow">▾</span>
+            </a>
+            <div class="collapse @(isReportPage ? "show" : "")" id="reportsMenu">
+                <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "DeliveryLogs" ? "active" : "")"
+                           href="@Url.Action("DeliveryLogs", "Report")">
+                            Delivery Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "SalesSummary" ? "active" : "")"
+                           href="#">
+                            Sales Summary
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
 
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isSettingsPage ? "active-parent" : "collapsed")"
@@ -152,6 +204,12 @@
                         <a class="nav-link nav-link-sm @(currentAction == "CompanyProfile" ? "active" : "")"
                            href="@Url.Action("CompanyProfile", "Settings")">
                             Company Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentController == "EmailTemplate" ? "active" : "")"
+                           href="@Url.Action("Index", "EmailTemplate")">
+                            Email Templates
                         </a>
                     </li>
                     <li class="nav-item"><a class="nav-link nav-link-sm @(currentAction == "PaymentSettings" ? "active" : "")" href="@Url.Action("PaymentSettings", "Settings")">Payment Methods</a></li>

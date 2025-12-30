@@ -17,5 +17,6 @@ namespace MDUA.Facade.Interface
             int quantity,
             decimal totalAmount
         );
+        Task<bool> SendSmsOnlyAsync(string phone, string message);
     }
 }

@@ -131,7 +131,7 @@
     <script>
                 function saveDeliveryCharges() {
             var data = $('#deliveryForm').serialize();
-            $.post('/Settings/SaveDeliverySettings', data, function(res) {
+            $.post('/settings/payment-method/save-delivery', data, function(res) {
                 if(res.success) {
                     alert('Saved Successfully');
                 } else {

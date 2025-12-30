@@ -29,6 +29,8 @@ namespace MDUA.Facade
         private readonly ICompanyDataAccess _companyDataAccess;
         private readonly IProductVideoDataAccess _productVideoDataAccess;
         private readonly IGlobalSettingDataAccess _globalSettingDataAccess;
+        private readonly IProductCategoryDataAccess _productCategoryDataAccess;
+
         private static readonly List<string> _sizeSortOrder = new List<string>
 
         {
@@ -48,7 +50,8 @@ namespace MDUA.Facade
             IVariantImageDataAccess variantImageDataAccess,
             ICompanyDataAccess companyDataAccess,
             IGlobalSettingDataAccess globalSettingDataAccess,
-            IProductVideoDataAccess productVideoDataAccess)
+            IProductVideoDataAccess productVideoDataAccess,
+            IProductCategoryDataAccess productCategoryDataAccess)
         {
             _ProductDataAccess = productDataAccess;
             _ProductImageDataAccess = productImageDataAccess;
@@ -63,6 +66,8 @@ namespace MDUA.Facade
             _companyDataAccess = companyDataAccess;
             _globalSettingDataAccess = globalSettingDataAccess;
             _productVideoDataAccess = productVideoDataAccess;
+            _productCategoryDataAccess = productCategoryDataAccess;
+
         }
 
         #region Common Implementation
@@ -1126,6 +1131,38 @@ namespace MDUA.Facade
             return _variantPriceStockDataAccess.GetLowStockVariants(topN);
         }
 
+        public LandingPageViewModel GetHomepageData()
+        {
+            var model = new LandingPageViewModel();
 
+            // 1. Fetch Categories (Top 10 active)
+            // Assuming you have a DAO method for this, or use GetByQuery
+            // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
+            // Mocking for now if DAO method missing:
+            model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
+
+            // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
+            var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
+
+            // Map to ViewModel
+            foreach (var p in products)
+            {
+                var vm = new ProductViewModel
+                {
+                    Id = p.Id,
+                    Name = p.ProductName,
+                    // Logic to get primary image or default
+                    ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
+                    // Logic to get base price or lowest variant price
+                    Price = p.BasePrice ?? 0
+                };
+                model.NewArrivals.Add(vm);
+            }
+
+            // Just shuffling for "Featured" for now
+            model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
+
+            return model;
+        }
     }
 }

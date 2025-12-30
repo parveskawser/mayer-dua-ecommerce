@@ -19,7 +19,7 @@ System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
-builder.Services.AddHttpClient<ISmsService, SmsService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // ✅ Add SignalR Service
 builder.Services.AddSignalR();
@@ -62,7 +62,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     return;
                 }
 
-                // B. Resolve Services (Cannot use Constructor Injection here)
+                // B. Resolve Services
                 var userFacade = context.HttpContext.RequestServices.GetRequiredService<IUserLoginFacade>();
 
                 // C. Parse Session Key
@@ -79,11 +79,41 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     }
                     else
                     {
-                        // ✅ VALID: Now force-refresh Permissions (Real-Time Authorization)
+                        // ✅ VALID SESSION
                         var userIdClaim = context.Principal.FindFirst(ClaimTypes.NameIdentifier);
                         if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                         {
                             var identity = (ClaimsIdentity)context.Principal.Identity;
+
+                            // ---------------------------------------------------------
+                            // E. REFRESH USER DATA (Username & CompanyId)
+                            // ---------------------------------------------------------
+
+                            // 1. Fetch the actual User Object from DB
+                            var freshUser = userFacade.Get(userId);
+
+                            if (freshUser != null)
+                            {
+                                // 2. Refresh Username (ClaimTypes.Name)
+                                var oldNameClaim = identity.FindFirst(ClaimTypes.Name);
+                                if (oldNameClaim != null)
+                                {
+                                    identity.RemoveClaim(oldNameClaim);
+                                }
+                                // Add fresh name
+                                identity.AddClaim(new Claim(ClaimTypes.Name, freshUser.UserName));
+
+                                var oldCompanyClaim = identity.FindFirst("CompanyId");
+                                if (oldCompanyClaim != null)
+                                {
+                                    identity.RemoveClaim(oldCompanyClaim); // Remove stale company
+                                }
+                                identity.AddClaim(new Claim("CompanyId", freshUser.CompanyId.ToString()));
+                            }
+
+                            // ---------------------------------------------------------
+                            // F. REFRESH PERMISSIONS
+                            // ---------------------------------------------------------
 
                             // 1. Remove OLD permissions (stale data from cookie)
                             var oldPermissionClaims = identity.FindAll("Permission").ToList();
@@ -112,8 +142,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             }
         };
     });
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache(); // Stores session in memory
@@ -158,7 +186,7 @@ builder.Services.AddSingleton<IFido2>(_ =>
         Origins = new HashSet<string>(originsStr?.Split(',') ?? Array.Empty<string>()),
         TimestampDriftTolerance = driftTolerance
     });
-}); 
+});
 var app = builder.Build();
 
 // 🔍 STARTUP CONFIGURATION DEEP DIVE

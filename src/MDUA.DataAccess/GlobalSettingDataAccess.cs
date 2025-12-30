@@ -29,10 +29,10 @@ namespace MDUA.DataAccess
             // UPSERT Query: Updates if exists, Inserts if new
             string sql = @"
                 MERGE GlobalSetting AS target
+                USING (SELECT @CompanyId AS CompanyId, @Key AS GKey) AS source
                 ON (target.CompanyId = source.CompanyId AND target.GKey = source.GKey)
                 WHEN MATCHED THEN
                     UPDATE SET GContent = @Value
-                USING (SELECT @CompanyId AS CompanyId, @Key AS GKey) AS source
                 WHEN NOT MATCHED THEN
                     INSERT (Id, CompanyId, GKey, GContent)
                     VALUES ((SELECT ISNULL(MAX(Id),0)+1 FROM GlobalSetting), @CompanyId, @Key, @Value);";

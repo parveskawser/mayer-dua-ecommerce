@@ -255,15 +255,45 @@ namespace MDUA.Web.UI.Controllers
 
         [HttpGet]
         [Route("order/check-email")]
-        public IActionResult CheckEmail(string email)
+        public IActionResult CheckEmail(string email, string phone) // <--- ADD string phone
         {
             if (string.IsNullOrWhiteSpace(email))
                 return Json(new { exists = false });
 
-            var customer = _orderFacade.GetCustomerByEmail(email);
-            bool exists = customer != null;
+            // 1. Check if email exists in DB
+            var customer = _orderFacade.GetCustomerByEmail(email.Trim());
 
-            return Json(new { exists = exists });
+            if (customer == null)
+            {
+                // Email does not exist at all -> Available
+                return Json(new { exists = false });
+            }
+
+            // 2. Email exists. Now check if it belongs to the CURRENT user (by Phone)
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                // Helper to normalize phone numbers (remove +88, spaces, etc)
+                string Normalize(string p)
+                {
+                    if (string.IsNullOrEmpty(p)) return "";
+                    p = p.Trim().Replace("-", "").Replace(" ", "").Replace("+", "").Replace("(", "").Replace(")", "");
+                    if (p.StartsWith("88")) p = p.Substring(2);
+                    return p;
+                }
+
+                string inputPhone = Normalize(phone);
+                string dbPhone = Normalize(customer.Phone);
+
+                if (inputPhone == dbPhone)
+                {
+                    // ✅ MATCH! The email belongs to the phone number being used.
+                    // Return 'exists: false' so the frontend allows it.
+                    return Json(new { exists = false });
+                }
+            }
+
+            // 3. Email exists AND belongs to a DIFFERENT phone -> Conflict
+            return Json(new { exists = true });
         }
 
 
@@ -367,32 +397,126 @@ namespace MDUA.Web.UI.Controllers
 
         [Route("/order/all")]
         [HttpGet]
-        public IActionResult AllOrders(int page = 1, int pageSize = 10)
+        public IActionResult AllOrders(int page = 1, int pageSize = 10, string status = "all", string payStatus = "all", string orderType = "all", string dateRange = "all", DateTime? fromDate = null, DateTime? toDate = null, double? minAmount = null, double? maxAmount = null, string search = "")
         {
             if (!HasPermission("Order.View")) return HandleAccessDenied();
 
             try
             {
+                // 1. Dynamic Company ID
+                int companyId = 1;
+                var companyClaim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
+                if (companyClaim != null && int.TryParse(companyClaim.Value, out int cId)) companyId = cId;
+
+                // 2. Build Where Clause
+                var whereBuilder = new System.Text.StringBuilder("1=1");
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    string cleanSearch = search.Replace("'", "''");
+
+                    // ✅ FIX: Added 'soh.' prefix to resolve ambiguity
+                    whereBuilder.Append($" AND (soh.SalesOrderId LIKE '%{cleanSearch}%' OR CAST(soh.Id AS NVARCHAR) LIKE '%{cleanSearch}%')");
+                }
+
+                // A. Filter by Status
+                if (!string.IsNullOrEmpty(status) && status != "all")
+                {
+                    // ✅ FIX: Added 'soh.' prefix
+                    whereBuilder.Append($" AND soh.Status = '{status.Replace("'", "''")}'");
+                }
+
+                // B. Filter by Payment
+                if (!string.IsNullOrEmpty(payStatus) && payStatus != "all")
+                {
+                    // Note: These usually rely on calculated fields or specific logic. 
+                    // If your DataAccess logic for lists calculates these on the fly, 
+                    // you might need to use the specific logic from your OrderFacade export method here too.
+                    // For now, assuming you handle this logic inside the DataAccess if passed as a string, 
+                    // OR we define the raw SQL here:
+
+                    if (payStatus == "Paid")
+                        whereBuilder.Append(" AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) <= 0");
+                    else if (payStatus == "Partial")
+                        whereBuilder.Append(" AND (SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId) > 0 AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) > 0");
+                    else if (payStatus == "Unpaid")
+                        whereBuilder.Append(" AND ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0) = 0");
+                }
+
+                // C. Filter by Order Type
+                if (!string.IsNullOrEmpty(orderType) && orderType != "all")
+                {
+                    // ✅ FIX: Added 'soh.' prefix
+                    if (orderType == "Online") whereBuilder.Append(" AND soh.SalesChannelId = 1");
+                    else if (orderType == "Direct") whereBuilder.Append(" AND soh.SalesChannelId <> 1");
+                }
+
+                // Amount Filters
+                // ✅ FIX: Added 'soh.' prefix
+                if (minAmount.HasValue) whereBuilder.Append($" AND soh.NetAmount >= {minAmount.Value}");
+                if (maxAmount.HasValue) whereBuilder.Append($" AND soh.NetAmount <= {maxAmount.Value}");
+
+                // D. Filter by Date Range
+                if (!string.IsNullOrEmpty(dateRange) && dateRange != "all")
+                {
+                    DateTime today = DateTime.Today;
+                    DateTime? start = null;
+                    DateTime? end = null;
+
+                    switch (dateRange)
+                    {
+                        case "today": start = today; end = today.AddDays(1).AddTicks(-1); break;
+                        case "yesterday": start = today.AddDays(-1); end = today.AddDays(-1).AddDays(1).AddTicks(-1); break;
+                        case "thisWeek":
+                            int diff = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
+                            start = today.AddDays(-1 * diff).Date;
+                            end = today.AddDays(1).AddTicks(-1);
+                            break;
+                        case "lastWeek":
+                            int diffLast = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
+                            start = today.AddDays(-1 * diffLast).AddDays(-7).Date;
+                            end = start.Value.AddDays(7).AddTicks(-1);
+                            break;
+                        case "thisMonth": start = new DateTime(today.Year, today.Month, 1); end = today.AddDays(1).AddTicks(-1); break;
+                        case "lastMonth":
+                            var lastMonth = today.AddMonths(-1);
+                            start = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                            end = new DateTime(today.Year, today.Month, 1).AddTicks(-1);
+                            break;
+                        case "custom":
+                            if (fromDate.HasValue) start = fromDate.Value.Date;
+                            if (toDate.HasValue) end = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                            break;
+                    }
+
+                    // ✅ FIX: Added 'soh.' prefix
+                    if (start.HasValue) whereBuilder.Append($" AND soh.OrderDate >= '{start.Value:yyyy-MM-dd HH:mm:ss}'");
+                    if (end.HasValue) whereBuilder.Append($" AND soh.OrderDate <= '{end.Value:yyyy-MM-dd HH:mm:ss}'");
+                }
+
+                // 3. Execute
                 int totalRows;
-                // Call the NEW Facade method
-                var orders = _orderFacade.GetPagedOrdersForAdmin(page, pageSize, out totalRows);
+                var orders = _orderFacade.GetPagedOrdersForAdmin(page, pageSize, whereBuilder.ToString(), out totalRows);
 
                 var viewModel = new MDUA.Web.UI.Models.PagedOrderViewModel
                 {
                     Orders = orders,
                     CurrentPage = page,
                     PageSize = pageSize,
-                    TotalRows = totalRows
+                    TotalRows = totalRows,
+                    TotalPages = totalRows > 0 ? (int)Math.Ceiling((double)totalRows / pageSize) : 1
                 };
 
-                // Load specific settings for UI
-                int companyId = 1; // Logic to get company ID...
+                // ... View Data Population ...
+                ViewData["CurrentStatus"] = status; ViewData["CurrentPayStatus"] = payStatus; ViewData["CurrentOrderType"] = orderType;
+                ViewData["CurrentDateRange"] = dateRange; ViewData["CurrentFromDate"] = fromDate?.ToString("yyyy-MM-dd");
+                ViewData["CurrentToDate"] = toDate?.ToString("yyyy-MM-dd"); ViewData["CurrentMinAmount"] = minAmount;
+                ViewData["CurrentMaxAmount"] = maxAmount; ViewData["CurrentSearch"] = search;
+
                 var deliverySettings = _settingsFacade.GetDeliverySettings(companyId);
                 ViewBag.DeliveryDhaka = deliverySettings["dhaka"];
                 ViewBag.DeliveryOutside = deliverySettings["outside"];
-
-                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
-                ViewBag.PaymentMethods = paymentMethods;
+                ViewBag.PaymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
 
                 return View(viewModel);
             }
@@ -402,7 +526,6 @@ namespace MDUA.Web.UI.Controllers
                 return View(new MDUA.Web.UI.Models.PagedOrderViewModel());
             }
         }
-
 
         [HttpPost]
         [Route("order/place")]
@@ -446,6 +569,8 @@ namespace MDUA.Web.UI.Controllers
 
                 model.SessionId = HttpContext.Session.Id;
 
+
+                model.CreatedBy = model.CustomerName;
                 // ---------------------------------------------------------
                 // 3. PROCEED (✅ AWAIT REQUIRED)
                 // ---------------------------------------------------------
@@ -625,7 +750,8 @@ namespace MDUA.Web.UI.Controllers
                 }
 
                 model.SessionId = HttpContext.Session.Id;
-
+                string loggedInUser = User.Identity?.Name ?? "Admin";
+                model.CreatedBy = loggedInUser;
                 // ---------------------------------------------------------
                 // 3. EXECUTE ORDER
                 // ---------------------------------------------------------
@@ -706,7 +832,19 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("order/goto")]
+        public IActionResult GoToOrder(int orderId)
+        {
+            // 1. Default Page Size (Must match your default view logic)
+            int pageSize = 10;
 
+            // 2. Calculate which page this order is on
+            int targetPage = _orderFacade.GetOrderPageNumber(orderId, pageSize);
+
+            // 3. Redirect to the main list with the correct Page & Highlight ID
+            return RedirectToAction("AllOrders", new { page = targetPage, pageSize = pageSize, highlightId = orderId });
+        }
 
     }
     }
