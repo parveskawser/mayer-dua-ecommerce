@@ -230,6 +230,7 @@
                             <input type="checkbox" class="form-check-input" id="checkAllRows">
                         </th>
                         <th style="width: 40px;"></th>
+                        <th style="width: 40px;"></th>
                         <th>ID</th>
                         <th>Order Type</th>
                         <th>Order Date</th>
@@ -335,10 +336,11 @@
                                         }
 
                                         <button type="button" class="btn btn-sm btn-white border shadow-sm"
+                                                id="btn-view-@order.Id" 
                                                 data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                 data-id="@orderIdDisplay" data-status="@displayStatus" data-type="@orderType"
-                                                data-cust-id="@order.CompanyCustomerId" data-cust-name="@order.CustomerName"
-                                                data-cust-phone="@(order.CustomerPhone ?? "N/A")"
+                                                data-cust-id="@order.CustomerId"
+                                                data-cust-name="@order.CustomerName" data-cust-phone="@(order.CustomerPhone ?? "N/A")"
                                                 data-addr-id="@(order.AddressId == 0 ? "N/A" : order.AddressId.ToString())"
                                                 data-full-addr="@fullAddress" data-total="@FormatAmount(order.TotalAmount)"
                                                 data-net="@FormatAmount(order.NetAmount)"
@@ -359,7 +361,10 @@
                                                 data-discount="@FormatRaw(order.DiscountAmount)">
                                             <i class="fas fa-money-bill-wave text-success me-1"></i> Add Advance Payment
                                         </button>
-
+                                        <button type="button" class="btn btn-sm btn-white border shadow-sm ms-1"
+                                                onclick="openHistoryModal(@order.Id)" title="View Order History">
+                                            <i class="fas fa-list-ul text-secondary"></i>
+                                        </button>
                                         @if (order.Status != "Cancelled" && order.Status != "Delivered" && order.Status != "Returned" && order.Status != "Confirmed")
                                         {
                                             <button type="button" class="btn btn-sm btn-white border shadow-sm text-danger"
@@ -556,6 +561,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6 fw-bold">
+                    <i class="fas fa-history text-primary me-2"></i>Order Audit History
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="historyModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="mt-2 small text-muted">Loading history...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable order-details-modal">
         <div class="modal-content">
@@ -618,7 +643,8 @@
     var orderColumns = new Dictionary<string, string> {
         {"Id", "Order ID"}, {"OrderDate", "Order Date"}, {"CustomerName", "Customer Name"},
         {"CustomerPhone", "Phone"}, {"TotalAmount", "Total Amount"}, {"Status", "Status"},
-        {"PaymentStatus", "Payment Status"}, {"ShippingAddress", "Address"}
+        {"PaymentStatus", "Payment Status"}, {"ShippingAddress", "Address"},{ "Paid", "Paid Amount" },
+        { "Due", "Due Amount" }
     };
 }
 

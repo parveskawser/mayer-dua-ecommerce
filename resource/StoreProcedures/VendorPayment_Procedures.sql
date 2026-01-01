@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVendorPayment    Script Date: 12/21/2025 8:58:41 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVendorPayment    Script Date: 1/1/2026 12:04:34 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVendorPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVendorPayment]
 GO
@@ -24,7 +24,9 @@ CREATE PROCEDURE InsertVendorPayment
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@PoReceivedId int,
+	@PoRequestedId int
 )
 AS
     INSERT INTO [dbo].[VendorPayment] 
@@ -41,7 +43,9 @@ AS
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[PoReceivedId],
+	[PoRequestedId]
     ) 
 	VALUES 
 	(
@@ -57,7 +61,9 @@ AS
 	@CreatedBy,
 	@CreatedAt,
 	@UpdatedBy,
-	@UpdatedAt
+	@UpdatedAt,
+	@PoReceivedId,
+	@PoRequestedId
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -86,7 +92,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVendorPayment    Script Date: 12/21/2025 8:58:41 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVendorPayment    Script Date: 1/1/2026 12:04:34 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVendorPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVendorPayment]
 GO
@@ -109,7 +115,9 @@ CREATE PROCEDURE UpdateVendorPayment
 	@CreatedBy nvarchar(100),
 	@CreatedAt datetime,
 	@UpdatedBy nvarchar(100),
-	@UpdatedAt datetime
+	@UpdatedAt datetime,
+	@PoReceivedId int,
+	@PoRequestedId int
 )
 AS
     UPDATE [dbo].[VendorPayment] 
@@ -126,7 +134,9 @@ AS
 	[CreatedBy] = @CreatedBy,
 	[CreatedAt] = @CreatedAt,
 	[UpdatedBy] = @UpdatedBy,
-	[UpdatedAt] = @UpdatedAt
+	[UpdatedAt] = @UpdatedAt,
+	[PoReceivedId] = @PoReceivedId,
+	[PoRequestedId] = @PoRequestedId
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -142,7 +152,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVendorPayment    Script Date: 12/21/2025 8:58:41 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVendorPayment    Script Date: 1/1/2026 12:04:34 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVendorPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVendorPayment]
 GO
@@ -173,7 +183,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVendorPayment    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendorPayment    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVendorPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVendorPayment]
 GO
@@ -190,7 +200,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorPaymentById    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorPaymentById    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentById]
 GO
@@ -211,7 +221,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByVendorId    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByVendorId    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByVendorId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentByVendorId]
 GO
@@ -232,7 +242,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByPaymentMethodId    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByPaymentMethodId    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByPaymentMethodId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentByPaymentMethodId]
 GO
@@ -253,7 +263,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByInventoryTransactionId    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByInventoryTransactionId    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByInventoryTransactionId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentByInventoryTransactionId]
 GO
@@ -274,7 +284,49 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorPaymentMaximumId    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByPoReceivedId    Script Date: 1/1/2026 12:04:34 PM  ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByPoReceivedId]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GetVendorPaymentByPoReceivedId]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetVendorPaymentByPoReceivedId
+(
+	@PoReceivedId int
+)
+AS
+	SELECT *		
+	FROM
+		[dbo].[VendorPayment]
+	WHERE ( PoReceivedId = @PoReceivedId  )
+
+RETURN @@ROWCOUNT
+GO
+
+/****** Object:  StoredProcedure [dbo].GetAllVendorPaymentByPoRequestedId    Script Date: 1/1/2026 12:04:34 PM  ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByPoRequestedId]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GetVendorPaymentByPoRequestedId]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetVendorPaymentByPoRequestedId
+(
+	@PoRequestedId int
+)
+AS
+	SELECT *		
+	FROM
+		[dbo].[VendorPayment]
+	WHERE ( PoRequestedId = @PoRequestedId  )
+
+RETURN @@ROWCOUNT
+GO
+
+/****** Object:  StoredProcedure [dbo].GetVendorPaymentMaximumId    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentMaximumId]
 GO
@@ -303,7 +355,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorPaymentRowCount    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorPaymentRowCount    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentRowCount]
 GO
@@ -322,7 +374,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVendorPayment    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVendorPayment    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVendorPayment]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVendorPayment]
 GO
@@ -386,7 +438,9 @@ SET @SQL1 = 'WITH VendorPaymentEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[PoReceivedId],
+	[PoRequestedId]
 				FROM 
 				[dbo].[VendorPayment]
 					'+ @WhereClause +'
@@ -405,7 +459,9 @@ SET @SQL1 = 'WITH VendorPaymentEntries AS (
 	[CreatedBy],
 	[CreatedAt],
 	[UpdatedBy],
-	[UpdatedAt]
+	[UpdatedAt],
+	[PoReceivedId],
+	[PoRequestedId]
 				FROM 
 					VendorPaymentEntries
 				WHERE 
@@ -424,7 +480,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVendorPaymentByQuery    Script Date: 12/21/2025 8:58:41 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetVendorPaymentByQuery    Script Date: 1/1/2026 12:04:34 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVendorPaymentByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVendorPaymentByQuery]
 GO

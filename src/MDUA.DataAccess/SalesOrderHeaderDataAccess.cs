@@ -77,7 +77,7 @@ namespace MDUA.DataAccess
                     + [DiscountAmount]
                     + @Delivery
                 ),
-                [UpdatedAt] = GETDATE()
+                [UpdatedAt] = GETUTCDATE()
                 WHERE [Id] = @Id";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
@@ -94,7 +94,7 @@ namespace MDUA.DataAccess
             string SQLQuery = @"
                 UPDATE [dbo].[SalesOrderHeader] 
                 SET [TotalAmount] = @Total, 
-                    [UpdatedAt] = GETDATE() 
+                    [UpdatedAt] = GETUTCDATE() 
                 WHERE [Id] = @Id";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
@@ -346,30 +346,32 @@ namespace MDUA.DataAccess
 
         public void UpdateStatusSafe(int orderId, string status, bool confirmed)
         {
-            string SQLQuery = @"
+            {
+                string SQLQuery = @"
             UPDATE [dbo].[SalesOrderHeader]
             SET 
                 [Status] = @Status,
                 [Confirmed] = @Confirmed,
-                [UpdatedAt] = GETDATE()
+                [UpdatedAt] = GETUTCDATE()
             WHERE [Id] = @Id";
 
-            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
-            {
-                AddParameter(cmd, pInt32("Id", orderId));
-                AddParameter(cmd, pNVarChar("Status", 30, status));
-                AddParameter(cmd, pBool("Confirmed", confirmed));
-
-                if (cmd.Connection.State != System.Data.ConnectionState.Open)
-                    cmd.Connection.Open();
-
-                int rowsAffected = cmd.ExecuteNonQuery();
-
-                cmd.Connection.Close();
-
-                if (rowsAffected == 0)
+                using (SqlCommand cmd = GetSQLCommand(SQLQuery))
                 {
-                    throw new Exception($"CRITICAL FAILURE: Tried to update Order #{orderId}, but database found 0 matching rows. The Order ID might be wrong or the Order doesn't exist.");
+                    AddParameter(cmd, pInt32("Id", orderId));
+                    AddParameter(cmd, pNVarChar("Status", 30, status));
+                    AddParameter(cmd, pBool("Confirmed", confirmed));
+
+                    if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                        cmd.Connection.Open();
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    cmd.Connection.Close();
+
+                    if (rowsAffected == 0)
+                    {
+                        throw new Exception($"CRITICAL FAILURE: Tried to update Order #{orderId}, but database found 0 matching rows. The Order ID might be wrong or the Order doesn't exist.");
+                    }
                 }
             }
         } 
@@ -464,7 +466,7 @@ namespace MDUA.DataAccess
                     (SELECT ISNULL(SUM(TotalAmount - DiscountAmount), 0) FROM SalesOrderHeader WHERE Status = 'Confirmed') as TotalRevenue,
                     (SELECT COUNT(*) FROM SalesOrderHeader) as TotalOrders,
                     (SELECT COUNT(*) FROM SalesOrderHeader WHERE Status IN ('Draft', 'Pending')) as PendingOrders,
-                    (SELECT COUNT(*) FROM SalesOrderHeader WHERE CAST(OrderDate AS DATE) = CAST(GETDATE() AS DATE)) as TodayOrders,
+                    (SELECT COUNT(*) FROM SalesOrderHeader WHERE CAST(OrderDate AS DATE) = CAST(GETUTCDATE() AS DATE)) as TodayOrders,
                     (SELECT COUNT(*) FROM Customer WHERE IsActive = 1) as TotalCustomers";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
@@ -548,7 +550,7 @@ namespace MDUA.DataAccess
                     SUM(TotalAmount - DiscountAmount) as Value,
                     MIN(OrderDate) as SortDate
                 FROM SalesOrderHeader
-                WHERE OrderDate >= DATEADD(month, -@Months, GETDATE())
+                WHERE OrderDate >= DATEADD(month, -@Months, GETUTCDATE())
                   AND Status != 'Cancelled'
                 GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(month, OrderDate)
                 ORDER BY MIN(OrderDate)";
@@ -599,7 +601,7 @@ namespace MDUA.DataAccess
 
         public void UpdateNetAmountSafe(int orderId, decimal newNetAmount)
         {
-            string SQLQuery = @"UPDATE [dbo].[SalesOrderHeader] SET [NetAmount] = @Net, [UpdatedAt] = GETDATE() WHERE [Id] = @Id";
+            string SQLQuery = @"UPDATE [dbo].[SalesOrderHeader] SET [NetAmount] = @Net, [UpdatedAt] = GETUTCDATE() WHERE [Id] = @Id";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
@@ -754,7 +756,7 @@ SELECT @@ROWCOUNT;";
                 cmd.Parameters.Clear();
                 AddParameter(cmd, pInt32("Id", orderId));
 
-  
+
 
                 cmd.Connection.Close();
 
@@ -792,7 +794,9 @@ SELECT @@ROWCOUNT;";
             }
             return 1; // Default to page 1 if not found
         }
-        // In MDUA.DataAccess/SalesOrderHeaderDataAccess.cs
+
+
+        #region it is used in admin order list with pagination,Advance Payment modal and  order details modal in allorders.cshtml
 
         public SalesOrderHeaderList GetPagedOrdersExtended(int pageIndex, int pageSize, string whereClause, out int totalRows)
         {
@@ -800,37 +804,57 @@ SELECT @@ROWCOUNT;";
             totalRows = 0;
 
             string sql = $@"
-        SELECT 
-            soh.Id, 
-            soh.CompanyCustomerId, 
-            soh.AddressId, 
-            soh.SalesChannelId, 
-            soh.OrderDate, 
-            soh.TotalAmount, 
-            soh.DiscountAmount, 
-            soh.Status, 
-            soh.IsActive, 
-            soh.Confirmed, 
-            soh.CreatedBy, 
-            soh.CreatedAt, 
-            soh.UpdatedBy, 
-            soh.UpdatedAt,
-            soh.SalesOrderId, 
-            soh.OnlineOrderId,
-            soh.DirectOrderId,
-            
-            c.CustomerName,
-            c.Phone as CustomerPhone,
-            
-            ISNULL((SELECT SUM(cp.Amount) FROM CustomerPayment cp WHERE cp.TransactionReference = soh.SalesOrderId), 0) AS PaidAmount,
-            
-            COUNT(*) OVER() AS TotalCount
-        FROM SalesOrderHeader soh
-        LEFT JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
-        LEFT JOIN Customer c ON cc.CustomerId = c.Id
-        WHERE {whereClause}
-        ORDER BY soh.OrderDate DESC
-        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+    SELECT 
+        soh.Id, 
+        soh.CompanyCustomerId, 
+        soh.AddressId, 
+        soh.SalesChannelId, 
+        soh.OrderDate, 
+        soh.TotalAmount, 
+        soh.DiscountAmount, 
+        soh.NetAmount,      -- Ensure this is selected
+        soh.Status, 
+        soh.IsActive, 
+        soh.Confirmed, 
+        soh.CreatedBy, 
+        soh.CreatedAt, 
+        soh.UpdatedBy, 
+        soh.UpdatedAt,
+        soh.SalesOrderId, 
+        soh.OnlineOrderId,
+        soh.DirectOrderId,
+        soh.IPAddress,      
+        soh.SessionId,     
+        
+        c.Id AS RealCustomerId,
+        ISNULL(c.CustomerName, 'Guest') AS CustomerName,
+        c.Phone as CustomerPhone,
+        c.Email as CustomerEmail,
+        
+        -- ✅ Address Data for the Modal
+        ISNULL(a.Street, '') AS Street,
+        ISNULL(a.City, '') AS City,
+        ISNULL(a.Divison, '') AS Divison,
+        ISNULL(a.Thana, '') AS Thana,
+        ISNULL(a.SubOffice, '') AS SubOffice,
+        ISNULL(a.PostalCode, '') AS PostalCode,
+        ISNULL(a.Country, 'Bangladesh') AS Country,
+
+ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity) 
+                FROM SalesOrderDetail sod 
+                WHERE sod.SalesOrderId = soh.Id), 0) AS ProductTotal,
+
+        ISNULL((SELECT SUM(cp.Amount) FROM CustomerPayment cp 
+        WHERE cp.TransactionReference = soh.SalesOrderId), 0) AS PaidAmount,
+        
+        COUNT(*) OVER() AS TotalCount
+    FROM SalesOrderHeader soh
+    LEFT JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
+    LEFT JOIN Customer c ON cc.CustomerId = c.Id
+    LEFT JOIN Address a ON soh.AddressId = a.Id  -- ✅ Join Address
+    WHERE {whereClause}
+    ORDER BY soh.OrderDate DESC
+    OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
@@ -844,32 +868,59 @@ SELECT @@ROWCOUNT;";
                     while (reader.Read())
                     {
                         if (totalRows == 0) totalRows = (int)reader["TotalCount"];
-
                         var order = new SalesOrderHeader();
 
+                        // --- IDs & Basic Info ---
                         order.Id = (int)reader["Id"];
                         order.SalesOrderId = reader["SalesOrderId"].ToString();
+                        order.CompanyCustomerId = (int)reader["CompanyCustomerId"]; // ✅ Fixes "0" issue (if using CCID)
+                        order.CustomerId = reader["RealCustomerId"] != DBNull.Value ? (int)reader["RealCustomerId"] : 0; // ✅ Fixes "0" issue (Real ID)
+                        order.AddressId = (int)reader["AddressId"]; // ✅ Fixes Address ID N/A
+                        order.SalesChannelId = (int)reader["SalesChannelId"];
+
                         order.OrderDate = (DateTime)reader["OrderDate"];
+                        order.CreatedAt = (DateTime)reader["CreatedAt"]; // ✅ Now Mapped
+                                                                         // Data comes as 'Unspecified' (Local). .ToUniversalTime() converts it to UTC format.
+                        order.UpdatedAt = reader["UpdatedAt"] != DBNull.Value
+                            ? ((DateTime)reader["UpdatedAt"]).ToUniversalTime()
+                            : (DateTime?)null;
+
                         order.Status = reader["Status"].ToString();
                         order.Confirmed = (bool)reader["Confirmed"];
 
-                        order.CustomerName = reader["CustomerName"] != DBNull.Value ? reader["CustomerName"].ToString() : "Guest";
+                        // --- Customer & Technical ---
+                        order.CustomerName = reader["CustomerName"].ToString();
                         order.CustomerPhone = reader["CustomerPhone"] != DBNull.Value ? reader["CustomerPhone"].ToString() : "";
-                        order.SalesChannelId = (int)reader["SalesChannelId"];
+                        order.CustomerEmail = reader["CustomerEmail"] != DBNull.Value ? reader["CustomerEmail"].ToString() : "";
+                        order.IPAddress = reader["IPAddress"] != DBNull.Value ? reader["IPAddress"].ToString() : "N/A"; // ✅ Fixes Technical Data
+                        order.SessionId = reader["SessionId"] != DBNull.Value ? reader["SessionId"].ToString() : "N/A";
 
-                        // --- Amounts ---
+                        order.Street = reader["Street"].ToString();
+                        order.City = reader["City"].ToString();
+                        order.Divison = reader["Divison"].ToString();
+                        order.Thana = reader["Thana"].ToString();
+                        order.SubOffice = reader["SubOffice"].ToString();
+                        order.PostalCode = reader["PostalCode"].ToString();
+                        order.Country = reader["Country"].ToString();
+
+                        // --- Financials ---
                         order.TotalAmount = reader["TotalAmount"] != DBNull.Value ? (decimal)reader["TotalAmount"] : 0m;
                         order.DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? (decimal)reader["DiscountAmount"] : 0m;
-
-                        // Calculate Net
-                        order.NetAmount = order.TotalAmount - order.DiscountAmount;
-
-                        // Paid Amount
+                        order.NetAmount = reader["NetAmount"] != DBNull.Value ? (decimal)reader["NetAmount"] : 0m;
                         order.PaidAmount = reader["PaidAmount"] != DBNull.Value ? (decimal)reader["PaidAmount"] : 0m;
-
-                        // ✅ FIX: Handle Nullable NetAmount safely using (?? 0m)
                         order.DueAmount = (order.NetAmount ?? 0m) - order.PaidAmount;
+                        decimal productTotal = reader["ProductTotal"] != DBNull.Value ? (decimal)reader["ProductTotal"] : 0m;
 
+                        if (order.TotalAmount > 0)
+                        {
+                            order.DeliveryCharge = order.TotalAmount - productTotal - order.DiscountAmount;
+
+                            if (order.DeliveryCharge < 0) order.DeliveryCharge = 0;
+                        }
+                        else
+                        {
+                            order.DeliveryCharge = 0;
+                        }
                         order.CreatedBy = reader["CreatedBy"] != DBNull.Value ? reader["CreatedBy"].ToString() : "";
 
                         list.Add(order);
@@ -877,9 +928,9 @@ SELECT @@ROWCOUNT;";
                 }
                 cmd.Connection.Close();
             }
-
             return list;
-        }        // Inside MDUA.DataAccess/SalesOrderHeaderDataAccess.cs
+        }
+        #endregion
 
         public List<Dictionary<string, object>> GetExportDataDynamic(string whereClause, List<string> columns)
         {
@@ -900,6 +951,13 @@ SELECT @@ROWCOUNT;";
                     case "CustomerName": selectParts.Add("ISNULL(c.CustomerName, 'Guest') AS CustomerName"); break;
                     case "CustomerPhone": selectParts.Add("ISNULL(c.Phone, 'N/A') AS CustomerPhone"); break;
                     case "ShippingAddress": selectParts.Add("CONCAT(a.Street, ', ', a.City, '-', a.PostalCode) AS ShippingAddress"); break;
+                    case "Paid":
+                        selectParts.Add($"{paidSql} AS Paid");
+                        break;
+
+                    case "Due":
+                        selectParts.Add($"(soh.NetAmount - {paidSql}) AS Due");
+                        break;
                     case "PaymentStatus":
                         selectParts.Add($@"CASE 
                     WHEN (soh.NetAmount - {paidSql}) <= 0 THEN 'Paid' 
@@ -937,10 +995,7 @@ SELECT @@ROWCOUNT;";
                             string key = reader.GetName(i);
                             object val = reader.IsDBNull(i) ? "" : reader.GetValue(i);
 
-                            // ✅ FIX: Ensure Decimals are converted to string if needed by the frontend, 
-                            // or keep them as objects (JsonSerializer handles types well).
-                            // The error "Unable to cast object of type 'System.Decimal' to type 'System.String'" 
-                            // usually happens if you do: (string)reader["TotalAmount"]
+                        
 
                             row[key] = val;
                         }
@@ -953,4 +1008,6 @@ SELECT @@ROWCOUNT;";
             return results;
         }
     }
+
+
 }

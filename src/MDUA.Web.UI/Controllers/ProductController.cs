@@ -281,7 +281,7 @@ namespace MDUA.Web.UI.Controllers
             if (!HasPermission("Variant.Add")) return HandleAccessDenied();
 
             newVariant.CreatedBy = CurrentUserName;
-            newVariant.CreatedAt = DateTime.Now;
+            newVariant.CreatedAt = DateTime.UtcNow;
             newVariant.IsActive = true;
 
             long result = _productFacade.AddVariantToExistingProduct(newVariant);

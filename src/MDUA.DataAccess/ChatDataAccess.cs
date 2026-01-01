@@ -134,12 +134,12 @@ namespace MDUA.DataAccess
                 INSERT INTO ChatMessage 
                 (ChatSessionId, SenderId, SenderName, MessageText, IsFromAdmin, IsRead, SentAt)
                 VALUES 
-                (@ChatSessionId, @SenderId, @SenderName, @MessageText, @IsFromAdmin, 0, GETDATE());
+                (@ChatSessionId, @SenderId, @SenderName, @MessageText, @IsFromAdmin, 0, GETUTCDATE());
                 
                 -- Update the parent session's timestamp AND GuestName
               UPDATE ChatSession 
 SET 
-    LastMessageAt = GETDATE(),
+    LastMessageAt = GETUTCDATE(),
     GuestName = CASE 
         WHEN @IsFromAdmin = 0 
              AND @SenderName IS NOT NULL 

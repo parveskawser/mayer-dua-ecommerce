@@ -18,13 +18,13 @@ namespace MDUA.Web.UI.Controllers
         // ✅ 2. Update Constructor to accept them
         public ReportController(
             IDeliveryStatusLogFacade deliveryStatusLogFacade,
-            IOrderFacade orderFacade,      // <--- Added
-            IExportService exportService   // <--- Added
+            IOrderFacade orderFacade,
+            IExportService exportService
         )
         {
             _deliveryStatusLogFacade = deliveryStatusLogFacade;
-            _orderFacade = orderFacade;    // <--- Assigned
-            _exportService = exportService;// <--- Assigned
+            _orderFacade = orderFacade;
+            _exportService = exportService;
         }
 
         // ============================================================
@@ -81,28 +81,63 @@ namespace MDUA.Web.UI.Controllers
 
 
 
-            // ... [DeliveryLogs Action remains the same] ...
+        // ... [DeliveryLogs Action remains the same] ...
 
-            [HttpPost]
-            [Route("Report/ExportData")]
-            public IActionResult ExportData(string jsonPayload)
+        [HttpPost]
+        [Route("Report/ExportData")]
+        public IActionResult ExportData(string jsonPayload)
+        {
+            var request = Newtonsoft.Json.JsonConvert.DeserializeObject<ExportRequest>(jsonPayload);
+
+            if (request.EntityType == "Order")
             {
-                // ✅ Now 'ExportRequest' is recognized from MDUA.Entities namespace
-                var request = Newtonsoft.Json.JsonConvert.DeserializeObject<ExportRequest>(jsonPayload);
+                var data = _orderFacade.GetExportData(request);
+                byte[] fileBytes = _exportService.GenerateFile(data, request.Format, request.Columns);
 
-                if (request.EntityType == "Order")
+                // Set proper MIME types and file extensions
+                string contentType;
+                string fileExtension;
+                string fileName;
+
+                switch (request.Format.ToLower())
                 {
-                    // ✅ Now _orderFacade is available
-                    var data = _orderFacade.GetExportData(request);
-
-                    // ✅ Now _exportService is available
-                    byte[] fileBytes = _exportService.GenerateFile(data, request.Format, request.Columns);
-
-                    string contentType = request.Format == "csv" ? "text/csv" : "application/octet-stream";
-                    return File(fileBytes, contentType, $"Orders_{DateTime.Now:yyyyMMdd}.{request.Format}");
+                    case "csv":
+                        contentType = "text/csv";
+                        fileExtension = "csv";
+                        break;
+                    case "excel":
+                    case "xlsx":
+                        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        fileExtension = "xlsx";
+                        break;
+                    case "pdf":
+                        contentType = "application/pdf";
+                        fileExtension = "pdf";
+                        break;
+                    default:
+                        contentType = "application/octet-stream";
+                        fileExtension = request.Format;
+                        break;
                 }
 
-                return BadRequest("Unknown Entity");
+                fileName = $"Orders_Export_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension}";
+
+                return File(fileBytes, contentType, fileName);
             }
+
+            return BadRequest("Unknown Entity");
         }
+
+
+        [HttpGet]
+        [Route("report/order-history-partial")]
+        public IActionResult GetOrderHistoryPartial(string orderId)
+        {
+            // Dates are null (fetch all time), EntityType is "All" (fetch both Order & Delivery logs)
+            var logs = _deliveryStatusLogFacade.GetLogsForReport(null, null, orderId, "All");
+
+            return PartialView("_OrderHistoryTable", logs);
+        }
+
     }
+}

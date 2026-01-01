@@ -1,0 +1,94 @@
+﻿@model List<MDUA.Entities.DeliveryStatusLog>
+
+<div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light text-uppercase small text-muted">
+            <tr>
+                <th class="ps-3">Time (UTC)</th>
+                <th>Source</th>
+                <th>Status Change</th>
+                <th>Changed By</th>
+                <th>Details / Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var log in Model)
+                {
+                    // --- REUSED VISUAL LOGIC ---
+                    string rowClass = "";
+                    string badgeClass = "bg-secondary-subtle text-dark";
+                    string icon = "fa-circle-notch";
+
+                    if (log.NewStatus == "Confirmed") { badgeClass = "bg-success text-white"; icon = "fa-check-circle"; }
+                    else if (log.NewStatus == "Cancelled") { badgeClass = "bg-danger text-white"; icon = "fa-times-circle"; rowClass = "bg-danger-subtle bg-opacity-10"; }
+                    else if (log.NewStatus == "Shipped") { badgeClass = "bg-info text-dark"; icon = "fa-truck"; }
+                    else if (log.NewStatus == "Delivered") { badgeClass = "bg-primary text-white"; icon = "fa-box-open"; }
+                    else if (log.NewStatus == "Returned") { badgeClass = "bg-warning text-dark"; icon = "fa-undo"; }
+
+                    bool isSystem = log.IsSystemGenerated;
+                    string userIcon = isSystem ? "fa-robot text-primary" : "fa-user text-success";
+                    string userDisplay = isSystem ? "System (Auto)" : log.ChangedBy;
+
+                    <tr class="@rowClass">
+                        <td class="ps-3">
+                            <div class="fw-bold text-dark">@log.ChangedAt.ToString("MMM dd, yyyy")</div>
+                            <div class="small text-muted font-monospace">@log.ChangedAt.ToString("HH:mm:ss")</div>
+                        </td>
+
+                        <td>
+                            @if (log.EntityType == "SalesOrderHeader")
+                            {
+                                <span class="badge border text-primary bg-primary-subtle"><i class="fas fa-file-invoice me-1"></i> Order</span>
+                            }
+                            else
+                            {
+                                <span class="badge border text-dark bg-warning-subtle"><i class="fas fa-truck me-1"></i> Delivery</span>
+                            }
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (!string.IsNullOrEmpty(log.OldStatus))
+                                {
+                                    <span class="text-muted small">@log.OldStatus</span>
+                                    <i class="fas fa-arrow-right small text-muted opacity-50"></i>
+                                }
+                                <span class="badge @badgeClass shadow-sm d-flex align-items-center gap-1">
+                                    <i class="fas @icon small"></i> @log.NewStatus
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas @userIcon small"></i>
+                                <span class="fw-medium small text-dark">@userDisplay</span>
+                            </div>
+                        </td>
+
+                        <td class="small text-muted">
+                            <div class="text-dark">@log.ChangeReason</div>
+                            @if (!string.IsNullOrEmpty(log.SourceAction))
+                            {
+                                <div class="fst-italic opacity-75" style="font-size: 0.75rem;">
+                                    <i class="fas fa-code me-1"></i> @log.SourceAction
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="fas fa-history mb-2"></i><br>
+                        No history logs found for this order.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

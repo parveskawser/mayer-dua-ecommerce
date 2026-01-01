@@ -43,12 +43,11 @@ function submitExport() {
     }
 
     // 3. Collect Current Filters (from the main page URL or hidden form)
-    // We get the current URL search params to preserve filters (Date, Status, Search, etc.)
     const currentParams = new URLSearchParams(window.location.search);
 
     // 4. Build Payload
     const payload = {
-        format: formData.get('format'),
+        format: formData.get('format'), // Will be 'xlsx' instead of 'excel'
         columns: [],
         scope: scope,
         selectedIds: selectedIds,
@@ -56,14 +55,28 @@ function submitExport() {
         status: currentParams.get('status') || 'all',
         dateRange: currentParams.get('dateRange') || 'all',
         search: currentParams.get('search') || '',
-        // ... add other filters like minAmount, maxAmount etc ...
-        entityType: 'Order' // ✅ Validates reuse for other lists
+        entityType: 'Order'
     };
 
     // Collect checked columns
     document.querySelectorAll('.col-check:checked').forEach(c => payload.columns.push(c.value));
 
-    // 5. Send Request (Use a hidden form POST to trigger download)
+    if (payload.columns.length === 0) {
+        Swal.fire('Warning', 'Please select at least one column to export!', 'warning');
+        return;
+    }
+
+    // Show loading indicator
+    Swal.fire({
+        title: 'Generating Export...',
+        text: 'Please wait while we prepare your file.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // 5. Send Request
     downloadFile('/Report/ExportData', payload);
 }
 
@@ -72,7 +85,7 @@ function downloadFile(url, payload) {
     var form = document.createElement("form");
     form.method = "POST";
     form.action = url;
-    form.target = "_blank"; // Open in new tab or download
+    form.target = "_blank";
 
     // Add JSON payload as a hidden field
     var input = document.createElement("input");
@@ -84,8 +97,20 @@ function downloadFile(url, payload) {
     form.submit();
     document.body.removeChild(form);
 
-    // Close modal
-    var modalEl = document.getElementById('exportModal');
-    var modal = bootstrap.Modal.getInstance(modalEl);
-    modal.hide();
+    // Close loading and modal after a short delay
+    setTimeout(() => {
+        Swal.close();
+        var modalEl = document.getElementById('exportModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        // Show success message
+        Swal.fire({
+            icon: 'success',
+            title: 'Export Started!',
+            text: 'Your file download should begin shortly.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }, 1000);
 }

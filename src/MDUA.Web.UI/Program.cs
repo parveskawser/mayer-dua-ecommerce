@@ -1,12 +1,10 @@
 ﻿using DotNetEnv;
+using Fido2NetLib;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
-using Fido2NetLib;
-
-
 using MDUA.Web.UI.Hubs;
 using MDUA.Web.UI.Services;
-
+using MDUA.Web.UI.Services.Interface;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
@@ -20,7 +18,7 @@ builder.Services.AddService();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-
+builder.Services.AddScoped<IExportService, ExportService>();
 // ✅ Add SignalR Service
 builder.Services.AddSignalR();
 
@@ -40,7 +38,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/LogIn";
+        // ✅ CHANGE THIS: Match the new [Route("login")] you added in the Controller
+        options.LoginPath = "/login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);

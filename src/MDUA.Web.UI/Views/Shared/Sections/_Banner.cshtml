@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment WebHostEnvironment
+@model Dictionary<string, string>
+
+@{
+    string imgUrl = Model.ContainsKey("ImageUrl") ? Model["ImageUrl"] : "";
+    string linkUrl = Model.ContainsKey("LinkUrl") ? Model["LinkUrl"] : "#";
+
+    bool isValidImage = false;
+
+    if (!string.IsNullOrEmpty(imgUrl))
+    {
+        if (imgUrl.Contains("http") || imgUrl.Contains("placehold.co"))
+        {
+            // Always trust external URLs
+            isValidImage = true;
+        }
+        else
+        {
+            // Verify local file exists to prevent 404 "Flash"
+            string physicalPath = System.IO.Path.Combine(WebHostEnvironment.WebRootPath, imgUrl.TrimStart('/', '\\'));
+            isValidImage = System.IO.File.Exists(physicalPath);
+        }
+    }
+}
+
+<div class="container mb-5">
+    <a href="@linkUrl" class="d-block shadow-sm rounded overflow-hidden text-decoration-none position-relative" target="_blank">
+
+        @if (isValidImage)
+        {
+            <img src="@imgUrl" alt="Promo" class="w-100" style="max-height: 400px; object-fit: cover;">
+        }
+        else
+        {
+            <div class="bg-light d-flex flex-column align-items-center justify-content-center text-muted border border-2 border-dashed"
+                 style="height: 250px;">
+                <i class="fas fa-image fa-3x mb-3 opacity-50"></i>
+                <span class="h5 mb-1 text-dark">Promo Banner Space</span>
+                @if (!string.IsNullOrEmpty(imgUrl))
+                {
+                    <span class="text-danger small">(Image file missing: @System.IO.Path.GetFileName(imgUrl))</span>
+                }
+                else
+                {
+                    <span class="small">Upload an image in settings</span>
+                }
+            </div>
+        }
+
+    </a>
+</div>

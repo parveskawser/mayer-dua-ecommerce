@@ -64,7 +64,7 @@ namespace MDUA.Web.UI.Services
                     result.EmailSent = emailResult.Success;
                     result.EmailMessage = emailResult.Message;
 
-                    // If email succeeded, we're done! No need for SMS
+                    // If email succeeded, THEN done! No need for SMS
                     if (emailResult.Success)
                     {
                         return result;
@@ -85,7 +85,7 @@ namespace MDUA.Web.UI.Services
             }
 
             // ===================================================================
-            // STRATEGY 2: Fallback to SMS (COSTS MONEY - Use Carefully)
+            // STRATEGY 2: Fallback to SMS 
             // ===================================================================
             if (!string.IsNullOrWhiteSpace(customerPhone))
             {
@@ -114,7 +114,7 @@ namespace MDUA.Web.UI.Services
 
             return result;
         }
-
+        //FALLBACK TO EMAIL HTML TEMPLATE
         private string GenerateOrderEmailHtml(
             string customerName,
             string orderNumber,
