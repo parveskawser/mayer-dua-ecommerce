@@ -4,6 +4,7 @@ using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
+using System.Text.Json; // ✅ Adds JsonSerializer support
 
 namespace MDUA.Facade
 {
@@ -109,6 +110,92 @@ namespace MDUA.Facade
             }
         }
 
+        // Ensure you have: using System.Text.Json;
+
+        public HomepageConfig GetHomepageConfig(int companyId)
+        {
+            // 1. Try to fetch from DB
+            // Assuming GetValue returns the string content from GlobalSetting
+            string json = _globalSettingDataAccess.GetValue(companyId, "Homepage_Layout");
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<HomepageConfig>(json);
+                }
+                catch
+                {
+                    // If JSON is corrupt, ignore it
+                }
+            }
+
+            // 2. Fallback: Return Default Layout (The "Clay" you built earlier)
+            var defaultLayout = new HomepageConfig();
+
+            // Default Hero
+            defaultLayout.Sections.Add(new HomepageSection
+            {
+                Type = "Hero",
+                Settings = new Dictionary<string, string>
+        {
+            { "Title", "Big Sale Is On!" },
+            { "Subtitle", "Explore our latest arrivals." },
+            { "BtnText", "Shop Now" }
+        }
+            });
+
+            // Default Product Grid
+            defaultLayout.Sections.Add(new HomepageSection
+            {
+                Type = "ProductGrid",
+                Settings = new Dictionary<string, string>
+        {
+            { "Title", "New Arrivals" },
+            { "Count", "8" }
+        }
+            });
+
+            return defaultLayout;
+        }
+
+        public void SaveHomepageConfig(int companyId, HomepageConfig config)
+        {
+            string json = JsonSerializer.Serialize(config);
+            // You likely need an InsertOrUpdate method in your DataAccess
+            _globalSettingDataAccess.SaveValue(companyId, "Homepage_Layout", json);
+        }
+
+        // Add inside CompanyFacade class
+
+        // ✅ Fix 1: Implement GetHomepageDraftConfig
+        public HomepageConfig GetHomepageDraftConfig(int companyId)
+        {
+            // 1. Try fetch from "Homepage_Draft" key
+            string json = _globalSettingDataAccess.GetValue(companyId, "Homepage_Draft");
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<HomepageConfig>(json);
+                }
+                catch
+                {
+                    // If draft is corrupt, fall back to LIVE config
+                }
+            }
+
+            // 2. Fallback: If no draft exists, return the LIVE config
+            return GetHomepageConfig(companyId);
+        }
+
+        // ✅ Fix 2: Implement SaveGlobalSetting
+        public void SaveGlobalSetting(int companyId, string key, string value)
+        {
+            // Simple wrapper around DataAccess to allow Controller to save "Homepage_Draft" or other keys
+            _globalSettingDataAccess.SaveValue(companyId, key, value);
+        }
         #endregion
     }
 }

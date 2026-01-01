@@ -1,5 +1,6 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
+using MDUA.Entities;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Authentication;
@@ -27,13 +28,14 @@ namespace MDUA.Web.UI.Controllers
         private readonly IFido2 _fido2;
         private readonly ICompanyFacade _companyFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IProductFacade _productFacade;
 
         public SettingsController(
             ISettingsFacade settingsFacade,
             IPaymentFacade paymentFacade,
             IUserLoginFacade userLoginFacade,
             IFido2 fido2,
-            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment // Injected
+            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment, IProductFacade productFacade
 
             )
         {
@@ -43,6 +45,7 @@ namespace MDUA.Web.UI.Controllers
             _fido2 = fido2;
             _companyFacade = companyFacade;
             _webHostEnvironment = webHostEnvironment;
+            _productFacade = productFacade;
         }
 
         [HttpGet]
@@ -219,7 +222,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
-[Route("Settings/MakeCredentialOptions")]
+        [Route("Settings/MakeCredentialOptions")]
         [ValidateAntiForgeryToken]
         public IActionResult MakeCredentialOptions()
         {
@@ -333,7 +336,7 @@ namespace MDUA.Web.UI.Controllers
         {
             public AuthenticatorAttestationRawResponse AttestationResponse { get; set; }
             public string FriendlyName { get; set; }
-            public string AuthenticatorAttachment { get; set; } 
+            public string AuthenticatorAttachment { get; set; }
 
         }
         private string ParseDeviceFromUserAgent(string ua)
@@ -345,7 +348,7 @@ namespace MDUA.Web.UI.Controllers
             if (ua.Contains("Linux")) return "Linux Device";
             return "Unknown Device";
         }
-       
+
 
         // ✅ 1. GET: Show Company Profile (Updated to fetch Favicon)
 
@@ -465,5 +468,108 @@ namespace MDUA.Web.UI.Controllers
 
         }
 
+
+        [HttpGet]
+        public IActionResult Homepage()
+        {
+            int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
+            var config = _companyFacade.GetHomepageConfig(companyId);
+
+            // ✅ FIX: Use .Select() to create a "Safe" list without circular references
+            var productData = _productFacade.GetAddProductData(0);
+
+            // Create a simple list of objects containing ONLY Id and Name
+            ViewBag.Categories = productData.Categories
+                .Select(c => new { Id = c.Id, Name = c.Name })
+                .ToList();
+
+            return View(config);
+        }
+
+        [HttpPost]
+        public IActionResult SaveHomepage([FromBody] HomepageConfig config)
+        {
+            try
+            {
+                // ✅ Fix: Use CurrentCompanyId here too
+                int companyId = CurrentCompanyId;
+                _companyFacade.SaveHomepageConfig(companyId, config);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult SaveDraft([FromBody] HomepageConfig config)
+        {
+            try
+            {
+                // Save to a DIFFERENT key (Homepage_Draft) so we don't break the live site
+                string json = System.Text.Json.JsonSerializer.Serialize(config);
+                _companyFacade.SaveGlobalSetting(CurrentCompanyId, "Homepage_Draft", json);
+                return Json(new { success = true });
+            }
+            catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
+        }
+
+        [HttpPost]
+        public IActionResult ResetToDefault()
+        {
+            try
+            {
+                // Implement DeleteSetting in your Facade/DataAccess
+                // Or just save an empty string/null to "Homepage_Layout"
+                _companyFacade.SaveGlobalSetting(CurrentCompanyId, "Homepage_Layout", "");
+                return Json(new { success = true });
+            }
+            catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
+        }
+
+
+        [HttpPost]
+        [Route("Settings/UploadBanner")]
+        public async Task<IActionResult> UploadBanner(IFormFile file, string previousUrl)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected" });
+
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "banners");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                // 1. DELETE OLD (Safe Check)
+                if (!string.IsNullOrEmpty(previousUrl)
+                    && !previousUrl.Contains("placehold.co")
+                    && previousUrl.StartsWith("/images/banners/"))
+                {
+                    try
+                    {
+                        string fileName = Path.GetFileName(previousUrl);
+                        string oldPath = Path.Combine(uploadsFolder, fileName);
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                    }
+                    catch { /* Ignore delete errors */ }
+                }
+
+                // 2. SAVE NEW
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                return Json(new { success = true, url = "/images/banners/" + uniqueFileName });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Server Error: " + ex.Message });
+            }
+        }
     }
 }

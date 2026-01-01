@@ -31,7 +31,7 @@ namespace MDUA.Web.UI.Hubs
                 SenderName = user,
                 MessageText = message,
                 IsFromAdmin = false,
-                SentAt = DateTime.Now
+                SentAt = DateTime.UtcNow
             };
             _chatFacade.SendMessage(chatMsg);
 
@@ -76,7 +76,7 @@ namespace MDUA.Web.UI.Hubs
                 SenderName = actualSenderName, // Saves "Inaya" to DB
                 MessageText = message,
                 IsFromAdmin = true,
-                SentAt = DateTime.Now
+                SentAt = DateTime.UtcNow
             };
 
             // 3. Save

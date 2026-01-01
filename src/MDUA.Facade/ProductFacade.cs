@@ -1154,7 +1154,8 @@ namespace MDUA.Facade
                     // Logic to get primary image or default
                     ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
                     // Logic to get base price or lowest variant price
-                    Price = p.BasePrice ?? 0
+                    Price = p.BasePrice ?? 0,
+                    Slug = p.Slug // <--- Add this line
                 };
                 model.NewArrivals.Add(vm);
             }
@@ -1163,6 +1164,66 @@ namespace MDUA.Facade
             model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
 
             return model;
+        }
+
+
+        public List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null)
+        {
+            List<Product> sourceList;
+
+            // 1. Determine Source (Search vs All)
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                // ✅ USE SEARCH LOGIC (Handles Variants & Name matches)
+                sourceList = SearchProducts(searchTerm).Where(p => p.CompanyId == companyId).ToList();
+
+                // ⚠️ SearchProducts returns raw entities. We must calculate Price/Discount manually here.
+                foreach (var p in sourceList)
+                {
+                    decimal basePrice = p.BasePrice ?? 0;
+                    var bestDiscount = GetBestDiscount(p.Id, basePrice);
+                    decimal sellingPrice = basePrice;
+
+                    if (bestDiscount != null)
+                    {
+                        if (bestDiscount.DiscountType == "Flat")
+                            sellingPrice -= bestDiscount.DiscountValue;
+                        else if (bestDiscount.DiscountType == "Percentage")
+                            sellingPrice -= (basePrice * (bestDiscount.DiscountValue / 100));
+                    }
+                    p.SellingPrice = Math.Max(sellingPrice, 0);
+                }
+            }
+            else
+            {
+                // ✅ USE DEFAULT LOGIC (Already includes Price Calculations)
+                sourceList = GetAllProductsWithCategory().Where(p => p.CompanyId == companyId).ToList();
+            }
+
+            // 2. Filter by Category (if clicked)
+            if (categoryId.HasValue)
+            {
+                sourceList = sourceList.Where(p => p.CategoryId == categoryId.Value).ToList();
+            }
+
+            // 3. Map to ViewModel
+            var list = new List<ProductViewModel>();
+            foreach (var p in sourceList)
+            {
+                string imgUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id);
+
+                list.Add(new ProductViewModel
+                {
+                    Id = p.Id,
+                    Name = p.ProductName,
+                    ImageUrl = !string.IsNullOrEmpty(imgUrl) ? imgUrl : "/images/default-book.png",
+                    // Use the calculated SellingPrice
+                    Price = p.SellingPrice > 0 ? p.SellingPrice : (p.BasePrice ?? 0),
+                    Slug = p.Slug
+                });
+            }
+
+            return list;
         }
     }
 }

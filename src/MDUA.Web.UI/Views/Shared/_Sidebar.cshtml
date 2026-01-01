@@ -117,12 +117,12 @@
                 <ul class="nav flex-column ms-3 mt-1">
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm" href="/Vendor/Index">
-                            <i class="fas fa-list me-2"></i> Vendors List
+                            Vendors List
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm" href="/Vendor/Add">
-                            <i class="fas fa-plus me-2"></i> Add Vendor
+                             Add Vendor
                         </a>
                     </li>
                 </ul>
@@ -199,6 +199,12 @@
             </a>
             <div class="collapse @(isSettingsPage ? "show" : "")" id="settingsMenu">
                 <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "Homepage" ? "active" : "")"
+                           href="@Url.Action("Homepage", "Settings")">
+                            <span class="me-2"></span>Homepage Layout
+                        </a>
+                    </li>
                     @* ✅ NEW ITEM HERE *@
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm @(currentAction == "CompanyProfile" ? "active" : "")"

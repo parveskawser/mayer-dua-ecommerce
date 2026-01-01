@@ -1,0 +1,260 @@
+﻿@model MDUA.Entities.HomepageConfig
+@{
+    ViewData["Title"] = "Homepage Layout";
+    Layout = "_AdminLayout"; // Or "_AdminLayout" if you separated them
+
+    // ✅ This forces the Sidebar to recognize we are on the "Settings" > "Homepage" page
+    ViewContext.RouteData.Values["Controller"] = "Settings";
+    ViewContext.RouteData.Values["Action"] = "Homepage";
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Homepage Layout</h3>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning" onclick="resetDefault()">
+                <i class="fas fa-undo"></i> Reset to Default
+            </button>
+            <button class="btn btn-info text-white" onclick="previewLayout()">
+                <i class="fas fa-eye"></i> Preview
+            </button>
+            <button class="btn btn-primary" onclick="saveConfig()">
+                <i class="fas fa-save"></i> Publish Changes
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light fw-bold">Add Section</div>
+                <div class="card-body d-grid gap-2">
+                    <button class="btn btn-outline-dark text-start" onclick="addSection('Hero')">
+                        <i class="fas fa-image me-2"></i> Hero Banner
+                    </button>
+                    <button class="btn btn-outline-dark text-start" onclick="addSection('ProductGrid')">
+                        <i class="fas fa-th me-2"></i> Product Grid
+                    </button>
+                    <button class="btn btn-outline-dark text-start" onclick="addSection('Banner')">
+                        <i class="fas fa-ad me-2"></i> Promo Banner
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div id="sections-container">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let sections = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Sections));
+        let categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Categories));
+
+        function render() {
+            const container = document.getElementById('sections-container');
+            container.innerHTML = '';
+
+            sections.forEach((section, index) => {
+                let settingsHtml = generateSettingsForm(section, index);
+
+                        let html = `
+                    <div class="card mb-3 border-start border-4 border-primary shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-uppercase small text-muted">${section.Type}</span>
+                            <div>
+                                <button class="btn btn-sm btn-light border" onclick="moveSection(${index}, -1)">↑</button>
+                                <button class="btn btn-sm btn-light border" onclick="moveSection(${index}, 1)">↓</button>
+                                <button class="btn btn-sm btn-danger ms-2" onclick="deleteSection(${index})">×</button>
+                            </div>
+                        </div>
+                        <div class="card-body">${settingsHtml}</div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+        function generateSettingsForm(section, index) {
+            let html = '<div class="row g-2">';
+
+            if (section.Type === 'Hero') {
+                let s = section.Settings || {};
+
+                // ✅ 2. FIX: Force defaults if values are missing OR empty strings
+                // Using || ensures that if s['Title'] is "" (empty), it reverts to default.
+                // If you WANT to allow empty strings, change || to ??
+                let title = s['Title'] || 'New Sale';
+                let sub   = s['Subtitle'] || 'Shop Now';
+                let btn   = s['BtnText'] || 'View Offers';
+                let link  = s['BtnLink'] || '/all-products';
+
+                html += createInput(index, 'Title', title, 'Main Headline', 6);
+                html += createInput(index, 'Subtitle', sub, 'Sub Text', 6);
+                html += createInput(index, 'BtnText', btn, 'Button Text', 4);
+                html += createInput(index, 'BtnLink', link, 'Button Link', 8);
+            }
+            else if (section.Type === 'ProductGrid') {
+                let s = section.Settings || {};
+                // ... Keep your existing ProductGrid logic ...
+                // But make sure to reference 'categories' which we fixed at the top
+                 html += createInput(index, 'Title', s['Title'] || 'Featured Products', 'Section Title', 6);
+                 html += createInput(index, 'Count', s['Count'] || '4', 'Count', 2, 'number');
+
+                 let selectedCat = s['CategoryId'] || '';
+                 let options = `<option value="">-- All Products --</option>`;
+                 // Ensure categories exists before looping
+                 if(categories) {
+                     categories.forEach(c => {
+                         options += `<option value="${c.Id}" ${c.Id == selectedCat ? 'selected' : ''}>${c.Name}</option>`;
+                     });
+                 }
+                 html += `<div class="col-md-4"><label class="form-label small text-muted mb-1">Source Category</label>
+                          <select class="form-select form-select-sm" onchange="updateSetting(${index}, 'CategoryId', this.value)">${options}</select></div>`;
+            }
+            else if (section.Type === 'Banner') {
+                 // ✅ NEW: File Upload Logic
+                 let currentImg = section.Settings['ImageUrl'] || '';
+                html += `<div class="col-md-8">
+                            <label class="form-label small text-muted mb-1">Banner Image</label>
+                            <div class="input-group input-group-sm">
+                                <input type="file" class="form-control" onchange="uploadBanner(this, ${index})">
+                                ${currentImg ? `<span class="input-group-text text-success"><i class="fas fa-check"></i></span>` : ''}
+                            </div>
+                        </div>`;
+                html += createInput(index, 'LinkUrl', section.Settings['LinkUrl'] || '#', 'Click Link', 4);
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+                function createInput(index, key, value, label, colSize = 12, type = 'text') {
+             let safeValue = value === undefined || value === null ? '' : value;
+             safeValue = safeValue.toString().replace(/"/g, '&quot;');
+             return `<div class="col-md-${colSize}">
+                        <label class="form-label small text-muted mb-1">${label}</label>
+                        <input type="${type}" class="form-control form-control-sm" value="${safeValue}" oninput="updateSetting(${index}, '${key}', this.value)">
+                     </div>`;
+        }
+
+        // ✅ NEW: Upload Function
+        function uploadBanner(input, index) {
+                let file = input.files[0];
+                if(!file) return;
+
+                // Get Previous URL to delete
+                let oldUrl = sections[index].Settings['ImageUrl'] || "";
+
+                let formData = new FormData();
+                formData.append("file", file);
+                formData.append("previousUrl", oldUrl); // Send old URL
+
+                // Show Loading State (Optional UI touch)
+                let parent = input.closest('.col-md-8');
+                let loader = document.createElement('div');
+                loader.className = 'text-primary small mt-1';
+                loader.innerText = 'Uploading...';
+                parent.appendChild(loader);
+
+                fetch('/Settings/UploadBanner', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        // Update settings
+                        updateSetting(index, 'ImageUrl', data.url);
+                        render(); // Re-render to show new image
+                    } else {
+                        alert('Upload failed: ' + data.message);
+                        loader.remove(); // Remove loader on error
+                    }
+                });
+            }                function addSection(type) {
+            // ✅ FIX: Create a NEW object with Defaults so it's not empty/null
+            let newSection = {
+                Id: crypto.randomUUID(),
+                Type: type,
+                Settings: {}
+            };
+
+            // Set sensible defaults immediately
+            if(type === 'ProductGrid') {
+                newSection.Settings = { "Title": "New Collection", "Count": "4", "CategoryId": "" };
+            } else if (type === 'Hero') {
+                newSection.Settings = { "Title": "New Sale", "Subtitle": "Shop Now", "BtnText": "View", "BtnLink": "/all-products" };
+            }
+
+            sections.push(newSection);
+            render();
+
+            // Scroll to bottom
+            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
+        }
+                function deleteSection(index) { sections.splice(index, 1); render(); }
+                function moveSection(index, dir) {
+                    let newIndex = index + dir;
+                    if (newIndex >= 0 && newIndex < sections.length) {
+                        [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
+                        render();
+                    }
+                }
+                function updateSetting(index, key, value) {
+                    sections[index].Settings[key] = value;
+                }
+                function saveConfig() {
+                    fetch('/Settings/SaveHomepage', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Sections: sections })
+                    }).then(r => r.json()).then(d => {
+                        if(d.success) alert('Saved!'); else alert('Error!');
+                    });
+                }
+
+        function moveSection(index, direction) {
+            let newIndex = index + direction;
+            if (newIndex >= 0 && newIndex < sections.length) {
+                [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
+                render();
+            }
+        }
+               
+        function previewLayout() {
+            // 1. Save to Draft
+            fetch('/Settings/SaveDraft', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Sections: sections })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    // 2. Open Homepage in Preview Mode
+                    window.open('/?preview=true', '_blank');
+                } else {
+                    alert('Error creating preview');
+                }
+            });
+        }
+
+        function resetDefault() {
+            if(confirm("Are you sure? This will delete all custom layout settings and revert to the original design.")) {
+                fetch('/Settings/ResetToDefault', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        location.reload(); // Reload page to see defaults
+                    } else {
+                        alert('Error resetting layout');
+                    }
+                });
+            }
+        }
+        // Initialize
+        render();
+    </script>
+}

@@ -700,7 +700,7 @@ namespace MDUA.Facade
 
             return dbStatus;
         }        // ==========================================================================
-     
+
 
         public void UpdateDeliveryStatus(int deliveryId, string newStatus)
         {
@@ -768,7 +768,8 @@ namespace MDUA.Facade
                 }
             }
         }
-        public void UpdateOrderStatus(int orderId, string newStatus)
+
+               public void UpdateOrderStatus(int orderId, string newStatus)
 
         {
 
@@ -901,6 +902,13 @@ namespace MDUA.Facade
 
         // Inside MDUA.Facade/OrderFacade.cs
 
+        // Implement the method
+        public SalesOrderHeader GetOrderById(int id)
+        {
+          
+
+            return _salesOrderHeaderDataAccess.Get(id);
+        }
         public List<Dictionary<string, object>> GetExportData(MDUA.Entities.ExportRequest request)
         {
             var sb = new System.Text.StringBuilder("1=1");

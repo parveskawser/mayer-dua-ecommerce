@@ -16,12 +16,15 @@ namespace MDUA.Web.UI.Controllers
         private readonly IUserLoginFacade _userLoginFacade;
         private readonly IPaymentFacade _paymentFacade; // <--- ADD THIS
         private readonly ISettingsFacade _settingsFacade;
-        public OrderController(IOrderFacade orderFacade, IUserLoginFacade userLoginFacade, IPaymentFacade paymentFacade, ISettingsFacade settingsFacade)
+        private readonly IDeliveryStatusLogFacade _logFacade;
+        public OrderController(IOrderFacade orderFacade, IUserLoginFacade userLoginFacade, IPaymentFacade paymentFacade, ISettingsFacade settingsFacade, IDeliveryStatusLogFacade logFacade)
         {
             _orderFacade = orderFacade;
             _userLoginFacade = userLoginFacade;
             _paymentFacade = paymentFacade;
             _settingsFacade = settingsFacade;
+            _logFacade = logFacade;
+
         }
 
 
@@ -429,11 +432,7 @@ namespace MDUA.Web.UI.Controllers
                 // B. Filter by Payment
                 if (!string.IsNullOrEmpty(payStatus) && payStatus != "all")
                 {
-                    // Note: These usually rely on calculated fields or specific logic. 
-                    // If your DataAccess logic for lists calculates these on the fly, 
-                    // you might need to use the specific logic from your OrderFacade export method here too.
-                    // For now, assuming you handle this logic inside the DataAccess if passed as a string, 
-                    // OR we define the raw SQL here:
+               
 
                     if (payStatus == "Paid")
                         whereBuilder.Append(" AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) <= 0");
@@ -459,7 +458,7 @@ namespace MDUA.Web.UI.Controllers
                 // D. Filter by Date Range
                 if (!string.IsNullOrEmpty(dateRange) && dateRange != "all")
                 {
-                    DateTime today = DateTime.Today;
+                    DateTime today = DateTime.UtcNow.Date;
                     DateTime? start = null;
                     DateTime? end = null;
 
@@ -606,11 +605,27 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // ✅ Get Logged-in Username
+                // Get Old State
+                var order = _orderFacade.GetOrderById(id);
+                bool oldConfirmed = order?.Confirmed ?? !isConfirmed; // Fallback
+
                 string username = User.Identity.Name ?? "Unknown_User";
 
-                // ✅ Pass it to the Facade
+                // Perform Update
                 string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed, username);
+
+                // LOG CONFIRMATION CHANGE
+                if (oldConfirmed != isConfirmed)
+                {
+                    _logFacade.LogStatusChange(
+                        entityId: id,
+                        entityType: "SalesOrderHeader",
+                        oldStatus: oldConfirmed ? "Confirmed" : "Unconfirmed", // Conceptual status
+                        newStatus: isConfirmed ? "Confirmed" : "Unconfirmed",
+                        changedBy: username,
+                        reason: isConfirmed ? "Order Confirmed Manually" : "Order Unconfirmed Manually"
+                    );
+                }
 
                 return Json(new { success = true, newStatus = newStatus });
             }
@@ -656,49 +671,44 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
-
         [Route("SalesOrder/UpdateStatus")]
-
         public IActionResult UpdateStatus(int id, string status)
-
         {
-
             try
-
             {
-
                 // 1. Validate Status
-
                 var allowedStatuses = new[] { "Draft", "Confirmed", "Shipped", "Delivered", "Cancelled", "Returned" };
-
                 if (!allowedStatuses.Contains(status))
-
                 {
-
                     return Json(new { success = false, message = "Invalid Status" });
-
                 }
 
-                // 2. Call Facade to update DB
+                // 2. Get Old Status for Logging
+                var order = _orderFacade.GetOrderById(id);
+                string oldStatus = order?.Status ?? "Unknown";
 
-
-                // if UpdateOrderConfirmation is too specific.
-
-
+                // 3. Call Facade to update DB
                 _orderFacade.UpdateOrderStatus(id, status);
 
+                // 4. INSERT LOG (Only if status changed)
+                if (oldStatus != status)
+                {
+                    _logFacade.LogStatusChange(
+                        entityId: id,
+                        entityType: "SalesOrderHeader",
+                        oldStatus: oldStatus,
+                        newStatus: status,
+                        changedBy: User.Identity.Name ?? "Admin",
+                        reason: "Manual Status Update from Order List"
+                    );
+                }
+
                 return Json(new { success = true });
-
             }
-
             catch (Exception ex)
-
             {
-
                 return Json(new { success = false, message = ex.Message });
-
             }
-
         }
 
 
@@ -808,9 +818,9 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                model.PaymentDate = DateTime.Now;
+                model.PaymentDate = DateTime.UtcNow;
                 model.CreatedBy = User.Identity?.Name ?? "Admin";
-                model.CreatedAt = DateTime.Now;
+                model.CreatedAt = DateTime.UtcNow;
                 model.Status = "Completed";
 
                 // ✅ CHANGE: Pass the DeliveryCharge to the Facade

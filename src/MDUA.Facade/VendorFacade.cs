@@ -31,7 +31,7 @@ namespace MDUA.Facade
 
         public long Update(Vendor vendor)
         {
-            vendor.UpdatedAt = DateTime.Now;
+            vendor.UpdatedAt = DateTime.UtcNow;
             return _vendorDataAccess.Update(vendor);
         }
 

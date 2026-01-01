@@ -43,7 +43,42 @@
                     }
                 }
             }
+            function openHistoryModal(orderId) {
+    // 1. Show Modal immediately
+    const modalEl = document.getElementById('historyModal');
+    const modalBody = document.getElementById('historyModalBody');
+    const bsModal = new bootstrap.Modal(modalEl);
+    
+    bsModal.show();
 
+    // 2. Reset to loading state
+    modalBody.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 small text-muted">Loading history for Order #${orderId}...</div>
+        </div>
+    `;
+
+    // 3. Fetch Data
+    fetch(`/report/order-history-partial?orderId=${orderId}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to load history");
+            return response.text();
+        })
+        .then(html => {
+            // 4. Inject HTML
+            modalBody.innerHTML = html;
+        })
+        .catch(err => {
+            modalBody.innerHTML = `
+                <div class="text-center py-4 text-danger">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                    <p>Error loading history.</p>
+                </div>
+            `;
+            console.error(err);
+        });
+}
             // --- Fill Data ---
             setText('m-id', button.getAttribute('data-id'));
             setText('m-status', button.getAttribute('data-status'));
@@ -111,6 +146,42 @@
         });
     }
 });
+function openHistoryModal(orderId) {
+    // 1. Show Modal immediately
+    const modalEl = document.getElementById('historyModal');
+    const modalBody = document.getElementById('historyModalBody');
+    const bsModal = new bootstrap.Modal(modalEl);
+
+    bsModal.show();
+
+    // 2. Reset to loading state
+    modalBody.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 small text-muted">Loading history for Order #${orderId}...</div>
+        </div>
+    `;
+
+    // 3. Fetch Data
+    fetch(`/report/order-history-partial?orderId=${orderId}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to load history");
+            return response.text();
+        })
+        .then(html => {
+            // 4. Inject HTML
+            modalBody.innerHTML = html;
+        })
+        .catch(err => {
+            modalBody.innerHTML = `
+                <div class="text-center py-4 text-danger">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                    <p>Error loading history.</p>
+                </div>
+            `;
+            console.error(err);
+        });
+}
 function formatUtcToLocal(utcString) {
     if (!utcString) return 'N/A';
 

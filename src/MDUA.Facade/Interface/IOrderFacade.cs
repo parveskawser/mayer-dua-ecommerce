@@ -30,7 +30,7 @@ namespace MDUA.Facade.Interface
         void UpdateDeliveryStatus(int deliveryId, string newStatus);
         SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, out int totalRows);
         void UpdateOrderStatus(int orderId, string newStatus);
-
+        SalesOrderHeader GetOrderById(int id);
         int GetOrderPageNumber(int orderId, int pageSize);
         List<Dictionary<string, object>> GetExportData(ExportRequest request);
     }

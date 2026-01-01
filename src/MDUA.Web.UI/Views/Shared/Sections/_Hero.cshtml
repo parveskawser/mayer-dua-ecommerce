@@ -1,0 +1,25 @@
+﻿@model Dictionary<string, string>
+@{
+    string title = Model.ContainsKey("title") ? Model["title"] : "Big Sale Is On!";
+    string subtitle = Model.ContainsKey("subtitle") ? Model["subtitle"] : "Explore our latest arrivals.";
+    string btnText = Model.ContainsKey("btnText") ? Model["btnText"] : "Shop Now";
+    string btnLink = Model.ContainsKey("btnLink") ? Model["btnLink"] : "/all-products";
+}
+
+<div class="container mb-5">
+    <div class="carousel slide shadow-sm rounded-3 overflow-hidden">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="hero-banner" style="background: linear-gradient(45deg, #f3f3f3, #fff); height: 350px; display: flex; align-items: center; justify-content: center;">
+                    <div class="text-center position-relative z-1">
+                        <h2 class="fw-bold mb-2 text-dark">@title</h2>
+                        <p class="text-muted mb-4">@subtitle</p>
+                        <a href="@btnLink" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">
+                            @btnText <i class="fas fa-arrow-right ms-2 small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

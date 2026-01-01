@@ -37,7 +37,7 @@ namespace MDUA.DataAccess
             // We update SKU in ProductVariant and Price in BOTH tables
             string SQLQuery = @"
         UPDATE ProductVariant 
-        SET VariantPrice = @Price, SKU = @SKU, UpdatedAt = GETDATE() 
+        SET VariantPrice = @Price, SKU = @SKU, UpdatedAt = GETUTCDATE() 
         WHERE Id = @Id;
 
         UPDATE VariantPriceStock 

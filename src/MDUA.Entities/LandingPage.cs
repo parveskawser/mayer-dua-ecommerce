@@ -30,5 +30,6 @@ namespace MDUA.Entities
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public string Author { get; set; }
+        public string Slug { get; set; }
     }
 }

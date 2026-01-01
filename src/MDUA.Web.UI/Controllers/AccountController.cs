@@ -22,6 +22,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Route("login")] // <--- ADD THIS
         public IActionResult LogIn()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -32,6 +33,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
+        [Route("login")] // ✅ Matches POST /login (You must add this!)
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogIn(string username, string password, bool rememberMe, string returnUrl = null)
         {

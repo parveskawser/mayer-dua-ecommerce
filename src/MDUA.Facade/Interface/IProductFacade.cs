@@ -63,7 +63,7 @@ namespace MDUA.Facade.Interface
         long DeleteProductVideo(int videoId);
         void SetPrimaryProductVideo(int videoId, int productId, string username);
         List<LowStockItem> GetLowStockVariants(int topN);
-
+        List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null);
         LandingPageViewModel GetHomepageData();
     }
 }
