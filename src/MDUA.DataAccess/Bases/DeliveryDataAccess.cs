@@ -1,19 +1,20 @@
-﻿using MDUA.DataAccess.Interface;
-using MDUA.Entities;
-using MDUA.Entities.Bases;
-using MDUA.Entities.List;
+﻿using System;
+using System.Data;
+using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+
 using MDUA.Framework;
 using MDUA.Framework.DataAccess;
 using MDUA.Framework.Exceptions;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Data;
-using System.Data.SqlClient;
+using MDUA.Entities;
+using MDUA.Entities.Bases;
+using MDUA.Entities.List;
+using MDUA.DataAccess.Interface;
 
 namespace MDUA.DataAccess
 {
-    public partial class DeliveryDataAccess : BaseDataAccess, IDeliveryDataAccess
-    {
+	public partial class DeliveryDataAccess : BaseDataAccess, IDeliveryDataAccess
+	{
 		#region Constants
 		private const string INSERTDELIVERY = "InsertDelivery";
 		private const string UPDATEDELIVERY = "UpdateDelivery";
@@ -43,13 +44,9 @@ namespace MDUA.DataAccess
 		private void AddCommonParams(SqlCommand cmd, DeliveryBase deliveryObject)
 		{	
 			AddParameter(cmd, pInt32(DeliveryBase.Property_SalesOrderId, deliveryObject.SalesOrderId));
+			AddParameter(cmd, pDateTime(DeliveryBase.Property_DeliveryDate, deliveryObject.DeliveryDate));
 			AddParameter(cmd, pNVarChar(DeliveryBase.Property_TrackingNumber, 100, deliveryObject.TrackingNumber));
-			AddParameter(cmd, pNVarChar(DeliveryBase.Property_CarrierName, 100, deliveryObject.CarrierName));
-			AddParameter(cmd, pDateTime(DeliveryBase.Property_ShipDate, deliveryObject.ShipDate));
-			AddParameter(cmd, pDateTime(DeliveryBase.Property_EstimatedArrival, deliveryObject.EstimatedArrival));
-			AddParameter(cmd, pDateTime(DeliveryBase.Property_ActualDeliveryDate, deliveryObject.ActualDeliveryDate));
 			AddParameter(cmd, pNVarChar(DeliveryBase.Property_Status, 50, deliveryObject.Status));
-			AddParameter(cmd, pDecimal(DeliveryBase.Property_ShippingCost, 9, deliveryObject.ShippingCost));
 			AddParameter(cmd, pNVarChar(DeliveryBase.Property_CreatedBy, 100, deliveryObject.CreatedBy));
 			AddParameter(cmd, pDateTime(DeliveryBase.Property_CreatedAt, deliveryObject.CreatedAt));
 			AddParameter(cmd, pNVarChar(DeliveryBase.Property_UpdatedBy, 100, deliveryObject.UpdatedBy));
@@ -272,18 +269,14 @@ namespace MDUA.DataAccess
 			
 				deliveryObject.Id = reader.GetInt32( start + 0 );			
 				deliveryObject.SalesOrderId = reader.GetInt32( start + 1 );			
-				if(!reader.IsDBNull(2)) deliveryObject.TrackingNumber = reader.GetString( start + 2 );			
-				if(!reader.IsDBNull(3)) deliveryObject.CarrierName = reader.GetString( start + 3 );			
-				if(!reader.IsDBNull(4)) deliveryObject.ShipDate = reader.GetDateTime( start + 4 );			
-				if(!reader.IsDBNull(5)) deliveryObject.EstimatedArrival = reader.GetDateTime( start + 5 );			
-				if(!reader.IsDBNull(6)) deliveryObject.ActualDeliveryDate = reader.GetDateTime( start + 6 );			
-				deliveryObject.Status = reader.GetString( start + 7 );			
-				if(!reader.IsDBNull(8)) deliveryObject.ShippingCost = reader.GetDecimal( start + 8 );			
-				if(!reader.IsDBNull(9)) deliveryObject.CreatedBy = reader.GetString( start + 9 );			
-				deliveryObject.CreatedAt = reader.GetDateTime( start + 10 );			
-				if(!reader.IsDBNull(11)) deliveryObject.UpdatedBy = reader.GetString( start + 11 );			
-				if(!reader.IsDBNull(12)) deliveryObject.UpdatedAt = reader.GetDateTime( start + 12 );			
-			FillBaseObject(deliveryObject, reader, (start + 13));
+				deliveryObject.DeliveryDate = reader.GetDateTime( start + 2 );			
+				if(!reader.IsDBNull(3)) deliveryObject.TrackingNumber = reader.GetString( start + 3 );			
+				deliveryObject.Status = reader.GetString( start + 4 );			
+				deliveryObject.CreatedBy = reader.GetString( start + 5 );			
+				deliveryObject.CreatedAt = reader.GetDateTime( start + 6 );			
+				if(!reader.IsDBNull(7)) deliveryObject.UpdatedBy = reader.GetString( start + 7 );			
+				if(!reader.IsDBNull(8)) deliveryObject.UpdatedAt = reader.GetDateTime( start + 8 );			
+			FillBaseObject(deliveryObject, reader, (start + 9));
 
 			
 			deliveryObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

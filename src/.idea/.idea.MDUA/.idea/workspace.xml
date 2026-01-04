@@ -7,16 +7,118 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="718b7183-cf7b-4708-bada-cf4a8374ede9" name="Changes" comment="">
+    <list default="true" id="52e80f97-ae56-4c1f-9aa1-06081eb0e6a1" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/../../Voot-master/src/MDUA.Web.UI/Controllers/SalesOrderDetsilsController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AccountType_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/AccountType_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Account_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Account_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Address_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Address_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeName_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeName_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeValue_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/AttributeValue_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/AuditLog_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/AuditLog_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/BulkPurchaseOrder_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/BulkPurchaseOrder_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ChatMessage_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ChatMessage_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ChatSession_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ChatSession_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyCustomer_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyCustomer_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyPaymentMethod_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyPaymentMethod_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyVendor_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/CompanyVendor_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Company_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Company_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/CustomerPayment_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/CustomerPayment_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Customer_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Customer_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/DeliveryItem_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/DeliveryItem_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Delivery_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Delivery_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/GlobalSetting_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/GlobalSetting_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/InventoryTransaction_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/InventoryTransaction_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntryDetail_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntryDetail_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntry_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/JournalEntry_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/LanguageResource_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/LanguageResource_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Language_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Language_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentAllocation_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentAllocation_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentMethod_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PaymentMethod_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroupMap_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroupMap_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroup_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PermissionGroup_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Permission_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Permission_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PoReceived_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PoReceived_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PoRequested_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PoRequested_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/PostalCodes_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/PostalCodes_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductAttribute_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductAttribute_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductCategory_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductCategory_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductDiscount_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductDiscount_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductImage_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductImage_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductReview_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductReview_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductVariant_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductVariant_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/ProductVideo_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/ProductVideo_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Product_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Product_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/RecruitmentEligible_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/RecruitmentEligible_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesChannel_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/SalesChannel_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderDetail_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderDetail_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderHeader_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/SalesOrderHeader_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/SalesReturn_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/SalesReturn_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserLogin_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/UserLogin_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserPermission_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/UserPermission_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/UserSession_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/UserSession_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantAttributeValue_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/VariantAttributeValue_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantImage_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/VariantImage_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VariantPriceStock_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/VariantPriceStock_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Variant_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Variant_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/VendorPayment_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/VendorPayment_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/StoreProcedures/Vendor_Procedures.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/StoreProcedures/Vendor_Procedures.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/Week-01/SPchanged_1.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/Week-01/SPchanged_1.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resource/Week-01/TableAdded_2.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../resource/Week-01/TableAdded_2.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MDUA/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/DeliveryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/EmailHistoryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/EmailHistoryDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/EmailTemplateDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/EmailTemplateDataAccess.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/PoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Bases/SalesOrderHeaderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/DeliveryDataAccess.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IPoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/IProductImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/Interface/ISalesOrderHeaderDataAccess.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/PoRequestedDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/PoRequestedDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/ProductImageDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/ProductImageDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderHeaderDataAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.DataAccess/SalesOrderHeaderDataAccess.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/Delivery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/Delivery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/DeliveryBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeaderBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/Bases/SalesOrderHeaderBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Entities/SalesOrderHeader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Entities/SalesOrderHeader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/DeliveryFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/DeliveryFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/DependencyInjection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/DependencyInjection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IDeliveryFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IDeliveryFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IEmailService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IEmailService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/INotificationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/INotificationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IOrderFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IOrderFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IProductFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IProductFacade.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.Facade/Interface/IVendorFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/Interface/IVendorFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/MDUA.Facade.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/MDUA.Facade.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/OrderFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/OrderFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Facade/ProductFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/ProductFacade.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.Facade/VendorFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Facade/VendorFacade.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Framework/Exceptions/WorkflowException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Framework/Exceptions/WorkflowException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/BaseController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/BaseController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/HomeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/HomeController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/OrderController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ProductController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ProductController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ReportController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ReportController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ShipmentController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/ShipmentController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/VendorController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Controllers/VendorController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Hubs/SupportHub.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Hubs/SupportHub.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Services/EmailService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Services/NotificationService .cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Services/NotificationService .cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Services/SmartGeminiChatService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Services/SmartGeminiChatService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Services/SmsService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Home/Index.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/Add.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/Add.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/AllOrders.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Order/AllOrders.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Report/DeliveryLogs.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Report/DeliveryLogs.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_Sidebar.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_Sidebar.cshtml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/Views/Vendor/Index.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/Views/Vendor/Index.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-actions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.js" beforeDir="false" afterPath="$PROJECT_DIR$/MDUA.Web.UI/wwwroot/js/order-details.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,34 +130,29 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "SamAkhtarul"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;SamAkhtarul&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/parveskawser/mayer-dua-ecommerce.git",
-    "accountId": "80bd17a7-5088-4e02-bc97-a317b3e9076f"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/parveskawser/mayer-dua-ecommerce.git&quot;,
+    &quot;accountId&quot;: &quot;80bd17a7-5088-4e02-bc97-a317b3e9076f&quot;
   }
-}]]></component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 2
-}]]></component>
-  <component name="ProjectId" id="37XzjnjucQhOVRp10slZQKVb94r" />
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="37dZOVkV35UYt6ozG3DCcAQ5aZ1" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
@@ -63,23 +160,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.MDUA.Web.UI: http.executor": "Run",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "full.screen.before.presentation.mode": "true",
-    "git-widget-placeholder": "akhtarul",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.MDUA.Web.UI: http.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;akhtarul&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.smartKeys_rider&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="MDUA.Web.UI: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/MDUA.Web.UI/MDUA.Web.UI.csproj" />
@@ -100,12 +197,15 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="718b7183-cf7b-4708-bada-cf4a8374ede9" name="Changes" comment="" />
-      <created>1767064344481</created>
+      <changelist id="52e80f97-ae56-4c1f-9aa1-06081eb0e6a1" name="Changes" comment="" />
+      <created>1767234880642</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1767064344481</updated>
-      <workItem from="1767064350171" duration="10816000" />
+      <updated>1767234880642</updated>
+      <workItem from="1767234884559" duration="13736000" />
+      <workItem from="1767250332048" duration="403000" />
+      <workItem from="1767250843019" duration="8109000" />
+      <workItem from="1767495526355" duration="5614000" />
     </task>
     <servers />
   </component>
@@ -133,22 +233,9 @@
           <option name="timeStamp" value="3" />
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Program.cs</url>
-          <line>82</line>
-          <properties documentPath="$PROJECT_DIR$/MDUA.Web.UI/Program.cs" containingFunctionPresentation="">
-            <startOffsets>
-              <option value="3200" />
-            </startOffsets>
-            <endOffsets>
-              <option value="3273" />
-            </endOffsets>
-          </properties>
+          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Views/Vendor/Index.cshtml</url>
+          <line>85</line>
           <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/MDUA.Web.UI/Views/Shared/_Sidebar.cshtml</url>
-          <line>83</line>
-          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -9,11 +9,12 @@ using MDUA.Framework.Exceptions;
 using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Entities.List;
+using MDUA.DataAccess.Interface;
 
 namespace MDUA.DataAccess
 {
-	public partial class EmailHistoryDataAccess : BaseDataAccess
-	{
+	public partial class EmailHistoryDataAccess : BaseDataAccess, IEmailHistoryDataAccess
+    {
 		#region Constants
 		private const string INSERTEMAILHISTORY = "InsertEmailHistory";
 		private const string UPDATEEMAILHISTORY = "UpdateEmailHistory";

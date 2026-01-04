@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertLanguageResource    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertLanguageResource    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertLanguageResource]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertLanguageResource]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateLanguageResource    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateLanguageResource    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateLanguageResource]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateLanguageResource]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteLanguageResource    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteLanguageResource    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteLanguageResource]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteLanguageResource]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllLanguageResource    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllLanguageResource    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllLanguageResource]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllLanguageResource]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageResourceById    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageResourceById    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllLanguageResourceByCompanyId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllLanguageResourceByCompanyId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceByCompanyId]
 GO
@@ -217,7 +217,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllLanguageResourceByLanguageId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllLanguageResourceByLanguageId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceByLanguageId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceByLanguageId]
 GO
@@ -238,7 +238,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageResourceMaximumId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageResourceMaximumId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceMaximumId]
 GO
@@ -267,7 +267,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageResourceRowCount    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageResourceRowCount    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceRowCount]
 GO
@@ -286,7 +286,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedLanguageResource    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedLanguageResource    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedLanguageResource]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedLanguageResource]
 GO
@@ -382,7 +382,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetLanguageResourceByQuery    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetLanguageResourceByQuery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetLanguageResourceByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetLanguageResourceByQuery]
 GO

@@ -12,8 +12,8 @@ using MDUA.Entities.List;
 
 namespace MDUA.DataAccess
 {
-	public partial class EmailTemplateDataAccess : BaseDataAccess
-	{
+	public partial class EmailTemplateDataAccess : BaseDataAccess , Interface.IEmailTemplateDataAccess
+    {
 		#region Constants
 		private const string INSERTEMAILTEMPLATE = "InsertEmailTemplate";
 		private const string UPDATEEMAILTEMPLATE = "UpdateEmailTemplate";

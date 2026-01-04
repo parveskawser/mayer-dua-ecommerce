@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertJournalEntryDetail    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertJournalEntryDetail    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertJournalEntryDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertJournalEntryDetail]
 GO
@@ -80,7 +80,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateJournalEntryDetail    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateJournalEntryDetail    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateJournalEntryDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateJournalEntryDetail]
 GO
@@ -132,7 +132,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteJournalEntryDetail    Script Date: 12/29/2025 1:59:58 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteJournalEntryDetail    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteJournalEntryDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteJournalEntryDetail]
 GO
@@ -163,7 +163,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetail    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetail    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllJournalEntryDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllJournalEntryDetail]
 GO
@@ -180,7 +180,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailById    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailById    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailById]
 GO
@@ -201,7 +201,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetailByJournalEntryId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetailByJournalEntryId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailByJournalEntryId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailByJournalEntryId]
 GO
@@ -222,7 +222,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetailByAccountId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllJournalEntryDetailByAccountId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailByAccountId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailByAccountId]
 GO
@@ -243,7 +243,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailMaximumId    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailMaximumId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailMaximumId]
 GO
@@ -272,7 +272,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailRowCount    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailRowCount    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailRowCount]
 GO
@@ -291,7 +291,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedJournalEntryDetail    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedJournalEntryDetail    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedJournalEntryDetail]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedJournalEntryDetail]
 GO
@@ -389,7 +389,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailByQuery    Script Date: 12/29/2025 1:59:58 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetJournalEntryDetailByQuery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetJournalEntryDetailByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetJournalEntryDetailByQuery]
 GO

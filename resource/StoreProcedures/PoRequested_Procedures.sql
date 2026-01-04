@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPoRequested    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPoRequested    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPoRequested]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPoRequested]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePoRequested    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePoRequested    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePoRequested]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePoRequested]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePoRequested    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePoRequested    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePoRequested]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePoRequested]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoRequested    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoRequested    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPoRequested]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPoRequested]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoRequestedById    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoRequestedById    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByVendorId    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByVendorId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedByVendorId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedByVendorId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByProductVariantId    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByProductVariantId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedByProductVariantId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedByProductVariantId]
 GO
@@ -248,7 +248,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByBulkPurchaseOrderId    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoRequestedByBulkPurchaseOrderId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedByBulkPurchaseOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedByBulkPurchaseOrderId]
 GO
@@ -269,7 +269,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoRequestedMaximumId    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoRequestedMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedMaximumId]
 GO
@@ -298,7 +298,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoRequestedRowCount    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoRequestedRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedRowCount]
 GO
@@ -317,7 +317,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPoRequested    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPoRequested    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPoRequested]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPoRequested]
 GO
@@ -417,7 +417,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoRequestedByQuery    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoRequestedByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoRequestedByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoRequestedByQuery]
 GO

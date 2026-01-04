@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertChatSession    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertChatSession    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertChatSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertChatSession]
 GO
@@ -68,7 +68,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateChatSession    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateChatSession    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateChatSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateChatSession]
 GO
@@ -112,7 +112,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteChatSession    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteChatSession    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteChatSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteChatSession]
 GO
@@ -143,7 +143,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllChatSession    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllChatSession    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllChatSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllChatSession]
 GO
@@ -160,7 +160,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetChatSessionById    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetChatSessionById    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetChatSessionById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetChatSessionById]
 GO
@@ -181,7 +181,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllChatSessionByUserLoginId    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllChatSessionByUserLoginId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetChatSessionByUserLoginId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetChatSessionByUserLoginId]
 GO
@@ -202,7 +202,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetChatSessionMaximumId    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetChatSessionMaximumId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetChatSessionMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetChatSessionMaximumId]
 GO
@@ -231,7 +231,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetChatSessionRowCount    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetChatSessionRowCount    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetChatSessionRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetChatSessionRowCount]
 GO
@@ -250,7 +250,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedChatSession    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedChatSession    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedChatSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedChatSession]
 GO
@@ -340,7 +340,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetChatSessionByQuery    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetChatSessionByQuery    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetChatSessionByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetChatSessionByQuery]
 GO

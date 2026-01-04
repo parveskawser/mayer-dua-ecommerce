@@ -12,5 +12,6 @@ namespace MDUA.DataAccess.Interface
         /// <param name="productId">The product ID.</param>
         /// <returns>List of ProductImage.</returns>
         ProductImageList GetByProductId(int productId);
+        string GetPrimaryImage(int productId); // ✅ Add this
     }
 }

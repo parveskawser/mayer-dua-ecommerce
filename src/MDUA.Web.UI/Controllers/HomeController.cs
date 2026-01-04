@@ -1,6 +1,7 @@
 ﻿using MDUA.Entities;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
+using MDUA.Web.UI.Models;
 using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,11 +26,26 @@ namespace MDUA.Web.UI.Controllers
 
         public IActionResult Index()
         {
-            if (IsLoggedIn) return RedirectToAction("Dashboard");
+            // 1. Fetch Data for the Homepage
+            // We wrap this in try-catch so the homepage never crashes, even if DB is empty
+            LandingPageViewModel model = new LandingPageViewModel();
 
-            return RedirectToAction("LogIn", "Account");
+            try
+            {
+                model = _productFacade.GetHomepageData();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading homepage data");
+                // Model remains empty, showing a blank but working page
+            }
+
+            // 2. Pass Auth State (To toggle Login vs Dashboard button)
+            model.IsUserLoggedIn = User.Identity.IsAuthenticated;
+            model.UserName = User.Identity.Name;
+
+            return View(model);
         }
-
 
         [Route("dashboard")]
         //change

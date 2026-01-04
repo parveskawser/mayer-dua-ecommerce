@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductVideo    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductVideo    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductVideo]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductVideo]
 GO
@@ -77,7 +77,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductVideo    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductVideo    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductVideo]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductVideo]
 GO
@@ -127,7 +127,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductVideo    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductVideo    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductVideo]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductVideo]
 GO
@@ -158,7 +158,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductVideo    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductVideo    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductVideo]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductVideo]
 GO
@@ -175,7 +175,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVideoById    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVideoById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVideoById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVideoById]
 GO
@@ -196,7 +196,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductVideoByProductId    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductVideoByProductId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVideoByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVideoByProductId]
 GO
@@ -217,7 +217,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVideoMaximumId    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVideoMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVideoMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVideoMaximumId]
 GO
@@ -246,7 +246,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVideoRowCount    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVideoRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVideoRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVideoRowCount]
 GO
@@ -265,7 +265,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductVideo    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductVideo    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductVideo]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductVideo]
 GO
@@ -361,7 +361,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductVideoByQuery    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductVideoByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductVideoByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductVideoByQuery]
 GO

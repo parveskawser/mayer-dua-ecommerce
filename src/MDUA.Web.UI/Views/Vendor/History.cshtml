@@ -1,0 +1,441 @@
+@{
+ViewData["Title"] = "Order History";
+Layout = "~/Views/Shared/_AdminLayout.cshtml";
+int vendorId = ViewBag.VendorId;
+string vendorName = ViewBag.VendorName;
+
+// Columns Definition for Modal
+var historyColumns = new Dictionary<string, string> {
+{"RequestDate", "Date"},
+{"ProductName", "Product"},
+{"IsBulkOrder", "Type"},
+{"Status", "Status"},
+{"RequestedQty", "Requested Qty"},
+{"ReceivedQty", "Received Qty"}
+};
+}
+
+@section Styles {
+<link href="~/css/vendor.css" rel="stylesheet" />
+<style>
+    .page-link-custom { cursor: pointer; border: 1px solid #dee2e6; background: white; color: #333; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block; margin: 0 2px; }
+    .page-link-custom:hover { background-color: #f8f9fa; color: #8b0000; }
+    .page-link-custom.active { background-color: #8b0000; color: white; border-color: #8b0000; }
+    .page-link-custom.disabled { pointer-events: none; opacity: 0.5; }
+    .spinner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; justify-content: center; align-items: center; }
+    .collapse { transition: height 0.3s ease; }
+</style>
+}
+
+<div class="container-fluid h-100 d-flex flex-column">
+
+    <div class="d-flex flex-column mb-3 sticky-page-header flex-shrink-0 pt-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
+            <div class="d-flex align-items-center">
+                <a href="/Vendor/Index" 
+                   class="btn btn-light border rounded-circle shadow-sm me-3" 
+                   style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-left: 50px;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+    
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark">Order History</h4>
+                    <p class="text-muted small mb-0">Vendor: <span class="fw-bold text-primary">@vendorName</span></p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm shadow-sm" style="width: 220px;">
+                    <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search product..." onkeyup="debouncedLoad()">
+                </div>
+
+                <button class="btn btn-sm btn-white border shadow-sm px-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                    <i class="fas fa-filter me-2"></i> Filters
+                </button>
+
+                <button class="btn btn-sm btn-white border shadow-sm px-3" type="button" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fas fa-download me-2 text-secondary"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="collapse mt-2" id="filterPanel">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-3 d-flex flex-wrap align-items-center gap-3 justify-content-end">
+                    <div class="d-flex align-items-center">
+                        <label class="small fw-bold text-muted me-2">Date:</label>
+                        <select id="dateRangeInput" class="form-select form-select-sm border-secondary-subtle bg-white" style="width: 120px;" onchange="handleDateChange(this)">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="thisWeek">This Week</option>
+                            <option value="lastWeek">Last Week</option>
+                            <option value="thisMonth">This Month</option>
+                            <option value="lastMonth">Last Month</option>
+                            <option value="custom">Custom...</option>
+                        </select>
+                    </div>
+
+                    <div id="customDateInputs" class="d-none align-items-center gap-2 bg-white p-1 rounded border shadow-sm">
+                        <input type="date" id="fromDateInput" class="form-control form-control-sm border-0" style="width: 110px;" onchange="loadData()">
+                        <span class="text-muted small">-</span>
+                        <input type="date" id="toDateInput" class="form-control form-control-sm border-0" style="width: 110px;" onchange="loadData()">
+                    </div>
+
+                    <div class="vr text-secondary opacity-25"></div>
+
+                    <div class="d-flex align-items-center">
+                        <label class="small fw-bold text-muted me-2">Status:</label>
+                        <select id="statusInput" class="form-select form-select-sm border-secondary-subtle bg-white" style="width: 110px;" onchange="loadData()">
+                            <option value="all">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Received">Received</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="vr text-secondary opacity-25"></div>
+
+                    <div class="d-flex align-items-center">
+                        <label class="small fw-bold text-muted me-2">Type:</label>
+                        <select id="typeInput" class="form-select form-select-sm border-secondary-subtle bg-white" style="width: 100px;" onchange="loadData()">
+                            <option value="all">All</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Bulk">Bulk</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-2">
+                        <button class="btn btn-link text-danger text-decoration-none small fw-bold p-0" onclick="resetFilters()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card p-0 d-flex flex-column flex-grow-1 overflow-hidden position-relative">
+        <div id="tableLoader" class="spinner-overlay d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div class="table-responsive table-wrapper flex-grow-1">
+            <table class="table table-hover mb-0 products-table align-middle">
+                <thead>
+                <tr>
+                    <th style="width: 30px;" class="text-center ps-4">
+                        <input type="checkbox" class="form-check-input" id="checkAllRows">
+                    </th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th class="text-center">Type</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Requested</th>
+                    <th class="text-center pe-4">Received</th>
+                </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="border-top p-3 bg-white d-flex align-items-center justify-content-between flex-shrink-0">
+            <div class="d-flex align-items-center gap-2" style="flex: 1;">
+                <span class="text-muted small">Rows:</span>
+                <select id="pageSizeInput" class="form-select form-select-sm" style="width: 60px;" onchange="loadData(1)">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="text-muted small ms-2">Total: <b id="totalRowsText">0</b></span>
+            </div>
+
+            <div class="d-flex justify-content-center" style="flex: 1;">
+                <span class="text-muted small bg-light px-2 py-1 rounded border">
+                    Page <b id="currentPageNum" class="text-dark">1</b> of <b id="totalPagesCount" class="text-dark">1</b>
+                </span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-end gap-3" style="flex: 1;">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="text-muted small">Go to:</span>
+                    <input type="number" id="jumpPageInput" class="form-control form-control-sm" style="width: 50px;" min="1" placeholder="#">
+                    <button class="btn btn-sm btn-light border" onclick="jumpToPage()">
+                        <i class="fas fa-arrow-right text-secondary"></i>
+                    </button>
+                </div>
+                <div class="vr text-secondary opacity-25"></div>
+                <div id="paginationControls" class="d-flex align-items-center gap-1"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_GenericExportModal", historyColumns)
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let currentVendorId = @vendorId;
+    let currentPage = 1;
+    let totalPageCount = 1;
+    let searchTimer;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadData(1);
+    });
+
+    function debouncedLoad() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadData(1), 500);
+    }
+
+    function handleDateChange(select) {
+        const customDiv = document.getElementById('customDateInputs');
+        if (select.value === 'custom') {
+            customDiv.classList.remove('d-none');
+            customDiv.classList.add('d-flex');
+        } else {
+            customDiv.classList.add('d-none');
+            customDiv.classList.remove('d-flex');
+            loadData(1);
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusInput').value = 'all';
+        document.getElementById('typeInput').value = 'all';
+        document.getElementById('dateRangeInput').value = 'all';
+        document.getElementById('fromDateInput').value = '';
+        document.getElementById('toDateInput').value = '';
+        handleDateChange(document.getElementById('dateRangeInput'));
+        loadData(1);
+    }
+
+    function loadData(page = 1) {
+        currentPage = page;
+        const checkAll = document.getElementById('checkAllRows');
+        if(checkAll) checkAll.checked = false;
+
+        let search = document.getElementById('searchInput').value;
+        let status = document.getElementById('statusInput').value;
+        let type = document.getElementById('typeInput').value;
+        let pageSize = document.getElementById('pageSizeInput').value;
+        let dateRange = document.getElementById('dateRangeInput').value;
+        let fromDate = document.getElementById('fromDateInput').value;
+        let toDate = document.getElementById('toDateInput').value;
+
+        document.getElementById('tableLoader').classList.remove('d-none');
+
+        let formData = new FormData();
+        formData.append('id', currentVendorId);
+        formData.append('page', page);
+        formData.append('pageSize', pageSize);
+        formData.append('search', search);
+        formData.append('status', status);
+        formData.append('type', type);
+        formData.append('dateRange', dateRange);
+        formData.append('fromDate', fromDate);
+        formData.append('toDate', toDate);
+
+        fetch('/Vendor/GetHistoryData', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(res => {
+                document.getElementById('tableLoader').classList.add('d-none');
+                if(res.success) {
+                    totalPageCount = res.totalPages;
+                    renderTable(res.data);
+                    renderPagination(res.totalPages, res.currentPage, res.totalRows);
+                    rebindCheckboxes();
+                    updateSelectedCount();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('tableLoader').classList.add('d-none');
+            });
+    }
+
+    function renderTable(data) {
+        let tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No records found.</td></tr>`;
+            return;
+        }
+        data.forEach(item => {
+            let statusBadge = item.Status === 'Pending' ? '<span class="badge bg-warning text-dark">Pending</span>' :
+                item.Status === 'Received' ? '<span class="badge bg-success">Received</span>' :
+                    `<span class="badge bg-secondary">${item.Status}</span>`;
+            let typeBadge = item.IsBulkOrder ? '<span class="badge bg-info text-dark">Bulk</span>'
+                : '<span class="badge bg-light text-muted border">Standard</span>';
+            let qtyColor = item.ReceivedQty < item.RequestedQty ? 'text-danger' : 'text-success';
+
+            tbody.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td class="text-center ps-4">
+                            <input type="checkbox" class="form-check-input row-checkbox" value="${item.PoId}">
+                        </td>
+                        <td>${item.RequestDate}</td>
+                        <td class="fw-bold text-dark">${item.ProductName}</td>
+                        <td class="text-center">${typeBadge}</td>
+                        <td class="text-center">${statusBadge}</td>
+                        <td class="text-center fw-bold">${item.RequestedQty}</td>
+                        <td class="text-center pe-4 fw-bold ${qtyColor}">${item.ReceivedQty}</td>
+                    </tr>
+                `);
+        });
+    }
+
+    function rebindCheckboxes() {
+        const checkAll = document.getElementById('checkAllRows');
+        if (checkAll) {
+            const newCheckAll = checkAll.cloneNode(true);
+            checkAll.parentNode.replaceChild(newCheckAll, checkAll);
+
+            newCheckAll.addEventListener('change', function () {
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = this.checked);
+                updateSelectedCount();
+            });
+        }
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.row-checkbox:checked').length;
+        const badge = document.getElementById('selectedCountDisplay');
+        if (badge) badge.innerText = count;
+
+        const scopeSelect = document.getElementById('exportScope');
+        if (scopeSelect) {
+            if (count > 0) scopeSelect.value = 'selected';
+            else scopeSelect.value = 'all';
+        }
+    }
+
+    // ===============================================
+    // ✅ UPDATED EXPORT FUNCTION: Points to New Method
+    // ===============================================
+    function submitExport() {
+        const form = document.getElementById('exportForm');
+        const formData = new FormData(form);
+        const scope = formData.get('scope');
+
+        let selectedIds = [];
+        if (scope === 'selected') {
+            document.querySelectorAll('.row-checkbox:checked').forEach(cb => selectedIds.push(cb.value));
+            if (selectedIds.length === 0) {
+                Swal.fire('Warning', 'No rows selected!', 'warning');
+                return;
+            }
+        }
+
+        let columns = [];
+        document.querySelectorAll('.col-check:checked').forEach(c => columns.push(c.value));
+        if (columns.length === 0) {
+            Swal.fire('Warning', 'Please select at least one column to export!', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Generating Export...',
+            text: 'Please wait while we prepare your file.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // Construct payload for the new specific controller method
+        const payload = {
+            format: formData.get('format'),
+            columns: columns,
+            scope: scope,
+            selectedIds: selectedIds, // Send as array, Controller expects dynamic or List<int>
+
+            // Standard Filters
+            search: document.getElementById('searchInput').value,
+            status: document.getElementById('statusInput').value,
+            dateRange: document.getElementById('dateRangeInput').value,
+
+            // Vendor Specific
+            vendorId: currentVendorId,
+            type: document.getElementById('typeInput').value,
+            fromDate: document.getElementById('fromDateInput').value || null,
+            toDate: document.getElementById('toDateInput').value || null
+        };
+
+        // Post to the NEW dedicated endpoint
+        downloadFile('/Report/ExportVendorHistory', payload);
+    }
+
+    function downloadFile(url, payload) {
+        var form = document.createElement("form");
+        form.method = "POST";
+        form.action = url;
+        form.target = "_blank";
+
+        var input = document.createElement("input");
+        input.name = "jsonPayload";
+        input.value = JSON.stringify(payload);
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        setTimeout(() => {
+            Swal.close();
+            var modalEl = document.getElementById('exportModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }, 1000);
+    }
+
+    function renderPagination(totalPages, current, totalRows) {
+        document.getElementById('totalRowsText').innerText = totalRows;
+        document.getElementById('currentPageNum').innerText = current;
+        document.getElementById('totalPagesCount').innerText = totalPages;
+
+        let container = document.getElementById('paginationControls');
+        container.innerHTML = '';
+        if(totalPages <= 1) return;
+
+        let prevClass = current === 1 ? 'disabled' : '';
+        container.innerHTML += `<a onclick="loadData(${current - 1})" class="page-link-custom ${prevClass}"><i class="fas fa-chevron-left"></i></a>`;
+
+        let start = Math.max(1, current - 2);
+        let end = Math.min(totalPages, current + 2);
+
+        if(start > 1) {
+            container.innerHTML += `<a onclick="loadData(1)" class="page-link-custom">1</a>`;
+            if(start > 2) container.innerHTML += `<span class="text-muted px-1">...</span>`;
+        }
+        for(let i = start; i <= end; i++) {
+            let activeClass = i === current ? 'active' : '';
+            container.innerHTML += `<a onclick="loadData(${i})" class="page-link-custom ${activeClass}">${i}</a>`;
+        }
+        if(end < totalPages) {
+            if(end < totalPages - 1) container.innerHTML += `<span class="text-muted px-1">...</span>`;
+            container.innerHTML += `<a onclick="loadData(${totalPages})" class="page-link-custom">${totalPages}</a>`;
+        }
+        let nextClass = current === totalPages ? 'disabled' : '';
+        container.innerHTML += `<a onclick="loadData(${current + 1})" class="page-link-custom ${nextClass}"><i class="fas fa-chevron-right"></i></a>`;
+    }
+
+    function jumpToPage() {
+        let input = document.getElementById('jumpPageInput');
+        let page = parseInt(input.value);
+        if (!page || page < 1 || page > totalPageCount) {
+            alert('Please enter a valid page number between 1 and ' + totalPageCount);
+            return;
+        }
+        loadData(page);
+    }
+    document.getElementById('jumpPageInput').addEventListener("keypress", function(event) {
+        if (event.key === "Enter") { event.preventDefault(); jumpToPage(); }
+    });
+</script>
+}

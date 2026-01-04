@@ -24,10 +24,7 @@ namespace MDUA.Web.UI.Controllers
         {
             get
             {
-                Console.WriteLine("CurrentUserName is null or ",ClaimTypes.Name);
-
                 return User.FindFirst(ClaimTypes.Name)?.Value ?? "System";
-               
             }
         }
         // Helper to get the logged-in user's CompanyId

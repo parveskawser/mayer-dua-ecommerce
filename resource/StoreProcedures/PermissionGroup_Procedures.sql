@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPermissionGroup    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPermissionGroup    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPermissionGroup]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPermissionGroup]
 GO
@@ -50,7 +50,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePermissionGroup    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePermissionGroup    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePermissionGroup]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePermissionGroup]
 GO
@@ -82,7 +82,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePermissionGroup    Script Date: 12/29/2025 1:59:59 PM ******/
+/****** Object:  StoredProcedure [dbo].DeletePermissionGroup    Script Date: 12/21/2025 8:58:38 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePermissionGroup]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePermissionGroup]
 GO
@@ -113,7 +113,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPermissionGroup    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPermissionGroup    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPermissionGroup]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPermissionGroup]
 GO
@@ -130,7 +130,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupById    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupById    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupById]
 GO
@@ -151,7 +151,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupMaximumId    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupMaximumId]
 GO
@@ -180,7 +180,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupRowCount    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupRowCount]
 GO
@@ -199,7 +199,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPermissionGroup    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPermissionGroup    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPermissionGroup]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPermissionGroup]
 GO
@@ -277,7 +277,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPermissionGroupByQuery    Script Date: 12/29/2025 1:59:59 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPermissionGroupByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPermissionGroupByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPermissionGroupByQuery]
 GO

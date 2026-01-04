@@ -1,12 +1,10 @@
 ﻿using DotNetEnv;
+using Fido2NetLib;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
-using Fido2NetLib;
-
-
 using MDUA.Web.UI.Hubs;
 using MDUA.Web.UI.Services;
-
+using MDUA.Web.UI.Services.Interface;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
@@ -15,12 +13,12 @@ Env.Load();
 
 // 2. Load nvironment Variables into Configuration
 builder.Configuration.AddEnvironmentVariables();
-//System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
+//Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
-builder.Services.AddHttpClient<ISmsService, SmsService>();
-
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 // ✅ Add SignalR Service
 builder.Services.AddSignalR();
 
@@ -98,7 +96,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                                 var oldNameClaim = identity.FindFirst(ClaimTypes.Name);
                                 if (oldNameClaim != null)
                                 {
-                                    identity.RemoveClaim(oldNameClaim); 
+                                    identity.RemoveClaim(oldNameClaim);
                                 }
                                 // Add fresh name
                                 identity.AddClaim(new Claim(ClaimTypes.Name, freshUser.UserName));
@@ -142,8 +140,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             }
         };
     });
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache(); // Stores session in memory
@@ -188,7 +184,7 @@ builder.Services.AddSingleton<IFido2>(_ =>
         Origins = new HashSet<string>(originsStr?.Split(',') ?? Array.Empty<string>()),
         TimestampDriftTolerance = driftTolerance
     });
-}); 
+});
 var app = builder.Build();
 
 // 🔍 STARTUP CONFIGURATION DEEP DIVE

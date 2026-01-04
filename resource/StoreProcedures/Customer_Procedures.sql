@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertCustomer    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertCustomer    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertCustomer]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertCustomer]
 GO
@@ -80,7 +80,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateCustomer    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateCustomer    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateCustomer]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateCustomer]
 GO
@@ -132,7 +132,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteCustomer    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteCustomer    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteCustomer]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteCustomer]
 GO
@@ -163,7 +163,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCustomer    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCustomer    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllCustomer]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllCustomer]
 GO
@@ -180,7 +180,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerById    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerById    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerById]
 GO
@@ -201,7 +201,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerMaximumId    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerMaximumId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerMaximumId]
 GO
@@ -230,7 +230,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerRowCount    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerRowCount    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerRowCount]
 GO
@@ -249,7 +249,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedCustomer    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedCustomer    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedCustomer]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedCustomer]
 GO
@@ -347,7 +347,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCustomerByQuery    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCustomerByQuery    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCustomerByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCustomerByQuery]
 GO

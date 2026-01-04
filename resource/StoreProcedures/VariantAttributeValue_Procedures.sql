@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertVariantAttributeValue    Script Date: 12/29/2025 2:00:02 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertVariantAttributeValue    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertVariantAttributeValue]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertVariantAttributeValue]
 GO
@@ -59,7 +59,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateVariantAttributeValue    Script Date: 12/29/2025 2:00:02 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateVariantAttributeValue    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateVariantAttributeValue]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateVariantAttributeValue]
 GO
@@ -97,7 +97,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteVariantAttributeValue    Script Date: 12/29/2025 2:00:02 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteVariantAttributeValue    Script Date: 12/21/2025 8:58:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteVariantAttributeValue]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteVariantAttributeValue]
 GO
@@ -128,7 +128,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValue    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValue    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllVariantAttributeValue]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllVariantAttributeValue]
 GO
@@ -145,7 +145,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueById    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueById    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueById]
 GO
@@ -166,7 +166,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByVariantId    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByVariantId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueByVariantId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueByVariantId]
 GO
@@ -187,7 +187,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByAttributeId    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByAttributeId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueByAttributeId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueByAttributeId]
 GO
@@ -208,7 +208,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByAttributeValueId    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllVariantAttributeValueByAttributeValueId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueByAttributeValueId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueByAttributeValueId]
 GO
@@ -229,7 +229,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueMaximumId    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueMaximumId    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueMaximumId]
 GO
@@ -258,7 +258,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueRowCount    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueRowCount    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueRowCount]
 GO
@@ -277,7 +277,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedVariantAttributeValue    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedVariantAttributeValue    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedVariantAttributeValue]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedVariantAttributeValue]
 GO
@@ -361,7 +361,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueByQuery    Script Date: 12/29/2025 2:00:02 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetVariantAttributeValueByQuery    Script Date: 12/21/2025 8:58:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetVariantAttributeValueByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetVariantAttributeValueByQuery]
 GO

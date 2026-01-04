@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductImage    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductImage    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductImage]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductImage    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductImage    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductImage]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductImage    Script Date: 12/29/2025 2:00:00 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductImage    Script Date: 12/21/2025 8:58:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductImage]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductImage    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductImage    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductImage]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductImageById    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductImageById    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductImageById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductImageById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductImageByProductId    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductImageByProductId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductImageByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductImageByProductId]
 GO
@@ -212,7 +212,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductImageMaximumId    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductImageMaximumId    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductImageMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductImageMaximumId]
 GO
@@ -241,7 +241,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductImageRowCount    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductImageRowCount    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductImageRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductImageRowCount]
 GO
@@ -260,7 +260,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductImage    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductImage    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductImage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductImage]
 GO
@@ -354,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductImageByQuery    Script Date: 12/29/2025 2:00:00 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductImageByQuery    Script Date: 12/21/2025 8:58:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductImageByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductImageByQuery]
 GO

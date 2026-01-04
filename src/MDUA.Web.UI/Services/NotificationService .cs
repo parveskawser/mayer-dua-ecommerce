@@ -64,7 +64,7 @@ namespace MDUA.Web.UI.Services
                     result.EmailSent = emailResult.Success;
                     result.EmailMessage = emailResult.Message;
 
-                    // If email succeeded, we're done! No need for SMS
+                    // If email succeeded, THEN done! No need for SMS
                     if (emailResult.Success)
                     {
                         return result;
@@ -72,8 +72,12 @@ namespace MDUA.Web.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    result.EmailMessage = $"Email error: {ex.Message}";
+                    Console.WriteLine("========== Notification Error ==========");
+                    Console.WriteLine(ex);                 // includes stack trace
+                    Console.WriteLine(ex.InnerException);   // if any
+                    Console.WriteLine("========================================");
                 }
+
             }
             else
             {
@@ -81,7 +85,7 @@ namespace MDUA.Web.UI.Services
             }
 
             // ===================================================================
-            // STRATEGY 2: Fallback to SMS (COSTS MONEY - Use Carefully)
+            // STRATEGY 2: Fallback to SMS 
             // ===================================================================
             if (!string.IsNullOrWhiteSpace(customerPhone))
             {
@@ -96,8 +100,12 @@ namespace MDUA.Web.UI.Services
                 }
                 catch (Exception ex)
                 {
-                    result.SmsMessage = $"SMS error: {ex.Message}";
+                    Console.WriteLine("========== Notification Error ==========");
+                    Console.WriteLine(ex);                 // includes stack trace
+                    Console.WriteLine(ex.InnerException);   // if any
+                    Console.WriteLine("========================================");
                 }
+
             }
             else
             {
@@ -106,7 +114,7 @@ namespace MDUA.Web.UI.Services
 
             return result;
         }
-
+        //FALLBACK TO EMAIL HTML TEMPLATE
         private string GenerateOrderEmailHtml(
             string customerName,
             string orderNumber,
@@ -185,6 +193,21 @@ namespace MDUA.Web.UI.Services
     </div>
 </body>
 </html>";
+        }
+        public async Task<bool> SendSmsOnlyAsync(string phone, string message)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return false;
+
+            try
+            {
+                // Delegates directly to the low-level SMS service
+                return await _smsService.SendSmsAsync(phone, message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SMS Error] {ex.Message}");
+                return false;
+            }
         }
 
         private string GenerateOrderSms(string orderNumber, int quantity, decimal totalAmount)

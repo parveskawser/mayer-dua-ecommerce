@@ -16,30 +16,22 @@ namespace MDUA.Entities.Bases
 		{
 			Id = 0,
 			SalesOrderId = 1,
-			TrackingNumber = 2,
-			CarrierName = 3,
-			ShipDate = 4,
-			EstimatedArrival = 5,
-			ActualDeliveryDate = 6,
-			Status = 7,
-			ShippingCost = 8,
-			CreatedBy = 9,
-			CreatedAt = 10,
-			UpdatedBy = 11,
-			UpdatedAt = 12
+			DeliveryDate = 2,
+			TrackingNumber = 3,
+			Status = 4,
+			CreatedBy = 5,
+			CreatedAt = 6,
+			UpdatedBy = 7,
+			UpdatedAt = 8
 		}
 		#endregion
 	
 		#region Constants
 		public const string Property_Id = "Id";		            
 		public const string Property_SalesOrderId = "SalesOrderId";		            
+		public const string Property_DeliveryDate = "DeliveryDate";		            
 		public const string Property_TrackingNumber = "TrackingNumber";		            
-		public const string Property_CarrierName = "CarrierName";		            
-		public const string Property_ShipDate = "ShipDate";		            
-		public const string Property_EstimatedArrival = "EstimatedArrival";		            
-		public const string Property_ActualDeliveryDate = "ActualDeliveryDate";		            
 		public const string Property_Status = "Status";		            
-		public const string Property_ShippingCost = "ShippingCost";		            
 		public const string Property_CreatedBy = "CreatedBy";		            
 		public const string Property_CreatedAt = "CreatedAt";		            
 		public const string Property_UpdatedBy = "UpdatedBy";		            
@@ -49,13 +41,9 @@ namespace MDUA.Entities.Bases
 		#region Private Data Types
 		private Int32 _Id;	            
 		private Int32 _SalesOrderId;	            
+		private DateTime _DeliveryDate;	            
 		private String _TrackingNumber;	            
-		private String _CarrierName;	            
-		private Nullable<DateTime> _ShipDate;	            
-		private Nullable<DateTime> _EstimatedArrival;	            
-		private Nullable<DateTime> _ActualDeliveryDate;	            
 		private String _Status;	            
-		private Nullable<Decimal> _ShippingCost;	            
 		private String _CreatedBy;	            
 		private DateTime _CreatedAt;	            
 		private String _UpdatedBy;	            
@@ -94,6 +82,21 @@ namespace MDUA.Entities.Bases
         }
 
 		[DataMember]
+		public DateTime DeliveryDate
+		{	
+			get{ return _DeliveryDate; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_DeliveryDate, value, _DeliveryDate);
+				if (PropertyChanging(args))
+				{
+					_DeliveryDate = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
 		public String TrackingNumber
 		{	
 			get{ return _TrackingNumber; }			
@@ -109,66 +112,6 @@ namespace MDUA.Entities.Bases
         }
 
 		[DataMember]
-		public String CarrierName
-		{	
-			get{ return _CarrierName; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_CarrierName, value, _CarrierName);
-				if (PropertyChanging(args))
-				{
-					_CarrierName = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Nullable<DateTime> ShipDate
-		{	
-			get{ return _ShipDate; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ShipDate, value, _ShipDate);
-				if (PropertyChanging(args))
-				{
-					_ShipDate = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Nullable<DateTime> EstimatedArrival
-		{	
-			get{ return _EstimatedArrival; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_EstimatedArrival, value, _EstimatedArrival);
-				if (PropertyChanging(args))
-				{
-					_EstimatedArrival = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Nullable<DateTime> ActualDeliveryDate
-		{	
-			get{ return _ActualDeliveryDate; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ActualDeliveryDate, value, _ActualDeliveryDate);
-				if (PropertyChanging(args))
-				{
-					_ActualDeliveryDate = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
 		public String Status
 		{	
 			get{ return _Status; }			
@@ -178,21 +121,6 @@ namespace MDUA.Entities.Bases
 				if (PropertyChanging(args))
 				{
 					_Status = value;
-					PropertyChanged(args);					
-				}	
-			}
-        }
-
-		[DataMember]
-		public Nullable<Decimal> ShippingCost
-		{	
-			get{ return _ShippingCost; }			
-			set
-			{
-				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ShippingCost, value, _ShippingCost);
-				if (PropertyChanging(args))
-				{
-					_ShippingCost = value;
 					PropertyChanged(args);					
 				}	
 			}
@@ -267,13 +195,9 @@ namespace MDUA.Entities.Bases
 			base.CloneBase(newObj);
 			newObj.Id = this.Id;						
 			newObj.SalesOrderId = this.SalesOrderId;						
+			newObj.DeliveryDate = this.DeliveryDate;						
 			newObj.TrackingNumber = this.TrackingNumber;						
-			newObj.CarrierName = this.CarrierName;						
-			newObj.ShipDate = this.ShipDate;						
-			newObj.EstimatedArrival = this.EstimatedArrival;						
-			newObj.ActualDeliveryDate = this.ActualDeliveryDate;						
 			newObj.Status = this.Status;						
-			newObj.ShippingCost = this.ShippingCost;						
 			newObj.CreatedBy = this.CreatedBy;						
 			newObj.CreatedAt = this.CreatedAt;						
 			newObj.UpdatedBy = this.UpdatedBy;						
@@ -289,13 +213,9 @@ namespace MDUA.Entities.Bases
 			base.GetObjectData(info, context);
 			info.AddValue(DeliveryBase.Property_Id, Id);				
 			info.AddValue(DeliveryBase.Property_SalesOrderId, SalesOrderId);				
+			info.AddValue(DeliveryBase.Property_DeliveryDate, DeliveryDate);				
 			info.AddValue(DeliveryBase.Property_TrackingNumber, TrackingNumber);				
-			info.AddValue(DeliveryBase.Property_CarrierName, CarrierName);				
-			info.AddValue(DeliveryBase.Property_ShipDate, ShipDate);				
-			info.AddValue(DeliveryBase.Property_EstimatedArrival, EstimatedArrival);				
-			info.AddValue(DeliveryBase.Property_ActualDeliveryDate, ActualDeliveryDate);				
 			info.AddValue(DeliveryBase.Property_Status, Status);				
-			info.AddValue(DeliveryBase.Property_ShippingCost, ShippingCost);				
 			info.AddValue(DeliveryBase.Property_CreatedBy, CreatedBy);				
 			info.AddValue(DeliveryBase.Property_CreatedAt, CreatedAt);				
 			info.AddValue(DeliveryBase.Property_UpdatedBy, UpdatedBy);				

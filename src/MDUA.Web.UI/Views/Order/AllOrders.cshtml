@@ -10,22 +10,22 @@
     string currentDate = (string)ViewData["CurrentDateRange"] ?? "all";
     var currentMin = ViewData["CurrentMinAmount"];
     var currentMax = ViewData["CurrentMaxAmount"];
+    string currentSearch = (string)ViewData["CurrentSearch"] ?? "";
 
     // Check if any filter is active
     bool isFiltered = currentStatus != "all" || currentPay != "all" ||
                       currentType != "all" || currentDate != "all" ||
-                      currentMin != null || currentMax != null;
+                      currentMin != null || currentMax != null ||
+                      !string.IsNullOrEmpty(currentSearch);
 
     string collapseClass = isFiltered ? "collapse show" : "collapse";
     string btnClass = isFiltered ? "btn-primary shadow-sm" : "btn-white border shadow-sm";
-
     string customDateClass = currentDate == "custom" ? "d-flex" : "d-none";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
     <style>
-        /* Animation for the visual cue */
         @@keyframes highlight-pulse {
             0% {
                 background-color: rgba(13, 110, 253, 0.0);
@@ -41,7 +41,7 @@
         }
 
         .text-maroon {
-            color: #c0392b !important; /* Soft Bright Maroon/Terra Cotta */
+            color: #c0392b !important;
         }
 
         .row-highlight {
@@ -50,7 +50,6 @@
             transition: border-left-color 0.3s ease;
         }
 
-        /* Filter Styles */
         .filter-group {
             background-color: #f8f9fa;
             padding: 4px 8px;
@@ -62,17 +61,28 @@
             color: #333;
         }
 
-        /* 2. UPDATED: Pagination Active State (Darker Red) */
         .page-item.active .page-link {
-            background-color: #8b0000; /* Dark Maroon/Deep Red */
+            background-color: #8b0000;
             border-color: #8b0000;
             color: #fff;
         }
 
-        /* Hover state for non-active pages */
         .page-link:hover {
             color: #8b0000;
             background-color: #f8f9fa;
+        }
+
+        .header-search-input {
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+            border-left: none;
+        }
+
+        .header-search-icon {
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            border-right: none;
+            background-color: white;
         }
     </style>
 }
@@ -80,7 +90,6 @@
 @Html.AntiForgeryToken()
 
 <div class="orders-wrapper">
-
     <div class="orders-header mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
@@ -89,22 +98,34 @@
                     <span class="text-primary fw-bold">@Model.TotalRows</span> Total Orders
                 </div>
             </div>
-            <button class="btn btn-sm @btnClass px-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
-                <i class="fas fa-filter me-2"></i> Filters
-                @if (isFiltered)
-                {
-                    <span class="badge bg-white text-primary ms-1 rounded-pill">On</span>
-                }
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm shadow-sm" style="width: 220px;">
+                    <span class="input-group-text bg-white border-end-0 text-muted ps-3">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="headerSearchInput" class="form-control border-start-0" placeholder="Search ID..." value="@currentSearch" autocomplete="off">
+                </div>
+
+                <button class="btn btn-sm @btnClass px-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                    <i class="fas fa-filter me-2"></i> Filters
+                    @if (isFiltered)
+                    {
+                        <span class="badge bg-white text-primary ms-1 rounded-pill">On</span>
+                    }
+                </button>
+                <button class="btn btn-sm btn-white border shadow-sm px-3" type="button" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fas fa-download me-2 text-secondary"></i> Export
+                </button>
+            </div>
         </div>
 
         <div class="@collapseClass mt-3" id="filterPanel">
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body p-3">
                     <form method="get" action="/order/all" class="d-flex flex-wrap align-items-center justify-content-end gap-3" id="filterForm">
-
                         <input type="hidden" name="pageSize" value="@Model.PageSize" />
                         <input type="hidden" name="page" value="1" />
+                        <input type="hidden" name="search" id="formSearchInput" value="@currentSearch" />
 
                         <div class="d-flex align-items-center">
                             <label class="small fw-bold text-muted me-2">Type:</label>
@@ -121,7 +142,7 @@
                             <label class="small fw-bold text-muted me-2">Status:</label>
                             <select name="status" class="form-select form-select-sm border-secondary-subtle bg-white" style="width: 130px;" onchange="this.form.submit()">
                                 <option value="all" selected="@(currentStatus == "all")">All</option>
-                                <option value="Pending" selected="@(currentStatus == "Pending")">Pending</option>
+                                <option value="Draft" selected="@(currentStatus == "Draft")">Pending</option>
                                 <option value="Confirmed" selected="@(currentStatus == "Confirmed")">Confirmed</option>
                                 <option value="Shipped" selected="@(currentStatus == "Shipped")">Shipped</option>
                                 <option value="Delivered" selected="@(currentStatus == "Delivered")">Delivered</option>
@@ -149,7 +170,6 @@
                             <input type="number" name="minAmount" value="@currentMin" class="form-control form-control-sm border-0 p-0 text-end" style="width: 60px;" placeholder="Min">
                             <span class="text-muted small mx-1">-</span>
                             <input type="number" name="maxAmount" value="@currentMax" class="form-control form-control-sm border-0 p-0" style="width: 60px;" placeholder="Max">
-
                             <button type="submit" class="btn btn-sm btn-link text-primary p-0 ms-1" title="Apply Amount Filter">
                                 <i class="fas fa-check-circle"></i>
                             </button>
@@ -193,6 +213,7 @@
             </div>
         </div>
     </div>
+
     @if (ViewData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger mb-3" role="alert">
@@ -205,6 +226,10 @@
             <table class="table table-hover mb-0 align-middle products-table" id="ordersTable">
                 <thead>
                     <tr>
+                        <th style="width: 30px;" class="text-center">
+                            <input type="checkbox" class="form-check-input" id="checkAllRows">
+                        </th>
+                        <th style="width: 40px;"></th>
                         <th style="width: 40px;"></th>
                         <th>ID</th>
                         <th>Order Type</th>
@@ -224,21 +249,15 @@
                             string collapseId = "collapse_" + order.Id;
                             string orderIdDisplay = order.SalesOrderId ?? order.Id.ToString();
                             string orderType = order.SalesChannelId == 1 ? "Online" : "Direct";
-
                             string displayStatus = order.Status == "Draft" ? "Pending" : order.Status;
-                            bool isToggleDisabled = order.Status == "Cancelled" ||
-                            order.Status == "Delivered" ||
-                            order.Status == "Returned" ||
-                            order.Status == "Shipped";
+                            bool isToggleDisabled = order.Status == "Cancelled" || order.Status == "Delivered" || order.Status == "Returned" || order.Status == "Shipped";
 
                             string statusBadgeClass = "bg-secondary-subtle text-dark";
-
                             if (order.Status == "Confirmed") statusBadgeClass = "bg-success text-white";
                             else if (order.Status == "Pending" || order.Status == "Draft") statusBadgeClass = "bg-warning text-dark";
                             else if (order.Status == "Cancelled") statusBadgeClass = "bg-danger text-white";
                             else if (order.Status == "Delivered") statusBadgeClass = "bg-primary text-white";
 
-                            // Logic for Payment Tag
                             string paymentStatusTag = "Unpaid";
                             if (order.DueAmount <= 0) { paymentStatusTag = "Paid"; }
                             else if (order.PaidAmount > 0) { paymentStatusTag = "Partial"; }
@@ -249,25 +268,24 @@
                                 data-pay-status="@paymentStatusTag"
                                 onclick="document.getElementById('btn-@order.Id').click()">
 
+                                <td class="text-center" onclick="event.stopPropagation();">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@order.Id">
+                                </td>
+                                <td onclick="event.stopPropagation();"></td>
                                 <td onclick="event.stopPropagation();">
                                     <button class="btn btn-sm btn-link text-decoration-none text-dark p-0 transition-icon"
-                                            type="button"
-                                            id="btn-@order.Id"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#@collapseId">
+                                            type="button" id="btn-@order.Id" data-bs-toggle="collapse" data-bs-target="#@collapseId">
                                         <i class="fas fa-chevron-right"></i>
                                     </button>
                                 </td>
                                 <td class="fw-bold text-maroon">@orderIdDisplay</td>
                                 <td>@orderType</td>
-
                                 <td class="small">
                                     <span class="utc-date" data-utc="@order.OrderDate.ToUtcString()">
                                         @FormatDate(order.OrderDate)
                                     </span>
                                 </td>
                                 <td class="fw-bold">Tk. @FormatAmount(order.NetAmount)</td>
-
                                 <td class="text-success fw-bold">
                                     @if (order.PaidAmount > 0)
                                     {
@@ -275,10 +293,10 @@
                                     }
                                     else
                                     {
+
                                         <span class="text-muted small">-</span>
                                     }
                                 </td>
-
                                 <td class="text-danger fw-bold">
                                     @if (order.DueAmount > 0)
                                     {
@@ -286,31 +304,25 @@
                                     }
                                     else
                                     {
+
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">Paid</span>
                                     }
                                 </td>
-
                                 <td>
                                     <span id="status-badge-@order.Id" class="badge @statusBadgeClass">@displayStatus</span>
                                 </td>
                                 <td onclick="event.stopPropagation();">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input confirm-toggle" type="checkbox"
-                                               id="toggle-@order.Id"
-                                               data-id="@order.Id"
-                                               @(order.Confirmed ? "checked" : "")
-                                               @(isToggleDisabled ? "disabled" : "")>
+                                        <input class="form-check-input confirm-toggle" type="checkbox" id="toggle-@order.Id" data-id="@order.Id"
+                                               @(order.Confirmed ? "checked" : "") @(isToggleDisabled ? "disabled" : "")>
                                     </div>
                                 </td>
                             </tr>
 
-                            <tr class="collapse bg-light shadow-sm order-details-row"
-                                id="@collapseId"
-                                data-parent-row-id="@order.Id">
+                            <tr class="collapse bg-light shadow-sm order-details-row" id="@collapseId" data-parent-row-id="@order.Id">
                                 <td colspan="9" class="p-3 bg-light">
                                     <div class="d-flex align-items-center gap-3 ps-3">
                                         <span class="text-uppercase small fw-bold text-muted">Actions:</span>
-
                                         @{
                                             var addrParts = new List<string>();
                                             if (!string.IsNullOrWhiteSpace(order.Country)) addrParts.Add(order.Country);
@@ -320,51 +332,43 @@
                                             if (!string.IsNullOrWhiteSpace(order.SubOffice)) addrParts.Add(order.SubOffice);
                                             if (!string.IsNullOrWhiteSpace(order.Street)) addrParts.Add(order.Street);
                                             if (!string.IsNullOrWhiteSpace(order.PostalCode)) addrParts.Add(order.PostalCode);
-
                                             string fullAddress = string.Join(", ", addrParts);
                                         }
 
                                         <button type="button" class="btn btn-sm btn-white border shadow-sm"
+                                                id="btn-view-@order.Id" 
                                                 data-bs-toggle="modal" data-bs-target="#detailsModal"
-                                                data-id="@orderIdDisplay"
-                                                data-status="@displayStatus"
-                                                data-type="@orderType"
-                                                data-cust-id="@order.CompanyCustomerId"
-                                                data-cust-name="@order.CustomerName"
-                                                data-cust-phone="@(order.CustomerPhone ?? "N/A")"
+                                                data-id="@orderIdDisplay" data-status="@displayStatus" data-type="@orderType"
+                                                data-cust-id="@order.CustomerId"
+                                                data-cust-name="@order.CustomerName" data-cust-phone="@(order.CustomerPhone ?? "N/A")"
                                                 data-addr-id="@(order.AddressId == 0 ? "N/A" : order.AddressId.ToString())"
-                                                data-full-addr="@fullAddress"
-                                                data-total="@FormatAmount(order.TotalAmount)"
+                                                data-full-addr="@fullAddress" data-total="@FormatAmount(order.TotalAmount)"
                                                 data-net="@FormatAmount(order.NetAmount)"
                                                 data-discount="@FormatAmount(order.TotalAmount - order.NetAmount)"
                                                 data-created-by="@(order.CreatedBy ?? "System")"
                                                 data-created-at="@order.CreatedAt.ToUtcString()"
                                                 data-updated-at="@order.UpdatedAt.ToUtcString()"
                                                 data-updated-by="@(order.UpdatedBy ?? "-")"
-                                                data-ip="@(order.IPAddress ?? "N/A")"
-                                                data-session="@(order.SessionId ?? "N/A")">
+                                                data-ip="@(order.IPAddress ?? "N/A")" data-session="@(order.SessionId ?? "N/A")">
                                             <i class="fas fa-eye text-primary me-1"></i> View Details
                                         </button>
 
-                                        <button type="button" class="btn btn-sm btn-white border shadow-sm"
-                                                onclick="openAdvanceModal(this)"
-                                                data-order-id="@order.Id"
-                                                data-order-ref="@orderIdDisplay"
-                                                data-cust-id="@order.CompanyCustomerId"
-                                                data-net="@FormatRaw(order.NetAmount)"
-                                                data-paid="@FormatRaw(order.PaidAmount)"
+                                        <button type="button" class="btn btn-sm btn-white border shadow-sm" onclick="openAdvanceModal(this)"
+                                                data-order-id="@order.Id" data-order-ref="@orderIdDisplay" data-cust-id="@order.CompanyCustomerId"
+                                                data-net="@FormatRaw(order.NetAmount)" data-paid="@FormatRaw(order.PaidAmount)"
                                                 data-delivery="@FormatRaw(order.DeliveryCharge)"
                                                 data-product-price="@FormatRaw(order.TotalAmount - order.DeliveryCharge)"
                                                 data-discount="@FormatRaw(order.DiscountAmount)">
-
                                             <i class="fas fa-money-bill-wave text-success me-1"></i> Add Advance Payment
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-white border shadow-sm ms-1"
+                                                onclick="openHistoryModal(@order.Id)" title="View Order History">
+                                            <i class="fas fa-list-ul text-secondary"></i>
                                         </button>
                                         @if (order.Status != "Cancelled" && order.Status != "Delivered" && order.Status != "Returned" && order.Status != "Confirmed")
                                         {
                                             <button type="button" class="btn btn-sm btn-white border shadow-sm text-danger"
-                                                    id="btn-cancel-@order.Id"
-                                                    onclick="cancelOrder(@order.Id, '@orderIdDisplay')"
-                                                    title="Cancel this order">
+                                                    id="btn-cancel-@order.Id" onclick="cancelOrder(@order.Id, '@orderIdDisplay')" title="Cancel this order">
                                                 <i class="fas fa-times-circle me-1"></i> Cancel
                                             </button>
                                         }
@@ -400,68 +404,50 @@
                             <option value="100" selected="@(Model.PageSize == 100)">100</option>
                         </select>
                     </div>
-
                     <div class="input-group input-group-sm shadow-sm" style="width: 130px;">
                         <span class="input-group-text bg-light border-secondary-subtle">Page</span>
                         <input type="number" id="jump-page-input" class="form-control border-secondary-subtle text-center px-1"
-                               min="1" max="@Model.TotalPages" value="@Model.CurrentPage"
-                               onkeypress="handleEnter(event)">
+                               min="1" max="@Model.TotalPages" value="@Model.CurrentPage" onkeypress="handleEnter(event)">
                         <button class="btn btn-outline-secondary border-secondary-subtle" type="button" onclick="jumpToPage()">Go</button>
                     </div>
                 </div>
-
                 <div class="position-absolute top-50 start-50 translate-middle text-muted small fw-bold" style="z-index: 0;">
                     (Page @Model.CurrentPage of @Model.TotalPages)
                 </div>
-
                 <nav style="z-index: 10;">
                     <ul class="pagination pagination-sm mb-0 shadow-sm">
-
                         <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
-                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage - 1)&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
+                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage - 1)&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]&orderType=@ViewData["CurrentOrderType"]&dateRange=@ViewData["CurrentDateRange"]&minAmount=@ViewData["CurrentMinAmount"]&maxAmount=@ViewData["CurrentMaxAmount"]&search=@ViewData["CurrentSearch"]"><i class="fas fa-chevron-left"></i></a>
                         </li>
-
                         @{
-                            // Logic to calculate the "Window" of pages to show
-                            // We allow 2 pages before and 2 pages after the current page
                             int startPage = Math.Max(2, Model.CurrentPage - 2);
                             int endPage = Math.Min(Model.TotalPages - 1, Model.CurrentPage + 2);
                         }
-
                         <li class="page-item @(1 == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="/order/all?page=1&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]">1</a>
+                            <a class="page-link" href="/order/all?page=1&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]&orderType=@ViewData["CurrentOrderType"]&dateRange=@ViewData["CurrentDateRange"]&minAmount=@ViewData["CurrentMinAmount"]&maxAmount=@ViewData["CurrentMaxAmount"]&search=@ViewData["CurrentSearch"]">1</a>
                         </li>
-
                         @if (startPage > 2)
                         {
                             <li class="page-item disabled"><span class="page-link text-muted">...</span></li>
                         }
-
                         @for (int i = startPage; i <= endPage; i++)
                         {
                             <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                <a class="page-link" href="/order/all?page=@i&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]">@i</a>
+                                <a class="page-link" href="/order/all?page=@i&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]&orderType=@ViewData["CurrentOrderType"]&dateRange=@ViewData["CurrentDateRange"]&minAmount=@ViewData["CurrentMinAmount"]&maxAmount=@ViewData["CurrentMaxAmount"]&search=@ViewData["CurrentSearch"]">@i</a>
                             </li>
                         }
-
                         @if (endPage < Model.TotalPages - 1)
                         {
                             <li class="page-item disabled"><span class="page-link text-muted">...</span></li>
                         }
-
                         @if (Model.TotalPages > 1)
                         {
                             <li class="page-item @(Model.TotalPages == Model.CurrentPage ? "active" : "")">
-                                <a class="page-link" href="/order/all?page=@Model.TotalPages&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]">@Model.TotalPages</a>
+                                <a class="page-link" href="/order/all?page=@Model.TotalPages&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]&orderType=@ViewData["CurrentOrderType"]&dateRange=@ViewData["CurrentDateRange"]&minAmount=@ViewData["CurrentMinAmount"]&maxAmount=@ViewData["CurrentMaxAmount"]&search=@ViewData["CurrentSearch"]">@Model.TotalPages</a>
                             </li>
                         }
-
                         <li class="page-item @(Model.HasNext ? "" : "disabled")">
-                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage + 1)&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
+                            <a class="page-link" href="/order/all?page=@(Model.CurrentPage + 1)&pageSize=@Model.PageSize&status=@ViewData["CurrentStatus"]&payStatus=@ViewData["CurrentPayStatus"]&orderType=@ViewData["CurrentOrderType"]&dateRange=@ViewData["CurrentDateRange"]&minAmount=@ViewData["CurrentMinAmount"]&maxAmount=@ViewData["CurrentMaxAmount"]&search=@ViewData["CurrentSearch"]"><i class="fas fa-chevron-right"></i></a>
                         </li>
                     </ul>
                 </nav>
@@ -483,7 +469,6 @@
                     <input type="hidden" id="adv_customerId" name="CustomerId" />
                     <input type="hidden" id="adv_orderRef" name="TransactionReference" />
 
-                    @* Product Price & Discount *@
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small text-muted">Product Price</label>
@@ -500,43 +485,36 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label small text-muted">Total Payable (Inc. Delivery)</label>
+                            <label class="form-label small text-muted">Total Payable</label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-0">Tk</span>
                                 <input type="text" id="adv_netAmount" class="form-control fw-bold bg-white" readonly />
                             </div>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-muted">Delivery Charge (Editable) <span class="text-danger">*</span></label>
+                            <label class="form-label small text-muted">Delivery Charge <span class="text-danger">*</span></label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-0">Tk</span>
                                 <input type="number" id="adv_delivery" class="form-control fw-bold" value="0" />
                             </div>
                         </div>
                     </div>
-
                     <div class="row g-3 mb-3 p-2 bg-light rounded border mx-0">
                         <div class="col-6">
                             <label class="form-label small text-muted mb-0">Already Paid</label>
-                            <div class="fw-bold text-success fs-6">
-                                Tk <span id="adv_displayPaid">0.00</span>
-                                <input type="hidden" id="adv_alreadyPaid" value="0" />
-                            </div>
+                            <div class="fw-bold text-success fs-6">Tk <span id="adv_displayPaid">0.00</span></div>
+                            <input type="hidden" id="adv_alreadyPaid" value="0" />
                         </div>
                         <div class="col-6">
                             <label class="form-label small text-muted mb-0">Current Due</label>
-                            <div class="fw-bold text-danger fs-6">
-                                Tk <span id="adv_displayCurrentDue">0.00</span>
-                            </div>
+                            <div class="fw-bold text-danger fs-6">Tk <span id="adv_displayCurrentDue">0.00</span></div>
                         </div>
                     </div>
-
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Payment Method <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-bold">Method <span class="text-danger">*</span></label>
                             <select id="adv_paymentMethod" name="PaymentMethodId" class="form-select form-select-sm" required>
                                 @if (ViewBag.PaymentMethods != null)
                                 {
@@ -552,43 +530,56 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Payment Type <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-bold">Type <span class="text-danger">*</span></label>
                             <select id="adv_paymentType" name="PaymentType" class="form-select form-select-sm">
                                 <option value="Advance">Advance (Partial)</option>
                                 <option value="Sale">Sale (Full Payment)</option>
                             </select>
                         </div>
                     </div>
-
                     <hr class="text-muted my-2 opacity-25">
-
                     <div class="mb-3">
                         <label class="form-label fw-bold text-success">Amount Paying Now <span class="text-danger">*</span></label>
                         <div class="input-group has-validation">
                             <span class="input-group-text bg-success text-white">Tk</span>
                             <input type="number" id="adv_paidAmount" name="Amount" class="form-control fw-bold fs-5" placeholder="0.00" required />
-                            <div id="adv_amountError" class="invalid-feedback fw-bold">
-                                Amount cannot exceed the Current Due.
-                            </div>
+                            <div id="adv_amountError" class="invalid-feedback fw-bold">Amount cannot exceed Due.</div>
                         </div>
                     </div>
-
                     <div class="mb-3 p-2 bg-danger-subtle rounded border border-danger-subtle d-flex justify-content-between align-items-center">
                         <span class="text-danger fw-medium small">Balance After Payment:</span>
                         <span class="text-danger fw-bold fs-5">Tk <span id="adv_dueAmount">0.00</span></span>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label small">Note / Remarks <span id="adv_note_star" class="text-danger d-none">*</span></label>
                         <textarea id="adv_note" name="Notes" class="form-control form-control-sm" rows="2" placeholder="e.g. Bkash Trx ID..."></textarea>
                     </div>
-
-                    <button type="submit" id="adv_submitBtn" class="btn btn-success w-100 fw-medium">Save Advance Payment</button>
+                    <button type="submit" id="adv_submitBtn" class="btn btn-success w-100 fw-medium">Save Payment</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6 fw-bold">
+                    <i class="fas fa-history text-primary me-2"></i>Order Audit History
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="historyModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="mt-2 small text-muted">Loading history...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable order-details-modal">
@@ -599,35 +590,22 @@
             </div>
             <div class="modal-body">
                 <div class="info-section status-section">
-                    <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" /><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" /></svg>
-                        <span>Order Status</span>
-                    </div>
-                    <div class="section-content">
-                        <h4 id="m-status" class="mb-0"></h4>
-                    </div>
+                    <div class="section-header"><span>Order Status</span></div>
+                    <div class="section-content"><h4 id="m-status" class="mb-0"></h4></div>
                 </div>
-
                 <div class="info-section">
-                    <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /></svg>
-                        <span>General Information</span>
-                    </div>
+                    <div class="section-header"><span>General Information</span></div>
                     <div class="section-content">
                         <div class="info-grid">
                             <div class="info-item"><span class="info-label">Order Type</span><span class="info-value" id="m-type"></span></div>
                             <div class="info-item"><span class="info-label">Customer ID</span><span class="info-value" id="m-cust-id"></span></div>
-                            <div class="info-item"><span class="info-label">Phone Number</span><span class="info-value" id="m-cust-phone"></span></div>
+                            <div class="info-item"><span class="info-label">Phone</span><span class="info-value" id="m-cust-phone"></span></div>
                             <div class="info-item"><span class="info-label">Address ID</span><span class="info-value" id="m-addr-id"></span></div>
                         </div>
                     </div>
                 </div>
-
                 <div class="info-section financial-section">
-                    <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" /></svg>
-                        <span>Financial Breakdown</span>
-                    </div>
+                    <div class="section-header"><span>Financial Breakdown</span></div>
                     <div class="section-content">
                         <div class="finance-grid">
                             <div class="finance-item"><span class="finance-label">Total Amount</span><span class="finance-value">Tk. <span id="m-total"></span></span></div>
@@ -636,12 +614,8 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="info-section">
-                    <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" /></svg>
-                        <span>System & Audit</span>
-                    </div>
+                    <div class="section-header"><span>System & Audit</span></div>
                     <div class="section-content">
                         <div class="info-grid">
                             <div class="info-item"><span class="info-label">Created By</span><span class="info-value" id="m-created-by"></span></div>
@@ -651,12 +625,8 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="info-section">
-                    <div class="section-header">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z" /></svg>
-                        <span>Technical Data</span>
-                    </div>
+                    <div class="section-header"><span>Technical Data</span></div>
                     <div class="section-content">
                         <div class="info-grid">
                             <div class="info-item"><span class="info-label">IP Address</span><span class="info-value code" id="m-ip"></span></div>
@@ -669,30 +639,52 @@
     </div>
 </div>
 
+@{
+    var orderColumns = new Dictionary<string, string> {
+        {"Id", "Order ID"}, {"OrderDate", "Order Date"}, {"CustomerName", "Customer Name"},
+        {"CustomerPhone", "Phone"}, {"TotalAmount", "Total Amount"}, {"Status", "Status"},
+        {"PaymentStatus", "Payment Status"}, {"ShippingAddress", "Address"},{ "Paid", "Paid Amount" },
+        { "Due", "Due Amount" }
+    };
+}
+
+@await Html.PartialAsync("_GenericExportModal", orderColumns)
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script src="~/js/order-details.js" asp-append-version="true"></script>
     <script src="~/js/order-actions.js" asp-append-version="true"></script>
-
+    <script src="~/js/export.js" asp-append-version="true"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Search Debounce
+            let searchTimeout = null;
+            const headerSearch = document.getElementById('headerSearchInput');
+            const formSearch = document.getElementById('formSearchInput');
+            const form = document.getElementById('filterForm');
 
-            // --- HIGHLIGHT LOGIC (Keep this) ---
+            if (headerSearch) {
+                headerSearch.addEventListener('keyup', function() {
+                    clearTimeout(searchTimeout);
+                    formSearch.value = this.value;
+                    searchTimeout = setTimeout(function() {
+                        form.submit();
+                    }, 500);
+                });
+            }
+
+            // Highlight Logic
             const urlParams = new URLSearchParams(window.location.search);
             const highlightId = urlParams.get('highlightId');
-
             if (highlightId) {
                 const targetRow = document.getElementById('order-row-' + highlightId);
                 if (targetRow) {
                     targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     targetRow.classList.add('row-highlight');
-                    // Clean URL
                     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search;
                     window.history.replaceState({ path: newUrl }, '', newUrl);
                 }
             }
-
             const tableBody = document.querySelector('tbody');
             if (tableBody) {
                 tableBody.addEventListener('click', function(e) {
@@ -702,9 +694,8 @@
             }
         });
 
-        // --- OVERRIDE CANCEL FUNCTION ---
+        // Cancel Order Override
         window.cancelOrder = function(orderId, orderDisplayId) {
-
             Swal.fire({
                 title: 'Cancel Order?',
                 text: `Are you sure you want to cancel ${orderDisplayId}? This action cannot be undone.`,
@@ -715,110 +706,59 @@
                 confirmButtonText: 'Yes, Cancel it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-
                     Swal.fire({ title: 'Processing...', didOpen: () => { Swal.showLoading() } });
-
-                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                    const token = tokenInput ? tokenInput.value : '';
-
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
                     const formData = new URLSearchParams();
                     formData.append('id', orderId);
                     formData.append('status', 'Cancelled');
 
                     fetch('/SalesOrder/UpdateStatus', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'RequestVerificationToken': token
-                        },
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
                         body: formData.toString()
                     })
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Cancelled!', 'Order has been cancelled.', 'success');
-
-                            // 1. Update Badge
                             const badge = document.getElementById(`status-badge-${orderId}`);
-                            if (badge) {
-                                badge.textContent = "Cancelled";
-                                badge.className = "badge bg-danger text-white";
-                            }
-
-                            // 2. Hide Cancel Button & Disable Toggle
+                            if (badge) { badge.textContent = "Cancelled"; badge.className = "badge bg-danger text-white"; }
                             const cancelBtn = document.getElementById(`btn-cancel-${orderId}`);
                             if (cancelBtn) cancelBtn.remove();
-
                             const toggle = document.getElementById(`toggle-${orderId}`);
-                            if (toggle) {
-                                toggle.disabled = true;
-                                toggle.checked = false;
-                            }
-
-                            // 3. Update Data Attribute (Visual only)
+                            if (toggle) { toggle.disabled = true; toggle.checked = false; }
                             const row = document.getElementById(`order-row-${orderId}`);
-                            if (row) {
-                                row.setAttribute('data-order-status', 'Cancelled');
-                                row.classList.add('row-highlight');
-                            }
-
-                            // (Note: applyFilters call removed here)
-
+                            if (row) { row.setAttribute('data-order-status', 'Cancelled'); row.classList.add('row-highlight'); }
                         } else {
                             Swal.fire('Error', data.message, 'error');
                         }
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', 'Network Error.', 'error');
-                    });
+                    }).catch(err => Swal.fire('Error', 'Network Error.', 'error'));
                 }
             });
         };
-            function changePageSize(selectElement) {
-            const newSize = selectElement.value;
-            const urlParams = new URLSearchParams(window.location.search);
 
-            // Update pageSize
-            urlParams.set('pageSize', newSize);
-            // Reset to page 1 to avoid being on "Page 5" when only 2 pages exist with the new size
-            urlParams.set('page', 1);
-
-            window.location.search = urlParams.toString();
+        function changePageSize(select) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('pageSize', select.value);
+            params.set('page', 1);
+            window.location.search = params.toString();
         }
-            // --- PAGE JUMP LOGIC ---
+
         function jumpToPage() {
             const input = document.getElementById('jump-page-input');
-            const page = input.value;
-
-            // 1. Get current URL params to preserve filters
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // 2. Update the 'page' parameter
-            urlParams.set('page', page);
-
-            // 3. Reload page
-            window.location.search = urlParams.toString();
+            const params = new URLSearchParams(window.location.search);
+            params.set('page', input.value);
+            window.location.search = params.toString();
         }
 
-        // Allow pressing "Enter" inside the input box
-        function handleEnter(e) {
-            if (e.key === 'Enter') {
-                jumpToPage();
-            }
-        }
+        function handleEnter(e) { if (e.key === 'Enter') jumpToPage(); }
 
-            // --- DATE FILTER LOGIC ---
         function handleDateChange(select) {
             const customInputs = document.getElementById('customDateInputs');
-
             if (select.value === 'custom') {
-                // Show custom inputs, do NOT submit yet
-                customInputs.classList.remove('d-none');
-                customInputs.classList.add('d-flex');
+                customInputs.classList.remove('d-none'); customInputs.classList.add('d-flex');
             } else {
-                // Hide custom inputs and submit form immediately
-                customInputs.classList.add('d-none');
-                customInputs.classList.remove('d-flex');
+                customInputs.classList.add('d-none'); customInputs.classList.remove('d-flex');
                 document.getElementById('filterForm').submit();
             }
         }
@@ -831,13 +771,11 @@
         if (!date.HasValue || date.Value == DateTime.MinValue) return "N/A";
         return date.Value.ToString("MMM dd, yyyy");
     }
-
     public string FormatAmount(decimal? amount)
     {
         if (!amount.HasValue || amount.Value == 0M) return "0.00";
         return amount.Value.ToString("N2");
     }
-
     public string FormatRaw(decimal? amount)
     {
         if (!amount.HasValue) return "0";

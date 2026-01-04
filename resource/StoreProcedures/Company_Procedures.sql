@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertCompany    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertCompany    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertCompany]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertCompany]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateCompany    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateCompany    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateCompany]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateCompany]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteCompany    Script Date: 12/29/2025 1:59:56 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteCompany    Script Date: 12/21/2025 8:58:36 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteCompany]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteCompany]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllCompany    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllCompany    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllCompany]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllCompany]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCompanyById    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCompanyById    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCompanyById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCompanyById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCompanyMaximumId    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCompanyMaximumId    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCompanyMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCompanyMaximumId]
 GO
@@ -235,7 +235,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCompanyRowCount    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCompanyRowCount    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCompanyRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCompanyRowCount]
 GO
@@ -254,7 +254,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedCompany    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedCompany    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedCompany]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedCompany]
 GO
@@ -354,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetCompanyByQuery    Script Date: 12/29/2025 1:59:56 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetCompanyByQuery    Script Date: 12/21/2025 8:58:36 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetCompanyByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetCompanyByQuery]
 GO

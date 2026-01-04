@@ -1,0 +1,149 @@
+﻿/* vendor.css - Final Consolidated Version */
+
+/* --- CSS Variables for Exact Alignment --- */
+:root {
+    /* 1. Height of the Main Table Header (Vendor Name, Email...) */
+    /* Decrease this if there is a gap between Main Header and Vendor Row */
+    --main-header-height: 42px;
+    /* 2. Height of the Vendor Row (The row with the buttons) */
+    /* Decrease this if there is a gap between Vendor Row and History Header */
+    --vendor-row-height: 52px;
+}
+
+/* --- 1. Page Header (Vendor Management) --- */
+.sticky-page-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    /* Layout */
+    margin-top: -4rem;
+    padding-top: 5.5rem;
+    
+    position: relative;
+}
+
+/* --- 2. Container Fixes (Height 100%) --- */
+.container-fluid {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.glass-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+    /* --- 3. Scrollable Table Wrapper --- */
+    .glass-card .table-wrapper {
+        height: 100%;
+        overflow: auto; /* Enable Scroll */
+        border-radius: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+/* --- 4. Force Table Width (Responsive) --- */
+.products-table {
+    min-width: 800px; /* Triggers horizontal scroll on mobile */
+}
+
+    /* =========================================
+   STICKY LOGIC (The Gap Fix)
+   ========================================= */
+
+    /* LEVEL 1: Main Table Header */
+    .products-table thead th {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dc3545;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        white-space: nowrap;
+        /* Force height to match variable for calculation accuracy */
+        height: var(--main-header-height);
+        vertical-align: middle;
+    }
+
+/* LEVEL 2: Vendor Row (Accordion Header) */
+.vendor-header-row td {
+    position: -webkit-sticky;
+    position: sticky;
+    /* Stick exactly below Level 1 */
+    top: var(--main-header-height);
+    z-index: 800;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+    /* Force height for calculation accuracy */
+    height: var(--vendor-row-height);
+    vertical-align: middle;
+}
+
+/* LEVEL 3: History Header */
+.history-table thead th {
+    position: -webkit-sticky;
+    position: sticky;
+    /* Stick exactly below Level 1 + Level 2 */
+    top: calc(var(--main-header-height) + var(--vendor-row-height) - 1px); /* -1px ensures tight overlap */
+
+    z-index: 750;
+    background-color: #e9ecef;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   OTHER STYLES
+   ========================================= */
+
+/* Product Name Truncation */
+.product-name-truncate {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    position: relative;
+}
+
+    .product-name-truncate:hover {
+        color: #dc3545;
+        text-decoration: underline;
+    }
+
+.product-name-expanded {
+    white-space: normal !important;
+    overflow: visible !important;
+    max-width: none !important;
+}
+
+/* Fix for Expanded History Row Heights */
+.products-table tr.history-row {
+    height: auto !important;
+    max-height: none !important;
+}
+
+.products-table td.history-cell {
+    height: auto !important;
+    max-height: none !important;
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .sticky-page-header {
+        margin-top: 0;
+        padding-top: 1rem;
+        margin-left: -0.75rem;
+        margin-right: -0.75rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

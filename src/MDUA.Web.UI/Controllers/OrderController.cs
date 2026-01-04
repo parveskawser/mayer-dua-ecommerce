@@ -110,7 +110,13 @@ namespace MDUA.Web.UI.Controllers
 
                 DateTime orderDate = GetDateTime("OrderDate");
 
- 
+                // --- 3. Delivery and Total Calculation ---
+
+                // Inside GetOrderStatus:
+
+                // ... (after DateTime orderDate = GetDateTime("OrderDate");)
+
+                // --- 3. Delivery and Total Calculation ---
 
                 const decimal DHAKA_CHARGE = 50M;
 
@@ -394,98 +400,87 @@ namespace MDUA.Web.UI.Controllers
 
         [Route("/order/all")]
         [HttpGet]
-        public IActionResult AllOrders(int page = 1,int pageSize = 10,string status = "all", string payStatus = "all", string orderType = "all", string dateRange = "all",  DateTime? fromDate = null,  DateTime? toDate = null,     double? minAmount = null, double? maxAmount = null 
-            ){
+        public IActionResult AllOrders(int page = 1, int pageSize = 10, string status = "all", string payStatus = "all", string orderType = "all", string dateRange = "all", DateTime? fromDate = null, DateTime? toDate = null, double? minAmount = null, double? maxAmount = null, string search = "")
+        {
             if (!HasPermission("Order.View")) return HandleAccessDenied();
 
             try
             {
-                // --- 1. Dynamic Company ID from Claims ---
-                int companyId = 1; // Default fallback
+                // 1. Dynamic Company ID
+                int companyId = 1;
                 var companyClaim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
-                if (companyClaim != null && int.TryParse(companyClaim.Value, out int cId))
-                {
-                    companyId = cId;
-                }
+                if (companyClaim != null && int.TryParse(companyClaim.Value, out int cId)) companyId = cId;
 
-                // --- 2. Build Where Clause ---
+                // 2. Build Where Clause
                 var whereBuilder = new System.Text.StringBuilder("1=1");
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    string cleanSearch = search.Replace("'", "''");
+
+                    // ✅ FIX: Added 'soh.' prefix to resolve ambiguity
+                    whereBuilder.Append($" AND (soh.SalesOrderId LIKE '%{cleanSearch}%' OR CAST(soh.Id AS NVARCHAR) LIKE '%{cleanSearch}%')");
+                }
 
                 // A. Filter by Status
                 if (!string.IsNullOrEmpty(status) && status != "all")
                 {
-                    string cleanStatus = status.Replace("'", "''");
-                    whereBuilder.Append($" AND Status = '{cleanStatus}'");
+                    // ✅ FIX: Added 'soh.' prefix
+                    whereBuilder.Append($" AND soh.Status = '{status.Replace("'", "''")}'");
                 }
 
                 // B. Filter by Payment
                 if (!string.IsNullOrEmpty(payStatus) && payStatus != "all")
                 {
-                    if (payStatus == "Paid") whereBuilder.Append(" AND DueAmount <= 0");
-                    else if (payStatus == "Partial") whereBuilder.Append(" AND PaidAmount > 0 AND DueAmount > 0");
-                    else if (payStatus == "Unpaid") whereBuilder.Append(" AND PaidAmount = 0");
+               
+
+                    if (payStatus == "Paid")
+                        whereBuilder.Append(" AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) <= 0");
+                    else if (payStatus == "Partial")
+                        whereBuilder.Append(" AND (SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId) > 0 AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) > 0");
+                    else if (payStatus == "Unpaid")
+                        whereBuilder.Append(" AND ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0) = 0");
                 }
 
-                // C. Filter by Order Type (SalesChannelId)
+                // C. Filter by Order Type
                 if (!string.IsNullOrEmpty(orderType) && orderType != "all")
                 {
-                    // Assuming 1 = Online, 2 = Direct (Adjust IDs based on your DB seed)
-                    if (orderType == "Online") whereBuilder.Append(" AND SalesChannelId = 1");
-                    else if (orderType == "Direct") whereBuilder.Append(" AND SalesChannelId <> 1");
+                    // ✅ FIX: Added 'soh.' prefix
+                    if (orderType == "Online") whereBuilder.Append(" AND soh.SalesChannelId = 1");
+                    else if (orderType == "Direct") whereBuilder.Append(" AND soh.SalesChannelId <> 1");
                 }
-                // NEW: Filter by Net Amount Range
-                if (minAmount.HasValue)
-                {
-                    whereBuilder.Append($" AND NetAmount >= {minAmount.Value}");
-                }
-                if (maxAmount.HasValue)
-                {
-                    whereBuilder.Append($" AND NetAmount <= {maxAmount.Value}");
-                }
+
+                // Amount Filters
+                // ✅ FIX: Added 'soh.' prefix
+                if (minAmount.HasValue) whereBuilder.Append($" AND soh.NetAmount >= {minAmount.Value}");
+                if (maxAmount.HasValue) whereBuilder.Append($" AND soh.NetAmount <= {maxAmount.Value}");
+
                 // D. Filter by Date Range
                 if (!string.IsNullOrEmpty(dateRange) && dateRange != "all")
                 {
-                    DateTime today = DateTime.Today;
+                    DateTime today = DateTime.UtcNow.Date;
                     DateTime? start = null;
                     DateTime? end = null;
 
                     switch (dateRange)
                     {
-                        case "today":
-                            start = today;
-                            end = today.AddDays(1).AddTicks(-1);
-                            break;
-                        case "yesterday":
-                            start = today.AddDays(-1);
-                            end = today.AddDays(-1).AddDays(1).AddTicks(-1);
-                            break;
+                        case "today": start = today; end = today.AddDays(1).AddTicks(-1); break;
+                        case "yesterday": start = today.AddDays(-1); end = today.AddDays(-1).AddDays(1).AddTicks(-1); break;
                         case "thisWeek":
-                            // Assuming Sunday is start of week
                             int diff = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
                             start = today.AddDays(-1 * diff).Date;
-                            end = today.AddDays(1).AddTicks(-1); // Up to now
+                            end = today.AddDays(1).AddTicks(-1);
                             break;
                         case "lastWeek":
                             int diffLast = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
                             start = today.AddDays(-1 * diffLast).AddDays(-7).Date;
                             end = start.Value.AddDays(7).AddTicks(-1);
                             break;
-                        case "thisMonth":
-                            start = new DateTime(today.Year, today.Month, 1);
-                            end = today.AddDays(1).AddTicks(-1);
-                            break;
+                        case "thisMonth": start = new DateTime(today.Year, today.Month, 1); end = today.AddDays(1).AddTicks(-1); break;
                         case "lastMonth":
                             var lastMonth = today.AddMonths(-1);
                             start = new DateTime(lastMonth.Year, lastMonth.Month, 1);
                             end = new DateTime(today.Year, today.Month, 1).AddTicks(-1);
-                            break;
-                        case "thisYear":
-                            start = new DateTime(today.Year, 1, 1);
-                            end = today.AddDays(1).AddTicks(-1);
-                            break;
-                        case "lastYear":
-                            start = new DateTime(today.Year - 1, 1, 1);
-                            end = new DateTime(today.Year, 1, 1).AddTicks(-1);
                             break;
                         case "custom":
                             if (fromDate.HasValue) start = fromDate.Value.Date;
@@ -493,18 +488,14 @@ namespace MDUA.Web.UI.Controllers
                             break;
                     }
 
-                    if (start.HasValue)
-                        whereBuilder.Append($" AND OrderDate >= '{start.Value:yyyy-MM-dd HH:mm:ss}'");
-
-                    if (end.HasValue)
-                        whereBuilder.Append($" AND OrderDate <= '{end.Value:yyyy-MM-dd HH:mm:ss}'");
+                    // ✅ FIX: Added 'soh.' prefix
+                    if (start.HasValue) whereBuilder.Append($" AND soh.OrderDate >= '{start.Value:yyyy-MM-dd HH:mm:ss}'");
+                    if (end.HasValue) whereBuilder.Append($" AND soh.OrderDate <= '{end.Value:yyyy-MM-dd HH:mm:ss}'");
                 }
 
-                string whereClause = whereBuilder.ToString();
-
-                // --- 3. Execute Query ---
+                // 3. Execute
                 int totalRows;
-                var orders = _orderFacade.GetPagedOrdersForAdmin(page, pageSize, whereClause, out totalRows);
+                var orders = _orderFacade.GetPagedOrdersForAdmin(page, pageSize, whereBuilder.ToString(), out totalRows);
 
                 var viewModel = new MDUA.Web.UI.Models.PagedOrderViewModel
                 {
@@ -512,26 +503,19 @@ namespace MDUA.Web.UI.Controllers
                     CurrentPage = page,
                     PageSize = pageSize,
                     TotalRows = totalRows,
-                    TotalPages = (int)Math.Ceiling((double)totalRows / pageSize)
+                    TotalPages = totalRows > 0 ? (int)Math.Ceiling((double)totalRows / pageSize) : 1
                 };
-                if (viewModel.TotalPages == 0) viewModel.TotalPages = 1;
 
-                // --- 4. Pass Filter State to View ---
-                ViewData["CurrentStatus"] = status;
-                ViewData["CurrentPayStatus"] = payStatus;
-                ViewData["CurrentOrderType"] = orderType;
-                ViewData["CurrentDateRange"] = dateRange;
-                ViewData["CurrentFromDate"] = fromDate?.ToString("yyyy-MM-dd");
-                ViewData["CurrentToDate"] = toDate?.ToString("yyyy-MM-dd");
-                ViewData["CurrentMinAmount"] = minAmount;
-                ViewData["CurrentMaxAmount"] = maxAmount;
-                // Load Settings using Dynamic CompanyID
+                // ... View Data Population ...
+                ViewData["CurrentStatus"] = status; ViewData["CurrentPayStatus"] = payStatus; ViewData["CurrentOrderType"] = orderType;
+                ViewData["CurrentDateRange"] = dateRange; ViewData["CurrentFromDate"] = fromDate?.ToString("yyyy-MM-dd");
+                ViewData["CurrentToDate"] = toDate?.ToString("yyyy-MM-dd"); ViewData["CurrentMinAmount"] = minAmount;
+                ViewData["CurrentMaxAmount"] = maxAmount; ViewData["CurrentSearch"] = search;
+
                 var deliverySettings = _settingsFacade.GetDeliverySettings(companyId);
                 ViewBag.DeliveryDhaka = deliverySettings["dhaka"];
                 ViewBag.DeliveryOutside = deliverySettings["outside"];
-
-                var paymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
-                ViewBag.PaymentMethods = paymentMethods;
+                ViewBag.PaymentMethods = _paymentFacade.GetActivePaymentMethods(companyId);
 
                 return View(viewModel);
             }
@@ -541,7 +525,6 @@ namespace MDUA.Web.UI.Controllers
                 return View(new MDUA.Web.UI.Models.PagedOrderViewModel());
             }
         }
-
 
         [HttpPost]
         [Route("order/place")]
@@ -613,6 +596,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
 
+
         [HttpPost]
         [Route("SalesOrder/ToggleConfirmation")]
         public IActionResult ToggleConfirmation(int id, bool isConfirmed)
@@ -621,31 +605,27 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                string username = User.Identity.Name ?? "Unknown_User";
-                Console.WriteLine($"Toggling Confirmation for Order ID: {id} to {isConfirmed} by {username}");
-                // 1. Calculate Old State (Logic Fallback)
-                // Since it's a toggle, if we are setting to TRUE, old was likely FALSE.
-                bool oldConfirmed = !isConfirmed;
+                // Get Old State
+                var order = _orderFacade.GetOrderById(id);
+                bool oldConfirmed = order?.Confirmed ?? !isConfirmed; // Fallback
 
-                // 2. CRITICAL: Perform Update First
+                string username = User.Identity.Name ?? "Unknown_User";
+
+                // Perform Update
                 string newStatus = _orderFacade.UpdateOrderConfirmation(id, isConfirmed, username);
 
-                // 3. LOGGING (SAFE MODE)
-                try
+                // LOG CONFIRMATION CHANGE
+                if (oldConfirmed != isConfirmed)
                 {
-                    // Optional: Try to fetch real DB state if needed, but risky if DA is broken
-                    // var realOrder = _orderFacade.GetOrderById(id); 
-
                     _logFacade.LogStatusChange(
                         entityId: id,
                         entityType: "SalesOrderHeader",
-                        oldStatus: oldConfirmed ? "Confirmed" : "Unconfirmed",
+                        oldStatus: oldConfirmed ? "Confirmed" : "Unconfirmed", // Conceptual status
                         newStatus: isConfirmed ? "Confirmed" : "Unconfirmed",
                         changedBy: username,
                         reason: isConfirmed ? "Order Confirmed Manually" : "Order Unconfirmed Manually"
                     );
                 }
-                catch { /* Ignore logging errors */ }
 
                 return Json(new { success = true, newStatus = newStatus });
             }
@@ -690,7 +670,6 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("SalesOrder/UpdateStatus")]
         public IActionResult UpdateStatus(int id, string status)
@@ -704,40 +683,25 @@ namespace MDUA.Web.UI.Controllers
                     return Json(new { success = false, message = "Invalid Status" });
                 }
 
-                // 2. Try to Get Old Status (SAFE MODE)
-                // We wrap this in try-catch so DB mapping errors don't stop the update
-                string oldStatus = "Unknown";
-                try
-                {
-                    var order = _orderFacade.GetOrderById(id);
-                    if (order != null) oldStatus = order.Status;
-                }
-                catch
-                {
-                    // Mapping failed (DateTime vs String issue). 
-                    // We ignore it to ensure the Update still happens.
-                    Console.WriteLine($"[Warning] Failed to fetch old status for Order {id}");
-                }
+                // 2. Get Old Status for Logging
+                var order = _orderFacade.GetOrderById(id);
+                string oldStatus = order?.Status ?? "Unknown";
 
-                // 3. CRITICAL: Perform the Update
+                // 3. Call Facade to update DB
                 _orderFacade.UpdateOrderStatus(id, status);
 
-                // 4. INSERT LOG (SAFE MODE)
-                try
+                // 4. INSERT LOG (Only if status changed)
+                if (oldStatus != status)
                 {
-                    if (oldStatus != status)
-                    {
-                        _logFacade.LogStatusChange(
-                            entityId: id,
-                            entityType: "SalesOrderHeader",
-                            oldStatus: oldStatus,
-                            newStatus: status,
-                            changedBy: User.Identity.Name ?? "Admin",
-                            reason: "Manual Status Update"
-                        );
-                    }
+                    _logFacade.LogStatusChange(
+                        entityId: id,
+                        entityType: "SalesOrderHeader",
+                        oldStatus: oldStatus,
+                        newStatus: status,
+                        changedBy: User.Identity.Name ?? "Admin",
+                        reason: "Manual Status Update from Order List"
+                    );
                 }
-                catch { /* Log insertion failed, but Order is updated, so we suppress error */ }
 
                 return Json(new { success = true });
             }
@@ -746,6 +710,7 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
 
 
 
@@ -853,9 +818,9 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                model.PaymentDate = DateTime.Now;
+                model.PaymentDate = DateTime.UtcNow;
                 model.CreatedBy = User.Identity?.Name ?? "Admin";
-                model.CreatedAt = DateTime.Now;
+                model.CreatedAt = DateTime.UtcNow;
                 model.Status = "Completed";
 
                 // ✅ CHANGE: Pass the DeliveryCharge to the Facade
@@ -877,7 +842,19 @@ namespace MDUA.Web.UI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("order/goto")]
+        public IActionResult GoToOrder(int orderId)
+        {
+            // 1. Default Page Size (Must match your default view logic)
+            int pageSize = 10;
 
+            // 2. Calculate which page this order is on
+            int targetPage = _orderFacade.GetOrderPageNumber(orderId, pageSize);
+
+            // 3. Redirect to the main list with the correct Page & Highlight ID
+            return RedirectToAction("AllOrders", new { page = targetPage, pageSize = pageSize, highlightId = orderId });
+        }
 
     }
     }

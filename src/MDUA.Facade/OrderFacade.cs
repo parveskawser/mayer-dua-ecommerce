@@ -5,10 +5,11 @@ using MDUA.Entities.Bases;
 using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using MDUA.Framework;
+using Microsoft.Extensions.Configuration; // ✅ Required for appsettings.json access
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;             // Required for SqlConnection
-using Microsoft.Extensions.Configuration; // ✅ Required for appsettings.json access
                
 namespace MDUA.Facade
 {
@@ -24,8 +25,9 @@ namespace MDUA.Facade
         private readonly IPostalCodesDataAccess _postalCodesDataAccess;
         private readonly ISettingsFacade _settingsFacade;
         private readonly IDeliveryItemDataAccess _deliveryItemDataAccess;
+        private readonly IEmailService _emailService;
 
-      
+
         private readonly IConfiguration _configuration;
         private readonly IDeliveryDataAccess _deliveryDataAccess;
         private readonly ISmsService _smsService;
@@ -43,7 +45,7 @@ namespace MDUA.Facade
             ISettingsFacade settingsFacade,
             IDeliveryDataAccess deliveryDataAccess,IDeliveryItemDataAccess deliveryItemDataAccess,
             ISmsService smsService,
-            INotificationService notificationService)
+            INotificationService notificationService, IEmailService emailService)
         {
             _salesOrderHeaderDataAccess = salesOrderHeaderDataAccess;
             _salesOrderDetailDataAccess = salesOrderDetailDataAccess;
@@ -59,6 +61,7 @@ namespace MDUA.Facade
             _deliveryItemDataAccess = deliveryItemDataAccess;
             _smsService = smsService;
             _notificationService = notificationService;
+            _emailService = emailService;
 
         }
 
@@ -72,12 +75,7 @@ namespace MDUA.Facade
         #endregion
 
         #region Extended Implementation
-        // Implement the method
-        public SalesOrderHeader GetOrderById(int id)
-        {
-            // This calls the existing DataAccess.Get() method
-            return _salesOrderHeaderDataAccess.Get(id);
-        }
+
         public Customer GetCustomerByPhone(string phone) => _customerDataAccess.GetByPhone(phone);
         public PostalCodes GetPostalCodeDetails(string code) => _postalCodesDataAccess.GetPostalCodeDetails(code);
         public Customer GetCustomerByEmail(string email) => _customerDataAccess.GetByEmail(email);
@@ -150,13 +148,13 @@ namespace MDUA.Facade
 
             // Calculate Totals
             decimal totalProductPrice = baseVariantPrice * quantity;
-            decimal deliveryCharge = orderData.DeliveryCharge; // Ensure this comes from Frontend
+            decimal deliveryCharge = orderData.DeliveryCharge;
 
-            // ✅ FIX: Explicitly set calculations to the object
-            orderData.DeliveryCharge = deliveryCharge; // Ensure DC is saved
+            // Explicitly set calculations
+            orderData.DeliveryCharge = deliveryCharge;
             orderData.TotalAmount = totalProductPrice + deliveryCharge;
             orderData.DiscountAmount = totalDiscountAmount;
-            orderData.NetAmount = orderData.TotalAmount - orderData.DiscountAmount; // ✅ Vital for "Due" calculation
+            orderData.NetAmount = orderData.TotalAmount - orderData.DiscountAmount;
 
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
 
@@ -185,7 +183,6 @@ namespace MDUA.Facade
                                 ? orderData.CustomerEmail
                                 : $"{orderData.CustomerPhone}@guest.local";
 
-                            // Check unique email if real email provided
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) && transCustomerDA.GetByEmail(emailToCheck) != null)
                                 throw new Exception($"Email {emailToCheck} is already registered to another number.");
 
@@ -203,10 +200,9 @@ namespace MDUA.Facade
                         }
                         else
                         {
-                            // ✅ UPDATE EXISTING CUSTOMER (Name & Email)
+                            // UPDATE EXISTING CUSTOMER
                             bool isUpdated = false;
 
-                            // Update Name if different
                             if (!string.IsNullOrWhiteSpace(orderData.CustomerName) &&
                                 !string.Equals(customer.CustomerName, orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
                             {
@@ -214,7 +210,6 @@ namespace MDUA.Facade
                                 isUpdated = true;
                             }
 
-                            // Update Email if provided and different
                             if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail) &&
                                 !string.Equals(customer.Email, orderData.CustomerEmail, StringComparison.OrdinalIgnoreCase))
                             {
@@ -232,7 +227,7 @@ namespace MDUA.Facade
 
                         customerId = customer.Id;
 
-                        // Link to Company if not already linked
+                        // Link to Company
                         if (!transCompanyCustomerDA.IsLinked(companyId, customerId))
                         {
                             transCompanyCustomerDA.Insert(new CompanyCustomer
@@ -267,7 +262,7 @@ namespace MDUA.Facade
                         // 4. PREPARE ORDER HEADER
                         orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(companyId, customerId);
                         orderData.AddressId = addressId;
-                        orderData.SalesChannelId = 1; // Assuming 1 is Online/Guest
+                        orderData.SalesChannelId = 1; // Online/Guest
                         orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
@@ -296,52 +291,53 @@ namespace MDUA.Facade
                         string orderNo = "ON" + orderId.ToString("D8");
 
                         // =================================================================
-                        // 🚀 UNIFIED NOTIFICATION (Restored from Original Code)
+                        // 🚀 UNIFIED NOTIFICATION (Direct Await - No Task.Run)
                         // =================================================================
-                        _ = Task.Run(async () =>
+                        try
                         {
-                            try
-                            {
-                                // Send notification with intelligent fallback
-                                var notificationResult = await _notificationService.SendOrderConfirmationAsync(
-                                    customerName: orderData.CustomerName,
-                                    customerPhone: orderData.CustomerPhone,
-                                    customerEmail: orderData.CustomerEmail, // Can be null - will fallback to SMS
-                                    orderNumber: orderNo,
-                                    quantity: orderData.OrderQuantity,
-                                    totalAmount: orderData.TotalAmount
-                                );
+                            bool emailSuccess = false;
 
-                                // Optional: Log results for monitoring
-                                if (notificationResult.EmailSent)
+                            // 1. EMAIL: Check if we have an email to send to
+                            if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail))
+                            {
+                                // MAP DATA TO DATABASE TEMPLATE (mailToOrderPlace)
+                                var templateParams = new Hashtable
                                 {
-                                    Console.WriteLine($"[Order {orderNo}] Email sent successfully");
-                                }
+                                    { "ToEmail", orderData.CustomerEmail },
+                                    { "UserName", orderData.CustomerName },
+                                    { "OrderId", orderNo },
+                                    { "OrderQty", orderData.OrderQuantity },
+                                    { "OrderTotal", orderData.TotalAmount }
+                                };
+
+                                // CALL THE SERVICE DIRECTLY
+                                emailSuccess = await _emailService.SendEmail(templateParams, "mailToOrderPlace");
+
+                                if (emailSuccess)
+                                    Console.WriteLine($"[Order {orderNo}] Template Email sent successfully.");
                                 else
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] Email failed: {notificationResult.EmailMessage}");
-                                }
-
-                                if (notificationResult.SmsSent)
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] SMS sent successfully");
-                                }
-                                else if (!notificationResult.EmailSent) // Only log SMS failure if email also failed
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] SMS failed: {notificationResult.SmsMessage}");
-                                }
-
-                                if (!notificationResult.IsSuccess)
-                                {
-                                    Console.WriteLine($"[Order {orderNo}] ⚠️ All notification methods failed!");
-                                }
+                                    Console.WriteLine($"[Order {orderNo}] ❌ Template Email failed to send.");
                             }
-                            catch (Exception ex)
+
+                            // 2. SMS FALLBACK
+                            if (!emailSuccess && !string.IsNullOrWhiteSpace(orderData.CustomerPhone))
                             {
-                                Console.WriteLine($"[Order {orderNo}] Notification error: {ex.Message}");
+                                Console.WriteLine($"[Order {orderNo}] Email failed or missing. Attempting SMS Fallback...");
+
+                                await _notificationService.SendSmsOnlyAsync(
+                                    orderData.CustomerPhone,
+                                    $"Order {orderNo} Confirmed. Total: {orderData.TotalAmount}"
+                                );
                             }
-                        });
-                        // =================================================================
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("========== Notification Error ==========");
+                            Console.WriteLine(ex);                 // includes stack trace
+                            Console.WriteLine(ex.InnerException);   // if any
+                            Console.WriteLine("========================================");
+                        }
+
 
                         return orderNo;
                     }
@@ -353,7 +349,6 @@ namespace MDUA.Facade
                 }
             }
         }
-
 
         public dynamic PlaceAdminOrder(SalesOrderHeader orderData)
         {
@@ -705,7 +700,7 @@ namespace MDUA.Facade
 
             return dbStatus;
         }        // ==========================================================================
-     
+
 
         public void UpdateDeliveryStatus(int deliveryId, string newStatus)
         {
@@ -773,7 +768,8 @@ namespace MDUA.Facade
                 }
             }
         }
-        public void UpdateOrderStatus(int orderId, string newStatus)
+
+               public void UpdateOrderStatus(int orderId, string newStatus)
 
         {
 
@@ -897,6 +893,81 @@ namespace MDUA.Facade
             }
             totalRows = 0;
             return new SalesOrderHeaderList();
+        }
+        public int GetOrderPageNumber(int orderId, int pageSize)
+        {
+            // No casting needed anymore!
+            return _salesOrderHeaderDataAccess.GetOrderPageNumber(orderId, pageSize);
+        }
+
+        // Inside MDUA.Facade/OrderFacade.cs
+
+        // Implement the method
+        public SalesOrderHeader GetOrderById(int id)
+        {
+          
+
+            return _salesOrderHeaderDataAccess.Get(id);
+        }
+        public List<Dictionary<string, object>> GetExportData(MDUA.Entities.ExportRequest request)
+        {
+            var sb = new System.Text.StringBuilder("1=1");
+
+            // --- SCOPE 1: Selected Rows (Specific IDs) ---
+            if (request.Scope == "selected" && request.SelectedIds != null && request.SelectedIds.Any())
+            {
+                string ids = string.Join(",", request.SelectedIds);
+                sb.Append($" AND soh.Id IN ({ids})");
+            }
+            // --- SCOPE 2: Filtered Rows (Re-use your Controller filter logic) ---
+            else if (request.Scope == "filtered")
+            {
+                // 1. Status
+                if (!string.IsNullOrEmpty(request.Status) && request.Status != "all")
+                {
+                    string status = (request.Status == "Pending") ? "Draft" : request.Status;
+                    sb.Append($" AND soh.Status = '{status}'");
+                }
+
+                // 2. Payment Status
+                if (!string.IsNullOrEmpty(request.PayStatus) && request.PayStatus != "all")
+                {
+                    if (request.PayStatus == "Paid")
+                        sb.Append(" AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) <= 0");
+                    else if (request.PayStatus == "Partial")
+                        sb.Append(" AND (SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId) > 0 AND (soh.NetAmount - ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0)) > 0");
+                    else if (request.PayStatus == "Unpaid")
+                        sb.Append(" AND ISNULL((SELECT SUM(Amount) FROM CustomerPayment WHERE TransactionReference = soh.SalesOrderId), 0) = 0");
+                }
+
+                // 3. Order Type
+                if (!string.IsNullOrEmpty(request.OrderType) && request.OrderType != "all")
+                {
+                    if (request.OrderType == "Online") sb.Append(" AND soh.SalesChannelId = 1");
+                    else if (request.OrderType == "Direct") sb.Append(" AND soh.SalesChannelId <> 1");
+                }
+
+                // 4. Amount Range
+                if (request.MinAmount.HasValue) sb.Append($" AND soh.NetAmount >= {request.MinAmount}");
+                if (request.MaxAmount.HasValue) sb.Append($" AND soh.NetAmount <= {request.MaxAmount}");
+
+                // 5. Search (ID)
+                if (!string.IsNullOrEmpty(request.Search))
+                {
+                    string cleanSearch = request.Search.Replace("'", "''");
+                    sb.Append($" AND (soh.SalesOrderId LIKE '%{cleanSearch}%' OR CAST(soh.Id AS NVARCHAR) LIKE '%{cleanSearch}%')");
+                }
+
+                // 6. Date Range
+                if (request.FromDate.HasValue)
+                    sb.Append($" AND soh.OrderDate >= '{request.FromDate.Value:yyyy-MM-dd HH:mm:ss}'");
+
+                if (request.ToDate.HasValue)
+                    sb.Append($" AND soh.OrderDate <= '{request.ToDate.Value:yyyy-MM-dd HH:mm:ss}'");
+            }
+
+            // Call Data Access
+            return _salesOrderHeaderDataAccess.GetExportDataDynamic(sb.ToString(), request.Columns);
         }
     }
     #endregion

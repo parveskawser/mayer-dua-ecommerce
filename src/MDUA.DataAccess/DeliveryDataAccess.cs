@@ -77,9 +77,12 @@ namespace MDUA.DataAccess
             }
             return null;
         }
+        // Inside MDUA.DataAccess/DeliveryDataAccess.cs
+
         public Delivery GetExtended(int id)
         {
-            using (SqlCommand cmd = GetSQLCommand(SP_GET_BY_ID_EXT))
+            // Use the SP that does SELECT *
+            using (SqlCommand cmd = GetSQLCommand("[dbo].[GetDeliveryById]"))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
@@ -91,13 +94,13 @@ namespace MDUA.DataAccess
                 {
                     if (reader.Read())
                     {
+                        // This calls the method that uses reader.GetOrdinal("ColumnName")
                         return FillObjectExtended(reader);
                     }
                 }
             }
             return null;
         }
-
 
         // Inside DeliveryDataAccess.cs
 
@@ -137,7 +140,6 @@ namespace MDUA.DataAccess
             return delivery.Id;
         }
 
-        // --- 2. Fix for "Does not implement LoadAllWithDetails" ---
         public System.Collections.Generic.IList<Delivery> LoadAllWithDetails()
         {
             var result = new System.Collections.Generic.List<Delivery>();

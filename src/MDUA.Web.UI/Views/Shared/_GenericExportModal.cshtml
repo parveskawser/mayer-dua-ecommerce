@@ -1,0 +1,140 @@
+﻿@model Dictionary<string, string>
+
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="fas fa-file-export me-2"></i>Export Data
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="exportForm">
+                    <!-- Format Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">
+                            <i class="fas fa-file-alt me-2 text-primary"></i>Export Format
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="radio" class="btn-check" name="format" id="format_xlsx" value="xlsx" checked>
+                                <label class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center" for="format_xlsx">
+                                    <i class="fas fa-file-excel fa-2x mb-2"></i>
+                                    <span class="fw-bold">Excel</span>
+                                    <small class="text-muted">.xlsx</small>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="radio" class="btn-check" name="format" id="format_pdf" value="pdf">
+                                <label class="btn btn-outline-danger w-100 py-3 d-flex flex-column align-items-center" for="format_pdf">
+                                    <i class="fas fa-file-pdf fa-2x mb-2"></i>
+                                    <span class="fw-bold">PDF</span>
+                                    <small class="text-muted">.pdf</small>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="radio" class="btn-check" name="format" id="format_csv" value="csv">
+                                <label class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" for="format_csv">
+                                    <i class="fas fa-file-csv fa-2x mb-2"></i>
+                                    <span class="fw-bold">CSV</span>
+                                    <small class="text-muted">.csv</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Scope Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">
+                            <i class="fas fa-filter me-2 text-primary"></i>Export Scope
+                        </label>
+                        <select name="scope" id="exportScope" class="form-select form-select-lg">
+                            <option value="all">All Records</option>
+                            <option value="filtered">Current Filtered Results</option>
+                            <option value="selected">Selected Rows Only (<span id="selectedCountDisplay">0</span> selected)</option>
+                        </select>
+                        <small class="text-muted ms-2">
+                            <i class="fas fa-info-circle me-1"></i>Select which data to include in the export
+                        </small>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Column Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-3">
+                            <i class="fas fa-columns me-2 text-primary"></i>Select Columns to Export
+                        </label>
+                        <div class="border rounded p-3 bg-light" style="max-height: 250px; overflow-y: auto;">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="selectAllColumns" checked>
+                                <label class="form-check-label fw-bold text-primary" for="selectAllColumns">
+                                    Select All
+                                </label>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row g-2">
+                                @foreach (var col in Model)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input col-check" type="checkbox"
+                                                   value="@col.Key" id="col_@col.Key" checked>
+                                            <label class="form-check-label" for="col_@col.Key">
+                                                @col.Value
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary px-4" onclick="submitExport()">
+                    <i class="fas fa-download me-2"></i>Export Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle Select All Columns
+    document.getElementById('selectAllColumns')?.addEventListener('change', function() {
+        document.querySelectorAll('.col-check').forEach(cb => cb.checked = this.checked);
+    });
+
+    // Update "Select All" checkbox based on individual checkboxes
+    document.querySelectorAll('.col-check').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const allChecked = Array.from(document.querySelectorAll('.col-check')).every(c => c.checked);
+            document.getElementById('selectAllColumns').checked = allChecked;
+        });
+    });
+</script>
+
+<style>
+    .btn-check:checked + .btn-outline-success {
+        background-color: #198754;
+        border-color: #198754;
+        color: white;
+    }
+    .btn-check:checked + .btn-outline-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+</style>

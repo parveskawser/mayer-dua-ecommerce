@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertDelivery    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertDelivery    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertDelivery]
 GO
@@ -83,7 +83,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateDelivery    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateDelivery    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateDelivery]
 GO
@@ -137,7 +137,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteDelivery    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteDelivery    Script Date: 12/21/2025 8:58:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteDelivery]
 GO
@@ -168,7 +168,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDelivery    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDelivery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllDelivery]
 GO
@@ -185,7 +185,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryById    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryById    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryById]
 GO
@@ -206,7 +206,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDeliveryBySalesOrderId    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDeliveryBySalesOrderId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryBySalesOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryBySalesOrderId]
 GO
@@ -227,7 +227,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryMaximumId    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryMaximumId    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryMaximumId]
 GO
@@ -256,7 +256,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryRowCount    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryRowCount    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryRowCount]
 GO
@@ -275,7 +275,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedDelivery    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedDelivery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedDelivery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedDelivery]
 GO
@@ -375,7 +375,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryByQuery    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryByQuery    Script Date: 12/21/2025 8:58:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryByQuery]
 GO

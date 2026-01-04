@@ -10,7 +10,6 @@ namespace MDUA.Facade.Interface
         /// </summary>
         IList<Delivery> GetAllDeliveries();
         Delivery Get(int id);
-
         /// <summary>
         /// Updates the status and tracking number of a specific delivery.
         /// </summary>

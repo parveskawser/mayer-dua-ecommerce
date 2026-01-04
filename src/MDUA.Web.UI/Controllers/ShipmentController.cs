@@ -26,38 +26,50 @@ namespace MDUA.Web.UI.Controllers
             IList<Delivery> list = _deliveryFacade.GetAllDeliveries();
             return View(list);
         }
-
         [HttpPost]
         public IActionResult UpdateStatus(int deliveryId, string status)
         {
             try
             {
-                // 1. Get Old Info
-                var delivery = _deliveryFacade.Get(deliveryId);
-                string oldStatus = delivery?.Status ?? "Unknown";
-                int? salesOrderId = delivery?.SalesOrderId;
+                // 1. Get Old Info (Wrapped in Try/Catch to prevent crash if read fails)
+                string oldStatus = "Unknown";
+                int? salesOrderId = null;
 
-                // 2. Perform Update (This also handles order sync inside Facade)
-                _orderFacade.UpdateDeliveryStatus(deliveryId, status);
-
-                // 3. LOG DELIVERY CHANGE
-                if (oldStatus != status)
+                try
                 {
-                    _logFacade.LogStatusChange(
-                        entityId: deliveryId,
-                        entityType: "Delivery",
-                        oldStatus: oldStatus,
-                        newStatus: status,
-                        changedBy: User.Identity.Name ?? "Admin",
-                        orderId: salesOrderId, 
-                        reason: "Manual Delivery Update via Shipment Manager"
-                    );
+                    var delivery = _deliveryFacade.Get(deliveryId);
+                    if (delivery != null)
+                    {
+                        oldStatus = delivery.Status;
+                        salesOrderId = delivery.SalesOrderId;
+                    }
+                }
+                catch
+                {
+                    // If Get(id) crashes, we log a warning but CONTINUE to update the status.
+                    Console.WriteLine($"[Warning] Failed to fetch old Delivery info for ID {deliveryId}");
                 }
 
-                // Note: The Order might have been auto-updated by _orderFacade.UpdateDeliveryStatus.
-                // Ideally, the logic inside _orderFacade.UpdateDeliveryStatus should call _logFacade internally 
-                // to log the "System Auto-Sync" event for the Order itself. 
-                // Since we are avoiding Facade changes right now, logging the Delivery change here is the priority.
+                // 2. Perform the Update (The Critical Action)
+                _orderFacade.UpdateDeliveryStatus(deliveryId, status);
+
+                // 3. Log the Change (Wrapped in Try/Catch)
+                try
+                {
+                    if (oldStatus != status)
+                    {
+                        _logFacade.LogStatusChange(
+                            entityId: deliveryId,
+                            entityType: "Delivery",
+                            oldStatus: oldStatus,
+                            newStatus: status,
+                            changedBy: User.Identity.Name ?? "Admin",
+                            orderId: salesOrderId,
+                            reason: "Manual Delivery Update via Shipment Manager"
+                        );
+                    }
+                }
+                catch { /* Ignore logging errors */ }
 
                 return Json(new { success = true });
             }
@@ -65,8 +77,7 @@ namespace MDUA.Web.UI.Controllers
             {
                 return Json(new { success = false, message = ex.Message });
             }
-        }
-    
 
-}
+        }
+    }
 }

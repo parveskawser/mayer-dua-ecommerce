@@ -342,6 +342,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: formData.toString()
             }).then(r => r.json()).then(data => {
+                statusBadge.textContent = data.newStatus;
+
+                // ✅ NEW: Update the View Details button data-attribute immediately
+                const viewBtn = document.getElementById(`btn-view-${orderId}`);
+                if (viewBtn) {
+                    viewBtn.setAttribute('data-status', data.newStatus);
+                }
+
                 if (data.success && statusBadge) {
 
                     // Check if status is "Draft" and change text to "Pending"
@@ -372,7 +380,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. Check if SweetAlert is loaded
         if (typeof Swal === 'undefined') {
             if (!confirm(`Are you sure you want to CANCEL Order #${orderDisplayId}?`)) return;
-            // Fallback to old flow if CDN fails...
         } else {
             // 2. Use Sweet Alert
             Swal.fire({
@@ -417,6 +424,10 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
+                    const viewBtn = document.getElementById(`btn-view-${orderId}`);
+                    if (viewBtn) {
+                        viewBtn.setAttribute('data-status', 'Cancelled');
+                    }
                     if (typeof Swal !== 'undefined') {
                         Swal.fire('Cancelled!', `Order ${orderDisplayId} has been cancelled.`, 'success');
                     } else {

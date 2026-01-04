@@ -31,7 +31,7 @@ namespace MDUA.Facade
 
         public long Update(Vendor vendor)
         {
-            vendor.UpdatedAt = DateTime.Now;
+            vendor.UpdatedAt = DateTime.UtcNow;
             return _vendorDataAccess.Update(vendor);
         }
 
@@ -60,5 +60,28 @@ namespace MDUA.Facade
         {
             return _poRequestedDataAccess.GetVendorHistory(vendorId);
         }
+        public (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize)
+        {
+            return _poRequestedDataAccess.GetVendorHistoryPaged(vendorId, page, pageSize);
+        }
+        
+        // Update Interface first: 
+// (List<dynamic>, int) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type);
+
+        public (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type)
+        {
+            // Pass default "all" if null
+            return _poRequestedDataAccess.GetVendorHistoryPaged(vendorId, page, pageSize, search ?? "", status ?? "all", type ?? "all");
+        }
+        
+        // Update Interface: 
+// (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate);
+
+        public (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate)
+        {
+            return _poRequestedDataAccess.GetVendorHistoryPaged(vendorId, page, pageSize, search ?? "", status ?? "all", type ?? "all", fromDate, toDate);
+        }
     }
+    
+    
 }

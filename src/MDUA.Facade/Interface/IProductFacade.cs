@@ -63,5 +63,8 @@ namespace MDUA.Facade.Interface
         long DeleteProductVideo(int videoId);
         void SetPrimaryProductVideo(int videoId, int productId, string username);
         List<LowStockItem> GetLowStockVariants(int topN);
+
+        LandingPageViewModel GetHomepageData();
+        
     }
 }

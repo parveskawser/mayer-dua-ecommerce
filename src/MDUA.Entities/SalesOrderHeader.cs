@@ -7,6 +7,7 @@ namespace MDUA.Entities
     public partial class SalesOrderHeader
     {
         // Customer Info
+        [DataMember] public int CustomerId { get; set; } // <--- ADD THIS
         [DataMember] public string CustomerName { get; set; }
         [DataMember] public string CustomerPhone { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertAddress    Script Date: 12/29/2025 1:59:55 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertAddress    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertAddress]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertAddress]
 GO
@@ -89,7 +89,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateAddress    Script Date: 12/29/2025 1:59:55 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateAddress    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateAddress]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateAddress]
 GO
@@ -147,7 +147,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteAddress    Script Date: 12/29/2025 1:59:55 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteAddress    Script Date: 12/21/2025 8:58:35 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteAddress]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteAddress]
 GO
@@ -178,7 +178,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAddress    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAddress    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllAddress]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllAddress]
 GO
@@ -195,7 +195,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAddressById    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAddressById    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAddressById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAddressById]
 GO
@@ -216,7 +216,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAddressByCustomerId    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAddressByCustomerId    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAddressByCustomerId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAddressByCustomerId]
 GO
@@ -237,7 +237,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAddressMaximumId    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAddressMaximumId    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAddressMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAddressMaximumId]
 GO
@@ -266,7 +266,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAddressRowCount    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAddressRowCount    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAddressRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAddressRowCount]
 GO
@@ -285,7 +285,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedAddress    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedAddress    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedAddress]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedAddress]
 GO
@@ -389,7 +389,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAddressByQuery    Script Date: 12/29/2025 1:59:55 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAddressByQuery    Script Date: 12/21/2025 8:58:35 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAddressByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAddressByQuery]
 GO
