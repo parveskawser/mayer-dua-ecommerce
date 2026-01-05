@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPoReceived    Script Date: 12/21/2025 8:58:38 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPoReceived    Script Date: 1/4/2026 12:14:15 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPoReceived]
 GO
@@ -21,7 +21,11 @@ CREATE PROCEDURE InsertPoReceived
 	@UpdatedBy nvarchar(100),
 	@UpdatedAt datetime,
 	@Remarks nvarchar(500),
-	@InvoiceNo nvarchar(100)
+	@InvoiceNo nvarchar(100),
+	@TotalPaymentDue decimal(29, 2),
+	@TotalPaid decimal(18, 2),
+	@PaymentStatus nvarchar(20),
+	@VendorId int
 )
 AS
     INSERT INTO [dbo].[PoReceived] 
@@ -35,7 +39,11 @@ AS
 	[UpdatedBy],
 	[UpdatedAt],
 	[Remarks],
-	[InvoiceNo]
+	[InvoiceNo],
+	[TotalPaymentDue],
+	[TotalPaid],
+	[PaymentStatus],
+	[VendorId]
     ) 
 	VALUES 
 	(
@@ -48,7 +56,11 @@ AS
 	@UpdatedBy,
 	@UpdatedAt,
 	@Remarks,
-	@InvoiceNo
+	@InvoiceNo,
+	@TotalPaymentDue,
+	@TotalPaid,
+	@PaymentStatus,
+	@VendorId
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -77,7 +89,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePoReceived    Script Date: 12/21/2025 8:58:38 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePoReceived    Script Date: 1/4/2026 12:14:15 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePoReceived]
 GO
@@ -97,7 +109,11 @@ CREATE PROCEDURE UpdatePoReceived
 	@UpdatedBy nvarchar(100),
 	@UpdatedAt datetime,
 	@Remarks nvarchar(500),
-	@InvoiceNo nvarchar(100)
+	@InvoiceNo nvarchar(100),
+	@TotalPaymentDue decimal(29, 2),
+	@TotalPaid decimal(18, 2),
+	@PaymentStatus nvarchar(20),
+	@VendorId int
 )
 AS
     UPDATE [dbo].[PoReceived] 
@@ -111,7 +127,11 @@ AS
 	[UpdatedBy] = @UpdatedBy,
 	[UpdatedAt] = @UpdatedAt,
 	[Remarks] = @Remarks,
-	[InvoiceNo] = @InvoiceNo
+	[InvoiceNo] = @InvoiceNo,
+	[TotalPaymentDue] = @TotalPaymentDue,
+	[TotalPaid] = @TotalPaid,
+	[PaymentStatus] = @PaymentStatus,
+	[VendorId] = @VendorId
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -127,7 +147,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePoReceived    Script Date: 12/21/2025 8:58:38 AM ******/
+/****** Object:  StoredProcedure [dbo].DeletePoReceived    Script Date: 1/4/2026 12:14:15 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePoReceived]
 GO
@@ -158,7 +178,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoReceived    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceived    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPoReceived]
 GO
@@ -175,7 +195,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedById    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedById    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedById]
 GO
@@ -196,7 +216,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByPoRequestedId    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByPoRequestedId    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByPoRequestedId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedByPoRequestedId]
 GO
@@ -217,7 +237,28 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedMaximumId    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByVendorId    Script Date: 1/4/2026 12:14:15 PM  ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByVendorId]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GetPoReceivedByVendorId]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetPoReceivedByVendorId
+(
+	@VendorId int
+)
+AS
+	SELECT *		
+	FROM
+		[dbo].[PoReceived]
+	WHERE ( VendorId = @VendorId  )
+
+RETURN @@ROWCOUNT
+GO
+
+/****** Object:  StoredProcedure [dbo].GetPoReceivedMaximumId    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedMaximumId]
 GO
@@ -246,7 +287,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedRowCount    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedRowCount    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedRowCount]
 GO
@@ -265,7 +306,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPoReceived    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPoReceived    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPoReceived]
 GO
@@ -326,7 +367,11 @@ SET @SQL1 = 'WITH PoReceivedEntries AS (
 	[UpdatedBy],
 	[UpdatedAt],
 	[Remarks],
-	[InvoiceNo]
+	[InvoiceNo],
+	[TotalPaymentDue],
+	[TotalPaid],
+	[PaymentStatus],
+	[VendorId]
 				FROM 
 				[dbo].[PoReceived]
 					'+ @WhereClause +'
@@ -342,7 +387,11 @@ SET @SQL1 = 'WITH PoReceivedEntries AS (
 	[UpdatedBy],
 	[UpdatedAt],
 	[Remarks],
-	[InvoiceNo]
+	[InvoiceNo],
+	[TotalPaymentDue],
+	[TotalPaid],
+	[PaymentStatus],
+	[VendorId]
 				FROM 
 					PoReceivedEntries
 				WHERE 
@@ -361,7 +410,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedByQuery    Script Date: 12/21/2025 8:58:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedByQuery    Script Date: 1/4/2026 12:14:15 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedByQuery]
 GO

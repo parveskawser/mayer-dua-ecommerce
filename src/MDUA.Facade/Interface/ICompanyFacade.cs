@@ -9,6 +9,10 @@ namespace MDUA.Facade.Interface
     {
         Company Get(int _Id); //new
         long Update(Company company); // ✅ Add this
-        void UpdateCompanyProfile(Company company, IFormFile logoFile, IFormFile faviconFile, string webRootPath);
+        void UpdateCompanyProfile(Company company, IFormFile logoFile, IFormFile faviconFile, string webRootPath, string footerDescription); HomepageConfig GetHomepageConfig(int companyId);
+        void SaveHomepageConfig(int companyId, HomepageConfig config);
+        // ✅ NEW: Draft & Generic Settings (Fixes your errors)
+        HomepageConfig GetHomepageDraftConfig(int companyId);
+        void SaveGlobalSetting(int companyId, string key, string value);
     }
 }

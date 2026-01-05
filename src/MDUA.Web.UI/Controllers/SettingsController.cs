@@ -1,5 +1,6 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
+using MDUA.Entities; 
 using MDUA.Facade;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Authentication;
@@ -15,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-
 namespace MDUA.Web.UI.Controllers
 {
     [Authorize]
@@ -27,13 +27,15 @@ namespace MDUA.Web.UI.Controllers
         private readonly IFido2 _fido2;
         private readonly ICompanyFacade _companyFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IProductFacade _productFacade; 
 
         public SettingsController(
             ISettingsFacade settingsFacade,
             IPaymentFacade paymentFacade,
             IUserLoginFacade userLoginFacade,
             IFido2 fido2,
-            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment // Injected
+            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment,
+            IProductFacade productFacade 
 
             )
         {
@@ -43,6 +45,7 @@ namespace MDUA.Web.UI.Controllers
             _fido2 = fido2;
             _companyFacade = companyFacade;
             _webHostEnvironment = webHostEnvironment;
+            _productFacade = productFacade; 
         }
 
         [HttpGet]
@@ -359,7 +362,15 @@ namespace MDUA.Web.UI.Controllers
             // Fetch Favicon from Global Settings
             string faviconUrl = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "FaviconUrl");
             ViewBag.FaviconUrl = faviconUrl;
+            // ✅ Fetch Footer Description
+            string footerDesc = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "Footer_Description");
+            // Set default if empty
+            if (string.IsNullOrEmpty(footerDesc))
+            {
+                footerDesc = "Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.";
+            }
 
+            ViewBag.FooterDescription = footerDesc;
             return View(company);
         }
 
@@ -369,7 +380,14 @@ namespace MDUA.Web.UI.Controllers
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100 * 1024 * 1024)]
         [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
-        public IActionResult UpdateCompanyProfile(string CompanyName, IFormFile LogoFile, IFormFile FaviconFile)
+        public IActionResult UpdateCompanyProfile(
+     string CompanyName,
+     string Address,
+     string Email,
+     string Phone,
+     string FooterDescription,
+     IFormFile LogoFile,
+     IFormFile FaviconFile)
         {
             try
             {
@@ -377,21 +395,16 @@ namespace MDUA.Web.UI.Controllers
                 var company = _companyFacade.Get(CurrentCompanyId);
                 if (company == null) return Json(new { success = false, message = "Company not found." });
 
-                // 2. Update Name
-                if (!string.IsNullOrEmpty(CompanyName))
-                {
-                    company.CompanyName = CompanyName;
-                }
+                // 2. Update properties
+                // We set these on the object we pass to the Facade
+                company.CompanyName = CompanyName;
+                company.Address = Address; // ✅ Pass Address
+                company.Email = Email;     // ✅ Pass Email
+                company.Phone = Phone;     // ✅ Pass Phone
 
-                // 3. Update Audit Fields
-                company.UpdatedBy = CurrentUserName;
-                company.UpdatedAt = DateTime.UtcNow;
+                // 3. Call Facade
+                _companyFacade.UpdateCompanyProfile(company, LogoFile, FaviconFile, _webHostEnvironment.WebRootPath, FooterDescription);
 
-                // 4. Call Facade to handle Files & Database Updates
-                // This handles saving Logo to [Company] and Favicon to [GlobalSetting]
-                _companyFacade.UpdateCompanyProfile(company, LogoFile, FaviconFile, _webHostEnvironment.WebRootPath);
-
-                // 5. Return Success (Frontend will reload or update visuals)
                 return Json(new
                 {
                     success = true,
@@ -463,6 +476,137 @@ namespace MDUA.Web.UI.Controllers
 
             }
 
+        }
+
+        [HttpGet]
+        [HttpGet]
+        public IActionResult Homepage()
+        {
+            // 1. Determine Company ID
+            int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
+
+            // 2. Get Homepage Config (Existing)
+            var config = _companyFacade.GetHomepageConfig(companyId);
+
+            // 3. Get Categories (Existing)
+            var productData = _productFacade.GetAddProductData(0);
+            ViewBag.Categories = productData.Categories
+                .Select(c => new { Id = c.Id, Name = c.Name })
+                .ToList();
+
+            // =========================================================
+            // ✅ FIX: Load Company Info with FALLBACK Defaults
+            // =========================================================
+            var company = _companyFacade.Get(companyId);
+
+            // If the database fields are null, show these defaults in the input boxes
+            if (company != null)
+            {
+                if (string.IsNullOrEmpty(company.CompanyName)) company.CompanyName = "MDUA Store";
+                if (string.IsNullOrEmpty(company.Address)) company.Address = "Dhaka, Bangladesh";
+                if (string.IsNullOrEmpty(company.Email)) company.Email = "support@mduastore.com";
+                if (string.IsNullOrEmpty(company.Phone)) company.Phone = "+880 1234 567 890";
+            }
+            ViewBag.CompanyInfo = company;
+
+            // =========================================================
+            // ✅ FIX: Load Footer Description with FALLBACK Default
+            // =========================================================
+            string footerDesc = _settingsFacade.GetGlobalSetting(companyId, "Footer_Description");
+
+            // If setting doesn't exist yet, show the default text
+            if (string.IsNullOrEmpty(footerDesc))
+            {
+                footerDesc = "Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.";
+            }
+            ViewBag.FooterDescription = footerDesc;
+
+            return View(config);
+        }
+        [HttpPost]
+        public IActionResult SaveHomepage([FromBody] HomepageConfig config)
+        {
+            try
+            {
+                // ✅ Fix: Use CurrentCompanyId here too
+                int companyId = CurrentCompanyId;
+                _companyFacade.SaveHomepageConfig(companyId, config);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult SaveDraft([FromBody] HomepageConfig config)
+        {
+            try
+            {
+                // Save to a DIFFERENT key (Homepage_Draft) so we don't break the live site
+                string json = System.Text.Json.JsonSerializer.Serialize(config);
+                _companyFacade.SaveGlobalSetting(CurrentCompanyId, "Homepage_Draft", json);
+                return Json(new { success = true });
+            }
+            catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
+        }
+
+        [HttpPost]
+        public IActionResult ResetToDefault()
+        {
+            try
+            {
+                // Implement DeleteSetting in your Facade/DataAccess
+                // Or just save an empty string/null to "Homepage_Layout"
+                _companyFacade.SaveGlobalSetting(CurrentCompanyId, "Homepage_Layout", "");
+                return Json(new { success = true });
+            }
+            catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
+        }
+
+
+        [HttpPost]
+        [Route("Settings/UploadBanner")]
+        public async Task<IActionResult> UploadBanner(IFormFile file, string previousUrl)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected" });
+
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "banners");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                // 1. DELETE OLD (Safe Check)
+                if (!string.IsNullOrEmpty(previousUrl)
+                    && !previousUrl.Contains("placehold.co")
+                    && previousUrl.StartsWith("/images/banners/"))
+                {
+                    try
+                    {
+                        string fileName = Path.GetFileName(previousUrl);
+                        string oldPath = Path.Combine(uploadsFolder, fileName);
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                    }
+                    catch { /* Ignore delete errors */ }
+                }
+
+                // 2. SAVE NEW
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                return Json(new { success = true, url = "/images/banners/" + uniqueFileName });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Server Error: " + ex.Message });
+            }
         }
 
     }

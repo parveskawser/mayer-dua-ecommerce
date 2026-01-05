@@ -1,0 +1,136 @@
+﻿/* --- Sidebar Styles (Copied from Home) --- */
+.category-sidebar {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.category-header {
+    background: linear-gradient(135deg, #d32f2f, #b71c1c);
+    color: #fff;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.category-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f8f9fa;
+    color: #555;
+    display: block;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.95rem;
+}
+
+    .category-item:hover {
+        background-color: #ffebEE;
+        color: #d32f2f;
+        padding-left: 25px;
+    }
+
+    .category-item.active-category {
+        background-color: #d32f2f;
+        color: #fff;
+        font-weight: bold;
+    }
+
+/* --- Header & Layout --- */
+.section-header {
+    border-left: 5px solid #d32f2f;
+    padding-left: 15px;
+}
+
+.back-link {
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+    .back-link:hover {
+        background-color: #d32f2f;
+        color: #fff;
+        border-color: #d32f2f;
+    }
+
+/* --- Product Cards --- */
+.product-card {
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    transition: all 0.3s ease;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+    .product-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        transform: translateY(-5px);
+        border-color: #ffca28;
+    }
+
+/* --- Image Wrapper (1:1 Ratio) --- */
+.product-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* Square Aspect Ratio */
+    background-color: #fff;
+    overflow: hidden;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+    .product-img-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 15px;
+        transition: transform 0.3s ease;
+    }
+
+.product-card:hover .product-img-wrapper img {
+    transform: scale(1.05);
+}
+
+/* --- Typography & Buttons --- */
+.product-title a {
+    color: #333;
+    font-weight: 600;
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    margin-bottom: 5px;
+}
+
+    .product-title a:hover {
+        color: #d32f2f;
+    }
+
+.price-text {
+    color: #d32f2f;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.btn-add-cart {
+    border: 1px solid #d32f2f;
+    color: #d32f2f;
+    background: #fff;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+    .btn-add-cart:hover {
+        background: #d32f2f;
+        color: #fff;
+    }

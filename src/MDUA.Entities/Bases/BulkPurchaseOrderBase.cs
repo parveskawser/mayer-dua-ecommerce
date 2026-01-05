@@ -27,8 +27,10 @@ namespace MDUA.Entities.Bases
 			CreatedBy = 10,
 			CreatedAt = 11,
 			UpdatedBy = 12,
-			UpdatedAt = 13
-		}
+			UpdatedAt = 13,
+            ConsumedQuantity=14,
+			ConsumedAmount= 15
+        }
 		#endregion
 	
 		#region Constants
@@ -45,11 +47,13 @@ namespace MDUA.Entities.Bases
 		public const string Property_CreatedBy = "CreatedBy";		            
 		public const string Property_CreatedAt = "CreatedAt";		            
 		public const string Property_UpdatedBy = "UpdatedBy";		            
-		public const string Property_UpdatedAt = "UpdatedAt";		            
-		#endregion
-		
-		#region Private Data Types
-		private Int32 _Id;	            
+		public const string Property_UpdatedAt = "UpdatedAt";
+		public const string Property_ConsumedQuantity = "ConsumedQuantity";
+		public const string Property_ConsumedAmount = "ConsumedAmount";
+        #endregion
+
+        #region Private Data Types
+        private Int32 _Id;	            
 		private Int32 _VendorId;	            
 		private String _AgreementNumber;	            
 		private String _Title;	            
@@ -62,11 +66,13 @@ namespace MDUA.Entities.Bases
 		private String _CreatedBy;	            
 		private DateTime _CreatedAt;	            
 		private String _UpdatedBy;	            
-		private Nullable<DateTime> _UpdatedAt;	            
-		#endregion
-		
-		#region Properties		
-		[DataMember]
+		private Nullable<DateTime> _UpdatedAt;
+        private Nullable<Int32> _ConsumedQuantity;
+		private Nullable<Decimal> _ConsumedAmount;
+        #endregion
+
+        #region Properties		
+        [DataMember]
 		public Int32 Id
 		{	
 			get{ return _Id; }			
@@ -276,10 +282,45 @@ namespace MDUA.Entities.Bases
 			}
         }
 
-		#endregion
-		
-		#region Cloning Base Objects
-		public  BulkPurchaseOrderBase Clone()
+		[DataMember]
+		public Nullable<Int32> ConsumedQuantity
+		{
+			get { return _ConsumedQuantity; }
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ConsumedQuantity, value, _ConsumedQuantity);
+				{
+					if (PropertyChanging(args))
+					{
+						_ConsumedQuantity = value;
+						PropertyChanged(args);
+					}
+
+				}
+			}
+		}
+
+		[DataMember]
+		public Nullable<Decimal> ConsumedAmount
+        {
+			get { return _ConsumedAmount; }
+            set
+            {
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ConsumedAmount, value, _ConsumedAmount);
+                {
+					if (PropertyChanging(args))
+                    {
+						_ConsumedAmount = value;
+						PropertyChanged(args);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Cloning Base Objects
+        public  BulkPurchaseOrderBase Clone()
 		{
 			BulkPurchaseOrderBase newObj = new  BulkPurchaseOrderBase();
 			base.CloneBase(newObj);
@@ -296,9 +337,11 @@ namespace MDUA.Entities.Bases
 			newObj.CreatedBy = this.CreatedBy;						
 			newObj.CreatedAt = this.CreatedAt;						
 			newObj.UpdatedBy = this.UpdatedBy;						
-			newObj.UpdatedAt = this.UpdatedAt;						
-			
-			return newObj;
+			newObj.UpdatedAt = this.UpdatedAt;	
+	        newObj.ConsumedQuantity = this.ConsumedQuantity;
+			newObj.ConsumedAmount = this.ConsumedAmount;
+
+            return newObj;
 		}
 		#endregion
 		
@@ -319,8 +362,10 @@ namespace MDUA.Entities.Bases
 			info.AddValue(BulkPurchaseOrderBase.Property_CreatedBy, CreatedBy);				
 			info.AddValue(BulkPurchaseOrderBase.Property_CreatedAt, CreatedAt);				
 			info.AddValue(BulkPurchaseOrderBase.Property_UpdatedBy, UpdatedBy);				
-			info.AddValue(BulkPurchaseOrderBase.Property_UpdatedAt, UpdatedAt);				
-		}
+			info.AddValue(BulkPurchaseOrderBase.Property_UpdatedAt, UpdatedAt);	
+			info.AddValue(BulkPurchaseOrderBase.Property_ConsumedQuantity, ConsumedQuantity);
+			info.AddValue(BulkPurchaseOrderBase.Property_ConsumedAmount, ConsumedAmount);
+        }
 		#endregion
 
 		

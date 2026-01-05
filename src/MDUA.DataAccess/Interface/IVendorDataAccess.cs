@@ -30,6 +30,10 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IVendorDataAccess : ICommonDataAccess<Vendor, VendorList, VendorBase>
-	{ 
-	}	
+	{
+
+        void ApplyCredit(int creditPaymentId, int billId, decimal amount, string username); List<dynamic> GetAvailableCredits(int vendorId);
+        long InsertPayment(VendorPayment payment);
+        List<dynamic> GetPendingBills(int vendorId);
+    }	
 }

@@ -17,7 +17,8 @@ namespace MDUA.Entities.Bases
 			Id = 0,
 			Name = 1,
 			DisplayOrder = 2,
-			IsVariantAffecting = 3
+			IsVariantAffecting = 3,
+			IsActive = 4
 		}
 		#endregion
 	
@@ -26,6 +27,7 @@ namespace MDUA.Entities.Bases
 		public const string Property_Name = "Name";		            
 		public const string Property_DisplayOrder = "DisplayOrder";		            
 		public const string Property_IsVariantAffecting = "IsVariantAffecting";		            
+		public const string Property_IsActive = "IsActive";		            
 		#endregion
 		
 		#region Private Data Types
@@ -33,6 +35,7 @@ namespace MDUA.Entities.Bases
 		private String _Name;	            
 		private Int32 _DisplayOrder;	            
 		private Boolean _IsVariantAffecting;	            
+		private Boolean _IsActive;	            
 		#endregion
 		
 		#region Properties		
@@ -96,6 +99,21 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public Boolean IsActive
+		{	
+			get{ return _IsActive; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_IsActive, value, _IsActive);
+				if (PropertyChanging(args))
+				{
+					_IsActive = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -107,6 +125,7 @@ namespace MDUA.Entities.Bases
 			newObj.Name = this.Name;						
 			newObj.DisplayOrder = this.DisplayOrder;						
 			newObj.IsVariantAffecting = this.IsVariantAffecting;						
+			newObj.IsActive = this.IsActive;						
 			
 			return newObj;
 		}
@@ -120,6 +139,7 @@ namespace MDUA.Entities.Bases
 			info.AddValue(AttributeNameBase.Property_Name, Name);				
 			info.AddValue(AttributeNameBase.Property_DisplayOrder, DisplayOrder);				
 			info.AddValue(AttributeNameBase.Property_IsVariantAffecting, IsVariantAffecting);				
+			info.AddValue(AttributeNameBase.Property_IsActive, IsActive);				
 		}
 		#endregion
 

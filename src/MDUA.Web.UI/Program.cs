@@ -13,7 +13,7 @@ Env.Load();
 
 // 2. Load nvironment Variables into Configuration
 builder.Configuration.AddEnvironmentVariables();
-//Transactions.TransactionManager.ImplicitDistributedTransactions = true;
+//.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
@@ -38,7 +38,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/LogIn";
+    options.LoginPath = "/login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);

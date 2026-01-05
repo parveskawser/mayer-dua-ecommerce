@@ -1,6 +1,4 @@
-﻿
-
-@{
+﻿@{
     ViewData["Title"] = "Delivery & Order Audit Logs";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
@@ -68,127 +66,129 @@
         <div class="card-body p-0 table-responsive">
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light text-uppercase small text-muted">
-                <tr>
-                    <th class="ps-3" style="width: 160px;">Time (Local)</th>
-                        
-                        
-                    <th style="width: 120px;">Order Ref</th>
-                    <th style="width: 120px;">Source</th>
-                    <th>Status Change</th>
-                    <th style="width: 150px;">Changed By</th>
-                    <th>Details / Reason</th>
-                </tr>
+                    <tr>
+                        <th class="ps-3" style="width: 160px;">Time (Local)</th>
+
+
+                        <th style="width: 120px;">Order Ref</th>
+                        <th style="width: 120px;">Source</th>
+                        <th>Status Change</th>
+                        <th style="width: 150px;">Changed By</th>
+                        <th>Details / Reason</th>
+                    </tr>
                 </thead>
                 <tbody>
-                @if (Model.Logs != null && Model.Logs.Count > 0)
-                {
-                    foreach (var log in Model.Logs)
+                    @if (Model.Logs != null && Model.Logs.Count > 0)
                     {
-                        // --- VISUAL LOGIC ---
-                        string rowClass = "";
-                        string badgeClass = "bg-secondary-subtle text-dark";
-                        string icon = "fa-circle-notch";
+                        foreach (var log in Model.Logs)
+                        {
+                            // --- VISUAL LOGIC ---
+                            string rowClass = "";
+                            string badgeClass = "bg-secondary-subtle text-dark";
+                            string icon = "fa-circle-notch";
 
-                        // Badge Logic
-                        if (log.NewStatus == "Confirmed") { badgeClass = "bg-success text-white"; icon = "fa-check-circle"; }
-                        else if (log.NewStatus == "Cancelled") { badgeClass = "bg-danger text-white"; icon = "fa-times-circle"; rowClass = "bg-danger-subtle bg-opacity-10"; }
-                        else if (log.NewStatus == "Shipped") { badgeClass = "bg-info text-dark"; icon = "fa-truck"; }
-                        else if (log.NewStatus == "Delivered") { badgeClass = "bg-primary text-white"; icon = "fa-box-open"; }
-                        else if (log.NewStatus == "Returned") { badgeClass = "bg-warning text-dark"; icon = "fa-undo"; }
+                            // Badge Logic
+                            if (log.NewStatus == "Confirmed") { badgeClass = "bg-success text-white"; icon = "fa-check-circle"; }
+                            else if (log.NewStatus == "Cancelled") { badgeClass = "bg-danger text-white"; icon = "fa-times-circle"; rowClass = "bg-danger-subtle bg-opacity-10"; }
+                            else if (log.NewStatus == "Shipped") { badgeClass = "bg-info text-dark"; icon = "fa-truck"; }
+                            else if (log.NewStatus == "Delivered") { badgeClass = "bg-primary text-white"; icon = "fa-box-open"; }
+                            else if (log.NewStatus == "Returned") { badgeClass = "bg-warning text-dark"; icon = "fa-undo"; }
 
-                        // User vs System Logic
-                        bool isSystem = log.IsSystemGenerated;
-                        string userIcon = isSystem ? "fa-robot text-primary" : "fa-user text-success";
-                        string userDisplay = isSystem ? "System (Auto)" : log.ChangedBy;
+                            // User vs System Logic
+                            bool isSystem = log.IsSystemGenerated;
+                            string userIcon = isSystem ? "fa-robot text-primary" : "fa-user text-success";
+                            string userDisplay = isSystem ? "System (Auto)" : log.ChangedBy;
 
-                        <tr class="@rowClass">
-                            <td class="ps-3">
-                                <div class="fw-bold text-dark local-date" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
-                                    @log.ChangedAt.ToString("MMM dd, yyyy") </div>
-                                <div class="small text-muted font-monospace local-time" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
-                                    @log.ChangedAt.ToString("HH:mm:ss") </div>
-                            </td>
-                            <td>
-                                @if (log.SalesOrderId > 0)
-                                {
-                                    <a href="@Url.Action("GoToOrder", "Order", new { orderId = log.SalesOrderId })"
-                                       class="fw-bold text-decoration-none font-monospace">
-                                        #@log.SalesOrderId
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">-</span>
-                                }
-                            </td>
-
-                            <td>
-                                @if (log.EntityType == "SalesOrderHeader")
-                                {
-                                    <span class="badge border text-primary bg-primary-subtle"><i class="fas fa-file-invoice me-1"></i> Order</span>
-                                }
-                                else
-                                {
-                                    <span class="badge border text-dark bg-warning-subtle"><i class="fas fa-truck me-1"></i> Delivery</span>
-                                }
-                            </td>
-
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    @if (!string.IsNullOrEmpty(log.OldStatus))
-                                    {
-                                        <span class="text-muted small">@log.OldStatus</span>
-                                        <i class="fas fa-arrow-right small text-muted opacity-50"></i>
-                                    }
-                                    <span class="badge @badgeClass shadow-sm d-flex align-items-center gap-1">
-                                        <i class="fas @icon small"></i> @log.NewStatus
-                                    </span>
-
-                                    @if (log.EntityType == "SalesOrderHeader" && log.NewConfirmed == false && log.NewStatus != "Cancelled")
-                                    {
-                                        // Warning for unconfirmed orders that aren't cancelled
-                                        <i class="fas fa-exclamation-triangle text-warning" title="Order is Unconfirmed"></i>
-                                    }
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="bg-light rounded-circle p-1 border d-flex justify-content-center align-items-center" style="width: 28px; height: 28px;">
-                                        <i class="fas @userIcon small"></i>
+                            <tr class="@rowClass">
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark local-date" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
+                                        @log.ChangedAt.ToString("MMM dd, yyyy")
                                     </div>
-                                    <span class="fw-medium small text-dark">@userDisplay</span>
-                                </div>
-                                @if (!string.IsNullOrEmpty(log.IPAddress))
-                                {
-                                    <div class="text-muted" style="font-size: 0.7rem; margin-left: 36px;">IP: @log.IPAddress</div>
-                                }
-                            </td>
-
-                            <td class="small text-muted">
-                                <div class="text-dark">@log.ChangeReason</div>
-                                @if (!string.IsNullOrEmpty(log.SourceAction))
-                                {
-                                    <div class="fst-italic opacity-75" style="font-size: 0.75rem;">
-                                        <i class="fas fa-code me-1"></i> @log.SourceAction
+                                    <div class="small text-muted font-monospace local-time" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
+                                        @log.ChangedAt.ToString("HH:mm:ss")
                                     </div>
-                                }
+                                </td>
+                                <td>
+                                    @if (log.SalesOrderId > 0)
+                                    {
+                                        <a href="@Url.Action("GoToOrder", "Order", new { orderId = log.SalesOrderId })"
+                                           class="fw-bold text-decoration-none font-monospace">
+                                            #@log.SalesOrderId
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (log.EntityType == "SalesOrderHeader")
+                                    {
+                                        <span class="badge border text-primary bg-primary-subtle"><i class="fas fa-file-invoice me-1"></i> Order</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge border text-dark bg-warning-subtle"><i class="fas fa-truck me-1"></i> Delivery</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (!string.IsNullOrEmpty(log.OldStatus))
+                                        {
+                                            <span class="text-muted small">@log.OldStatus</span>
+                                            <i class="fas fa-arrow-right small text-muted opacity-50"></i>
+                                        }
+                                        <span class="badge @badgeClass shadow-sm d-flex align-items-center gap-1">
+                                            <i class="fas @icon small"></i> @log.NewStatus
+                                        </span>
+
+                                        @if (log.EntityType == "SalesOrderHeader" && log.NewConfirmed == false && log.NewStatus != "Cancelled")
+                                        {
+                                            // Warning for unconfirmed orders that aren't cancelled
+                                            <i class="fas fa-exclamation-triangle text-warning" title="Order is Unconfirmed"></i>
+                                        }
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-light rounded-circle p-1 border d-flex justify-content-center align-items-center" style="width: 28px; height: 28px;">
+                                            <i class="fas @userIcon small"></i>
+                                        </div>
+                                        <span class="fw-medium small text-dark">@userDisplay</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(log.IPAddress))
+                                    {
+                                        <div class="text-muted" style="font-size: 0.7rem; margin-left: 36px;">IP: @log.IPAddress</div>
+                                    }
+                                </td>
+
+                                <td class="small text-muted">
+                                    <div class="text-dark">@log.ChangeReason</div>
+                                    @if (!string.IsNullOrEmpty(log.SourceAction))
+                                    {
+                                        <div class="fst-italic opacity-75" style="font-size: 0.75rem;">
+                                            <i class="fas fa-code me-1"></i> @log.SourceAction
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted opacity-50">
+                                    <i class="fas fa-search fa-3x mb-3"></i>
+                                    <h5>No logs found</h5>
+                                    <p class="small">Try adjusting the date range or search filters.</p>
+                                </div>
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="text-muted opacity-50">
-                                <i class="fas fa-search fa-3x mb-3"></i>
-                                <h5>No logs found</h5>
-                                <p class="small">Try adjusting the date range or search filters.</p>
-                            </div>
-                        </td>
-                    </tr>
-                }
                 </tbody>
             </table>
         </div>
@@ -206,17 +206,17 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            
+
             // 1. Convert Dates (e.g., Jan 01, 2024)
             document.querySelectorAll('.local-date').forEach(function (el) {
                 var utcTime = el.getAttribute('data-utc');
                 if (utcTime) {
                     var date = new Date(utcTime);
                     // Format: MMM DD, YYYY
-                    el.innerText = date.toLocaleDateString(undefined, { 
-                        year: 'numeric', 
-                        month: 'short', 
-                        day: '2-digit' 
+                    el.innerText = date.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
                     });
                 }
             });
@@ -227,11 +227,11 @@
                 if (utcTime) {
                     var date = new Date(utcTime);
                     // Format: HH:mm:ss (24-hour format)
-                    el.innerText = date.toLocaleTimeString(undefined, { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit', 
-                        hour12: false 
+                    el.innerText = date.toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
                     });
                 }
             });

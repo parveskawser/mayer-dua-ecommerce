@@ -513,7 +513,7 @@
     </div>
 
     <footer>
-        <p>© @DateTime.Now.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
+        <p>© @DateTime.UtcNow.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
     </footer>
 
     @Html.Partial("_OrderStatusModal")

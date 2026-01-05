@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
- 
 using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Entities.List;
@@ -31,5 +30,7 @@ namespace MDUA.DataAccess.Interface
 
 	public interface IAttributeValueDataAccess : ICommonDataAccess<AttributeValue, AttributeValueList, AttributeValueBase>
 	{ 
+		AttributeValueList GetByAttributeId(Int32 _AttributeId);
+		
 	}	
 }

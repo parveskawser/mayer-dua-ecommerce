@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertDeliveryStatusLog    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertDeliveryStatusLog    Script Date: 1/4/2026 12:14:13 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertDeliveryStatusLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertDeliveryStatusLog]
 GO
@@ -92,7 +92,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateDeliveryStatusLog    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateDeliveryStatusLog    Script Date: 1/4/2026 12:14:13 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateDeliveryStatusLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateDeliveryStatusLog]
 GO
@@ -152,7 +152,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteDeliveryStatusLog    Script Date: 12/29/2025 1:59:57 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteDeliveryStatusLog    Script Date: 1/4/2026 12:14:13 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteDeliveryStatusLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteDeliveryStatusLog]
 GO
@@ -183,7 +183,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDeliveryStatusLog    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDeliveryStatusLog    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllDeliveryStatusLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllDeliveryStatusLog]
 GO
@@ -200,7 +200,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogById    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogById    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryStatusLogById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryStatusLogById]
 GO
@@ -221,7 +221,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllDeliveryStatusLogBySalesOrderId    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllDeliveryStatusLogBySalesOrderId    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryStatusLogBySalesOrderId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryStatusLogBySalesOrderId]
 GO
@@ -242,7 +242,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogMaximumId    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogMaximumId    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryStatusLogMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryStatusLogMaximumId]
 GO
@@ -271,7 +271,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogRowCount    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogRowCount    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryStatusLogRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryStatusLogRowCount]
 GO
@@ -290,7 +290,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedDeliveryStatusLog    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedDeliveryStatusLog    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedDeliveryStatusLog]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedDeliveryStatusLog]
 GO
@@ -396,7 +396,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogByQuery    Script Date: 12/29/2025 1:59:57 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetDeliveryStatusLogByQuery    Script Date: 1/4/2026 12:14:13 PM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetDeliveryStatusLogByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetDeliveryStatusLogByQuery]
 GO

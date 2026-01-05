@@ -56,7 +56,9 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pDateTime(BulkPurchaseOrderBase.Property_CreatedAt, bulkPurchaseOrderObject.CreatedAt));
 			AddParameter(cmd, pNVarChar(BulkPurchaseOrderBase.Property_UpdatedBy, 100, bulkPurchaseOrderObject.UpdatedBy));
 			AddParameter(cmd, pDateTime(BulkPurchaseOrderBase.Property_UpdatedAt, bulkPurchaseOrderObject.UpdatedAt));
-		}
+			AddParameter(cmd, pInt32(BulkPurchaseOrderBase.Property_ConsumedQuantity, bulkPurchaseOrderObject.ConsumedQuantity));
+			AddParameter(cmd, pDecimal(BulkPurchaseOrderBase.Property_ConsumedAmount, 9, bulkPurchaseOrderObject.ConsumedAmount));
+        }
 		#endregion
 		
 		#region Insert Method
@@ -285,8 +287,10 @@ namespace MDUA.DataAccess
 				if(!reader.IsDBNull(10)) bulkPurchaseOrderObject.CreatedBy = reader.GetString( start + 10 );			
 				bulkPurchaseOrderObject.CreatedAt = reader.GetDateTime( start + 11 );			
 				if(!reader.IsDBNull(12)) bulkPurchaseOrderObject.UpdatedBy = reader.GetString( start + 12 );			
-				if(!reader.IsDBNull(13)) bulkPurchaseOrderObject.UpdatedAt = reader.GetDateTime( start + 13 );			
-			FillBaseObject(bulkPurchaseOrderObject, reader, (start + 14));
+				if(!reader.IsDBNull(13)) bulkPurchaseOrderObject.UpdatedAt = reader.GetDateTime( start + 13 );
+				if(!reader.IsDBNull(14)) bulkPurchaseOrderObject.ConsumedQuantity = reader.GetInt32( start + 14 );
+				if(!reader.IsDBNull(15)) bulkPurchaseOrderObject.ConsumedAmount = reader.GetDecimal( start + 15 );
+                FillBaseObject(bulkPurchaseOrderObject, reader, (start + 16));
 
 			
 			bulkPurchaseOrderObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

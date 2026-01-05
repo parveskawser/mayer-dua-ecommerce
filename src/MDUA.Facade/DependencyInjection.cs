@@ -22,6 +22,7 @@ namespace MDUA.Facade
 
             // Product-related Data Access
             services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
+            services.AddScoped<IAttributeValueDataAccess, AttributeValueDataAccess>();
             services.AddScoped<IProductDataAccess, ProductDataAccess>();
             services.AddScoped<IProductImageDataAccess, ProductImageDataAccess>();
             services.AddScoped<IProductReviewDataAccess, ProductReviewDataAccess>();
@@ -74,6 +75,7 @@ namespace MDUA.Facade
 
             services.AddScoped<IEmailHistoryDataAccess, EmailHistoryDataAccess>();
             services.AddScoped<IEmailTemplateDataAccess, EmailTemplateDataAccess>();
+            services.AddScoped<IVendorPaymentDataAccess, VendorPaymentDataAccess>();
 
 
             // Facade Layer
@@ -102,7 +104,7 @@ namespace MDUA.Facade
             services.AddScoped<IDeliveryStatusLogFacade, DeliveryStatusLogFacade>();
             services.AddScoped<IEmailService, EmailService>();
 
-
+            services.AddScoped<IAttributeFacade, AttributeFacade>();
 
         }
     }

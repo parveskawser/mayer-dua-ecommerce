@@ -14,15 +14,19 @@ namespace MDUA.Facade.Interface
         Vendor Get(int id);
         VendorList GetAll();
         VendorList GetPaged(PagedRequest request);
-        
-        // This method fetches the history
+
         List<dynamic> GetVendorOrderHistory(int vendorId);
-        
+        long AddPayment(VendorPayment payment);
+        List<dynamic> GetPendingBills(int vendorId);
+
+        void ApplyCredit(int creditPaymentId, int billId, decimal amount, string username);
+        List<dynamic> GetAvailableCredits(int vendorId);
+
         (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize);
-       (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type);
-       
-       (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate);
-       
-       
+        (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type);
+
+        (List<dynamic> Items, int TotalCount) GetVendorOrderHistory(int vendorId, int page, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate);
+
+
     }
 }

@@ -38,11 +38,12 @@ namespace MDUA.DataAccess.Interface
         dynamic GetVariantStatus(int variantId);
         long Insert(PoRequestedBase obj, SqlTransaction trans);
         List<dynamic> GetVendorHistory(int vendorId);
+
         (List<dynamic> Items, int TotalCount) GetVendorHistoryPaged(int vendorId, int pageIndex, int pageSize);
-        
+
         (List<dynamic> Items, int TotalCount) GetVendorHistoryPaged(int vendorId, int pageIndex, int pageSize, string search, string status, string type);
-        
-        
+
+
         (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int pageIndex, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate);
 
     }

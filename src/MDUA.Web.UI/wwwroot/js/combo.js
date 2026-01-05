@@ -72,6 +72,34 @@ $(document).ready(function () {
     if ($('#order-form').length === 0) {
         return;
     }
+    // ==================================================
+    // HELPER: Force Scroll to Element (Fixes Sticky Header issues)
+    // ✅ MOVED HERE so the Submit Button can find it
+    // ==================================================
+    function forceScrollTo(element) {
+        if (!element || element.length === 0) return;
+
+        // 1. Get the DOM object
+        const domNode = element[0];
+
+        // 2. Calculate position: Absolute Top - Header Offset (150px)
+        const headerOffset = 150;
+        const elementPosition = domNode.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        // 3. Scroll Manually
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+
+        // 4. Focus if it's an input (opens keyboard on mobile)
+        if (element.is('input, select, textarea')) {
+            setTimeout(() => {
+                element.focus({ preventScroll: true });
+            }, 300);
+        }
+    }
 
     // ==================================================
     // 2. PAYMENT METHOD UI LOGIC (SIMPLIFIED)
@@ -491,13 +519,11 @@ $(document).ready(function () {
             isCheckingEmail = false;
 
             if (res.exists) {
-                // If backend returns true, it effectively means "Conflict with ANOTHER user"
-                // because we handled the "Same User" case in the C# controller.
-
                 $msg.text("⚠ This email is already registered with a different phone number.").css('color', 'red').show();
-                $('.submit-btn').prop('disabled', true).text('Fix Email');
+
+                // ✅ FIX: Keep button ENABLED so user can click it to be redirected
+                $('.submit-btn').prop('disabled', false).text('Fix Email');
             } else {
-                // Email is available OR belongs to this user -> OK
                 $msg.text("✓ Email available").css('color', 'green').show();
                 $('.submit-btn').prop('disabled', false).text('Confirm Order');
             }
@@ -755,20 +781,39 @@ $(document).ready(function () {
         }
 
         // Case 2: Variants exist but none selected
+// Case 2: Variants exist but none selected
+// Case 2: Variants exist but none selected
         if (!variantId) {
             showStockError('⚠️ Please select product options first');
+
+            // 1. Highlight the variant area visually
             $('.variant-chips-container').css({
                 'border': '2px solid #ff6b6b',
-                'padding': '10px',
-                'border-radius': '8px'
+                'padding': '4px',
+                'border-radius': '8px',
+                'transition': 'all 0.3s ease'
             });
-            setTimeout(() => {
-                $('.variant-chips-container').css('border', 'none');
-            }, 2000);
-            return;
-        }
 
-        // Case 3: Variant selected - check stock
+            // 2. ROBUST REDIRECT: Use native scrollIntoView
+            // This works better than jQuery .animate() on modern mobile browsers
+            const variantSection = document.querySelector('.variant-selection-area');
+            if (variantSection) {
+                variantSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center' // Centers the missing option in the middle of the screen
+                });
+            }
+
+            // 3. Remove the red highlight after 2 seconds
+            setTimeout(() => {
+                $('.variant-chips-container').css({
+                    'border': 'none',
+                    'padding': '0'
+                });
+            }, 2000);
+
+            return;
+        }        // Case 3: Variant selected - check stock
         if (maxAvailableStock > 0) {
             if (qty < maxAvailableStock) {
                 $('#quantity').val(qty + 1);
@@ -851,14 +896,44 @@ $('#order-form').submit(function (e) {
     // ============================================================
     
     // Capture form reference to use inside SweetAlert later
-    var $form = $(this); 
+    var $form = $(this);
 
+// 1. Phone Number Validation with Scroll-on-OK
+// 1. Phone Number Validation (Fixed: Scrolls to input after clicking OK)
+// 1. Phone Number Validation (Fixed: Scrolls correctly)
     if (!iti.isValidNumber()) {
-        Swal.fire('Error', 'Please enter a valid phone number for the selected country.', 'error');
-        return;
-    }
-    // 1. Reset previous error styles
-    $('.input-error').removeClass('input-error');
+        Swal.fire({
+            title: 'Error',
+            text: 'Please enter a valid phone number for the selected country.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false,
+            returnFocus: false  // <--- CRITICAL FIX: Prevents jumping back to the submit button
+        }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+                // Add a small delay to ensure modal is fully removed from DOM
+                setTimeout(() => {
+                    const phoneInput = document.getElementById('customerPhone');
+                    if (phoneInput) {
+                        const headerOffset = 150;
+                        const elementPosition = phoneInput.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
+
+                        // Focus after scrolling starts
+                        setTimeout(() => {
+                            phoneInput.focus({ preventScroll: true });
+                        }, 300);
+                    }
+                }, 100); // Wait 100ms for SweetAlert to clear
+            }
+        });
+        return; // Stop form submission
+    }    $('.input-error').removeClass('input-error');
     $('.variant-chips-container').css({ 'border': 'none', 'padding': '0' });
 
     // 2. CHECK: Is Email check pending?
@@ -876,8 +951,8 @@ $('#order-form').submit(function (e) {
     // 3. CHECK: Email Error Visible
     const $emailStatus = $('#email-status');
     if ($emailStatus.is(':visible') && $emailStatus.css('color') === 'rgb(255, 0, 0)') {
-        $('html, body').animate({ scrollTop: $('#customerEmail').offset().top - 120 }, 300);
-        $('#customerEmail').focus();
+        // ✅ FIX: Use the robust helper function
+        forceScrollTo($('#customerEmail'));
         return;
     }
 
@@ -909,15 +984,15 @@ $('#order-form').submit(function (e) {
         });
 
     // 6. IF INVALID: Scroll to error
-    if (!isValid || firstErrorField) {
-        if (firstErrorField && firstErrorField.length) {
-            const elementTop = firstErrorField[0].getBoundingClientRect().top + window.scrollY;
-            $('html, body').animate({ scrollTop: elementTop - 120 }, 600);
+// 6. IF INVALID: Scroll to error
+// 6. IF INVALID: Scroll to error using the Helper Function
+    if (!isValid || (firstErrorField && firstErrorField.length > 0)) {
+        if (firstErrorField) {
+            console.log("Validation Error Found. Scrolling to:", firstErrorField); // Debug check
+            forceScrollTo(firstErrorField);
         }
         return; // STOP HERE IF INVALID
-    }
-
-    // 7. CHECK: Stock Limits
+    }    // 7. CHECK: Stock Limits
     let requestedQty = parseInt($('#quantity').val());
     if (maxAvailableStock > 0 && requestedQty > maxAvailableStock) {
         $('#stock-error-message').text(`ERROR: Requested quantity exceeds limit.`);
@@ -1004,6 +1079,7 @@ $('#order-form').submit(function (e) {
 
             // 
             // SEND TO SERVER
+// SEND TO SERVER
             $.ajax({
                 url: '/order/place',
                 type: 'POST',
@@ -1011,13 +1087,64 @@ $('#order-form').submit(function (e) {
                 data: JSON.stringify(formData),
                 success: function (res) {
                     if (res.success) {
+
                         // 1. HANDLE COD / MANUAL PAYMENT
-                        if (formData.PaymentMethod === 'cod' || formData.PaymentMode === 'Manual') {
-                            showOrderSuccessAlert(
-                                res.orderId || 'PENDING',
-                                formData.CustomerName,
-                                formData.CustomerPhone
-                            );
+                        if ((formData.PaymentMethod && formData.PaymentMethod.toLowerCase() === 'cod') || formData.PaymentMode === 'Manual') {
+
+                            Swal.fire({
+                                title: 'Order Placed Successfully! 🎉',
+                                icon: 'success',
+                                html: `
+                                        <div style="text-align: left; margin-top: 10px;">
+                                            <p style="font-size: 1.1em; color: #333;">Dear <b>${formData.CustomerName || 'Customer'}</b>,</p>
+                                            <p style="color: #666;">Thank you for your order! We have received your request.</p>
+                                            
+                                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 2px dashed #2ebf91; margin: 15px 0; text-align: center;">
+                                                <p style="margin: 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; color: #555;">Order Tracking ID</p>
+                                                <h2 style="margin: 5px 0 0 0; color: #2ebf91; font-family: monospace; font-size: 24px;">${res.orderId || res.OrderId || 'PENDING'}</h2>
+                                            </div>
+
+                                            <p style="font-size: 0.9em; color: #666; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-phone-alt" style="color: #2ebf91;"></i> 
+                                                We will contact you at <b>${formData.CustomerPhone}</b> shortly.
+                                            </p>
+                                        </div>
+                                    `,
+                                confirmButtonText: '<i class="fas fa-search-location"></i> Track Order',
+                                confirmButtonColor: '#2ebf91',
+                                showCancelButton: true,
+                                cancelButtonText: 'Close',
+                                cancelButtonColor: '#6c757d',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // === OPTION A: TRACK ORDER ===
+
+                                    // 1. Clean up the background immediately (Simulate Refresh)
+                                    $btn.prop('disabled', false);
+                                    updateSubmitButtonText();
+                                    $('#order-form')[0].reset();
+
+                                    // 2. Wait for Success Alert to close (500ms), THEN Open Tracking
+                                    setTimeout(() => {
+                                        // Redirect/Open Tracking Modal
+                                        $('#open-status-modal').click();
+
+                                        // Fill the ID
+                                        setTimeout(() => {
+                                            $('#track-order-id').val(res.orderId || res.OrderId);
+                                        }, 200);
+
+                                    }, 500); // 500ms delay ensures the first modal is gone
+
+                                } else {
+                                    // === OPTION B: CLOSE ===
+                                    // Reload the page completely
+                                    window.location.reload();
+                                }
+                            });
+
                         }
                         // 2. HANDLE ONLINE PAYMENT GATEWAY
                         else {
@@ -1049,6 +1176,7 @@ $('#order-form').submit(function (e) {
                     }
                 },
                 error: function (xhr) {
+                    // 4. NETWORK/SERVER ERROR
                     let errorMessage = "Network Error.";
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
@@ -1062,11 +1190,10 @@ $('#order-form').submit(function (e) {
                         icon: 'error',
                         confirmButtonText: 'Close'
                     });
-                    $btn.prop('disabled', false);
+                    $btn.prop('disabled', false); // Re-enable button
                     updateSubmitButtonText();
                 }
-            });
-        }
+            });        }
     });
 });    // ==================================================
     // 10. IMAGE GALLERY SLIDER
@@ -1153,8 +1280,38 @@ $(document).ready(function () {
 
     const ONE_HOUR = 60 * 60 * 1000;
 
+
+    // SAFETY CHECK: If we are on the Admin page...
+    if ($('#order-form').length === 0) {
+        return;
+    }
+
+    // ==================================================
+    // HELPER: Force Scroll to Element (Fixes Sticky Header issues)
+    // ✅ MOVED HERE so the Submit Button can find it
+    // ==================================================
+    function forceScrollTo(element) {
+        if (!element || element.length === 0) return;
+
+        const domNode = element[0];
+        const headerOffset = 150;
+        const elementPosition = domNode.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+
+        if (element.is('input, select, textarea')) {
+            setTimeout(() => {
+                element.focus({ preventScroll: true });
+            }, 300);
+        }
+    }
     // ==================================================
     // 1. SESSION MANAGEMENT
+ 
     // ==================================================
     function checkSessionExpiry() {
         const now = new Date().getTime();
@@ -1166,6 +1323,87 @@ $(document).ready(function () {
             chatSessionId = null;
             chatUserName = null;
         }
+// ==================================================
+        // FIX: Inject Close Button on Mobile if Missing
+        // ==================================================
+        function ensureChatCloseButton() {
+            if ($(window).width() <= 768) {
+                var $chatBox = $('#live-chat-box');
+                var $closeBtn = $('#chat-close-btn');
+
+                // If chat box exists but button is missing
+                if ($chatBox.length > 0 && $closeBtn.length === 0) {
+                    // Append the button manually
+                    $chatBox.append('<div id="chat-close-btn"><i class="fas fa-times"></i></div>');
+
+                    // Bind the click event to the new button
+                    $(document).on('click', '#chat-close-btn', function() {
+                        $('#live-chat-box').fadeOut();
+                        var mainBtn = $('#support-widget-btn');
+                        mainBtn.removeClass('active');
+                        mainBtn.find('i').removeClass('fa-times').addClass('fa-headset');
+                    });
+                }
+            }
+        }
+
+        // Run on load and on resize
+        ensureChatCloseButton();
+        $(window).resize(ensureChatCloseButton);
+        // HELPER: Force Scroll to Element (Fixes Sticky Header issues)
+        function forceScrollTo(element) {
+            if (!element || element.length === 0) return;
+
+            // 1. Get the DOM object
+            const domNode = element[0];
+
+            // 2. Calculate position: Absolute Top - Header Offset (150px)
+            const headerOffset = 150;
+            const elementPosition = domNode.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            // 3. Scroll Manually
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+
+            // 4. Focus if it's an input (opens keyboard on mobile)
+            if (element.is('input, select, textarea')) {
+                // slightly delay focus to allow scroll to start
+                setTimeout(() => {
+                    element.focus({ preventScroll: true });
+                }, 300);
+            }
+        }
+        // ==================================================
+        // HELPER: Force Scroll to Element (Fixes Sticky Header issues)
+        // Place this at the top of $(document).ready
+        // ==================================================
+        // function forceScrollTo(element) {
+        //     if (!element || element.length === 0) return;
+        //
+        //     // 1. Get the DOM object
+        //     const domNode = element[0];
+        //
+        //     // 2. Calculate position: Absolute Top - Header Offset (150px)
+        //     const headerOffset = 150;
+        //     const elementPosition = domNode.getBoundingClientRect().top;
+        //     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        //
+        //     // 3. Scroll Manually
+        //     window.scrollTo({
+        //         top: offsetPosition,
+        //         behavior: "smooth"
+        //     });
+        //
+        //     // 4. Focus if it's an input (opens keyboard on mobile)
+        //     if (element.is('input, select, textarea')) {
+        //         setTimeout(() => {
+        //             element.focus({ preventScroll: true });
+        //         }, 300);
+        //     }
+        // }
     }
 
     checkSessionExpiry();
@@ -1486,17 +1724,24 @@ function showOrderSuccessAlert(orderId, customerName, customerPhone) {
         customClass: {
             popup: 'animated fadeInDown' // Optional animation
         }
+        // ... inside the Swal.fire success alert ...
     }).then((result) => {
         if (result.isConfirmed) {
-            // 1. Click the "Track My Order" button in your header to open the modal
+            // 1. Open Track Modal
             $('#open-status-modal').click();
 
-            // 2. Pre-fill the input inside that modal (if input has id="track-order-id")
+            // 2. Pre-fill Tracking ID
             setTimeout(() => {
-                $('#track-order-id').val(orderId);
+                $('#track-order-id').val(res.orderId || res.OrderId);
             }, 300);
+
+            // 3. RESET FORM & BUTTON (Fixes the stuck "Processing" button)
+            $btn.prop('disabled', false);     // Re-enable button
+            updateSubmitButtonText();         // Restore "Confirm Order" text
+            $('#order-form')[0].reset();      // Clear name, phone, etc.
+
         } else {
-            // Reload if they click Close
+            // If they clicked "Close", we can safely reload the page
             window.location.reload();
         }
     });

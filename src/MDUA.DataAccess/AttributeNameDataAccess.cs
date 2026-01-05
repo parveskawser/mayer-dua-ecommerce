@@ -9,8 +9,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
     // Do NOT inherit again (already inherited in the generated file)
-    public partial class AttributeNameDataAccess
-    {
+    public partial class AttributeNameDataAccess : IAttributeNameDataAccess    {
         public List<AttributeValue> GetValuesByAttributeId(int attributeId)
         {
             string query = $"AttributeId = {attributeId}";

@@ -889,7 +889,7 @@ namespace MDUA.Facade
             }
         }
 
-        public ProductList SearchProducts(string searchTerm)
+          public ProductList SearchProducts(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -930,6 +930,7 @@ namespace MDUA.Facade
 
             return products;
         }
+
 
 
         #endregion
@@ -1132,37 +1133,98 @@ namespace MDUA.Facade
         }
 
         public LandingPageViewModel GetHomepageData()
+{
+    var model = new LandingPageViewModel();
+
+    // 1. Fetch Categories (Top 10 active)
+    // Assuming you have a DAO method for this, or use GetByQuery
+    // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
+    // Mocking for now if DAO method missing:
+    model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
+
+    // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
+    var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
+
+    // Map to ViewModel
+    foreach (var p in products)
+    {
+        var vm = new ProductViewModel
         {
-            var model = new LandingPageViewModel();
+            Id = p.Id,
+            Name = p.ProductName,
+            // Logic to get primary image or default
+            ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
+            // Logic to get base price or lowest variant price
+            Price = p.BasePrice ?? 0,
+            Slug = p.Slug // <--- Add this line
+        };
+        model.NewArrivals.Add(vm);
+    }
 
-            // 1. Fetch Categories (Top 10 active)
-            // Assuming you have a DAO method for this, or use GetByQuery
-            // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
-            // Mocking for now if DAO method missing:
-            model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
+    // Just shuffling for "Featured" for now
+    model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
 
-            // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
-            var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
+    return model;
+}
 
-            // Map to ViewModel
-            foreach (var p in products)
+
+public List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null)
+{
+    List<Product> sourceList;
+
+    // 1. Determine Source (Search vs All)
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        // ✅ USE SEARCH LOGIC (Handles Variants & Name matches)
+        sourceList = SearchProducts(searchTerm).Where(p => p.CompanyId == companyId).ToList();
+
+        // ⚠️ SearchProducts returns raw entities. We must calculate Price/Discount manually here.
+        foreach (var p in sourceList)
+        {
+            decimal basePrice = p.BasePrice ?? 0;
+            var bestDiscount = GetBestDiscount(p.Id, basePrice);
+            decimal sellingPrice = basePrice;
+
+            if (bestDiscount != null)
             {
-                var vm = new ProductViewModel
-                {
-                    Id = p.Id,
-                    Name = p.ProductName,
-                    // Logic to get primary image or default
-                    ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
-                    // Logic to get base price or lowest variant price
-                    Price = p.BasePrice ?? 0
-                };
-                model.NewArrivals.Add(vm);
+                if (bestDiscount.DiscountType == "Flat")
+                    sellingPrice -= bestDiscount.DiscountValue;
+                else if (bestDiscount.DiscountType == "Percentage")
+                    sellingPrice -= (basePrice * (bestDiscount.DiscountValue / 100));
             }
-
-            // Just shuffling for "Featured" for now
-            model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
-
-            return model;
+            p.SellingPrice = Math.Max(sellingPrice, 0);
         }
+    }
+    else
+    {
+        // ✅ USE DEFAULT LOGIC (Already includes Price Calculations)
+        sourceList = GetAllProductsWithCategory().Where(p => p.CompanyId == companyId).ToList();
+    }
+
+    // 2. Filter by Category (if clicked)
+    if (categoryId.HasValue)
+    {
+        sourceList = sourceList.Where(p => p.CategoryId == categoryId.Value).ToList();
+    }
+
+    // 3. Map to ViewModel
+    var list = new List<ProductViewModel>();
+    foreach (var p in sourceList)
+    {
+        string imgUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id);
+
+        list.Add(new ProductViewModel
+        {
+            Id = p.Id,
+            Name = p.ProductName,
+            ImageUrl = !string.IsNullOrEmpty(imgUrl) ? imgUrl : "/images/default-book.png",
+            // Use the calculated SellingPrice
+            Price = p.SellingPrice > 0 ? p.SellingPrice : (p.BasePrice ?? 0),
+            Slug = p.Slug
+        });
+    }
+
+    return list;
+}
     }
 }

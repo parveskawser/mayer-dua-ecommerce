@@ -14,7 +14,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
 	public partial class PoReceivedDataAccess : BaseDataAccess, IPoReceivedDataAccess
-	{
+    {
 		#region Constants
 		private const string INSERTPORECEIVED = "InsertPoReceived";
 		private const string UPDATEPORECEIVED = "UpdatePoReceived";
@@ -53,7 +53,11 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pDateTime(PoReceivedBase.Property_UpdatedAt, poReceivedObject.UpdatedAt));
 			AddParameter(cmd, pNVarChar(PoReceivedBase.Property_Remarks, 500, poReceivedObject.Remarks));
 			AddParameter(cmd, pNVarChar(PoReceivedBase.Property_InvoiceNo, 100, poReceivedObject.InvoiceNo));
-		}
+			AddParameter(cmd, pDecimal(PoReceivedBase.Property_TotalPaymentDue, 17, poReceivedObject.TotalPaymentDue));
+			AddParameter(cmd, pDecimal(PoReceivedBase.Property_TotalPaid, 9, poReceivedObject.TotalPaid));
+			AddParameter(cmd, pNVarChar(PoReceivedBase.Property_PaymentStatus, 20, poReceivedObject.PaymentStatus));
+			AddParameter(cmd, pInt32(PoReceivedBase.Property_VendorId, poReceivedObject.VendorId));
+        }
 		#endregion
 		
 		#region Insert Method
@@ -280,10 +284,15 @@ namespace MDUA.DataAccess
 				if(!reader.IsDBNull(8)) poReceivedObject.UpdatedAt = reader.GetDateTime( start + 8 );			
 				if(!reader.IsDBNull(9)) poReceivedObject.Remarks = reader.GetString( start + 9 );			
 				if(!reader.IsDBNull(10)) poReceivedObject.InvoiceNo = reader.GetString( start + 10 );			
-			FillBaseObject(poReceivedObject, reader, (start + 11));
+				if(!reader.IsDBNull(11)) poReceivedObject.TotalPaymentDue = reader.GetDecimal( start + 11 );			
+				poReceivedObject.TotalPaid = reader.GetDecimal( start + 12 );			
+				poReceivedObject.PaymentStatus = reader.GetString( start + 13 );
+                poReceivedObject.VendorId = reader.GetInt32(start + 14);
 
-			
-			poReceivedObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	
+                FillBaseObject(poReceivedObject, reader, (start + 15));
+
+
+            poReceivedObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	
 		}
 		
 		/// <summary>

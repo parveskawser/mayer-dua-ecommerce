@@ -17,7 +17,8 @@ namespace MDUA.Entities.Bases
 			Id = 0,
 			AttributeId = 1,
 			Value = 2,
-			DisplayOrder = 3
+			DisplayOrder = 3,
+			IsActive = 4
 		}
 		#endregion
 	
@@ -26,6 +27,7 @@ namespace MDUA.Entities.Bases
 		public const string Property_AttributeId = "AttributeId";		            
 		public const string Property_Value = "Value";		            
 		public const string Property_DisplayOrder = "DisplayOrder";		            
+		public const string Property_IsActive = "IsActive";		            
 		#endregion
 		
 		#region Private Data Types
@@ -33,6 +35,7 @@ namespace MDUA.Entities.Bases
 		private Int32 _AttributeId;	            
 		private String _Value;	            
 		private Int32 _DisplayOrder;	            
+		private Boolean _IsActive;	            
 		#endregion
 		
 		#region Properties		
@@ -96,6 +99,21 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public Boolean IsActive
+		{	
+			get{ return _IsActive; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_IsActive, value, _IsActive);
+				if (PropertyChanging(args))
+				{
+					_IsActive = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -107,6 +125,7 @@ namespace MDUA.Entities.Bases
 			newObj.AttributeId = this.AttributeId;						
 			newObj.Value = this.Value;						
 			newObj.DisplayOrder = this.DisplayOrder;						
+			newObj.IsActive = this.IsActive;						
 			
 			return newObj;
 		}
@@ -120,6 +139,7 @@ namespace MDUA.Entities.Bases
 			info.AddValue(AttributeValueBase.Property_AttributeId, AttributeId);				
 			info.AddValue(AttributeValueBase.Property_Value, Value);				
 			info.AddValue(AttributeValueBase.Property_DisplayOrder, DisplayOrder);				
+			info.AddValue(AttributeValueBase.Property_IsActive, IsActive);				
 		}
 		#endregion
 

@@ -17,12 +17,12 @@ namespace MDUA.Facade.Interface
         long CreatePurchaseOrder(PoRequested po);
         List<Vendor> GetAllVendors();
         dynamic GetPendingRequestInfo(int variantId);
-        void ReceiveStock(int variantId, int qty, decimal price, string invoice, string remarks);
-        object GetVariantStatus(int variantId);
+        void ReceiveStock(int poReqId, int qty, decimal price, string invoice, string remarks,decimal paidAmount = 0, int? paymentMethodId = null, string paymentRef = null); object GetVariantStatus(int variantId);
         
         List<dynamic> GetInventorySortedByStockAsc();
         void CreateBulkOrder(BulkPurchaseOrder bulkOrder, List<PoRequested> items);
         List<BulkPurchaseOrder> GetBulkOrdersReceivedList();
+        PoReceivedList GetAllReceived();
 
 
 

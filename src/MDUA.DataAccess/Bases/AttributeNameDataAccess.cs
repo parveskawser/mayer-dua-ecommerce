@@ -9,11 +9,10 @@ using MDUA.Framework.Exceptions;
 using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Entities.List;
-using MDUA.DataAccess.Interface;
 
 namespace MDUA.DataAccess
 {
-	public partial class AttributeNameDataAccess : BaseDataAccess, IAttributeNameDataAccess
+	public partial class AttributeNameDataAccess : BaseDataAccess
 	{
 		#region Constants
 		private const string INSERTATTRIBUTENAME = "InsertAttributeName";
@@ -45,6 +44,7 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pNVarChar(AttributeNameBase.Property_Name, 100, attributeNameObject.Name));
 			AddParameter(cmd, pInt32(AttributeNameBase.Property_DisplayOrder, attributeNameObject.DisplayOrder));
 			AddParameter(cmd, pBool(AttributeNameBase.Property_IsVariantAffecting, attributeNameObject.IsVariantAffecting));
+			AddParameter(cmd, pBool(AttributeNameBase.Property_IsActive, attributeNameObject.IsActive));
 		}
 		#endregion
 		
@@ -251,7 +251,8 @@ namespace MDUA.DataAccess
 				attributeNameObject.Name = reader.GetString( start + 1 );			
 				attributeNameObject.DisplayOrder = reader.GetInt32( start + 2 );			
 				attributeNameObject.IsVariantAffecting = reader.GetBoolean( start + 3 );			
-			FillBaseObject(attributeNameObject, reader, (start + 4));
+				attributeNameObject.IsActive = reader.GetBoolean( start + 4 );			
+			FillBaseObject(attributeNameObject, reader, (start + 5));
 
 			
 			attributeNameObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	
