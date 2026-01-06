@@ -12,17 +12,17 @@ namespace MDUA.Facade.Interface
 {
     public interface IPurchaseFacade : ICommonFacade<PoRequested,   PoRequestedList, PoRequestedBase>
     {
-        List<dynamic> GetInventoryStatus();
+        List<dynamic> GetInventoryStatus(int companyId);
 
         long CreatePurchaseOrder(PoRequested po);
-        List<Vendor> GetAllVendors();
+        List<Vendor> GetAllVendors(int companyId);
         dynamic GetPendingRequestInfo(int variantId);
-        void ReceiveStock(int variantId, int qty, decimal price, string invoice, string remarks);
-        object GetVariantStatus(int variantId);
+        void ReceiveStock(int poReqId, int qty, decimal price, string invoice, string remarks,decimal paidAmount = 0, int? paymentMethodId = null, string paymentRef = null); object GetVariantStatus(int variantId);
         
-        List<dynamic> GetInventorySortedByStockAsc();
+        List<dynamic> GetInventorySortedByStockAsc(int companyId);
         void CreateBulkOrder(BulkPurchaseOrder bulkOrder, List<PoRequested> items);
-        List<BulkPurchaseOrder> GetBulkOrdersReceivedList();
+        List<BulkPurchaseOrder> GetBulkOrdersReceivedList(int companyId);
+        PoReceivedList GetAllReceived();
 
 
 

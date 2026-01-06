@@ -2,6 +2,7 @@
 using MDUA.Entities;
 using MDUA.Entities.List;
 using System;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace MDUA.DataAccess
@@ -65,33 +66,41 @@ namespace MDUA.DataAccess
 
             return product;
         }
-        public ProductList GetLastFiveProducts()
+        // MDUA.DataAccess/ProductDataAccess.cs
+
+        public ProductList GetLastFiveProducts(int companyId) // ✅ Added Parameter
         {
+            // ✅ Added "AND CompanyId = @CompanyId"
             string SQLQuery = @"
-    SELECT TOP 5
-        Id,
-        CompanyId,
-        ProductName,
-        ReorderLevel,
-        Barcode,
-        CategoryId,
-        Description,
-        Slug,
-        BasePrice,
-        IsVariantBased,
-        IsActive,
-        CreatedBy,
-        CreatedAt,
-        UpdatedBy,
-        UpdatedAt,
-        ExtraInfo -- <--- ADDED THIS COLUMN
-    FROM Product
-    WHERE IsActive = 1
-    ORDER BY CreatedAt DESC";
+        SELECT TOP 5
+            Id,
+            CompanyId,
+            ProductName,
+            ReorderLevel,
+            Barcode,
+            CategoryId,
+            Description,
+            Slug,
+            BasePrice,
+            IsVariantBased,
+            IsActive,
+            CreatedBy,
+            CreatedAt,
+            UpdatedBy,
+            UpdatedAt,
+            ExtraInfo 
+        FROM Product
+        WHERE IsActive = 1 
+          AND CompanyId = @CompanyId -- ✅ FILTER
+        ORDER BY CreatedAt DESC";
 
-            using SqlCommand cmd = GetSQLCommand(SQLQuery);
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                // ✅ Add Parameter
+                AddParameter(cmd, pInt32("CompanyId", companyId));
 
-            return GetList(cmd, 5);
+                return GetList(cmd, 5);
+            }
         }
         public bool? ToggleStatus(int productId)
         {
@@ -148,20 +157,27 @@ namespace MDUA.DataAccess
         }
 
         // 1. GET FULL LIST
-        public ProductList GetAllProductsWithCategory()
+        // Add int companyId parameter
+        public ProductList GetAllProductsWithCategory(int companyId)
         {
+            // ✅ ADDED: WHERE p.CompanyId = @CompanyId
             string SQLQuery = @"
-                SELECT TOP 100 
-                    p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
-                    p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
-                    p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
-                    NULL as DummyForBase, -- Index 15: Buffer for FillBaseObject
-                    ISNULL(c.Name, '') as CategoryName -- Index 16: Actual Data
-                FROM Product p
-                LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
-                ORDER BY p.CreatedAt DESC";
+        SELECT TOP 100 
+            p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+            p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+            NULL as DummyForBase, 
+            ISNULL(c.Name, '') as CategoryName 
+        FROM Product p
+        LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+        WHERE p.CompanyId = @CompanyId  -- <--- CRITICAL FIX
+        ORDER BY p.CreatedAt DESC";
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
+
+            // ✅ Add the parameter
+            AddParameter(cmd, pInt32("CompanyId", companyId));
+
             return GetListWithCategory(cmd);
         }
         private ProductList GetListWithCategory(SqlCommand cmd)
@@ -199,36 +215,32 @@ namespace MDUA.DataAccess
             return list;
         }
         // 2. SEARCH PRODUCTS
-        public ProductList SearchProducts(string searchTerm)
+        // Add int companyId parameter
+        public ProductList SearchProducts(string searchTerm, int companyId)
         {
-            // 1. Sanitize and Tokenize
             if (string.IsNullOrWhiteSpace(searchTerm)) return new ProductList();
 
-            // Split the search term into individual words
             var keywords = searchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // If no valid keywords, return empty
             if (keywords.Length == 0) return new ProductList();
 
-            // 2. Build Dynamic SQL
-            // We want: (ProductName LIKE '%Word1%' AND ProductName LIKE '%Word2%')
-            // This allows "Combo - 3" to match "Combo" AND "3" even if the dash is missing in the search.
-
             var sqlBuilder = new System.Text.StringBuilder();
-            sqlBuilder.Append(@"
-        SELECT TOP 50
-            p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
-            p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
-            p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
-            NULL as DummyForBase,
-            ISNULL(c.Name, '') as CategoryName
-        FROM Product p
-        LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
-        WHERE p.IsActive = 1 
-          AND (
-            (");
 
-            // Loop through keywords to build the "AND LIKE" clauses for Product Name
+            // ✅ ADDED: p.CompanyId = @CompanyId inside the WHERE clause
+            sqlBuilder.Append(@"
+    SELECT TOP 50
+        p.Id, p.CompanyId, p.ProductName, p.ReorderLevel, p.Barcode,
+        p.CategoryId, p.Description, p.Slug, p.BasePrice, p.IsVariantBased,
+        p.IsActive, p.CreatedBy, p.CreatedAt, p.UpdatedBy, p.UpdatedAt,
+        NULL as DummyForBase,
+        ISNULL(c.Name, '') as CategoryName
+    FROM Product p
+    LEFT JOIN ProductCategory c ON p.CategoryId = c.Id
+    WHERE p.CompanyId = @CompanyId  -- <--- CRITICAL FIX
+      AND p.IsActive = 1 
+      AND (
+        (");
+
+            // Loop for ProductName logic
             for (int i = 0; i < keywords.Length; i++)
             {
                 if (i > 0) sqlBuilder.Append(" AND ");
@@ -236,30 +248,30 @@ namespace MDUA.DataAccess
             }
 
             sqlBuilder.Append(@") 
-            OR p.Id IN (
-                -- Also check variants (OR logic inside variants is usually safer, but let's stick to AND for precision)
-                SELECT ProductId 
-                FROM ProductVariant pv 
-                WHERE ");
+        OR p.Id IN (
+            SELECT ProductId 
+            FROM ProductVariant pv 
+            WHERE ");
 
+            // Loop for Variant logic
             for (int i = 0; i < keywords.Length; i++)
             {
                 if (i > 0) sqlBuilder.Append(" AND ");
-                // Check both VariantName and SKU
                 sqlBuilder.Append($"(pv.VariantName LIKE @Word{i} OR pv.SKU LIKE @Word{i})");
             }
 
             sqlBuilder.Append(@")
-          )
-        ORDER BY p.ProductName ASC");
+      )
+    ORDER BY p.ProductName ASC");
 
-            // 3. Execute
             using SqlCommand cmd = GetSQLCommand(sqlBuilder.ToString());
 
-            // Add Parameters dynamically
+            // ✅ Add CompanyId Parameter
+            AddParameter(cmd, pInt32("CompanyId", companyId));
+
+            // Add Search Parameters
             for (int i = 0; i < keywords.Length; i++)
             {
-                // Wrap each word in wildcards: %word%
                 AddParameter(cmd, pNVarChar($"Word{i}", 100, $"%{keywords[i]}%"));
             }
 
@@ -283,6 +295,24 @@ namespace MDUA.DataAccess
 
             using SqlCommand cmd = GetSQLCommand(SQLQuery);
             return GetListWithCategory(cmd); // Reuse your existing private helper
+        }
+
+        private const string SP_GET_PRODUCT_COUNT = "sp_GetProductCountByCompany";
+
+        public int GetProductCount(int companyId)
+        {
+            using (SqlCommand cmd = GetSPCommand(SP_GET_PRODUCT_COUNT))
+            {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
+                // Manually manage connection if base helper doesn't auto-open for Scalars
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                object result = cmd.ExecuteScalar();
+
+                return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+            }
         }
     }
 }

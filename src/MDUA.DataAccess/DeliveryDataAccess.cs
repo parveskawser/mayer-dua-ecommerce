@@ -140,40 +140,44 @@ namespace MDUA.DataAccess
             return delivery.Id;
         }
 
-        public System.Collections.Generic.IList<Delivery> LoadAllWithDetails()
+        public System.Collections.Generic.IList<Delivery> LoadAllWithDetails(int companyId)
         {
             var result = new System.Collections.Generic.List<Delivery>();
 
-            // SQL to fetch Delivery + Order Info + Customer + Items + Product Info
+            // ✅ SQL Update: Added WHERE Clause to filter by cc.CompanyId
             string sql = @"
-        SELECT 
-            d.Id, d.SalesOrderId, d.TrackingNumber, d.Status, d.CarrierName, 
-            d.ShipDate, d.EstimatedArrival, d.ActualDeliveryDate, d.ShippingCost,
-            
-            soh.Id AS OrderId, 
-            soh.SalesChannelId,
-            soh.Status AS OrderStatus,      -- ✅ ADDED: Fetch Order Status
-            soh.Confirmed AS OrderConfirmed, -- ✅ ADDED: Fetch Confirmed Bit
-            
-            c.CustomerName,
-            
-            di.Id AS ItemId, di.Quantity,
-            
-            p.ProductName, 
-            pv.VariantName, 
-            pv.Sku
-        FROM Delivery d
-        INNER JOIN SalesOrderHeader soh ON d.SalesOrderId = soh.Id
-        INNER JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
-        INNER JOIN Customer c ON cc.CustomerId = c.Id
-        LEFT JOIN DeliveryItem di ON d.Id = di.DeliveryId
-        LEFT JOIN SalesOrderDetail sod ON di.SalesOrderDetailId = sod.Id
-        LEFT JOIN ProductVariant pv ON sod.ProductId = pv.Id 
-        LEFT JOIN Product p ON pv.ProductId = p.Id
-        ORDER BY d.Id DESC";
+    SELECT 
+        d.Id, d.SalesOrderId, d.TrackingNumber, d.Status, d.CarrierName, 
+        d.ShipDate, d.EstimatedArrival, d.ActualDeliveryDate, d.ShippingCost,
+        
+        soh.Id AS OrderId, 
+        soh.SalesChannelId,
+        soh.Status AS OrderStatus,      
+        soh.Confirmed AS OrderConfirmed, 
+        
+        c.CustomerName,
+        
+        di.Id AS ItemId, di.Quantity,
+        
+        p.ProductName, 
+        pv.VariantName, 
+        pv.Sku
+    FROM Delivery d
+    INNER JOIN SalesOrderHeader soh ON d.SalesOrderId = soh.Id
+    INNER JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
+    INNER JOIN Customer c ON cc.CustomerId = c.Id
+    LEFT JOIN DeliveryItem di ON d.Id = di.DeliveryId
+    LEFT JOIN SalesOrderDetail sod ON di.SalesOrderDetailId = sod.Id
+    LEFT JOIN ProductVariant pv ON sod.ProductId = pv.Id 
+    LEFT JOIN Product p ON pv.ProductId = p.Id
+    WHERE cc.CompanyId = @CompanyId  -- ✅ TENANT ISOLATION HERE
+    ORDER BY d.Id DESC";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
+                // ✅ Add the Security Parameter
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 cmd.CommandType = CommandType.Text;
 
                 if (cmd.Connection.State != ConnectionState.Open)
@@ -192,7 +196,7 @@ namespace MDUA.DataAccess
                             delivery = new Delivery
                             {
                                 Id = deliveryId,
-                                SalesOrderId = reader.GetInt32(reader.GetOrdinal("SalesOrderId")), // Added this missing map
+                                SalesOrderId = reader.GetInt32(reader.GetOrdinal("SalesOrderId")),
                                 TrackingNumber = reader.IsDBNull(reader.GetOrdinal("TrackingNumber")) ? null : reader.GetString(reader.GetOrdinal("TrackingNumber")),
                                 Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? "Pending" : reader.GetString(reader.GetOrdinal("Status")),
                                 CarrierName = reader.IsDBNull(reader.GetOrdinal("CarrierName")) ? null : reader.GetString(reader.GetOrdinal("CarrierName")),
@@ -206,8 +210,6 @@ namespace MDUA.DataAccess
                                 SalesOrderHeader = new SalesOrderHeader
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
-
-                                    // ✅ MAPPING FIX: Map the new columns
                                     Status = reader.IsDBNull(reader.GetOrdinal("OrderStatus")) ? "" : reader.GetString(reader.GetOrdinal("OrderStatus")),
                                     Confirmed = !reader.IsDBNull(reader.GetOrdinal("OrderConfirmed")) && reader.GetBoolean(reader.GetOrdinal("OrderConfirmed")),
 
@@ -257,7 +259,6 @@ namespace MDUA.DataAccess
             }
             return result;
         }
-
 
         #endregion
 

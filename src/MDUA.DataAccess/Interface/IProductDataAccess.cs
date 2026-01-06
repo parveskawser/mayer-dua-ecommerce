@@ -32,10 +32,12 @@ namespace MDUA.DataAccess.Interface
     public interface IProductDataAccess : ICommonDataAccess<Product, ProductList, ProductBase>
     {
         Product GetBySlug(string slug);
-        ProductList GetLastFiveProducts();
+        ProductList GetLastFiveProducts(int companyId);
         bool? ToggleStatus(int productId);
         Product GetProductById(int id);
-        ProductList SearchProducts(string searchTerm);
+        ProductList SearchProducts(string searchTerm, int companyId);
         ProductList GetRecentProductsWithImages(int count); // ✅ Add this
+        int GetProductCount(int companyId);
+        ProductList GetAllProductsWithCategory(int companyId);
     }
 }

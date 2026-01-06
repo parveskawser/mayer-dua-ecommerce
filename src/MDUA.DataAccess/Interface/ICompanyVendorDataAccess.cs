@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface ICompanyVendorDataAccess : ICommonDataAccess<CompanyVendor, CompanyVendorList, CompanyVendorBase>
-	{ 
-	}	
+	{
+        CompanyVendorList GetByCompanyId(int companyId);
+        CompanyVendorList GetByVendorId(int vendorId);
+    }	
 }

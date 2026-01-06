@@ -19,12 +19,12 @@
         // 4. Toggle Button Style
         if (drawer.hasClass("d-none")) {
             // Closed state
-            $thisButton.removeClass("btn-primary text-white").addClass("btn-manage");
-            $thisButton.find("span").html("&#9660;"); // Arrow Down
+            $thisButton.removeClass("btn-primary text-white").addClass("btn-manage"); // <--- OLD
+            $thisButton.find("span").html("&#9660;");
         } else {
             // Open state
-            $thisButton.removeClass("btn-manage").addClass("btn-primary text-white");
-            $thisButton.find("span").html("&#9650;"); // Arrow Up
+            $thisButton.removeClass("btn-manage").addClass("btn-primary text-white"); // <--- OLD
+            $thisButton.find("span").html("&#9650;");
         }
     });
 
@@ -393,6 +393,7 @@
     });
 
     // Execute Delete Product
+    // Execute Delete Product
     $('#confirm-delete-button').on('click', function () {
         let $button = $(this);
         let productId = $button.data('product-id');
@@ -405,27 +406,52 @@
             data: { productId: productId },
             success: function (data) {
                 if (data.success) {
+                    // HARD DELETE SCENARIO (Existing logic)
                     $('#deleteProductModal').modal('hide');
                     const $targetRows = $(`tr[data-product-row-id="${productId}"], #drawer-${productId}`);
                     $targetRows.fadeOut(300, function () {
                         $(this).remove();
                     });
-                    window.Toast.fire({
-                        icon: 'success',
-                        title: 'Product deleted successfully!'
-                    });
-                } else {
-                    window.Toast.fire({
-                        icon: 'error',
-                        title: data.message || 'Failed to delete product.'
-                    });
+                    window.Toast.fire({ icon: 'success', title: 'Product deleted successfully!' });
+                }
+                else {
+                    // CHECK IF IT WAS SOFT DELETED (New Logic)
+                    if (data.wasDeactivated) {
+                        // 1. Close the modal
+                        $('#deleteProductModal').modal('hide');
+
+                        // 2. Find the row and update status badge visually
+                        let $row = $(`tr[data-product-row-id="${productId}"]`);
+                        let $statusBtn = $row.find('.js-toggle-status');
+
+                        // Change text and swap classes (Green -> Red)
+                        $statusBtn.text("Inactive");
+                        $statusBtn.removeClass("bg-success-subtle text-success")
+                            .addClass("bg-danger-subtle text-danger");
+
+                        // 3. Show Warning Toast instead of Error
+                        window.Toast.fire({
+                            icon: 'warning',
+                            title: data.message // "Product cannot be deleted... deactivated instead"
+                        });
+                    }
+                    else {
+                        // STANDARD ERROR
+                        window.Toast.fire({
+                            icon: 'error',
+                            title: data.message || 'Failed to delete product.'
+                        });
+                    }
                 }
             },
             error: function () {
-                window.Toast.fire({
-                    icon: 'error',
-                    title: 'Something went wrong.'
-                });
+                window.Toast.fire({ icon: 'error', title: 'Something went wrong.' });
+            },
+            complete: function () {
+                // Reset button state if modal didn't close (only needed for true errors)
+                if ($('#deleteProductModal').hasClass('show')) {
+                    $button.prop('disabled', false).text('Delete Product');
+                }
             }
         });
     });

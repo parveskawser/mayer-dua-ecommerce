@@ -5,12 +5,13 @@ using MDUA.Entities.Bases;
 using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using MDUA.Framework;
+using MDUA.Framework.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using static MDUA.Entities.ProductVariant;
-using System.Net;
 
 namespace MDUA.Facade
 {
@@ -71,8 +72,20 @@ namespace MDUA.Facade
         }
 
         #region Common Implementation
-        public long Delete(int id) => _ProductDataAccess.Delete(id);
+        public long Delete(int id)
+        {
+            var result = _ProductDataAccess.Delete(id);
 
+            if (result == -999)
+                throw new WorkflowException(
+                    "This product cannot be deleted because it is already used in orders. The product has been deactivated instead."
+                );
+
+            if (result == -1)
+                throw new WorkflowException("Product delete failed due to a system error.");
+
+            return result;
+        }
         public Product Get(int id) => _ProductDataAccess.Get(id);
 
         public ProductList GetAll() => _ProductDataAccess.GetAll();
@@ -447,33 +460,32 @@ namespace MDUA.Facade
         {
             return _ProductVariantDataAccess.GetVariantAttributesByProductId(productId);
         }
-        public ProductList GetLastFiveProducts()
+        // MDUA.Facade/ProductFacade.cs
+
+        public ProductList GetLastFiveProducts(int companyId) // ✅ Match Interface Signature
         {
-            return _ProductDataAccess.GetLastFiveProducts();
+            return _ProductDataAccess.GetLastFiveProducts(companyId);
         }
 
-        public List<Product> GetAllProductsWithCategory()
+        // Change signature to accept companyId
+        public List<Product> GetAllProductsWithCategory(int companyId)
         {
-            var products = _ProductDataAccess.GetAll(); // returns List<Product> or ProductList
+            // ✅ Change: Call the specialized DA method that filters by Company
+            // Do NOT call .GetAll() here, as that fetches everything.
+            var products = _ProductDataAccess.GetAllProductsWithCategory(companyId);
 
-            // Get all categories in one query
-            var categories = _categoryDataAccess.GetAll().ToDictionary(c => c.Id, c => c.Name);
+            // The logic below (mapping Category Name) is actually already handled 
+            // inside the DataAccess SQL query you provided, so you likely don't need 
+            // the manual loop here anymore. 
+            // However, if you want to keep your price calculation logic:
 
-            // Fill CategoryName for each product
             foreach (var p in products)
             {
-                if (p.CategoryId.HasValue && categories.ContainsKey(p.CategoryId.Value))
-                    p.CategoryName = categories[p.CategoryId.Value];
-                else
-                    p.CategoryName = "N/A";
-
+                // Calculate Discount Logic (Keep your existing logic here)
                 decimal basePrice = p.BasePrice ?? 0;
-
-                // ✅ NEW: Get the Single Best Discount
                 var bestDiscount = GetBestDiscount(p.Id, basePrice);
 
                 decimal sellingPrice = basePrice;
-
                 if (bestDiscount != null)
                 {
                     if (bestDiscount.DiscountType == "Flat")
@@ -481,19 +493,22 @@ namespace MDUA.Facade
                     else if (bestDiscount.DiscountType == "Percentage")
                         sellingPrice -= (basePrice * (bestDiscount.DiscountValue / 100));
                 }
-
                 p.SellingPrice = Math.Max(sellingPrice, 0);
-                p.ActiveDiscount = bestDiscount; // The View will show this specific discount
+                p.ActiveDiscount = bestDiscount;
             }
 
             return products.ToList();
         }
+        // MDUA.Facade/ProductFacade.cs
 
-        public UserLoginResult GetAddProductData(int userId)
+        public UserLoginResult GetAddProductData(int companyId)
         {
             var result = new UserLoginResult
             {
-                Categories = _categoryDataAccess.GetAll()?.ToList() ?? new List<ProductCategory>(),
+                // Now safe to call because it handles NULLs
+                Categories = _categoryDataAccess.GetByCompany(companyId)?.ToList() ?? new List<ProductCategory>(),
+
+                // If you haven't updated AttributeDataAccess yet, keep using GetAll() here
                 Attributes = _attributeNameDataAccess.GetAll()?.ToList() ?? new List<AttributeName>()
             };
 
@@ -889,17 +904,14 @@ namespace MDUA.Facade
             }
         }
 
-        public ProductList SearchProducts(string searchTerm)
+        public ProductList SearchProducts(string searchTerm, int companyId)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
-            {
-                return new ProductList();
-            }
+            if (string.IsNullOrWhiteSpace(searchTerm)) return new ProductList();
 
-            // 1. Get matching products from Database
-            var products = _ProductDataAccess.SearchProducts(searchTerm);
+            // ✅ Pass companyId to Data Access
+            var products = _ProductDataAccess.SearchProducts(searchTerm, companyId);
 
-            // 2. Filter Variants inside the results
+            // Keep your existing variant filtering logic...
             foreach (var product in products)
             {
                 if (product.IsVariantBased == true)
@@ -930,6 +942,7 @@ namespace MDUA.Facade
 
             return products;
         }
+
 
 
         #endregion
@@ -1126,45 +1139,45 @@ namespace MDUA.Facade
                 }
             }
         }
-        public List<LowStockItem> GetLowStockVariants(int topN)
+        public List<LowStockItem> GetLowStockVariants(int companyId, int topN)
         {
-            return _variantPriceStockDataAccess.GetLowStockVariants(topN);
+            return _variantPriceStockDataAccess.GetLowStockVariants(companyId, topN);
         }
 
         public LandingPageViewModel GetHomepageData()
+{
+    var model = new LandingPageViewModel();
+
+    // 1. Fetch Categories (Top 10 active)
+    // Assuming you have a DAO method for this, or use GetByQuery
+    // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
+    // Mocking for now if DAO method missing:
+    model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
+
+    // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
+    var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
+
+    // Map to ViewModel
+    foreach (var p in products)
+    {
+        var vm = new ProductViewModel
         {
-            var model = new LandingPageViewModel();
+            Id = p.Id,
+            Name = p.ProductName,
+            // Logic to get primary image or default
+            ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
+            // Logic to get base price or lowest variant price
+            Price = p.BasePrice ?? 0,
+            Slug = p.Slug // <--- Add this line
+        };
+        model.NewArrivals.Add(vm);
+    }
 
-            // 1. Fetch Categories (Top 10 active)
-            // Assuming you have a DAO method for this, or use GetByQuery
-            // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
-            // Mocking for now if DAO method missing:
-            model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
+    // Just shuffling for "Featured" for now
+    model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
 
-            // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
-            var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
-
-            // Map to ViewModel
-            foreach (var p in products)
-            {
-                var vm = new ProductViewModel
-                {
-                    Id = p.Id,
-                    Name = p.ProductName,
-                    // Logic to get primary image or default
-                    ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
-                    // Logic to get base price or lowest variant price
-                    Price = p.BasePrice ?? 0,
-                    Slug = p.Slug // <--- Add this line
-                };
-                model.NewArrivals.Add(vm);
-            }
-
-            // Just shuffling for "Featured" for now
-            model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
-
-            return model;
-        }
+    return model;
+}
 
 
         public List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null)
@@ -1174,10 +1187,11 @@ namespace MDUA.Facade
             // 1. Determine Source (Search vs All)
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                // ✅ USE SEARCH LOGIC (Handles Variants & Name matches)
-                sourceList = SearchProducts(searchTerm).Where(p => p.CompanyId == companyId).ToList();
+                // ✅ FIX: Pass companyId directly to the method.
+                // The SQL will filter by company, so we remove the .Where() clause here.
+                sourceList = SearchProducts(searchTerm, companyId);
 
-                // ⚠️ SearchProducts returns raw entities. We must calculate Price/Discount manually here.
+                // ⚠️ Price/Discount Calculation (Kept exactly the same)
                 foreach (var p in sourceList)
                 {
                     decimal basePrice = p.BasePrice ?? 0;
@@ -1196,17 +1210,18 @@ namespace MDUA.Facade
             }
             else
             {
-                // ✅ USE DEFAULT LOGIC (Already includes Price Calculations)
-                sourceList = GetAllProductsWithCategory().Where(p => p.CompanyId == companyId).ToList();
+                // ✅ FIX: Pass companyId directly to the method.
+                // This is much faster because the DB only returns this company's products.
+                sourceList = GetAllProductsWithCategory(companyId);
             }
 
-            // 2. Filter by Category (if clicked)
+            // 2. Filter by Category (In-memory filtering is okay here since the list is already small/scoped to company)
             if (categoryId.HasValue)
             {
                 sourceList = sourceList.Where(p => p.CategoryId == categoryId.Value).ToList();
             }
 
-            // 3. Map to ViewModel
+            // 3. Map to ViewModel (Kept exactly the same)
             var list = new List<ProductViewModel>();
             foreach (var p in sourceList)
             {
@@ -1217,7 +1232,6 @@ namespace MDUA.Facade
                     Id = p.Id,
                     Name = p.ProductName,
                     ImageUrl = !string.IsNullOrEmpty(imgUrl) ? imgUrl : "/images/default-book.png",
-                    // Use the calculated SellingPrice
                     Price = p.SellingPrice > 0 ? p.SellingPrice : (p.BasePrice ?? 0),
                     Slug = p.Slug
                 });

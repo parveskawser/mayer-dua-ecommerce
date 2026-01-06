@@ -11,7 +11,7 @@
 }
 
 /* --- 1. Page Header (Vendor Management) --- */
-.sticky-page-header {
+.sticky-page-header {.form-check-input {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

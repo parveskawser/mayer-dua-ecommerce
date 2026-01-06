@@ -1,4 +1,4 @@
-﻿/* --- THEME VARIABLES: Red & Yellow Palette --- */
+/* --- THEME VARIABLES: Red & Yellow Palette --- */
 :root {
     --brand-red: #d32f2f;
     --brand-red-light: #ffebEE;
@@ -163,4 +163,3 @@
         margin-top: 5px;
         border-radius: 2px;
     }
-

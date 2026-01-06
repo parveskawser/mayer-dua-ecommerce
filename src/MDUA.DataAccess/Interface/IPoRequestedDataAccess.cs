@@ -32,11 +32,21 @@ namespace MDUA.DataAccess.Interface
     public interface IPoRequestedDataAccess : ICommonDataAccess<PoRequested, PoRequestedList, PoRequestedBase>
     {
         // ✅ NEW: Add this missing definition
-        List<dynamic> GetInventoryStatus();
+        List<dynamic> GetInventoryStatus(int companyId);
         dynamic GetPendingRequestByVariant(int variantId);
         void UpdateStatus(int poId, string status, SqlTransaction transaction);
         dynamic GetVariantStatus(int variantId);
         long Insert(PoRequestedBase obj, SqlTransaction trans);
-        List<dynamic> GetVendorHistory(int vendorId);
+        List<dynamic> GetVendorHistory(int vendorId, int companyId);
+
+        // In IPoRequestedDataAccess.cs
+
+        // Update these signatures to include companyId
+        (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int companyId, int pageIndex, int pageSize);
+
+        (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int companyId, int pageIndex, int pageSize, string search, string status, string type);
+
+        (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int companyId, int pageIndex, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate);
+
     }
 }

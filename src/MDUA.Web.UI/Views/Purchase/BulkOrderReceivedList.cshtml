@@ -5,6 +5,43 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+@section Styles {
+    <style>
+        /* Red-Yellow Theme Overrides */
+        .btn-primary {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+            }
+
+        .btn-outline-primary {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+
+            .btn-outline-primary:hover {
+                background-color: #dc3545;
+                border-color: #dc3545;
+                color: white;
+            }
+
+        .text-primary {
+            color: #dc3545 !important;
+        }
+
+        .modal-header.bg-primary {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+        }
+
+        .spinner-border.text-primary {
+            color: #dc3545 !important;
+        }
+    </style>
+}
+
 <div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>📂 Bulk Orders Received</h3>

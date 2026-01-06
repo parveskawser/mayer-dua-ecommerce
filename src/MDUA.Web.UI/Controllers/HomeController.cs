@@ -15,21 +15,23 @@ namespace MDUA.Web.UI.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IOrderFacade _orderFacade;
         private readonly ICompanyFacade _companyFacade; // ✅ 1. Add Field
+        private readonly ISettingsFacade _settingsFacade; // ✅ 1. Add Field
 
-        public HomeController(IUserLoginFacade userLoginFacade, IProductFacade productFacade, ILogger<HomeController> logger, IOrderFacade orderFacade, ICompanyFacade companyFacade)
+        public HomeController(IUserLoginFacade userLoginFacade, IProductFacade productFacade, ILogger<HomeController> logger, IOrderFacade orderFacade, ICompanyFacade companyFacade, ISettingsFacade settingsFacade)
         {
             _userLoginFacade = userLoginFacade;
             _productFacade = productFacade;
             _logger = logger;
             _orderFacade = orderFacade;
             _companyFacade = companyFacade;
-
+            _settingsFacade = settingsFacade;
         }
 
         public IActionResult Index(bool preview = false)
         {
             int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
-
+            ViewBag.CurrentCompanyId = companyId;
+            ViewBag.FaviconUrl = _settingsFacade.GetFavicon(companyId);
             HomepageConfig config = null;
 
             // 1. Load Config (Draft or Live)
@@ -53,7 +55,7 @@ namespace MDUA.Web.UI.Controllers
             // 2. Load Categories
             try
             {
-                var productData = _productFacade.GetAddProductData(0);
+                var productData = _productFacade.GetAddProductData(companyId);
                 config.Categories = productData.Categories.ToList();
             }
             catch
@@ -67,6 +69,8 @@ namespace MDUA.Web.UI.Controllers
                 config.Sections = new List<MDUA.Entities.HomepageSection>();
             }
 
+
+
             return View(config);
         }
 
@@ -77,15 +81,16 @@ namespace MDUA.Web.UI.Controllers
         public IActionResult Dashboard()
         {
             int userId = CurrentUserId;
-            var loginResult = _userLoginFacade.GetUserLoginById(userId);
+            // 1. Get Company ID
+            int companyId = Convert.ToInt32(User.FindFirst("CompanyId")?.Value ?? "1");
 
-            // ... (Permissions & Products loading) ...
+            var loginResult = _userLoginFacade.GetUserLoginById(userId);
             loginResult.AuthorizedActions = _userLoginFacade.GetAllUserPermissionNames(userId);
             loginResult.CanViewProducts = loginResult.AuthorizedActions.Contains("Product.View");
             bool canAddProduct = loginResult.AuthorizedActions.Contains("Product.Add");
 
             if (loginResult.CanViewProducts)
-                loginResult.LastFiveProducts = _productFacade.GetLastFiveProducts();
+                loginResult.LastFiveProducts = _productFacade.GetLastFiveProducts(companyId); // Update this too if needed
 
             if (canAddProduct)
             {
@@ -97,23 +102,21 @@ namespace MDUA.Web.UI.Controllers
             // ✅ LOAD DASHBOARD DATA (Stats, Orders, Charts)
             try
             {
-                loginResult.Stats = _orderFacade.GetDashboardMetrics();
-                loginResult.RecentOrders = _orderFacade.GetRecentOrders();
-
-                // Load Chart Data
-                loginResult.SalesTrend = _orderFacade.GetSalesTrend();
-                loginResult.OrderStatusCounts = _orderFacade.GetOrderStatusCounts();
-                loginResult.LowStockItems = _productFacade.GetLowStockVariants(5);
+                // Pass companyId to all methods
+                loginResult.Stats = _orderFacade.GetDashboardMetrics(companyId);
+                loginResult.RecentOrders = _orderFacade.GetRecentOrders(companyId);
+                loginResult.SalesTrend = _orderFacade.GetSalesTrend(companyId);
+                loginResult.OrderStatusCounts = _orderFacade.GetOrderStatusCounts(companyId);
+                loginResult.LowStockItems = _productFacade.GetLowStockVariants(companyId, 5);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load dashboard data");
-                // Init empty to avoid nulls
                 loginResult.Stats = new DashboardStats();
                 loginResult.RecentOrders = new List<SalesOrderHeader>();
                 loginResult.SalesTrend = new List<ChartDataPoint>();
                 loginResult.OrderStatusCounts = new List<ChartDataPoint>();
-                loginResult.LowStockItems = new List<LowStockItem>(); // ✅ Init empty list
+                loginResult.LowStockItems = new List<LowStockItem>();
             }
 
             return View(loginResult);

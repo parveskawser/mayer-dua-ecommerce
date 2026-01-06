@@ -59,7 +59,7 @@ namespace MDUA.Framework.DataAccess
         private void AddBaseParametersForCommonOperation(SqlCommand cmd, BaseBusinessEntity baseObject)
         {
             //baseObject.ModifierID = (UserContext != null) ? UserContext.UserID : 1;
-            //baseObject.ModifiedTimeStamp = DateTime.Now;
+            //baseObject.ModifiedTimeStamp = DateTime.UtcNow;
             //AddParameter(cmd, pInt64(BaseBusinessEntity.Property_ModifierID, baseObject.ModifierID));
             //AddParameter(cmd, pDateTime(BaseBusinessEntity.Property_ModifiedTimeStamp, baseObject.ModifiedTimeStamp));
             //AddParameter(cmd, pBool(BaseBusinessEntity.Property_IsDeleted, baseObject.IsDeleted));
@@ -73,7 +73,7 @@ namespace MDUA.Framework.DataAccess
         protected void AddBaseParametersForInsert(SqlCommand cmd, BaseBusinessEntity baseObject)
         {
             //baseObject.CreatorID = (UserContext != null) ? UserContext.UserID : 1;
-            //baseObject.CreatedTimeStamp = DateTime.Now;
+            //baseObject.CreatedTimeStamp = DateTime.UtcNow;
             //AddParameter(cmd, pInt64(BaseBusinessEntity.Property_CreatorID, baseObject.CreatorID));
             //AddParameter(cmd, pDateTime(BaseBusinessEntity.Property_CreatedTimeStamp, baseObject.CreatedTimeStamp));
             AddBaseParametersForCommonOperation(cmd, baseObject);
@@ -89,7 +89,7 @@ namespace MDUA.Framework.DataAccess
         {
             //baseObject.CreatorID = (UserContext != null) ? UserContext.UserID : 1;
             //if (baseObject.CreatedTimeStamp == DateTime.MinValue)
-            //    baseObject.CreatedTimeStamp = DateTime.Now;
+            //    baseObject.CreatedTimeStamp = DateTime.UtcNow;
             //AddParameter(cmd, pInt64(BaseBusinessEntity.Property_CreatorID, baseObject.CreatorID));
             //AddParameter(cmd, pDateTime(BaseBusinessEntity.Property_CreatedTimeStamp, baseObject.CreatedTimeStamp));
             AddBaseParametersForCommonOperation(cmd, baseObject);

@@ -308,7 +308,7 @@
     <script src="~/js/admin-chat.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. Sales Trend Chart
+            // 1. Sales Trend Chart - WARM COLORS
             const salesCtx = document.getElementById('salesChart').getContext('2d');
 
             const salesLabels = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Label).ToList() ?? new List<string>()));
@@ -321,46 +321,65 @@
                     datasets: [{
                         label: 'Monthly Sales (Tk)',
                         data: salesData,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#f97316', // Orange
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)', // Light orange fill
+                        borderWidth: 3,
                         tension: 0.4,
                         fill: true,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#ef4444', // Red points
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false }
+                    },
                     scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e5e7eb' } },
-                        x: { grid: { display: false } }
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [2, 4],
+                                color: '#fee2e2' // Light red grid
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        }
                     }
                 }
             });
 
-            // 2. Status Distribution Chart
+            // 2. Status Distribution Chart - WARM COLORS
             const statusCtx = document.getElementById('statusChart').getContext('2d');
 
             let rawLabels = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Label).ToList() ?? new List<string>()));
             let rawData = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Value).ToList() ?? new List<decimal>()));
 
-            // ✅ FIX: Map Labels (Draft -> Pending)
+            // Map Labels (Draft -> Pending)
             const statusLabels = rawLabels.map(l => l === "Draft" ? "Pending" : l);
 
-            // ✅ FIX: Distinct Color Palette (No overlapping hues)
+            // Warm Color Palette for Status Chart
             const getStatusColor = (status) => {
                 switch(status) {
-                    case 'Confirmed': return '#86efac'; // Light Green
-                    case 'Shipped':   return '#a78bfa'; // Soft Purple (Distinct from Blue)
-                    case 'Delivered': return '#38bdf8'; // Sky Blue
-                    case 'Pending':   return '#fcd34d'; // Light Amber
-                    case 'Draft':     return '#fcd34d'; // Light Amber
-                    case 'Cancelled': return '#fca5a5'; // Light Red
-                    case 'Returned':  return '#cbd5e1'; // Light Gray
-                    default: return '#e5e7eb';
+                    case 'Confirmed': return '#fbbf24'; // Warm Yellow
+                    case 'Shipped':   return '#fb923c'; // Light Orange
+                    case 'Delivered': return '#34d399'; // Soft Green (minimal)
+                    case 'Pending':   return '#fde047'; // Bright Yellow
+                    case 'Draft':     return '#fde047'; // Bright Yellow
+                    case 'Cancelled': return '#ef4444'; // Red
+                    case 'Returned':  return '#f87171'; // Light Red
+                    default: return '#fed7aa'; // Light Orange
                 }
             };
 
@@ -373,8 +392,10 @@
                     datasets: [{
                         data: rawData,
                         backgroundColor: backgroundColors,
-                        borderWidth: 0,
-                        hoverOffset: 4
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 6,
+                        hoverBorderWidth: 3
                     }]
                 },
                 options: {
@@ -382,10 +403,21 @@
                     maintainAspectRatio: false,
                     cutout: '75%',
                     plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                padding: 15,
+                                color: '#64748b',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
                     }
                 }
             });
         });
-    </script>
+        </script>
 }

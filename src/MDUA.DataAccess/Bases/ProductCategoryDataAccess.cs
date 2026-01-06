@@ -14,7 +14,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
 	public partial class ProductCategoryDataAccess : BaseDataAccess, IProductCategoryDataAccess
-	{
+    {
 		#region Constants
 		private const string INSERTPRODUCTCATEGORY = "InsertProductCategory";
 		private const string UPDATEPRODUCTCATEGORY = "UpdateProductCategory";
@@ -22,6 +22,7 @@ namespace MDUA.DataAccess
 		private const string GETPRODUCTCATEGORYBYID = "GetProductCategoryById";
 		private const string GETALLPRODUCTCATEGORY = "GetAllProductCategory";
 		private const string GETPAGEDPRODUCTCATEGORY = "GetPagedProductCategory";
+		private const string GETPRODUCTCATEGORYBYCOMPANYID = "GetProductCategoryByCompanyId";
 		private const string GETPRODUCTCATEGORYMAXIMUMID = "GetProductCategoryMaximumId";
 		private const string GETPRODUCTCATEGORYROWCOUNT = "GetProductCategoryRowCount";	
 		private const string GETPRODUCTCATEGORYBYQUERY = "GetProductCategoryByQuery";
@@ -43,6 +44,7 @@ namespace MDUA.DataAccess
 		private void AddCommonParams(SqlCommand cmd, ProductCategoryBase productCategoryObject)
 		{	
 			AddParameter(cmd, pNVarChar(ProductCategoryBase.Property_Name, 50, productCategoryObject.Name));
+			AddParameter(cmd, pInt32(ProductCategoryBase.Property_CompanyId, productCategoryObject.CompanyId));
 		}
 		#endregion
 		
@@ -157,6 +159,20 @@ namespace MDUA.DataAccess
 			}
 		}
 		
+		/// <summary>
+        /// Retrieves all ProductCategory objects by CompanyId
+        /// </summary>
+        /// <returns>A list of ProductCategory objects</returns>
+		public ProductCategoryList GetByCompanyId(Nullable<Int32> _CompanyId)
+		{
+			using( SqlCommand cmd = GetSPCommand(GETPRODUCTCATEGORYBYCOMPANYID))
+			{
+				
+				AddParameter( cmd, pInt32(ProductCategoryBase.Property_CompanyId, _CompanyId));
+				return GetList(cmd, ALL_AVAILABLE_RECORDS);
+			}
+		}
+		
 		
 		/// <summary>
         /// Retrieves all ProductCategory objects by PageRequest
@@ -247,7 +263,8 @@ namespace MDUA.DataAccess
 			
 				productCategoryObject.Id = reader.GetInt32( start + 0 );			
 				productCategoryObject.Name = reader.GetString( start + 1 );			
-			FillBaseObject(productCategoryObject, reader, (start + 2));
+				if(!reader.IsDBNull(2)) productCategoryObject.CompanyId = reader.GetInt32( start + 2 );			
+			FillBaseObject(productCategoryObject, reader, (start + 3));
 
 			
 			productCategoryObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

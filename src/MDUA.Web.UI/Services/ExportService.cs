@@ -169,7 +169,7 @@ namespace MDUA.Web.UI.Services
                 document.Add(titlePara);
 
                 // Subtitle with generation date
-                var subtitlePara = new Paragraph($"Generated on {DateTime.Now:MMMM dd, yyyy HH:mm} (UTC {DateTime.UtcNow:MMMM dd, yyyy HH:mm})")
+                var subtitlePara = new Paragraph($"Generated on {DateTime.UtcNow:MMMM dd, yyyy HH:mm} (UTC {DateTime.UtcNow:MMMM dd, yyyy HH:mm})")
                      .SetFont(italicFont)
                     .SetFontSize(10)
                     .SetFontColor(new DeviceRgb(100, 100, 100))
@@ -268,7 +268,7 @@ namespace MDUA.Web.UI.Services
                 footerLine.SetMarginBottom(5);
                 document.Add(footerLine);
 
-                var footerPara = new Paragraph($"Page {pdf.GetNumberOfPages()} | Total Records: {data.Count} | © {DateTime.Now.Year} MDUA Admin")
+                var footerPara = new Paragraph($"Page {pdf.GetNumberOfPages()} | Total Records: {data.Count} | © {DateTime.UtcNow.Year} MDUA Admin")
                     .SetFont(italicFont)
                     .SetFontSize(8)
                     .SetFontColor(new DeviceRgb(128, 128, 128))

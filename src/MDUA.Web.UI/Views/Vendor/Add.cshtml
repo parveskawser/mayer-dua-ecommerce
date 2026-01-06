@@ -4,49 +4,60 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+
 <div class="container-fluid" style="max-width: 800px;">
-    
     <div class="d-flex align-items-center mb-4">
         <a href="/Vendor/Index" class="btn btn-light border rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
             <i class="fas fa-arrow-left"></i>
         </a>
-        <div>
-            <h4 class="mb-0 fw-bold">@(Model.Id > 0 ? "Edit Vendor" : "Add New Vendor")</h4>
-        </div>
+        <div><h4 class="mb-0 fw-bold">@(Model.Id > 0 ? "Edit Vendor" : "Add New Vendor")</h4></div>
     </div>
 
     <div class="glass-card p-4">
-        <form asp-action="Save" asp-controller="Vendor" method="post">
-            <input type="hidden" asp-for="Id" />
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form asp-action="Save" asp-controller="Vendor" method="post" id="vendorForm">
+            <input type="hidden" asp-for="Id" id="VendorId" />
             <input type="hidden" asp-for="CreatedBy" />
             <input type="hidden" asp-for="CreatedAt" />
+
+            <input type="hidden" asp-for="Phone" id="HiddenPhone" />
 
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold text-muted small text-uppercase">Vendor Name <span class="text-danger">*</span></label>
-                    <input type="text" asp-for="VendorName" class="form-control form-control-lg" placeholder="e.g. ABC Supply Corp" required />
+                    <input type="text" asp-for="VendorName" class="form-control form-control-lg" required
+                           oninput="delayCheck('VendorName', this.value)" />
+                    <span asp-validation-for="VendorName" class="text-danger small fw-bold mt-1 d-block"></span>
+                    <span id="err-VendorName" class="text-danger small fw-bold mt-1 d-none">Name taken.</span>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted small text-uppercase">Email Address</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
-                        <input type="email" asp-for="Email" class="form-control border-start-0 ps-0" placeholder="contact@vendor.com" />
-                    </div>
+                    <label class="form-label fw-bold text-muted small text-uppercase">Email</label>
+                    <input type="email" asp-for="Email" class="form-control" placeholder="contact@vendor.com"
+                           oninput="delayCheck('Email', this.value)" />
+                    <span asp-validation-for="Email" class="text-danger small fw-bold mt-1 d-block"></span>
+                    <span id="err-Email" class="text-danger small fw-bold mt-1 d-none">Email taken.</span>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label fw-bold text-muted small text-uppercase">Phone Number</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone text-muted"></i></span>
-                        <input type="text" asp-for="Phone" class="form-control border-start-0 ps-0" placeholder="+1 234 567 890" />
+                    <div class="w-100">
+                        <input type="tel" id="phone-ui" class="form-control" style="width: 100%;"
+                               placeholder="1711 234 567" />
                     </div>
+                    <span id="err-Phone-Format" class="text-danger small fw-bold mt-1 d-none">Invalid format for selected country.</span>
+                    <span id="err-Phone-Unique" class="text-danger small fw-bold mt-1 d-none">This Number is already taken.</span>
                 </div>
             </div>
 
             <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
                 <a href="/Vendor/Index" class="btn btn-light border">Cancel</a>
-                <button type="submit" class="btn btn-primary px-4">
+                <button type="submit" class="btn btn-primary px-4" id="btnSave">
                     <i class="fas fa-save me-2"></i> Save Vendor
                 </button>
             </div>
@@ -58,8 +69,140 @@
     <style>
         .form-control:focus {
             background-color: #f8fafc;
-            border-color: var(--red-main);
-            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-validation-error {
+            border-color: #dc3545 !important;
+        }
+        /* Fix for intl-tel-input width inside Bootstrap row */
+        .iti {
+            width: 100%;
+        }
+
+        /* Make the input height match your design */
+        .iti__flag-container {
+            border-radius: 6px 0 0 6px;
         }
     </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+
+    <script>
+        // --- 1. SETUP PHONE PLUGIN ---
+        const input = document.querySelector("#phone-ui");
+        const hiddenInput = document.querySelector("#HiddenPhone");
+        const formatError = document.querySelector("#err-Phone-Format");
+        const uniqueError = document.querySelector("#err-Phone-Unique");
+        const btnSave = document.querySelector("#btnSave");
+
+        // Initialize Plugin
+        const iti = window.intlTelInput(input, {
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js", // Needed for formatting/validation
+            separateDialCode: true,  // Shows +880 next to the flag
+            initialCountry: "bd",    // Default Country (Bangladesh)
+            preferredCountries: ["bd", "us", "gb", "in"], // Top of the list
+        });
+
+        // Load existing value if editing (e.g. from Model)
+        if (hiddenInput.value) {
+            iti.setNumber(hiddenInput.value);
+        }
+
+        // --- 2. VALIDATION LOGIC ---
+
+        // Trigger validation when user types or changes country
+        input.addEventListener('blur', validatePhone);
+        input.addEventListener('input', () => {
+            // Clear errors while typing to reduce annoyance
+            formatError.classList.add("d-none");
+            uniqueError.classList.add("d-none");
+            input.classList.remove("input-validation-error");
+
+            // Debounce the unique check
+            delayCheckPhone();
+        });
+
+        function validatePhone() {
+            if (input.value.trim()) {
+                if (iti.isValidNumber()) {
+                    // Valid Format! Update Hidden Input with full number (e.g., +88017...)
+                    hiddenInput.value = iti.getNumber();
+                    formatError.classList.add("d-none");
+                    input.classList.remove("input-validation-error");
+
+                    // Now check uniqueness on server
+                    checkUnique('Phone', hiddenInput.value);
+                } else {
+                    // Invalid Format
+                    formatError.classList.remove("d-none");
+                    input.classList.add("input-validation-error");
+                    btnSave.disabled = true;
+                }
+            }
+        }
+
+        // --- 3. EXISTING UNIQUE CHECK LOGIC (With Updates) ---
+        let timers = {};
+
+        function delayCheck(field, value) {
+            let errorSpan = document.getElementById("err-" + field);
+            let inputField = document.querySelector(`[name='${field}']`);
+
+            errorSpan.classList.add("d-none");
+            inputField.classList.remove("input-validation-error");
+
+            if (timers[field]) clearTimeout(timers[field]);
+
+            timers[field] = setTimeout(() => {
+                checkUnique(field, value);
+            }, 500);
+        }
+
+        // Specific delayer for phone since logic is slightly different
+        function delayCheckPhone() {
+            if (timers['phone']) clearTimeout(timers['phone']);
+            timers['phone'] = setTimeout(() => {
+                validatePhone();
+            }, 500);
+        }
+
+        function checkUnique(field, value) {
+            if (!value || value.trim() === "") return;
+
+            let id = document.getElementById("VendorId").value;
+            // Map 'Phone' to the specific unique error span we created
+            let errorSpan = (field === 'Phone') ? uniqueError : document.getElementById("err-" + field);
+            let inputField = (field === 'Phone') ? input : document.querySelector(`[name='${field}']`);
+
+            fetch(`/Vendor/CheckUnique?field=${field}&value=${encodeURIComponent(value)}&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.isUnique) {
+                        errorSpan.classList.remove("d-none");
+                        inputField.classList.add("input-validation-error");
+                        btnSave.disabled = true;
+                    } else {
+                        errorSpan.classList.add("d-none");
+                        inputField.classList.remove("input-validation-error");
+
+                        // Only enable if no errors exist
+                        if(document.querySelectorAll('.input-validation-error').length === 0) {
+                            btnSave.disabled = false;
+                        }
+                    }
+                });
+        }
+
+        // Ensure full number is set on submit (double safety)
+        document.getElementById('vendorForm').addEventListener('submit', function(e) {
+            if(iti.isValidNumber()) {
+                hiddenInput.value = iti.getNumber();
+            }
+        });
+    </script>
 }

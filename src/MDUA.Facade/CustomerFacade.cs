@@ -39,10 +39,12 @@ namespace MDUA.Facade
 
         #region Extended Implementation
 
-        public List<Customer> GetAllCustomersForAdmin()
+        // Update the signature
+        public List<Customer> GetAllCustomersForAdmin(int companyId)
         {
-            // Assuming GetAll() returns CustomerList which is List<Customer>
-            return _customerDataAccess.GetAll().ToList();
+            // ✅ CRITICAL FIX: Do NOT call .GetAll(). 
+            // Call a new method that filters by CompanyId via the join table (CompanyCustomer)
+            return _customerDataAccess.GetCustomersByCompanyId(companyId).ToList();
         }
 
         public Customer GetCustomerDetails(int customerId)

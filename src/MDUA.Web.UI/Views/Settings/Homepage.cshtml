@@ -1,49 +1,306 @@
-﻿@model MDUA.Entities.HomepageConfig
+@model MDUA.Entities.HomepageConfig
 @{
     ViewData["Title"] = "Homepage Layout";
-    Layout = "_AdminLayout"; // Or "_AdminLayout" if you separated them
+    Layout = "_AdminLayout";
 
-    // ✅ This forces the Sidebar to recognize we are on the "Settings" > "Homepage" page
     ViewContext.RouteData.Values["Controller"] = "Settings";
     ViewContext.RouteData.Values["Action"] = "Homepage";
+
+    var company = ViewBag.CompanyInfo as MDUA.Entities.Company;
+    var footerDesc = ViewBag.FooterDescription as string;
 }
 
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(197, 77, 54, 0.2);
+    }
+
+    .action-buttons .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .info-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .info-card .card-header {
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+        }
+
+    .section-card {
+        border: none;
+        border-radius: 12px;
+        border-left: 4px solid #c54d36;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+        .section-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-left-color: #d97346;
+        }
+
+        .section-card .card-header {
+            background: #faf6f3;
+            border-bottom: 1px solid #f0e8e2;
+            padding: 1rem 1.5rem;
+        }
+
+    .add-section-card {
+        border: none;
+        border-radius: 12px;
+        position: sticky;
+        top: 20px;
+        background: white;
+    }
+
+        .add-section-card .card-header {
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+        }
+
+    .add-section-btn {
+        border: 2px solid #f0e8e2;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .add-section-btn:hover {
+            border-color: #c54d36;
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .add-section-btn i {
+            width: 24px;
+            text-align: center;
+        }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0d5cc;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #d97346;
+            box-shadow: 0 0 0 0.2rem rgba(217, 115, 70, 0.15);
+        }
+
+    .section-controls .btn {
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+        .section-controls .btn:hover {
+            transform: scale(1.05);
+        }
+
+    .badge-section-type {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #faf6f3;
+        border-radius: 12px;
+        border: 2px dashed #e0d5cc;
+    }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #c9b5a3;
+            margin-bottom: 1rem;
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #b04430 0%, #c86540 100%);
+        }
+
+    .btn-warning {
+        background: #d4a140;
+        border: none;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background: #c69135;
+            color: white;
+        }
+
+    .btn-success {
+        background: #c54d36;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background: #b04430;
+        }
+
+    .text-primary {
+        color: #c54d36 !important;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #f0e8e2;
+        border-color: #e0d5cc;
+    }
+
+    .btn-outline-danger {
+        border-color: #c54d36;
+        color: #c54d36;
+    }
+
+        .btn-outline-danger:hover {
+            background: #c54d36;
+            border-color: #c54d36;
+            color: white;
+        }
+</style>
+
 <div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Homepage Layout</h3>
-        <div class="d-flex gap-2">
-            <button class="btn btn-warning" onclick="resetDefault()">
-                <i class="fas fa-undo"></i> Reset to Default
-            </button>
-            <button class="btn btn-info text-white" onclick="previewLayout()">
-                <i class="fas fa-eye"></i> Preview
-            </button>
-            <button class="btn btn-primary" onclick="saveConfig()">
-                <i class="fas fa-save"></i> Publish Changes
-            </button>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-home me-2"></i>Homepage Layout Manager</h2>
+                <p class="mb-0 opacity-75">Customize your website's homepage appearance and content</p>
+            </div>
+            <div class="action-buttons d-flex gap-2">
+                <button class="btn btn-light" onclick="resetDefault()">
+                    <i class="fas fa-undo me-1"></i> Reset
+                </button>
+                <button class="btn btn-warning" onclick="previewLayout()">
+                    <i class="fas fa-eye me-1"></i> Preview
+                </button>
+                <button class="btn btn-success" onclick="saveConfig()">
+                    <i class="fas fa-save me-1"></i> Publish
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">Add Section</div>
-                <div class="card-body d-grid gap-2">
-                    <button class="btn btn-outline-dark text-start" onclick="addSection('Hero')">
-                        <i class="fas fa-image me-2"></i> Hero Banner
-                    </button>
-                    <button class="btn btn-outline-dark text-start" onclick="addSection('ProductGrid')">
-                        <i class="fas fa-th me-2"></i> Product Grid
-                    </button>
-                    <button class="btn btn-outline-dark text-start" onclick="addSection('Banner')">
-                        <i class="fas fa-ad me-2"></i> Promo Banner
-                    </button>
+    <!-- Company Information Card -->
+    <div class="card info-card shadow-sm mb-4">
+        <div class="card-header">
+            <i class="fas fa-building me-2"></i>
+            <strong>Company Information</strong>
+            <small class="ms-2 opacity-75">(Footer & Contact Details)</small>
+        </div>
+        <div class="card-body p-4">
+            <form id="companyInfoForm">
+                @Html.AntiForgeryToken()
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold"><i class="fas fa-building text-muted me-1"></i> Company Name</label>
+                        <input type="text" class="form-control" name="CompanyName" value="@(company?.CompanyName)" placeholder="Enter company name">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold"><i class="fas fa-phone text-muted me-1"></i> Phone</label>
+                        <input type="text" class="form-control" name="Phone" value="@(company?.Phone)" placeholder="+1 234 567 8900">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold"><i class="fas fa-envelope text-muted me-1"></i> Email</label>
+                        <input type="email" class="form-control" name="Email" value="@(company?.Email)" placeholder="contact@company.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold"><i class="fas fa-map-marker-alt text-muted me-1"></i> Address</label>
+                        <input type="text" class="form-control" name="Address" value="@(company?.Address)" placeholder="123 Main Street">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold"><i class="fas fa-align-left text-muted me-1"></i> Footer Description</label>
+                        <textarea class="form-control" name="FooterDescription" rows="3" placeholder="Brief description about your company...">@footerDesc</textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary btn-lg px-4" onclick="saveCompanyInfo()">
+                                <i class="fas fa-save me-2"></i> Update Company Information
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Layout Builder Section -->
+    <div class="row g-4">
+        <!-- Sidebar: Add Section -->
+        <div class="col-lg-3">
+            <div class="card add-section-card shadow">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    <strong>Add New Section</strong>
+                </div>
+                <div class="card-body p-3">
+                    <div class="d-grid gap-3">
+                        <button class="btn add-section-btn text-start" onclick="addSection('Hero')">
+                            <i class="fas fa-image me-2"></i>
+                            <span class="fw-semibold">Hero Banner</span>
+                            <small class="d-block text-muted mt-1">Large promotional banner</small>
+                        </button>
+                        <button class="btn add-section-btn text-start" onclick="addSection('ProductGrid')">
+                            <i class="fas fa-th me-2"></i>
+                            <span class="fw-semibold">Product Grid</span>
+                            <small class="d-block text-muted mt-1">Display product collection</small>
+                        </button>
+                        <button class="btn add-section-btn text-start" onclick="addSection('Banner')">
+                            <i class="fas fa-ad me-2"></i>
+                            <span class="fw-semibold">Promo Banner</span>
+                            <small class="d-block text-muted mt-1">Custom promotional image</small>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-9">
+        <!-- Main: Sections Container -->
+        <div class="col-lg-9">
             <div id="sections-container">
+                <!-- Sections will be rendered here -->
             </div>
         </div>
     </div>
@@ -52,39 +309,62 @@
 @section Scripts {
     <script>
         let sections = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Sections));
-        let categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Categories));
+        let categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Categories));
 
         function render() {
             const container = document.getElementById('sections-container');
+
+            if(sections.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-layer-group"></i>
+                        <h4 class="text-muted">No Sections Added Yet</h4>
+                        <p class="text-muted">Start building your homepage by adding sections from the left panel</p>
+                    </div>`;
+                return;
+            }
+
             container.innerHTML = '';
 
             sections.forEach((section, index) => {
                 let settingsHtml = generateSettingsForm(section, index);
 
-                        let html = `
-                    <div class="card mb-3 border-start border-4 border-primary shadow-sm">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <span class="fw-bold text-uppercase small text-muted">${section.Type}</span>
-                            <div>
-                                <button class="btn btn-sm btn-light border" onclick="moveSection(${index}, -1)">↑</button>
-                                <button class="btn btn-sm btn-light border" onclick="moveSection(${index}, 1)">↓</button>
-                                <button class="btn btn-sm btn-danger ms-2" onclick="deleteSection(${index})">×</button>
+                let iconMap = {
+                    'Hero': 'fa-image',
+                    'ProductGrid': 'fa-th',
+                    'Banner': 'fa-ad'
+                };
+
+                let html = `
+                    <div class="card section-card mb-3 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas ${iconMap[section.Type] || 'fa-cube'} text-primary"></i>
+                                <span class="badge badge-section-type">${section.Type}</span>
+                            </div>
+                            <div class="section-controls">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="moveSection(${index}, -1)" ${index === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="moveSection(${index}, 1)" ${index === sections.length - 1 ? 'disabled' : ''}>
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteSection(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="card-body">${settingsHtml}</div>
+                        <div class="card-body p-4">${settingsHtml}</div>
                     </div>`;
                 container.insertAdjacentHTML('beforeend', html);
             });
         }
+
         function generateSettingsForm(section, index) {
-            let html = '<div class="row g-2">';
+            let html = '<div class="row g-3">';
 
             if (section.Type === 'Hero') {
                 let s = section.Settings || {};
-
-                // ✅ 2. FIX: Force defaults if values are missing OR empty strings
-                // Using || ensures that if s['Title'] is "" (empty), it reverts to default.
-                // If you WANT to allow empty strings, change || to ??
                 let title = s['Title'] || 'New Sale';
                 let sub   = s['Subtitle'] || 'Shop Now';
                 let btn   = s['BtnText'] || 'View Offers';
@@ -92,96 +372,104 @@
 
                 html += createInput(index, 'Title', title, 'Main Headline', 6);
                 html += createInput(index, 'Subtitle', sub, 'Sub Text', 6);
-                html += createInput(index, 'BtnText', btn, 'Button Text', 4);
-                html += createInput(index, 'BtnLink', link, 'Button Link', 8);
+                html += createInput(index, 'BtnText', btn, 'Button Text', 6);
+                html += createInput(index, 'BtnLink', link, 'Button Link', 6);
             }
             else if (section.Type === 'ProductGrid') {
                 let s = section.Settings || {};
-                // ... Keep your existing ProductGrid logic ...
-                // But make sure to reference 'categories' which we fixed at the top
-                 html += createInput(index, 'Title', s['Title'] || 'Featured Products', 'Section Title', 6);
-                 html += createInput(index, 'Count', s['Count'] || '4', 'Count', 2, 'number');
 
-                 let selectedCat = s['CategoryId'] || '';
-                 let options = `<option value="">-- All Products --</option>`;
-                 // Ensure categories exists before looping
-                 if(categories) {
-                     categories.forEach(c => {
-                         options += `<option value="${c.Id}" ${c.Id == selectedCat ? 'selected' : ''}>${c.Name}</option>`;
-                     });
-                 }
-                 html += `<div class="col-md-4"><label class="form-label small text-muted mb-1">Source Category</label>
-                          <select class="form-select form-select-sm" onchange="updateSetting(${index}, 'CategoryId', this.value)">${options}</select></div>`;
+                html += createInput(index, 'Title', s['Title'] || 'Featured Products', 'Section Title', 6);
+                html += createInput(index, 'Count', s['Count'] || '4', 'Product Count', 3, 'number');
+
+                let selectedCat = (s['CategoryId'] || '').toString();
+
+                let options = `<option value="">-- All Products --</option>`;
+                if(categories) {
+                    categories.forEach(c => {
+                        let isSelected = c.Id.toString() === selectedCat ? 'selected' : '';
+                        options += `<option value="${c.Id}" ${isSelected}>${c.Name}</option>`;
+                    });
+                }
+
+                html += `<div class="col-md-3">
+                            <label class="form-label fw-semibold">Source Category</label>
+                            <select class="form-select" onchange="updateSetting(${index}, 'CategoryId', this.value)">${options}</select>
+                         </div>`;
             }
             else if (section.Type === 'Banner') {
-                 // ✅ NEW: File Upload Logic
-                 let currentImg = section.Settings['ImageUrl'] || '';
+                let currentImg = section.Settings['ImageUrl'] || '';
                 html += `<div class="col-md-8">
-                            <label class="form-label small text-muted mb-1">Banner Image</label>
-                            <div class="input-group input-group-sm">
-                                <input type="file" class="form-control" onchange="uploadBanner(this, ${index})">
-                                ${currentImg ? `<span class="input-group-text text-success"><i class="fas fa-check"></i></span>` : ''}
+                            <label class="form-label fw-semibold">Banner Image</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" accept="image/*" onchange="uploadBanner(this, ${index})">
+                                ${currentImg ? `<span class="input-group-text bg-success text-white"><i class="fas fa-check"></i></span>` : ''}
                             </div>
+                            ${currentImg ? `<small class="text-success mt-1 d-block"><i class="fas fa-check-circle"></i> Image uploaded</small>` : ''}
                         </div>`;
-                html += createInput(index, 'LinkUrl', section.Settings['LinkUrl'] || '#', 'Click Link', 4);
+                html += createInput(index, 'LinkUrl', section.Settings['LinkUrl'] || '#', 'Click Destination URL', 4);
             }
 
             html += '</div>';
             return html;
         }
 
-                function createInput(index, key, value, label, colSize = 12, type = 'text') {
+        function createInput(index, key, value, label, colSize = 12, type = 'text') {
              let safeValue = value === undefined || value === null ? '' : value;
              safeValue = safeValue.toString().replace(/"/g, '&quot;');
              return `<div class="col-md-${colSize}">
-                        <label class="form-label small text-muted mb-1">${label}</label>
-                        <input type="${type}" class="form-control form-control-sm" value="${safeValue}" oninput="updateSetting(${index}, '${key}', this.value)">
+                        <label class="form-label fw-semibold">${label}</label>
+                        <input type="${type}" class="form-control" value="${safeValue}" oninput="updateSetting(${index}, '${key}', this.value)">
                      </div>`;
         }
 
-        // ✅ NEW: Upload Function
         function uploadBanner(input, index) {
-                let file = input.files[0];
-                if(!file) return;
+            let file = input.files[0];
+            if(!file) return;
 
-                // Get Previous URL to delete
-                let oldUrl = sections[index].Settings['ImageUrl'] || "";
+            let oldUrl = sections[index].Settings['ImageUrl'] || "";
+            let formData = new FormData();
+            formData.append("file", file);
+            formData.append("previousUrl", oldUrl);
 
-                let formData = new FormData();
-                formData.append("file", file);
-                formData.append("previousUrl", oldUrl); // Send old URL
+            Swal.fire({
+                title: 'Uploading Image...',
+                text: 'Please wait while we process your banner image.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
-                // Show Loading State (Optional UI touch)
-                let parent = input.closest('.col-md-8');
-                let loader = document.createElement('div');
-                loader.className = 'text-primary small mt-1';
-                loader.innerText = 'Uploading...';
-                parent.appendChild(loader);
+            fetch('/Settings/UploadBanner', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    updateSetting(index, 'ImageUrl', data.url);
+                    render();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Upload Successful!',
+                        text: 'Banner image has been uploaded.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Upload Failed', data.message || 'An error occurred during upload.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
 
-                fetch('/Settings/UploadBanner', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        // Update settings
-                        updateSetting(index, 'ImageUrl', data.url);
-                        render(); // Re-render to show new image
-                    } else {
-                        alert('Upload failed: ' + data.message);
-                        loader.remove(); // Remove loader on error
-                    }
-                });
-            }                function addSection(type) {
-            // ✅ FIX: Create a NEW object with Defaults so it's not empty/null
+        function addSection(type) {
             let newSection = {
                 Id: crypto.randomUUID(),
                 Type: type,
                 Settings: {}
             };
 
-            // Set sensible defaults immediately
             if(type === 'ProductGrid') {
                 newSection.Settings = { "Title": "New Collection", "Count": "4", "CategoryId": "" };
             } else if (type === 'Hero') {
@@ -190,41 +478,83 @@
 
             sections.push(newSection);
             render();
-
-            // Scroll to bottom
-            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
+            setTimeout(() => {
+                const container = document.getElementById('sections-container');
+                container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
-                function deleteSection(index) { sections.splice(index, 1); render(); }
-                function moveSection(index, dir) {
-                    let newIndex = index + dir;
-                    if (newIndex >= 0 && newIndex < sections.length) {
-                        [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
-                        render();
-                    }
-                }
-                function updateSetting(index, key, value) {
-                    sections[index].Settings[key] = value;
-                }
-                function saveConfig() {
-                    fetch('/Settings/SaveHomepage', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ Sections: sections })
-                    }).then(r => r.json()).then(d => {
-                        if(d.success) alert('Saved!'); else alert('Error!');
+
+        function deleteSection(index) {
+            Swal.fire({
+                title: 'Remove This Section?',
+                text: "This section will be removed from your homepage layout.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c54d36',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Remove It',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    sections.splice(index, 1);
+                    render();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Removed!',
+                        text: 'Section has been deleted.',
+                        timer: 1500,
+                        showConfirmButton: false
                     });
                 }
+            });
+        }
 
-        function moveSection(index, direction) {
-            let newIndex = index + direction;
+        function moveSection(index, dir) {
+            let newIndex = index + dir;
             if (newIndex >= 0 && newIndex < sections.length) {
                 [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
                 render();
             }
         }
-               
+
+        function updateSetting(index, key, value) {
+            sections[index].Settings[key] = value;
+        }
+
+        function saveConfig() {
+            Swal.fire({
+                title: 'Publishing Changes...',
+                text: 'Your homepage layout is being updated.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch('/Settings/SaveHomepage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Sections: sections })
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Published Successfully!',
+                        text: 'Your homepage layout is now live.',
+                        confirmButtonText: 'Great!'
+                    });
+                } else {
+                    Swal.fire('Save Failed', 'Could not save the configuration.', 'error');
+                }
+            }).catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
         function previewLayout() {
-            // 1. Save to Draft
+            Swal.fire({
+                title: 'Creating Preview...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+
             fetch('/Settings/SaveDraft', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -232,29 +562,91 @@
             })
             .then(res => res.json())
             .then(data => {
+                Swal.close();
                 if(data.success) {
-                    // 2. Open Homepage in Preview Mode
                     window.open('/?preview=true', '_blank');
                 } else {
-                    alert('Error creating preview');
+                    Swal.fire('Preview Error', 'Could not create preview draft.', 'error');
                 }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
             });
         }
 
         function resetDefault() {
-            if(confirm("Are you sure? This will delete all custom layout settings and revert to the original design.")) {
-                fetch('/Settings/ResetToDefault', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        location.reload(); // Reload page to see defaults
-                    } else {
-                        alert('Error resetting layout');
-                    }
-                });
-            }
+            Swal.fire({
+                title: 'Reset to Default Layout?',
+                html: "This will <strong>permanently delete</strong> all your custom sections and restore the default homepage layout.<br><br>This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c54d36',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-undo me-1"></i> Yes, Reset Everything',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Resetting...',
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch('/Settings/ResetToDefault', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Reset Complete!',
+                                text: 'Homepage has been restored to default layout.',
+                                confirmButtonText: 'OK'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Reset Failed', 'Could not reset to default.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+                    });
+                }
+            });
         }
-        // Initialize
+
+        function saveCompanyInfo() {
+            var form = document.getElementById('companyInfoForm');
+            var formData = new FormData(form);
+
+            Swal.fire({
+                title: 'Updating Information...',
+                text: 'Saving company details...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch('/settings/company-profile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Information Updated!',
+                        text: 'Company information has been saved successfully.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Update Failed', data.message || 'An error occurred.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
+        // Initialize on page load
         render();
     </script>
 }

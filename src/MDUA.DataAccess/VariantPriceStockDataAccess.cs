@@ -91,11 +91,13 @@ namespace MDUA.DataAccess
             }
         }
 
-        public List<LowStockItem> GetLowStockVariants(int topN = 5)
+        // MDUA.DataAccess/VariantPriceStockDataAccess.cs
+
+        public List<LowStockItem> GetLowStockVariants(int companyId, int topN = 5) // ✅ Added companyId
         {
             var list = new List<LowStockItem>();
 
-            // ✅ FIX 1: Added 'vps.Id' to the SELECT list
+            // ✅ Added "AND p.CompanyId = @CompanyId" to the WHERE clause
             string sql = $@"
         SELECT TOP (@TopN)
             vps.Id, 
@@ -106,11 +108,15 @@ namespace MDUA.DataAccess
         FROM [dbo].[VariantPriceStock] vps
         INNER JOIN [dbo].[ProductVariant] pv ON vps.Id = pv.Id
         INNER JOIN [dbo].[Product] p ON pv.ProductId = p.Id
-        WHERE p.IsActive = 1 AND pv.IsActive = 1
+        WHERE p.IsActive = 1 
+          AND pv.IsActive = 1
+          AND p.CompanyId = @CompanyId  -- ✅ FILTER BY COMPANY
         ORDER BY vps.StockQty ASC, p.ProductName ASC";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
+                // ✅ Add the Parameters
+                AddParameter(cmd, pInt32("CompanyId", companyId));
                 AddParameter(cmd, pInt32("TopN", topN));
 
                 SqlDataReader reader;
@@ -122,7 +128,6 @@ namespace MDUA.DataAccess
                     {
                         list.Add(new LowStockItem
                         {
-                            // ✅ FIX 2: Map the Id to VariantId
                             VariantId = Convert.ToInt32(reader["Id"]),
                             ProductName = reader["ProductName"].ToString(),
                             VariantName = reader["VariantName"] != DBNull.Value ? reader["VariantName"].ToString() : "",

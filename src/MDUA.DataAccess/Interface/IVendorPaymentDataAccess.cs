@@ -30,6 +30,9 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IVendorPaymentDataAccess : ICommonDataAccess<VendorPayment, VendorPaymentList, VendorPaymentBase>
-	{ 
-	}	
+	{
+		long InsertPayment(VendorPayment payment, SqlTransaction trans);
+		List<dynamic> GetPendingBills(int vendorId);
+
+    }	
 }

@@ -12,7 +12,7 @@ namespace MDUA.Facade.Interface
     public interface ICustomerFacade : ICommonFacade<Customer, CustomerList, CustomerBase>
     {
         // 1. Get List for Admin View (Needs Name, Phone, Email, Status)
-        List<Customer> GetAllCustomersForAdmin();
+        List<Customer> GetAllCustomersForAdmin(int companyId);
         // 2. Get Customer Details (Required for the Details button)
         Customer GetCustomerDetails(int customerId);
 

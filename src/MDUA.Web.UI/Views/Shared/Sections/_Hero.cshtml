@@ -1,9 +1,10 @@
 ﻿@model Dictionary<string, string>
 @{
-    string title = Model.ContainsKey("title") ? Model["title"] : "Big Sale Is On!";
-    string subtitle = Model.ContainsKey("subtitle") ? Model["subtitle"] : "Explore our latest arrivals.";
-    string btnText = Model.ContainsKey("btnText") ? Model["btnText"] : "Shop Now";
-    string btnLink = Model.ContainsKey("btnLink") ? Model["btnLink"] : "/all-products";
+    // ✅ FIX: Use PascalCase to match your Facade and other sections
+    string title = Model.ContainsKey("Title") ? Model["Title"] : "Big Sale Is On!";
+    string subtitle = Model.ContainsKey("Subtitle") ? Model["Subtitle"] : "Explore our latest arrivals.";
+    string btnText = Model.ContainsKey("BtnText") ? Model["BtnText"] : "Shop Now";
+    string btnLink = Model.ContainsKey("BtnLink") ? Model["BtnLink"] : "/all-products";
 }
 
 <div class="container mb-5">

@@ -1,4 +1,4 @@
-﻿/* --- GLOBAL THEME VARIABLES --- */
+/* --- GLOBAL THEME VARIABLES --- */
 :root {
     --brand-red: #d32f2f; /* Deep Red */
     --brand-red-dark: #b71c1c;
@@ -92,4 +92,3 @@ body {
             color: var(--brand-red);
             text-decoration: underline;
         }
-

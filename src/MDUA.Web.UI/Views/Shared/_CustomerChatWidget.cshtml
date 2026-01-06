@@ -1,7 +1,7 @@
 ﻿<style>
     /* =========================================
-           1. CHAT BUBBLE & LAYOUT FIX
-           ========================================= */
+               1. CHAT BUBBLE & LAYOUT FIX
+               ========================================= */
 
     /* The Container for a message (Name + Bubble) */
     .msg-incoming, .msg-outgoing {
@@ -84,8 +84,8 @@
     }
 
     /* =========================================
-           2. WIDGET UI (Floating Button & Box)
-           ========================================= */
+               2. WIDGET UI (Floating Button & Box)
+               ========================================= */
     .support-btn {
         position: fixed;
         bottom: 30px;
@@ -319,40 +319,52 @@
         z-index: 10001;
     }
 
+
     /* --- MOBILE ADJUSTMENTS --- */
     /* --- MOBILE ADJUSTMENTS --- */
-    @@media (max-width: 480px) {
+    @@media (max-width: 768px) {
+        /* 1. Chat Box (Full Screen) */
         .chat-box {
             position: fixed;
             top: 0;
             left: 0;
             width: 100% !important;
-            height: 100% !important;
-            /* Use dvh to handle mobile address bars correctly */
             height: 100dvh !important;
             bottom: 0;
             right: 0;
             border-radius: 0;
-            z-index: 10002;
+            z-index: 2147483640;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-body {
-            /* Ensure messages take up available space */
             flex: 1;
+            padding-top: 20px;
+            padding-bottom: 80px; /* Space for the bottom button */
         }
-        /* 1. Un-nested selector ensures this rule actually applies */
+        /* 2. THE FLOATING "X" BUTTON (Main Widget Button) */
+        /* We force this to stay visible so you can collapse the chat */
         .support-btn {
-            bottom: 20px;
-            right: 20px;
+            display: flex !important; /* Ensure it is always visible */
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 2147483647 !important; /* Sit on top of the chat window */
         }
-            /* 2. HIDE the Red Button when chat is open so it doesn't block Send */
+            /* Ensure the Red X state is visible */
             .support-btn.active {
-                display: none !important;
+                display: flex !important;
+                background: #ef4444 !important;
+                transform: scale(1);
             }
-        /* 3. Remove the 90px padding since the button is hidden */
+        /* 3. OPTIONAL: Hide the internal header close button if you prefer the big bottom button */
+        /* You can delete this section if you want BOTH buttons */
+        #chat-close-btn {
+            /* display: none !important; */ /* Uncomment to hide top-right X */
+        }
+        /* 4. Chat Footer adjustments */
         .chat-footer {
-            padding-right: 15px !important;
-            padding-bottom: 20px; /* Safety for iPhone home bar */
+            padding-bottom: 20px;
         }
     }
 </style>
@@ -372,7 +384,9 @@
 <div id="live-chat-box" class="chat-box">
     <div class="chat-header">
         <div class="chat-title"><i class="fas fa-headset"></i> Customer Support</div>
-        <button id="chat-close-btn" class="chat-close">&times;</button>
+        <button id="chat-close-btn" class="chat-close" type="button">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <div id="chat-body" class="chat-body">
         <div id="chat-name-screen" class="chat-welcome">

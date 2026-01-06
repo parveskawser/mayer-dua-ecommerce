@@ -1,21 +1,20 @@
-﻿/* change */
-/* Dashboard Specific Styles */
+﻿/* Dashboard Specific Styles - Red/Yellow/Orange Theme */
 
 :root {
     --dash-card-radius: 16px;
     --dash-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Theme Colors - Softer & Lighter */
-    --theme-blue: #60a5fa; /* Soft Blue */
-    --theme-blue-soft: #eff6ff;
-    --theme-blue-border: #bfdbfe; /* Very Light Blue Border */
+    /* Warm Theme Colors */
+    --theme-red: #ef4444; /* Bright Red */
+    --theme-red-soft: #fef2f2;
+    --theme-red-border: #fecaca;
+    --theme-orange: #f97316; /* Vibrant Orange */
+    --theme-orange-soft: #fff7ed;
+    --theme-orange-border: #fed7aa;
+    --theme-yellow: #eab308; /* Golden Yellow */
+    --theme-yellow-soft: #fefce8;
+    --theme-yellow-border: #fde047;
+    --theme-accent: #dc2626; /* Deep Red for accents */
 
-    --theme-green: #34d399; /* Soft Green */
-    --theme-green-soft: #ecfdf5;
-    --theme-green-border: #a7f3d0; /* Very Light Green Border */
-
-    --theme-red: #dc3545;
-    --theme-red-soft: #fff5f5;
-    --theme-red-border: rgba(220, 53, 69, 0.25);
     --text-dark: #212529;
     --text-muted: #64748b;
 }
@@ -30,8 +29,6 @@
     border-radius: var(--dash-card-radius);
     transition: transform var(--dash-transition), box-shadow var(--dash-transition);
     overflow: hidden;
-    /* Layout force */
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -41,23 +38,21 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
-/* --- 1. Recent Orders Card (Light Blue Theme) --- */
+/* --- 1. Recent Orders Card (Red/Orange Theme) --- */
 .card-orders {
-    /* ✅ CHANGED: Uniform thin light blue border */
-    border: 1px solid var(--theme-blue-border) !important;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.05);
+    border: 1px solid var(--theme-red-border) !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
 }
 
     .card-orders:hover {
-        /* Slightly darker blue on hover */
-        border-color: var(--theme-blue) !important;
-        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+        border-color: var(--theme-red) !important;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
     }
 
     .card-orders .card-header-custom {
-        background: linear-gradient(to right, var(--theme-blue-soft), #ffffff);
+        background: linear-gradient(135deg, var(--theme-red-soft), #fff);
         padding: 1rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--theme-red-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -65,7 +60,7 @@
     }
 
     .card-orders h6 {
-        color: #2563eb; /* Darker blue for text readability */
+        color: var(--theme-accent);
         letter-spacing: 0.02em;
         text-transform: uppercase;
         font-size: 0.85rem;
@@ -73,41 +68,40 @@
         margin: 0;
     }
 
-/* Blue Buttons */
+/* Red/Orange Buttons */
 .btn-orders {
-    background-color: var(--theme-blue);
-    border-color: var(--theme-blue);
+    background: linear-gradient(135deg, var(--theme-red), var(--theme-orange));
+    border: none;
     color: white;
     font-size: 0.8rem;
+    font-weight: 600;
 }
 
     .btn-orders:hover {
-        background-color: #3b82f6;
-        border-color: #3b82f6;
+        background: linear-gradient(135deg, #dc2626, #ea580c);
         color: white;
+        transform: scale(1.05);
     }
 
 .text-orders {
-    color: #2563eb !important;
+    color: var(--theme-red) !important;
 }
 
-/* --- 2. New Products Card (Light Green Theme) --- */
+/* --- 2. New Products Card (Yellow/Orange Theme) --- */
 .card-products {
-    /* ✅ CHANGED: Uniform thin light green border */
-    border: 1px solid var(--theme-green-border) !important;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+    border: 1px solid var(--theme-orange-border) !important;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.08);
 }
 
     .card-products:hover {
-        /* Slightly darker green on hover */
-        border-color: var(--theme-green) !important;
-        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+        border-color: var(--theme-orange) !important;
+        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15);
     }
 
     .card-products .card-header-custom {
-        background: linear-gradient(to right, var(--theme-green-soft), #ffffff);
+        background: linear-gradient(135deg, var(--theme-orange-soft), #fff);
         padding: 1rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--theme-orange-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -115,7 +109,7 @@
     }
 
     .card-products h6 {
-        color: #059669;
+        color: #ea580c;
         letter-spacing: 0.02em;
         text-transform: uppercase;
         font-size: 0.85rem;
@@ -123,23 +117,35 @@
         margin: 0;
     }
 
-/* Green Buttons */
+/* Yellow/Orange Buttons */
 .btn-products {
-    background-color: var(--theme-green);
-    border-color: var(--theme-green);
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow));
+    border: none;
     color: white;
     font-size: 0.8rem;
+    font-weight: 600;
 }
 
     .btn-products:hover {
-        background-color: #10b981;
-        border-color: #10b981;
+        background: linear-gradient(135deg, #ea580c, #ca8a04);
         color: white;
+        transform: scale(1.05);
     }
 
 .text-products {
-    color: #059669 !important;
+    color: var(--theme-orange) !important;
 }
+
+/* Override Bootstrap green button with theme */
+.btn-success {
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow)) !important;
+    border: none !important;
+}
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #ea580c, #ca8a04) !important;
+        transform: scale(1.05);
+    }
 
 /* --- Table Styles --- */
 .table-modern {
@@ -170,7 +176,7 @@
     }
 
     .table-modern tbody tr:hover {
-        background-color: #f8fafc;
+        background-color: #fef2f2;
     }
 
 /* --- Product List --- */
@@ -185,25 +191,25 @@
     }
 
     .product-list-item:hover {
-        background-color: #f8fafc;
+        background-color: #fff7ed;
     }
 
 .product-icon {
     width: 38px;
     height: 38px;
-    background: #f8f9fa;
+    background: linear-gradient(135deg, var(--theme-orange-soft), var(--theme-yellow-soft));
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
-    color: var(--text-muted);
+    color: var(--theme-orange);
 }
 
-/* --- KPI Cards (Red Theme) --- */
+/* --- KPI Cards --- */
 .kpi-card {
-    border: 1px solid var(--theme-red-border) !important;
-    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.05);
+    border: 1px solid var(--theme-yellow-border) !important;
+    box-shadow: 0 4px 10px rgba(234, 179, 8, 0.08);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -211,8 +217,8 @@
 }
 
     .kpi-card:hover {
-        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.12);
-        border-color: rgba(220, 53, 69, 0.4) !important;
+        box-shadow: 0 8px 20px rgba(234, 179, 8, 0.15);
+        border-color: var(--theme-yellow) !important;
     }
 
 .kpi-value {
@@ -242,25 +248,29 @@
     flex-shrink: 0;
 }
 
-/* Specific KPI Colors */
-.kpi-success {
-    background: #d1e7dd;
-    color: #0f5132;
+/* Specific KPI Colors - Warm Palette */
+.kpi-success,
+.bg-success.bg-opacity-10 {
+    background: linear-gradient(135deg, #fef2f2, #fff7ed) !important;
+    color: var(--theme-red) !important;
 }
 
-.kpi-primary {
-    background: #cfe2ff;
-    color: #084298;
+.kpi-primary,
+.bg-primary.bg-opacity-10 {
+    background: linear-gradient(135deg, #fff7ed, #fefce8) !important;
+    color: var(--theme-orange) !important;
 }
 
-.kpi-warning {
-    background: #fff3cd;
-    color: #664d03;
+.kpi-warning,
+.bg-warning.bg-opacity-10 {
+    background: linear-gradient(135deg, #fefce8, #fffbeb) !important;
+    color: #ca8a04 !important;
 }
 
-.kpi-info {
-    background: #cff4fc;
-    color: #055160;
+.kpi-info,
+.bg-info.bg-opacity-10 {
+    background: linear-gradient(135deg, #fff7ed, #fef2f2) !important;
+    color: #ea580c !important;
 }
 
 /* --- Utilities --- */
@@ -271,9 +281,7 @@
     overflow: hidden;
 }
 
-
-/* --- 1. PAGE LOCK (NUCLEAR OPTION) --- */
-/* This forces the browser window to NEVER scroll */
+/* --- PAGE LAYOUT --- */
 html, body {
     height: 100% !important;
     width: 100% !important;
@@ -282,90 +290,53 @@ html, body {
     padding: 0;
 }
 
-/* --- 2. LAYOUT STRUCTURE --- */
 .dashboard-wrapper {
-    /* CALCULATION: 100vh - (Navbar Height + Footer/Padding). 
-       Try increasing '80px' to '100px' or '120px' if you still see a double scrollbar. 
-    */
     height: calc(100vh - 120px);
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevents wrapper itself from scrolling */
+    overflow: hidden;
     position: relative;
 }
 
 .dashboard-header {
-    flex: 0 0 auto; /* Keeps header fixed height */
+    flex: 0 0 auto;
     z-index: 50;
     padding-bottom: 1rem;
     padding-top: 0.5rem;
-    /* VISUAL FIX: Add background so scrolled content doesn't show through */
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(0,0,0,0.03);
+    border-bottom: none;
     margin-bottom: 1rem;
 }
 
 .dashboard-scroll-content {
-    flex: 1; /* Fills remaining space */
-    overflow-y: auto; /* The ONLY place scrolling happens */
+    flex: 1;
+    overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 50px; /* Space for scrolling bottom */
+    padding-bottom: 50px;
     padding-right: 5px;
 }
 
-/* --- 3. COMPONENTS --- */
+    /* Custom Scrollbar */
+    .dashboard-scroll-content::-webkit-scrollbar {
+        width: 6px;
+    }
 
-/* Base Glass Card - REMOVED global height: 100% to fix layout issues */
-.glass-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    border-radius: 16px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
+    .dashboard-scroll-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-/* KPI Cards */
-.kpi-card {
-    border: 1px solid #bfdbfe; /* Default Light Blue */
-    min-height: 120px;
-    justify-content: center;
-}
-
-/* Chart/Order Cards Specifics */
-.card-orders {
-    border: 1px solid #bfdbfe !important;
-}
-
-.card-products {
-    border: 1px solid #a7f3d0 !important;
-}
-
-/* Custom Scrollbar for dashboard content */
-.dashboard-scroll-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dashboard-scroll-content::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.dashboard-scroll-content::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
-
+    .dashboard-scroll-content::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--theme-orange), var(--theme-red));
+        border-radius: 3px;
+    }
 
 /* Header Chat Dropdown Styles */
 #header-msg-dropdown {
     animation: fadeIn 0.2s ease-in-out;
     border-radius: 12px;
+    border: 1px solid var(--theme-orange-border);
 }
 
 .header-chat-item {
@@ -379,7 +350,7 @@ html, body {
 }
 
     .header-chat-item:hover {
-        background-color: #f8fafc;
+        background-color: var(--theme-orange-soft);
     }
 
     .header-chat-item:last-child {
@@ -389,8 +360,8 @@ html, body {
 .chat-avatar-circle {
     width: 40px;
     height: 40px;
-    background: #e0f2fe;
-    color: #0284c7;
+    background: linear-gradient(135deg, var(--theme-orange-soft), var(--theme-yellow-soft));
+    color: var(--theme-orange);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -411,22 +382,21 @@ html, body {
     }
 }
 
-
-/* --- LOW STOCK CARD (Combo King Style) --- */
+/* --- LOW STOCK CARD --- */
 .card-low-stock {
     background: #ffffff;
-    border: 1px solid #fee2e2; /* Light Red Border */
+    border: 2px solid var(--theme-red-border);
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.08);
     overflow: hidden;
     margin-bottom: 1.5rem;
 }
 
 .header-low-stock {
-    background-color: #fef2f2; /* Very pale red bg */
+    background: linear-gradient(135deg, var(--theme-red-soft), var(--theme-orange-soft));
     padding: 12px 20px;
-    border-bottom: 1px solid #fee2e2;
-    color: #dc2626; /* Deep Red Text */
+    border-bottom: 2px solid var(--theme-red-border);
+    color: var(--theme-accent);
     font-weight: 700;
     font-size: 0.95rem;
     display: flex;
@@ -434,7 +404,6 @@ html, body {
     gap: 8px;
 }
 
-/* List Item Styling */
 .low-stock-item {
     padding: 12px 20px;
     border-bottom: 1px solid #f3f4f6;
@@ -449,13 +418,12 @@ html, body {
     }
 
     .low-stock-item:hover {
-        background-color: #f9fafb;
+        background-color: var(--theme-orange-soft);
     }
 
-/* Typography */
 .item-name {
     font-weight: 700;
-    color: #1f2937; /* Dark Gray/Black */
+    color: #1f2937;
     font-size: 0.9rem;
     margin-bottom: 2px;
     display: block;
@@ -463,18 +431,17 @@ html, body {
 
 .item-variant {
     font-size: 0.75rem;
-    color: #6b7280; /* Muted Gray */
+    color: #6b7280;
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-/* Badges (Pills) */
 .badge-stock {
     font-weight: 700;
     font-size: 0.75rem;
     padding: 4px 10px;
-    border-radius: 99px; /* Pill shape */
+    border-radius: 99px;
     color: white;
     display: inline-block;
     min-width: 60px;
@@ -482,18 +449,35 @@ html, body {
 }
 
 .badge-stock-zero {
-    background-color: #ef4444; /* Bright Red */
+    background: linear-gradient(135deg, var(--theme-red), #dc2626);
 }
 
 .badge-stock-low {
-    background-color: #eab308; /* Mustard Yellow */
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow));
     color: white;
 }
 
 .item-price {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--theme-orange);
     text-align: right;
     margin-top: 4px;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+/* Override text colors to warm theme */
+.text-success {
+    color: var(--theme-orange) !important;
+}
+
+.text-primary {
+    color: var(--theme-red) !important;
+}
+
+.fw-bold.text-success {
+    color: var(--theme-orange) !important;
+}
+
+.fw-bold.small.text-success {
+    color: var(--theme-orange) !important;
 }

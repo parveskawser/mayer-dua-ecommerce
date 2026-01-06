@@ -1,7 +1,9 @@
 ﻿using MDUA.Entities; // ✅ Ensure ExportRequest is visible
+using MDUA.Facade;
 using MDUA.Facade.Interface;
 using MDUA.Web.UI.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -14,17 +16,19 @@ namespace MDUA.Web.UI.Controllers
         // ✅ 1. Define missing dependencies
         private readonly IOrderFacade _orderFacade;
         private readonly IExportService _exportService;
+        private readonly IVendorFacade _vendorFacade;
 
         // ✅ 2. Update Constructor to accept them
         public ReportController(
             IDeliveryStatusLogFacade deliveryStatusLogFacade,
             IOrderFacade orderFacade,
-            IExportService exportService
+            IExportService exportService, IVendorFacade vendorFacade
         )
         {
             _deliveryStatusLogFacade = deliveryStatusLogFacade;
             _orderFacade = orderFacade;
             _exportService = exportService;
+            _vendorFacade = vendorFacade;
         }
 
         // ============================================================
@@ -37,6 +41,8 @@ namespace MDUA.Web.UI.Controllers
             // 1. Permission Check
             if (!HasPermission("Report.DeliveryLog")) return HandleAccessDenied();
 
+            // 2. Get Current Company ID
+            int companyId = Convert.ToInt32(User.FindFirst("CompanyId")?.Value ?? "1");
 
             DateTime fromDate = from ?? DateTime.UtcNow.AddDays(-7);
             DateTime toDate = to ?? DateTime.UtcNow;
@@ -53,8 +59,8 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // 4. Fetch Data from Facade
-                model.Logs = _deliveryStatusLogFacade.GetLogsForReport(fromDate, toDate, search, type);
+                // 4. Fetch Data from Facade (Added companyId parameter)
+                model.Logs = _deliveryStatusLogFacade.GetLogsForReport(companyId, fromDate, toDate, search, type);
             }
             catch (Exception ex)
             {
@@ -64,7 +70,6 @@ namespace MDUA.Web.UI.Controllers
 
             return View("DeliveryLogs", model);
         }
-
         // ============================================================
         // REPORT 2: Sales Summary 
         // ============================================================
@@ -120,7 +125,7 @@ namespace MDUA.Web.UI.Controllers
                         break;
                 }
 
-                fileName = $"Orders_Export_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension}";
+                fileName = $"Orders_Export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.{fileExtension}";
 
                 return File(fileBytes, contentType, fileName);
             }
@@ -133,10 +138,186 @@ namespace MDUA.Web.UI.Controllers
         [Route("report/order-history-partial")]
         public IActionResult GetOrderHistoryPartial(string orderId)
         {
+            int companyId = Convert.ToInt32(User.FindFirst("CompanyId")?.Value ?? "1");
             // Dates are null (fetch all time), EntityType is "All" (fetch both Order & Delivery logs)
-            var logs = _deliveryStatusLogFacade.GetLogsForReport(null, null, orderId, "All");
+            var logs = _deliveryStatusLogFacade.GetLogsForReport(companyId, null, null, orderId, "All");
 
             return PartialView("_OrderHistoryTable", logs);
+        }
+
+
+
+        [HttpPost]
+
+        [Route("Report/ExportVendorHistory")]
+
+        public IActionResult ExportVendorHistory(string jsonPayload)
+
+        {
+            int companyId = Convert.ToInt32(User.FindFirst("CompanyId")?.Value ?? "1");
+
+            // 1. Parse Payload
+
+            dynamic request = JObject.Parse(jsonPayload);
+
+            // Extract Standard Fields
+
+            string format = (string)request.format ?? "csv";
+
+            var columns = ((JArray)request.columns).ToObject<List<string>>();
+
+            string scope = (string)request.scope;
+
+            // Extract Filter Fields
+
+            int vendorId = (int)request.vendorId;
+
+            string search = (string)request.search ?? "";
+
+            string status = (string)request.status ?? "all";
+
+            string type = (string)request.type ?? "all";
+
+            string dateRange = (string)request.dateRange ?? "all";
+
+            DateTime? fromDate = (DateTime?)request.fromDate;
+
+            DateTime? toDate = (DateTime?)request.toDate;
+
+            // 2. Process Date Logic
+
+            DateTime today = DateTime.UtcNow.Date;
+
+            if (dateRange != "all")
+
+            {
+
+                switch (dateRange)
+
+                {
+
+                    case "today":
+
+                        fromDate = today;
+
+                        toDate = today.AddDays(1).AddTicks(-1);
+
+                        break;
+
+                    case "yesterday":
+
+                        fromDate = today.AddDays(-1);
+
+                        toDate = today.AddDays(1).AddTicks(-1);
+
+                        break;
+
+                    case "thisWeek":
+
+                        int diff = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
+
+                        fromDate = today.AddDays(-1 * diff).Date;
+
+                        toDate = today.AddDays(1).AddTicks(-1);
+
+                        break;
+
+                    case "lastWeek":
+
+                        int diffLast = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
+
+                        fromDate = today.AddDays(-1 * diffLast).AddDays(-7).Date;
+
+                        toDate = fromDate.Value.AddDays(7).AddTicks(-1);
+
+                        break;
+
+                    case "thisMonth":
+
+                        fromDate = new DateTime(today.Year, today.Month, 1);
+
+                        toDate = today.AddDays(1).AddTicks(-1);
+
+                        break;
+
+                    case "lastMonth":
+
+                        var lastMonth = today.AddMonths(-1);
+
+                        fromDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+
+                        toDate = new DateTime(today.Year, today.Month, 1).AddTicks(-1);
+
+                        break;
+
+                }
+
+            }
+
+            // 3. Fetch Data from Facade
+
+            // Added '1' as the page number before '100000'
+            var result = _vendorFacade.GetVendorOrderHistory(vendorId, companyId, 1, 100000, search, status, type, fromDate, toDate);
+            var dataList = result.Items; // This is List<dynamic>
+
+            // 4. Apply "Selected Rows" Scope
+
+            if (scope == "selected" && request.selectedIds != null)
+
+            {
+
+                var selectedIds = ((JArray)request.selectedIds).ToObject<List<int>>();
+
+                if (selectedIds.Any())
+
+                {
+
+                    dataList = dataList.Where(x => selectedIds.Contains((int)((IDictionary<string, object>)x)["PoId"])).ToList();
+
+                }
+
+            }
+
+            // ✅ FIX: Convert List<dynamic> to List<Dictionary<string, object>>
+
+            // IExportService requires strict Dictionary types, but dynamic objects (ExpandoObject) 
+
+            // need explicit casting/conversion to match the signature.
+
+            var exportData = dataList
+
+                .Select(item => new Dictionary<string, object>((IDictionary<string, object>)item))
+
+                .ToList();
+
+            // 5. Generate File using Export Service
+
+            byte[] fileBytes = _exportService.GenerateFile(exportData, format, columns);
+
+            // 6. Return File
+
+            string contentType = "application/octet-stream";
+
+            string fileExtension = format;
+
+            switch (format.ToLower())
+
+            {
+
+                case "csv": contentType = "text/csv"; fileExtension = "csv"; break;
+
+                case "excel":
+
+                case "xlsx": contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; fileExtension = "xlsx"; break;
+
+                case "pdf": contentType = "application/pdf"; fileExtension = "pdf"; break;
+
+            }
+
+            string fileName = $"VendorHistory_{vendorId}_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension}";
+
+            return File(fileBytes, contentType, fileName);
+
         }
 
     }

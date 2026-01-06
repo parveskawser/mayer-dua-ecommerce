@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace MDUA.Web.UI.Controllers
 {
-    public class CartController : Controller
+    public class CartController : BaseController
     {
         private readonly IProductFacade _productFacade; // ✅ Inject Facade
 
@@ -98,6 +98,18 @@ namespace MDUA.Web.UI.Controllers
             }
 
             // 4. Reload Page
+            return RedirectToAction("Index");
+        }
+        // GET: /Cart/Clear
+        public IActionResult Clear()
+        {
+            // 1. Remove the Cart items list
+            HttpContext.Session.Remove("Cart");
+
+            // 2. Remove the Cart Count (updates the badge in navbar)
+            HttpContext.Session.Remove("CartCount");
+
+            // 3. Reload the Index page (which will now render the "Empty Cart" view)
             return RedirectToAction("Index");
         }
     }

@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertUserSession    Script Date: 1/1/2026 12:04:34 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertUserSession    Script Date: 1/6/2026 11:13:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertUserSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertUserSession]
 GO
@@ -71,7 +71,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateUserSession    Script Date: 1/1/2026 12:04:34 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateUserSession    Script Date: 1/6/2026 11:13:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateUserSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateUserSession]
 GO
@@ -117,7 +117,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteUserSession    Script Date: 1/1/2026 12:04:34 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteUserSession    Script Date: 1/6/2026 11:13:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteUserSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteUserSession]
 GO
@@ -148,7 +148,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserSession    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserSession    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllUserSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllUserSession]
 GO
@@ -165,7 +165,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserSessionById    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserSessionById    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserSessionById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserSessionById]
 GO
@@ -186,7 +186,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserSessionByUserId    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserSessionByUserId    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserSessionByUserId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserSessionByUserId]
 GO
@@ -207,7 +207,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserSessionMaximumId    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserSessionMaximumId    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserSessionMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserSessionMaximumId]
 GO
@@ -236,7 +236,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserSessionRowCount    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserSessionRowCount    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserSessionRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserSessionRowCount]
 GO
@@ -255,7 +255,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedUserSession    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedUserSession    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedUserSession]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedUserSession]
 GO
@@ -347,7 +347,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserSessionByQuery    Script Date: 1/1/2026 12:04:34 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserSessionByQuery    Script Date: 1/6/2026 11:13:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserSessionByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserSessionByQuery]
 GO

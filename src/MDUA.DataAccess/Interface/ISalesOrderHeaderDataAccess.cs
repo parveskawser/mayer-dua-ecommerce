@@ -37,12 +37,12 @@ namespace MDUA.DataAccess.Interface
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         SalesOrderHeaderList GetAllSalesOrderHeaders();
         void UpdateStatusSafe(int orderId, string status, bool confirmed);
-        List<Dictionary<string, object>> GetVariantsForDropdown();
+        List<Dictionary<string, object>> GetVariantsForDropdown(int companyId);
         (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId);
         DashboardStats GetDashboardStats(); //new
-        List<SalesOrderHeader> GetRecentOrders(int count = 5); //new
-        List<ChartDataPoint> GetSalesTrend(int months = 6); //new
-        List<ChartDataPoint> GetOrderStatusCounts(); //new
+        List<SalesOrderHeader> GetRecentOrders(int companyId, int count = 5); //new
+        List<ChartDataPoint> GetSalesTrend(int companyId, int months = 6); //new
+        List<ChartDataPoint> GetOrderStatusCounts(int companyId); //new
 
         void UpdateNetAmountSafe(int orderId, decimal newNetAmount);
         //  void UpdatePaymentInfoSafe(int orderId, decimal paidAmount, decimal dueAmount);
@@ -57,5 +57,6 @@ namespace MDUA.DataAccess.Interface
         List<Dictionary<string, object>> GetExportDataDynamic(string whereClause, List<string> columns);
         bool GetConfirmedFlag(int orderId);
         int GetOrderPageNumber(int orderId, int pageSize);
+        DashboardStats GetDashboardMetrics(int companyId);
     }
 }

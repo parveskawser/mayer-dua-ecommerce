@@ -302,8 +302,8 @@
                                 <div>
                                     <label>Postal Code </label>
                                     <input type="text" name="PostalCode" placeholder="Enter code to autofill location..." required />
-                                </div>
-                                <div>
+                                    <div id="postal-status" style="font-size: 0.85rem; margin-top: 4px; display: none;"></div>
+                                </div>                                <div>
                                     <label>District <span class="required-star">*</span></label>
                                     <select id="district-select" name="City" required>
                                         <option value="">Loading Districts...</option>
@@ -513,7 +513,7 @@
     </div>
 
     <footer>
-        <p>© @DateTime.Now.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
+        <p>© @DateTime.UtcNow.Year @(Model.CompanyName ?? "Combo King"). All Rights Reserved.</p>
     </footer>
 
     @Html.Partial("_OrderStatusModal")
@@ -534,34 +534,34 @@
         window.productVariants = [
             @if (Model.Variants != null)
             {
-                            foreach (var v in Model.Variants.Where(x => x.IsActive))
-                            {
-                                            var attrs = new Dictionary<string, string>();
-                                            // Only use Specifications to ensure 1:1 match with HTML buttons
-                                            if (Model.Specifications != null)
-                                            {
-                                                            foreach (var spec in Model.Specifications)
-                                                            {
-                                                                            foreach (var val in spec.Value)
-                                                                            {
-                                                                                            if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                foreach (var v in Model.Variants.Where(x => x.IsActive))
+                                {
+                                                    var attrs = new Dictionary<string, string>();
+                                                    // Only use Specifications to ensure 1:1 match with HTML buttons
+                                                    if (Model.Specifications != null)
+                                                    {
+                                                                        foreach (var spec in Model.Specifications)
+                                                                        {
+                                                                                            foreach (var val in spec.Value)
                                                                                             {
-                                                                                                            attrs[spec.Key] = val;
+                                                                                                                if (v.VariantName != null && IsSafeMatch(v.VariantName, val))
+                                                                                                                {
+                                                                                                                                    attrs[spec.Key] = val;
+                                                                                                                }
                                                                                             }
-                                                                            }
-                                                            }
-                                            }
+                                                                        }
+                                                    }
 
-                                            <text>,
-                                            {
-                                                id: @v.Id,
-                                                price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
-                                                stock: @v.StockQty,
-                                                image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
-                                                attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
-                                            },
-                                            </text>
-                            }
+                                                    <text>,
+                                                    {
+                                                        id: @v.Id,
+                                                        price: @(v.DiscountedPrice > 0 ? v.DiscountedPrice : (v.VariantPrice ?? Model.SellingPrice)),
+                                                        stock: @v.StockQty,
+                                                        image: "@FixPath(!string.IsNullOrEmpty(v.VariantImageUrl) ? v.VariantImageUrl : "")",
+                                                        attributes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(attrs))
+                                                    },
+                                                    </text>
+                                }
             }
         ];
 

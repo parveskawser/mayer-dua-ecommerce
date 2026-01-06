@@ -553,7 +553,7 @@
             // ✅ ADDED: Send the Delivery Charge from the editable input
             DeliveryCharge: parseFloat(deliveryInput ? deliveryInput.value : 0) || 0,
 
-            TargetCompanyId: parseInt(document.getElementById('targetCompanyId')?.value) || 1,
+            TargetCompanyId: parseInt(document.getElementById('targetCompanyId')?.value) || 0,
             Confirmed: document.getElementById('confirmImmediately').checked
         };
 

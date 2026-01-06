@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProduct    Script Date: 1/1/2026 12:04:31 PM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProduct    Script Date: 1/6/2026 11:13:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProduct]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProduct]
 GO
@@ -92,7 +92,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProduct    Script Date: 1/1/2026 12:04:31 PM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProduct    Script Date: 1/6/2026 11:13:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProduct]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProduct]
 GO
@@ -152,7 +152,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProduct    Script Date: 1/1/2026 12:04:31 PM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProduct    Script Date: 1/6/2026 11:13:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProduct]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProduct]
 GO
@@ -183,7 +183,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProduct    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProduct    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProduct]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProduct]
 GO
@@ -200,7 +200,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductById    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductById    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductById]
 GO
@@ -221,7 +221,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductByCompanyId    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductByCompanyId    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductByCompanyId]
 GO
@@ -242,7 +242,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductMaximumId    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductMaximumId    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductMaximumId]
 GO
@@ -271,7 +271,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductRowCount    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductRowCount    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductRowCount]
 GO
@@ -290,7 +290,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProduct    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProduct    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProduct]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProduct]
 GO
@@ -396,7 +396,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductByQuery    Script Date: 1/1/2026 12:04:31 PM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductByQuery    Script Date: 1/6/2026 11:13:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductByQuery]
 GO

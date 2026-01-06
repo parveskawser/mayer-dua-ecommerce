@@ -94,7 +94,7 @@ ViewData["Title"] = "Add Product";
                     </div>
                 </div>
             </div>
-
+            <input type="hidden" id="targetCompanyId" value="@User.FindFirst("CompanyId")?.Value" />
             <!-- RIGHT COLUMN: Settings, Attributes & Actions -->
             <div class="col-lg-4">
                 <div class="glass-card p-4 position-sticky" style="top: 1rem;">

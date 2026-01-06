@@ -14,22 +14,32 @@ namespace MDUA.Entities
 	{
 		#region Exernal Properties
 		private PoRequested _PoRequestedIdObject = null;
-		
-		/// <summary>
-		/// Gets or sets the source <see cref="PoRequested"/>.
-		/// </summary>
-		/// <value>The source PoRequested for _PoRequestedIdObject.</value>
-		[DataMember]
+
+        /// <summary>
+        /// Gets or sets the source <see cref="PoRequested"/>.
+        /// </summary>
+        /// <value>The source PoRequested for _PoRequestedIdObject.</value>
+
+        [DataMember]
 		public PoRequested PoRequestedIdObject
       	{
             get { return this._PoRequestedIdObject; }
             set { this._PoRequestedIdObject = value; }
       	}
-		
-		#endregion
-		
-		#region Orverride Equals
-		public override bool Equals(Object obj)		
+
+
+        private Vendor _VendorIdObject = null;
+
+        [DataMember]
+        public Vendor VendorIdObject
+        {
+            get { return this._VendorIdObject; }
+            set { this._VendorIdObject = value; }
+        }
+        #endregion
+
+        #region Orverride Equals
+        public override bool Equals(Object obj)		
 		{
 			if (obj.GetType() != typeof(PoReceived))
             {

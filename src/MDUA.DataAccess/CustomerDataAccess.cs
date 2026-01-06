@@ -44,13 +44,24 @@ namespace MDUA.DataAccess
          return Get(id);
      }
 
-     // NOTE: If your interface requires a method called 'GetCustomerDetailsById',
-     // implement it as:
-     /*
-     public Customer GetCustomerDetailsById(int id)
-     {
-         return Get(id);
-     }
-     */
+        public CustomerList GetCustomersByCompanyId(int companyId)
+        {
+            // ✅ SQL Logic:
+            // Select Customers ONLY if they exist in CompanyCustomer for this specific CompanyId
+            string SQLQuery = @"
+        SELECT c.* FROM Customer c
+        INNER JOIN CompanyCustomer cc ON c.Id = cc.CustomerId
+        WHERE cc.CompanyId = @CompanyId
+        ORDER BY c.CreatedAt DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
+                // ✅ FIX: Pass a limit argument (e.g., 10000 or int.MaxValue)
+                // because your GetList method signature is GetList(SqlCommand cmd, long rows)
+                return GetList(cmd, 10000);
+            }
+        }
     }
 }

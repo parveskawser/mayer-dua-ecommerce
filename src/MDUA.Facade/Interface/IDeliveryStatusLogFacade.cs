@@ -14,7 +14,7 @@ namespace MDUA.Facade.Interface
         DeliveryStatusLogList GetAll();
 
         // Reporting Logic
-        List<DeliveryStatusLog> GetLogsForReport(DateTime? from, DateTime? to, string search, string entityType);
+        List<DeliveryStatusLog> GetLogsForReport(int companyId, DateTime? from, DateTime? to, string search, string entityType);
 
         // Helper to Log easily from other Facades
         void LogStatusChange(int entityId, string entityType, string oldStatus, string newStatus, string changedBy, int? orderId = null, string reason = null, bool isSystem = false);

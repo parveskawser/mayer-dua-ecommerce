@@ -11,19 +11,56 @@ namespace MDUA.Web.UI.Controllers
         private readonly IDeliveryFacade _deliveryFacade;
         private readonly IOrderFacade _orderFacade; // ✅ Inject OrderFacade for status updates
         private readonly IDeliveryStatusLogFacade _logFacade;
-        public ShipmentController(IDeliveryFacade deliveryFacade, IOrderFacade orderFacade, IDeliveryStatusLogFacade logFacade)
+        private readonly ISubscriptionSystemFacade _subscriptionFacade;
+
+        public ShipmentController(IDeliveryFacade deliveryFacade, IOrderFacade orderFacade, IDeliveryStatusLogFacade logFacade, ISubscriptionSystemFacade subscriptionFacade)
+        
         {
             _deliveryFacade = deliveryFacade;
             _orderFacade = orderFacade;
             _logFacade = logFacade;
-
+            _subscriptionFacade = subscriptionFacade;
         }
         [Route("delivery/all")]
-
         [HttpGet]
         public IActionResult DeliveryList()
         {
-            IList<Delivery> list = _deliveryFacade.GetAllDeliveries();
+            // 1. Permission Check
+            if (!HasPermission("Order.View")) return HandleAccessDenied();
+
+            // 2. Subscription Limit Check
+            if (_subscriptionFacade.IsSubscriptionLocked(CurrentCompanyId, out int current, out int limit))
+            {
+                return RedirectToAction("LimitReached", "Subscription", new
+                {
+                    current = current,
+                    limit = limit,
+                    feature = "Order"
+                });
+            }
+
+            // 3. ✅ Get Company ID (Tenant Security)
+            // Assuming CurrentCompanyId is a property in your BaseController that parses the User Claims
+            int companyId = CurrentCompanyId;
+
+            // Fallback safety if the property isn't set (e.g. session issue)
+            if (companyId <= 0)
+            {
+                var claim = User.FindFirst("CompanyId");
+                if (claim != null && int.TryParse(claim.Value, out int cid))
+                {
+                    companyId = cid;
+                }
+                else
+                {
+                    // If we still can't find a company ID, force a logout or error
+                    return RedirectToAction("Login", "Account");
+                }
+            }
+
+            // 4. ✅ Pass CompanyID to Facade
+            IList<Delivery> list = _deliveryFacade.GetAllDeliveries(companyId);
+
             return View(list);
         }
         [HttpPost]
@@ -79,5 +116,7 @@ namespace MDUA.Web.UI.Controllers
             }
 
         }
+
+
     }
 }
