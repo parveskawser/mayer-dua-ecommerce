@@ -24,14 +24,22 @@ public class CustomerController : BaseController
     {
         if (!HasPermission("Customer.View")) return HandleAccessDenied();
 
-        var userId = CurrentUserId; // Returns int?
+        var userId = CurrentUserId;
         if (userId == null) return RedirectToAction("Login", "Account");
-        
-      //  if (!HasPermission("Customer.View"))
-           // return RedirectToAction("AccessDenied", "Account");
 
-        var customers = _customerFacade.GetAllCustomersForAdmin();
-        return View(customers); // Returns the list to CustomerList.cshtml
+        // 1. Get the current user's CompanyId
+        // (Assuming your BaseController or User Claims has this)
+        var companyIdClaim = User.FindFirstValue("CompanyId");
+        int companyId = 0;
+        if (!string.IsNullOrEmpty(companyIdClaim))
+        {
+            int.TryParse(companyIdClaim, out companyId);
+        }
+
+        // 2. Pass CompanyId to the Facade
+        var customers = _customerFacade.GetAllCustomersForAdmin(companyId); // <--- Update this call
+
+        return View(customers);
     }
 
     [HttpGet]

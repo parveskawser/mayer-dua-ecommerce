@@ -84,6 +84,40 @@
             border-right: none;
             background-color: white;
         }
+
+
+        /* Fix td checkbox to be square like th checkbox */
+        .products-table tbody td .row-checkbox {
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            min-height: 18px !important;
+            margin: 0 auto !important;
+            display: block !important;
+        }
+        /* Reduce spacing between table columns */
+        .products-table th,
+        .products-table td {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+
+        /* Optional: Make it even tighter */
+        .products-table th,
+        .products-table td {
+            padding-left: 0.35rem !important;
+            padding-right: 0.35rem !important;
+        }
+        /* Make entire table more compact */
+        .products-table {
+            table-layout: auto !important;
+        }
+
+            .products-table th,
+            .products-table td {
+                padding: 0.5rem 0.35rem !important;
+                white-space: nowrap;
+            }
     </style>
 }
 
@@ -223,10 +257,10 @@
 
     <div class="glass-card-fill">
         <div class="table-scroll-lock">
-            <table class="table table-hover mb-0 align-middle products-table" id="ordersTable">
+            <table class="table table-sm table-hover mb-0 align-middle products-table" id="ordersTable">
                 <thead>
                     <tr>
-                        <th style="width: 30px;" class="text-center">
+                        <th class="text-center" style="width: 30px;">
                             <input type="checkbox" class="form-check-input" id="checkAllRows">
                         </th>
                         <th style="width: 40px;"></th>

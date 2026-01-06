@@ -46,6 +46,75 @@
             max-height: 200px !important;
             overflow-y: auto !important;
         }
+
+        .products-table {
+            border-collapse: collapse !important;
+        }
+
+            .products-table th,
+            .products-table td {
+                padding: 12px 8px !important;
+            }
+
+        /* Remove blue from Manage button */
+        .btn-primary {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+        }
+
+            .btn-primary:hover {
+                background-color: #5a6268 !important;
+            }
+
+        /* Remove blue from category pills */
+        .pill-tag {
+            background: #e9ecef !important;
+            color: #495057 !important;
+        }
+
+        /* Remove blue from slug links */
+        .products-table a {
+            color: #6c757d !important;
+        }
+
+            .products-table a:hover {
+                color: #495057 !important;
+            }
+
+        /* --- THEME OVERRIDES --- */
+        :root {
+            /* Adjust this hex code to your exact preferred Red/Orange */
+            --theme-main: #e14d2a;
+            --theme-hover: #c0392b;
+        }
+
+        /* 1. Override the "Manage Images/Videos" buttons inside the drawer */
+        .action-drawer-row .btn-outline-primary {
+            color: var(--theme-main) !important;
+            border-color: var(--theme-main) !important;
+        }
+
+            .action-drawer-row .btn-outline-primary:hover {
+                background-color: var(--theme-main) !important;
+                color: #fff !important;
+                box-shadow: 0 4px 6px rgba(225, 77, 42, 0.2); /* Soft colored shadow */
+            }
+
+        /* 2. Fix "Manage" Button Hover (Closed State) */
+        .btn-manage:hover {
+            border-color: var(--theme-main) !important;
+            color: var(--theme-main) !important;
+            background-color: rgba(225, 77, 42, 0.05); /* Very light orange bg */
+        }
+
+        /* 3. Active "Manage" Button (Open State) */
+        /* We will use this class in JS instead of btn-primary */
+        .btn-theme-active {
+            background-color: var(--theme-main) !important;
+            border-color: var(--theme-main) !important;
+            color: #ffffff !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 }
 <link rel="stylesheet" href="~/css/product-list.css" />

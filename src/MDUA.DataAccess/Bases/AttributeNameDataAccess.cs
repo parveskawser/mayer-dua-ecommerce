@@ -14,7 +14,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
 	public partial class AttributeNameDataAccess : BaseDataAccess, IAttributeNameDataAccess
-	{
+    {
 		#region Constants
 		private const string INSERTATTRIBUTENAME = "InsertAttributeName";
 		private const string UPDATEATTRIBUTENAME = "UpdateAttributeName";
@@ -22,6 +22,7 @@ namespace MDUA.DataAccess
 		private const string GETATTRIBUTENAMEBYID = "GetAttributeNameById";
 		private const string GETALLATTRIBUTENAME = "GetAllAttributeName";
 		private const string GETPAGEDATTRIBUTENAME = "GetPagedAttributeName";
+		private const string GETATTRIBUTENAMEBYCOMPANYID = "GetAttributeNameByCompanyId";
 		private const string GETATTRIBUTENAMEMAXIMUMID = "GetAttributeNameMaximumId";
 		private const string GETATTRIBUTENAMEROWCOUNT = "GetAttributeNameRowCount";	
 		private const string GETATTRIBUTENAMEBYQUERY = "GetAttributeNameByQuery";
@@ -45,6 +46,8 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pNVarChar(AttributeNameBase.Property_Name, 100, attributeNameObject.Name));
 			AddParameter(cmd, pInt32(AttributeNameBase.Property_DisplayOrder, attributeNameObject.DisplayOrder));
 			AddParameter(cmd, pBool(AttributeNameBase.Property_IsVariantAffecting, attributeNameObject.IsVariantAffecting));
+			AddParameter(cmd, pBool(AttributeNameBase.Property_IsActive, attributeNameObject.IsActive));
+			AddParameter(cmd, pInt32(AttributeNameBase.Property_CompanyId, attributeNameObject.CompanyId));
 		}
 		#endregion
 		
@@ -159,6 +162,20 @@ namespace MDUA.DataAccess
 			}
 		}
 		
+		/// <summary>
+        /// Retrieves all AttributeName objects by CompanyId
+        /// </summary>
+        /// <returns>A list of AttributeName objects</returns>
+		public AttributeNameList GetByCompanyId(Nullable<Int32> _CompanyId)
+		{
+			using( SqlCommand cmd = GetSPCommand(GETATTRIBUTENAMEBYCOMPANYID))
+			{
+				
+				AddParameter( cmd, pInt32(AttributeNameBase.Property_CompanyId, _CompanyId));
+				return GetList(cmd, ALL_AVAILABLE_RECORDS);
+			}
+		}
+		
 		
 		/// <summary>
         /// Retrieves all AttributeName objects by PageRequest
@@ -251,7 +268,9 @@ namespace MDUA.DataAccess
 				attributeNameObject.Name = reader.GetString( start + 1 );			
 				attributeNameObject.DisplayOrder = reader.GetInt32( start + 2 );			
 				attributeNameObject.IsVariantAffecting = reader.GetBoolean( start + 3 );			
-			FillBaseObject(attributeNameObject, reader, (start + 4));
+				attributeNameObject.IsActive = reader.GetBoolean( start + 4 );			
+				if(!reader.IsDBNull(5)) attributeNameObject.CompanyId = reader.GetInt32( start + 5 );			
+			FillBaseObject(attributeNameObject, reader, (start + 6));
 
 			
 			attributeNameObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

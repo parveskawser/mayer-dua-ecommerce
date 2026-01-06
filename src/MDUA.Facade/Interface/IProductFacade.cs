@@ -16,9 +16,9 @@ namespace MDUA.Facade.Interface
         long AddProduct(Product product, string username, int companyId);
 
         Product GetProductDetailsForWebBySlug(string slug);
-        ProductList GetLastFiveProducts();
-        List<Product> GetAllProductsWithCategory();
-        UserLoginResult GetAddProductData(int userId);
+        ProductList GetLastFiveProducts(int companyId);
+        List<Product> GetAllProductsWithCategory(int companyId);
+        UserLoginResult GetAddProductData(int companyId);
         List<AttributeValue> GetAttributeValues(int attributeId);
         ProductVariantList GetVariantsByProductId(int productId);
 
@@ -56,14 +56,14 @@ namespace MDUA.Facade.Interface
         void UpdateProductImageSortOrder(int imageId, int sortOrder);
         void UpdateVariantImageDisplayOrder(int imageId, int displayOrder);
         ProductDiscount GetBestDiscount(int productId, decimal basePrice);
-        ProductList SearchProducts(string searchTerm);
+        ProductList SearchProducts(string searchTerm, int companyId);
         List<ProductVideo> GetProductVideos(int productId);
         Task<long> AddProductVideo(ProductVideo video, string username);
         Task<string> ConvertToEmbedUrl(string url);
         long DeleteProductVideo(int videoId);
         void SetPrimaryProductVideo(int videoId, int productId, string username);
-        List<LowStockItem> GetLowStockVariants(int topN);
-        List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null);
+        List<LowStockItem> GetLowStockVariants(int companyId, int topN);
+List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null);
         LandingPageViewModel GetHomepageData();
     }
 }

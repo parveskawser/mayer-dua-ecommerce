@@ -180,7 +180,7 @@ namespace MDUA
 
         public static DateTime UTCToServerTime(this DateTime dateTime)
         {
-            DateTime currentDate = DateTime.Now;
+            DateTime currentDate = DateTime.UtcNow;
             TimeZone localZone = TimeZone.CurrentTimeZone;
             TimeSpan currentOffset = localZone.GetUtcOffset(currentDate);
 

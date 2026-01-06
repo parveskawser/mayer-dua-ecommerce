@@ -7,17 +7,15 @@ html, body {
     margin: 0;
     padding: 0;
 }
-
 /* ========== 2. MAIN WRAPPER (The Fix) ========== */
 .bulk-wrapper {
     /* Adjust '80px' if you see a double scrollbar (it accounts for your Navbar height) */
-    height: calc(100vh - 80px);
+    height: calc(100vh - 120px);
     display: flex;
     flex-direction: row; /* Side-by-side layout */
     overflow: hidden; /* Contains everything inside */
     background-color: #f8f9fa;
 }
-
 /* ========== 3. LEFT PANE: PRODUCT LIST ========== */
 .product-pane {
     flex: 1; /* Takes all remaining width */
@@ -26,7 +24,6 @@ html, body {
     overflow: hidden;
     padding: 1rem; /* Reduced padding for tighter fit */
 }
-
 /* The Fixed Header inside the Product Pane */
 .product-pane-header {
     flex: 0 0 auto;
@@ -34,7 +31,6 @@ html, body {
     margin-bottom: 0.5rem;
     background: transparent;
 }
-
 /* The Scrollable Area for Product Cards */
 .product-scroll-area {
     flex: 1;
@@ -43,7 +39,6 @@ html, body {
     padding-right: 5px;
     padding-bottom: 50px;
 }
-
     /* Custom Scrollbar */
     .product-scroll-area::-webkit-scrollbar {
         width: 6px;
@@ -53,7 +48,6 @@ html, body {
         background: #cbd5e1;
         border-radius: 3px;
     }
-
 /* ========== 4. RIGHT PANE: SIDEBAR FORM (UPDATED) ========== */
 .sidebar-pane {
     width: 380px; /* Fixed width for the form */
@@ -74,10 +68,14 @@ html, body {
     border-top-left-radius: 8px;
 }
 
+    /* RED-YELLOW THEME: Order Details Header */
+    .sidebar-pane .bg-primary {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    }
+
 .sidebar-content {
     padding: 1.5rem;
 }
-
 /* ========== 5. KEEPING YOUR EXISTING STYLES ========== */
 .card {
     border: none;
@@ -108,7 +106,6 @@ html, body {
     .variant-row:hover {
         background-color: #f8f9fa;
     }
-
 /* ========== 6. MOBILE RESPONSIVENESS ========== */
 @media (max-width: 991px) {
     html, body {
@@ -140,15 +137,12 @@ html, body {
         overflow: visible;
     }
 }
-
-
 /* 1. Wrapper INSIDE the TD (Handles layout) */
 .variant-flex-wrapper {
     display: flex;
     align-items: center;
     max-width: 250px; /* Controls the width limit */
 }
-
 /* 2. The Text Name (Shrinks and adds ...) */
 .variant-name-truncate {
     white-space: nowrap;
@@ -157,7 +151,6 @@ html, body {
     flex: 1; /* Takes available space */
     min-width: 0; /* Allows it to shrink below its content size */
 }
-
 /* 3. The Badge (Stays fixed) */
 .badge-stock {
     white-space: nowrap;

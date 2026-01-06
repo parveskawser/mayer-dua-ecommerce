@@ -32,7 +32,7 @@ namespace MDUA.DataAccess.Interface
 	public interface ICustomerDataAccess : ICommonDataAccess<Customer, CustomerList, CustomerBase>
 	{
         Customer GetByEmail(string email);
-
+		CustomerList GetCustomersByCompanyId(int companyId);
         Customer GetByPhone(string phone);
     }	
 }

@@ -11,36 +11,46 @@ namespace MDUA.DataAccess
 
     {
 
-        public List<DeliveryStatusLog> GetLogsForReport(DateTime? from, DateTime? to, string search, string entityType)
+        public List<DeliveryStatusLog> GetLogsForReport(int companyId, DateTime? from, DateTime? to, string search, string entityType)
         {
             var list = new List<DeliveryStatusLog>();
 
-            // Build Dynamic SQL safely (or use a dedicated SP if preferred)
+            // ✅ FIX: Use EXISTS to check ownership via the Product table
+            // We join Order -> OrderDetail -> Variant -> Product to find the CompanyId
             string sql = @"
-                SELECT TOP 500 * FROM [dbo].[DeliveryStatusLog]
-                WHERE 1=1 ";
+        SELECT TOP 500 log.* FROM [dbo].[DeliveryStatusLog] log
+        INNER JOIN [dbo].[SalesOrderHeader] soh ON log.SalesOrderId = soh.Id
+        WHERE EXISTS (
+            SELECT 1 
+            FROM [dbo].[SalesOrderDetail] sod
+            INNER JOIN [dbo].[ProductVariant] pv ON sod.ProductId = pv.Id
+            INNER JOIN [dbo].[Product] p ON pv.ProductId = p.Id
+            WHERE sod.SalesOrderId = soh.Id 
+              AND p.CompanyId = @CompanyId
+        ) ";
 
             if (from.HasValue)
-                sql += " AND ChangedAt >= @FromDate";
+                sql += " AND log.ChangedAt >= @FromDate";
 
             if (to.HasValue)
-                sql += " AND ChangedAt <= @ToDate";
+                sql += " AND log.ChangedAt <= @ToDate";
 
             if (!string.IsNullOrEmpty(entityType) && entityType != "All")
-                sql += " AND EntityType = @EntityType";
+                sql += " AND log.EntityType = @EntityType";
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-               
-                sql += " AND (CAST(SalesOrderId AS NVARCHAR) = @SearchTerm OR ChangedBy LIKE @SearchLike)";
+                sql += " AND (CAST(log.SalesOrderId AS NVARCHAR) = @SearchTerm OR log.ChangedBy LIKE @SearchLike)";
             }
 
-            sql += " ORDER BY ChangedAt DESC";
+            sql += " ORDER BY log.ChangedAt DESC";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 if (from.HasValue) AddParameter(cmd, pDateTime("FromDate", from.Value));
-                if (to.HasValue) AddParameter(cmd, pDateTime("ToDate", to.Value.AddDays(1).AddTicks(-1))); // Include full end day
+                if (to.HasValue) AddParameter(cmd, pDateTime("ToDate", to.Value.AddDays(1).AddTicks(-1)));
                 if (!string.IsNullOrEmpty(entityType) && entityType != "All") AddParameter(cmd, pNVarChar("EntityType", 50, entityType));
 
                 if (!string.IsNullOrWhiteSpace(search))

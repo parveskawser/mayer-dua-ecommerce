@@ -43,6 +43,8 @@ namespace MDUA.Facade
             services.AddScoped<ISalesOrderDetailDataAccess, SalesOrderDetailDataAccess>();
             services.AddScoped<ICustomerDataAccess, CustomerDataAccess>();
             services.AddScoped<ICompanyCustomerDataAccess, CompanyCustomerDataAccess>();
+            services.AddScoped<ICompanyVendorDataAccess, CompanyVendorDataAccess>();
+
             services.AddScoped<IAddressDataAccess, AddressDataAccess>();
 
             // ✅ Purchase Facade Requirements (Inventory & POs)
@@ -74,8 +76,11 @@ namespace MDUA.Facade
 
             services.AddScoped<IEmailHistoryDataAccess, EmailHistoryDataAccess>();
             services.AddScoped<IEmailTemplateDataAccess, EmailTemplateDataAccess>();
+            services.AddScoped<IVendorPaymentDataAccess, VendorPaymentDataAccess>();
 
-
+            services.AddScoped<ICompanySubscriptionDataAccess, CompanySubscriptionDataAccess>();
+            services.AddScoped<ISubscriptionUsageDataAccess, SubscriptionUsageDataAccess>();
+            services.AddScoped<ISubscriptionPlanDataAccess, SubscriptionPlanDataAccess>();
             // Facade Layer
             services.AddServiceFacade();
 
@@ -84,6 +89,8 @@ namespace MDUA.Facade
 
         private static void AddServiceFacade(this IServiceCollection services)
         {
+            // ✅ FIX: Register HttpClient so SmsService can use it
+            services.AddHttpClient();
             services.AddScoped<IUserLoginFacade, UserLoginFacade>();
             services.AddScoped<IProductFacade, ProductFacade>();
             services.AddScoped<IOrderFacade, OrderFacade>();
@@ -96,11 +103,13 @@ namespace MDUA.Facade
             services.AddScoped<IDeliveryFacade, DeliveryFacade>();
             services.AddScoped<IVendorFacade, VendorFacade>();
 
+
             // ✅ ADDED THIS (Required for OrderController)
             services.AddScoped<IPaymentFacade, PaymentFacade>();
             services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<IDeliveryStatusLogFacade, DeliveryStatusLogFacade>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ISubscriptionSystemFacade, SubscriptionSystemFacade>();
 
 
 

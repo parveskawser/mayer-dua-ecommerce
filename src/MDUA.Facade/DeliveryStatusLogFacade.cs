@@ -22,9 +22,9 @@ namespace MDUA.Facade
         public long Insert(DeliveryStatusLog obj) => _dataAccess.Insert(obj);
         public long Update(DeliveryStatusLog obj) => _dataAccess.Update(obj);
 
-        public List<DeliveryStatusLog> GetLogsForReport(DateTime? from, DateTime? to, string search, string entityType)
+        public List<DeliveryStatusLog> GetLogsForReport(int companyId, DateTime? from, DateTime? to, string search, string entityType)
         {
-            return _dataAccess.GetLogsForReport(from, to, search, entityType);
+            return _dataAccess.GetLogsForReport(companyId, from, to, search, entityType);
         }
 
         // Helper Method used by other Facades (OrderFacade, etc.)

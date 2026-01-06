@@ -1,9 +1,11 @@
 ﻿using MDUA.Entities;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
+using MDUA.Framework.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Text.Json;
 using static MDUA.Entities.BulkPurchaseOrder;
 
@@ -12,10 +14,12 @@ namespace MDUA.Web.UI.Controllers
     public class PurchaseController : BaseController
     {
         private readonly IPurchaseFacade _purchaseFacade;
+        private readonly IPaymentMethodFacade _paymentMethodFacade;
 
-        public PurchaseController(IPurchaseFacade purchaseFacade)
+        public PurchaseController(IPurchaseFacade purchaseFacade, IPaymentMethodFacade paymentMethodFacade)
         {
             _purchaseFacade = purchaseFacade;
+            _paymentMethodFacade = paymentMethodFacade;
         }
         [Route("purchase/stock-status")]
 
@@ -24,12 +28,13 @@ namespace MDUA.Web.UI.Controllers
         {
             try
             {
-                // ✅ Get ALL items (sorted by low stock first)
-                var inventory = _purchaseFacade.GetInventoryStatus();
-                var vendors = _purchaseFacade.GetAllVendors();
+                int companyId = CurrentCompanyId; // Ensure BaseController provides this
+                                                  // ✅ Get ALL items (sorted by low stock first)
+                var inventory = _purchaseFacade.GetInventoryStatus(companyId);
+                var vendors = _purchaseFacade.GetAllVendors(companyId);
 
                 ViewBag.Vendors = vendors;
-                return View("LowStockReport", inventory); // Reusing the view file but with new data
+                return View("LowStockReport", inventory);
             }
             catch (Exception ex)
             {
@@ -45,51 +50,38 @@ namespace MDUA.Web.UI.Controllers
             try
             {
                 // 1. Validate Payload
-                if (model == null)
+                if (model == null || model.VendorId <= 0 || model.Quantity <= 0)
                 {
-                    return Json(new { success = false, message = "Invalid Data: Request payload is null. Check JSON format." });
+                    return Json(new { success = false, message = "Invalid Data. Check Vendor and Quantity." });
                 }
 
-                if (model.VendorId <= 0 || model.Quantity <= 0)
-                {
-                    return Json(new { success = false, message = "Invalid Vendor or Quantity selected." });
-                }
-
-                // ✅ Set the CreatedBy to current logged-in user
-                model.CreatedBy = CurrentUserName;
+                model.CreatedBy = User.Identity?.Name ?? "System";
 
                 // 2. Execute
                 long id = _purchaseFacade.CreatePurchaseOrder(model);
 
-                // 3. Validate Result
-                if (id <= 0)
-                {
-                    return Json(new { success = false, message = "Database Insert Failed (ID <= 0). Check Stored Procedure logic." });
-                }
-
                 return Json(new { success = true, message = "PO Requested Successfully!", id = id });
+            }
+            //  Catch Business Logic Errors (Like Bulk Limit Exceeded)
+            catch (WorkflowException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (SqlException ex)
+            {
+                // If the SQL "THROW 51000" triggers, it comes here
+                if (ex.Number == 51000)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
+                return Json(new { success = false, message = "Database Error: " + ex.Message });
             }
             catch (Exception ex)
             {
-                // ✅ FIX: Capture the INNER exception which usually holds the SQL error
-                string errorMessage = ex.Message;
-
-                if (ex.InnerException != null && !string.IsNullOrEmpty(ex.InnerException.Message))
-                {
-                    errorMessage += " | Inner: " + ex.InnerException.Message;
-                }
-
-                // If still empty, dump the whole stack trace so we can debug
-                if (string.IsNullOrEmpty(errorMessage))
-                {
-                    errorMessage = ex.ToString();
-                }
-
-                return Json(new { success = false, message = errorMessage });
+                return Json(new { success = false, message = "Server Error: " + ex.Message });
             }
         }
 
-        // ✅ MISSING ENDPOINT #1: Get Info for Modal
         [HttpGet]
         [Route("purchase/get-pending-info")]
         public IActionResult GetPendingInfo(int variantId)
@@ -103,30 +95,50 @@ namespace MDUA.Web.UI.Controllers
             catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
         }
 
-        // ✅ MISSING ENDPOINT #2: Receive Stock
         [HttpPost]
         [Route("purchase/receive-stock")]
         public IActionResult ReceiveStock([FromBody] JsonElement model)
         {
             try
             {
-                // Safe extraction from JSON
+                // 1. Standard Fields Extraction
                 int variantId = model.GetProperty("ProductVariantId").GetInt32();
                 int qty = model.GetProperty("Quantity").GetInt32();
                 decimal price = model.GetProperty("BuyingPrice").GetDecimal();
 
+                // 2. Safe String Extraction
                 string invoice = model.TryGetProperty("InvoiceNo", out var inv) ? inv.GetString() : "";
                 string remarks = model.TryGetProperty("Remarks", out var rem) ? rem.GetString() : "";
 
-                _purchaseFacade.ReceiveStock(variantId, qty, price, invoice, remarks);
+                // 3. Extract Payment Fields (Safe Null Handling)
+                decimal paidAmount = model.TryGetProperty("PaidAmount", out var pa) ? pa.GetDecimal() : 0;
 
-                return Json(new { success = true, message = "Stock Received & Updated!" });
+                int? paymentMethodId = null;
+                if (model.TryGetProperty("PaymentMethodId", out var pm) && pm.ValueKind != JsonValueKind.Null)
+                {
+                    paymentMethodId = pm.GetInt32();
+                }
+
+                string paymentRef = model.TryGetProperty("PaymentReference", out var pr) ? pr.GetString() : null;
+
+                // 4. Call Facade
+                _purchaseFacade.ReceiveStock(variantId, qty, price, invoice, remarks, paidAmount, paymentMethodId, paymentRef);
+
+                return Json(new { success = true, message = "Stock Received Successfully!" });
             }
+            //  Catch specific Business Logic errors (Like Duplicate Invoice)
+            catch (WorkflowException ex)
+            {
+                // Returns clean message: "Error: The Invoice Number 'ABC' has already been used..."
+                return Json(new { success = false, message = ex.Message });
+            }
+            //  Catch unexpected errors
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Server Error: " + ex.Message });
             }
         }
+        
         [HttpGet]
         [Route("purchase/get-variant-row")]
         public IActionResult GetVariantRow(int variantId)
@@ -142,46 +154,41 @@ namespace MDUA.Web.UI.Controllers
         [HttpGet]
         public IActionResult BulkOrder()
         {
+            int companyId = CurrentCompanyId;
             // 1. Get raw inventory data
-            var rawInventory = _purchaseFacade.GetInventorySortedByStockAsc();
-
+            var rawInventory = _purchaseFacade.GetInventorySortedByStockAsc(companyId);
             // 2. Group by Product for the UI
             var groupedInventory = rawInventory
-                .GroupBy(x => (string)x.ProductName)
-                .OrderBy(g => g.Min(v => (int)v.CurrentStock)) // Show most critical products first
-                .Select(g => new
-                {
-                    ProductName = g.Key,
-                    IsCritical = g.Any(v => (bool)v.IsLowStock),
-                    // Use a safe unique ID for the UI accordion (HashCode can sometimes be negative or unreliable)
-                    UiId = "prod-" + Math.Abs(g.Key.GetHashCode()),
-                    Variants = g.OrderBy(v => (int)v.CurrentStock).ToList()
-                })
-                .ToList();
+             .GroupBy(x => (string)x.ProductName)
+             .OrderBy(g => g.Min(v => (int)v.CurrentStock))
+             .Select(g => new
+             {
+                 ProductName = g.Key,
+                 IsCritical = g.Any(v => (bool)v.IsLowStock),
+                 UiId = "prod-" + Math.Abs(g.Key.GetHashCode()),
+                 Variants = g.OrderBy(v => (int)v.CurrentStock).ToList()
+             })
+             .ToList();
 
-            ViewBag.Vendors = _purchaseFacade.GetAllVendors();
+            ViewBag.Vendors = _purchaseFacade.GetAllVendors(companyId);
             return View(groupedInventory);
         }
 
         [HttpPost]
         public IActionResult CreateBulkOrder(BulkPurchaseOrder bulkOrder, List<int> selectedVariants, Dictionary<int, int> quantities)
         {
-            // === DEBUGGER START ===
+            // === DEBUGGER START (Preserved) ===
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("DEBUG: CreateBulkOrder Hit");
 
-            // 1. Check Raw Form Data (In case Model Binding fails)
+            // 1. Check Raw Form Data
             try
             {
                 Console.WriteLine($"DEBUG: Raw Form Key Count: {Request.Form.Keys.Count}");
                 if (Request.Form.ContainsKey("selectedVariants"))
-                {
                     Console.WriteLine($"DEBUG: Raw 'selectedVariants' count: {Request.Form["selectedVariants"].Count}");
-                }
                 else
-                {
                     Console.WriteLine("DEBUG: CRITICAL - 'selectedVariants' missing from Request.Form");
-                }
             }
             catch (Exception ex)
             {
@@ -192,7 +199,7 @@ namespace MDUA.Web.UI.Controllers
             if (selectedVariants == null)
             {
                 Console.WriteLine("DEBUG: selectedVariants is NULL");
-                selectedVariants = new List<int>(); // Prevent crash
+                selectedVariants = new List<int>();
             }
             else
             {
@@ -202,7 +209,6 @@ namespace MDUA.Web.UI.Controllers
 
             if (quantities == null) Console.WriteLine("DEBUG: quantities is NULL");
             else Console.WriteLine($"DEBUG: quantities Count: {quantities.Count}");
-
             // === DEBUGGER END ===
 
             try
@@ -210,9 +216,8 @@ namespace MDUA.Web.UI.Controllers
                 // 1. Validation
                 if (selectedVariants == null || !selectedVariants.Any())
                 {
-                    // Log the error specifically
                     Console.WriteLine("ERROR: Validation Failed - No items selected.");
-                    TempData["Error"] = "Debug: Server received 0 items. Please check VS Output window.";
+                    TempData["Error"] = "Please select at least one product.";
                     return RedirectToAction("BulkOrder");
                 }
 
@@ -220,10 +225,8 @@ namespace MDUA.Web.UI.Controllers
 
                 foreach (var variantId in selectedVariants)
                 {
-                    // Default to 0 if key missing
                     int qty = quantities.ContainsKey(variantId) ? quantities[variantId] : 0;
 
-                    // Allow qty > 0 check
                     if (qty > 0)
                     {
                         poList.Add(new PoRequested
@@ -245,8 +248,11 @@ namespace MDUA.Web.UI.Controllers
                     return RedirectToAction("BulkOrder");
                 }
 
+                // 2. Execute
                 bulkOrder.CreatedBy = User.Identity?.Name ?? "Admin";
 
+                // This calls the Facade -> DataAccess -> SQL Stored Procedure
+                // If SQL logic fails (e.g., limit exceeded), it throws an exception here.
                 _purchaseFacade.CreateBulkOrder(bulkOrder, poList);
 
                 TempData["Success"] = "Bulk Order created successfully!";
@@ -254,8 +260,23 @@ namespace MDUA.Web.UI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("EXCEPTION: " + ex.ToString()); // Log full stack trace
-                TempData["Error"] = "Error: " + ex.Message;
+                Console.WriteLine("EXCEPTION: " + ex.ToString());
+
+                // ✅ REAL-WORLD FIX: Capture specific Business Logic Errors from SQL
+                string msg = ex.Message;
+
+                // Check if the error is related to the Bulk Limit Guardrail we added in SQL
+                if (msg.Contains("Exceeds Bulk Limit") || (ex.InnerException != null && ex.InnerException.Message.Contains("Exceeds Bulk Limit")))
+                {
+                    msg = "Validation Error: The items selected exceed the allowed Bulk Order limit.";
+                }
+                // Check for Expiry
+                else if (msg.Contains("expired") || (ex.InnerException != null && ex.InnerException.Message.Contains("expired")))
+                {
+                    msg = "Validation Error: This Bulk Contract has expired.";
+                }
+
+                TempData["Error"] = "Error: " + msg;
                 return RedirectToAction("BulkOrder");
             }
         }
@@ -264,7 +285,8 @@ namespace MDUA.Web.UI.Controllers
         [HttpGet]
         public IActionResult BulkOrderReceivedList()
         {
-            var list = _purchaseFacade.GetBulkOrdersReceivedList();
+            int companyId = CurrentCompanyId;
+            var list = _purchaseFacade.GetBulkOrdersReceivedList(companyId);
             return View(list);
         }
 
@@ -273,47 +295,18 @@ namespace MDUA.Web.UI.Controllers
         {
             try
             {
-                // Add logging to track execution
-                System.Diagnostics.Debug.WriteLine($"[GetBulkOrderDetails] Request for Order ID: {id}");
+                if (id <= 0) return PartialView("_BulkOrderDetailsPartial", new List<BulkOrderItemViewModel>());
 
-                if (id <= 0)
-                {
-                    return PartialView("_BulkOrderDetailsPartial", new List<BulkOrderItemViewModel>());
-                }
+                var orderItems = _purchaseFacade.GetBulkOrderItems(id) ?? new List<BulkOrderItemViewModel>();
 
-                // Get items from facade with timeout consideration
-                var orderItems = _purchaseFacade.GetBulkOrderItems(id);
-
-                System.Diagnostics.Debug.WriteLine($"[GetBulkOrderDetails] Found {orderItems?.Count() ?? 0} items");
-
-                // Handle null or empty results gracefully
-                if (orderItems == null)
-                {
-                    orderItems = new List<BulkOrderItemViewModel>();
-                }
+                // 2. Populate Payment Methods for the Dropdown inside the Modal
+                ViewBag.PaymentMethods = _paymentMethodFacade.GetAll();
 
                 return PartialView("_BulkOrderDetailsPartial", orderItems);
             }
-            catch (TimeoutException tex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[GetBulkOrderDetails] Timeout: {tex.Message}");
-                return Content($@"
-            <div class='alert alert-warning m-3'>
-                <strong>Timeout Error:</strong> The database query took too long. 
-                Please try again or contact support if this persists.
-            </div>");
-            }
             catch (Exception ex)
             {
-                // Log the full exception for debugging
-                System.Diagnostics.Debug.WriteLine($"[GetBulkOrderDetails] Error: {ex}");
-
-                return Content($@"
-            <div class='alert alert-danger m-3'>
-                <strong>Error:</strong> {System.Web.HttpUtility.HtmlEncode(ex.Message)}
-                <hr>
-                <small class='text-muted'>Order ID: {id}</small>
-            </div>");
+                return Content($"<div class='alert alert-danger'>Error: {ex.Message}</div>");
             }
         }
 

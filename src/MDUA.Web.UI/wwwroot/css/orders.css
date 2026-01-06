@@ -477,3 +477,4 @@ html, body {
 .ts-control input:not(:placeholder-shown) {
     caret-color: auto; /* or black/blue */
 }
+

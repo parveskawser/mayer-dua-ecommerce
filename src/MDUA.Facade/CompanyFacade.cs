@@ -1,5 +1,6 @@
-﻿using MDUA.DataAccess.Interface;
+﻿﻿using MDUA.DataAccess.Interface;
 using MDUA.Entities;
+using MDUA.Entities.List;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -24,29 +25,48 @@ namespace MDUA.Facade
         public long Update(Company company) => _companyDataAccess.Update(company);
         #endregion
 
+        public CompanyList GetAll()
+        {
+            return _companyDataAccess.GetAll();
+        }
+
         #region Extended Implementation
 
-        public void UpdateCompanyProfile(Company company, IFormFile logoFile, IFormFile faviconFile, string webRootPath)
+        public void UpdateCompanyProfile(Company company, IFormFile logoFile, IFormFile faviconFile, string webRootPath, string footerDescription)
         {
-            // ✅ 1. Define Company-Specific Folder Path: /images/company/{ID}/
+            // 1. Fetch existing company
+            var existingCompany = _companyDataAccess.Get(company.Id);
+
+            if (existingCompany != null)
+            {
+                // ✅ NEW: Update these fields from the incoming object
+                existingCompany.CompanyName = company.CompanyName;
+                existingCompany.Address = company.Address;
+                existingCompany.Email = company.Email;
+                existingCompany.Phone = company.Phone;
+
+                // Update audit fields
+                existingCompany.UpdatedBy = "System";
+                existingCompany.UpdatedAt = DateTime.UtcNow;
+            }
+
+            // [KEEPING YOUR EXISTING LOGIC BELOW UNTOUCHED]
+
+            // Define Company-Specific Folder Path
             string relativeFolder = $"/images/company/{company.Id}";
             string physicalFolder = Path.Combine(webRootPath, "images", "company", company.Id.ToString());
 
             if (!Directory.Exists(physicalFolder))
                 Directory.CreateDirectory(physicalFolder);
 
-            // =========================================================
-            // ✅ 2. HANDLE LOGO UPLOAD (Delete Old -> Save New)
-            // =========================================================
+            // LOGO UPLOAD
             if (logoFile != null && logoFile.Length > 0)
             {
-                // A. Delete Old Logo if exists
-                if (!string.IsNullOrEmpty(company.LogoImg))
+                if (!string.IsNullOrEmpty(existingCompany.LogoImg)) // Use existingCompany here to check old path
                 {
-                    DeleteOldFile(webRootPath, company.LogoImg);
+                    DeleteOldFile(webRootPath, existingCompany.LogoImg);
                 }
 
-                // B. Save New Logo
                 string fileName = $"logo_{DateTime.UtcNow.Ticks}{Path.GetExtension(logoFile.FileName)}";
                 string fullPath = Path.Combine(physicalFolder, fileName);
 
@@ -55,22 +75,18 @@ namespace MDUA.Facade
                     logoFile.CopyTo(stream);
                 }
 
-                company.LogoImg = $"{relativeFolder}/{fileName}";
+                existingCompany.LogoImg = $"{relativeFolder}/{fileName}";
             }
 
-            // =========================================================
-            // ✅ 3. HANDLE FAVICON UPLOAD (Delete Old -> Save New)
-            // =========================================================
+            // FAVICON UPLOAD
             if (faviconFile != null && faviconFile.Length > 0)
             {
-                // A. Check for existing Favicon setting to delete old file
                 string oldFaviconUrl = _globalSettingDataAccess.GetSetting(company.Id, "FaviconUrl");
                 if (!string.IsNullOrEmpty(oldFaviconUrl))
                 {
                     DeleteOldFile(webRootPath, oldFaviconUrl);
                 }
 
-                // B. Save New Favicon
                 string fileName = $"favicon_{DateTime.UtcNow.Ticks}{Path.GetExtension(faviconFile.FileName)}";
                 string fullPath = Path.Combine(physicalFolder, fileName);
 
@@ -79,15 +95,20 @@ namespace MDUA.Facade
                     faviconFile.CopyTo(stream);
                 }
 
-                // C. Save Path to Global Settings
                 string dbPath = $"{relativeFolder}/{fileName}";
                 _globalSettingDataAccess.SaveSetting(company.Id, "FaviconUrl", dbPath);
             }
 
-            // 4. Update the Company Record (Name, Logo Path, etc.)
-            _companyDataAccess.Update(company);
-        }
+            // ✅ SAVE to Database
+            _companyDataAccess.Update(existingCompany);
 
+            // ✅ SAVE Footer Description to Global Settings
+            if (footerDescription != null)
+            {
+                // Note: Using "SaveValue" or "SaveSetting" depending on your interface name
+                _globalSettingDataAccess.SaveValue(company.Id, "Footer_Description", footerDescription);
+            }
+        }
         // --- Helper Method to Delete Files ---
         private void DeleteOldFile(string webRootPath, string relativeUrl)
         {
@@ -196,6 +217,8 @@ namespace MDUA.Facade
             // Simple wrapper around DataAccess to allow Controller to save "Homepage_Draft" or other keys
             _globalSettingDataAccess.SaveValue(companyId, key, value);
         }
+
+
         #endregion
     }
 }

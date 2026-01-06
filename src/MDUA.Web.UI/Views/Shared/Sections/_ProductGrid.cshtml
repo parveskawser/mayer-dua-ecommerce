@@ -3,14 +3,16 @@
 @model Dictionary<string, string>
 
 @{
-    // 1. Parse Settings
+    // 1. Get Company ID from ViewBag (Default to 1 if missing)
+    int companyId = ViewBag.CurrentCompanyId is int id ? id : 1;
+
+    // 2. Parse Settings
     string title = Model.ContainsKey("Title") ? Model["Title"] : "New Arrivals";
     int count = Model.ContainsKey("Count") && int.TryParse(Model["Count"], out int c) ? c : 8;
-    // This line MUST look for "CategoryId" (PascalCase) to match the JS
     int? catId = Model.ContainsKey("CategoryId") && int.TryParse(Model["CategoryId"], out int cid) ? cid : null;
 
-    // Pass it to the Facade
-    var products = ProductFacade.GetShopData(1, catId).Take(count).ToList();
+    // 3. ✅ PASS DYNAMIC ID TO FACADE
+    var products = ProductFacade.GetShopData(companyId, catId).Take(count).ToList();
 }
 
 <div class="container mb-5">

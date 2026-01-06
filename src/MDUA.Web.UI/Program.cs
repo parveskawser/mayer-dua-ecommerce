@@ -16,7 +16,7 @@ builder.Configuration.AddEnvironmentVariables();
 System.Transactions.TransactionManager.ImplicitDistributedTransactions = true;
 builder.Services.AddService();
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
+//builder.Services.AddHttpClient<IAiChatService, SmartGeminiChatService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 // ✅ Add SignalR Service
@@ -38,8 +38,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // ✅ CHANGE THIS: Match the new [Route("login")] you added in the Controller
-        options.LoginPath = "/login";
+    options.LoginPath = "/login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);

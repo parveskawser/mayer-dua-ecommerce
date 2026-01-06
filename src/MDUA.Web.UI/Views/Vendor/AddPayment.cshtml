@@ -1,0 +1,808 @@
+﻿@model MDUA.Entities.VendorPayment
+@{
+    ViewData["Title"] = "Record Vendor Payment";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var vendorList = ViewBag.VendorList as MDUA.Entities.List.VendorList;
+    var paymentMethods = ViewBag.PaymentMethodList as MDUA.Entities.List.PaymentMethodList;
+}
+
+@section Styles {
+    <style>
+        .payment-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .payment-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+            .payment-card:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            }
+
+        .card-header-modern {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.5rem;
+            border: none;
+        }
+
+        .card-header-success {
+            background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
+        }
+
+        .card-header-info {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .payment-type-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-type-card {
+            flex: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+
+            .payment-type-card:hover {
+                border-color: #dc3545;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+            }
+
+            .payment-type-card.active {
+                border-color: #dc3545;
+                background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(200, 35, 51, 0.1) 100%);
+            }
+
+        .payment-type-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .payment-type-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-type-desc {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .form-control-modern {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+            .form-control-modern:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+
+        .form-label-modern {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bill-selector {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .bill-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .bill-item:hover {
+                border-color: #ffc107;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .bill-item.selected {
+                border-color: #ffc107;
+                background: #fff3cd;
+            }
+
+        .bill-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #dc3545;
+        }
+
+        .credit-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .credit-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credit-badge {
+            background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .btn-modern {
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-modern:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+
+        .summary-box {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+            .summary-row:last-child {
+                border-bottom: none;
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin-top: 0.5rem;
+            }
+
+        .alert-modern {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+    </style>
+}
+<div class="payment-wrapper container-fluid p-4">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 fw-bold">💳 Record Vendor Payment</h2>
+            <p class="text-muted mb-0">Pay bills, record advances, or apply existing credits</p>
+        </div>
+        <a asp-controller="Vendor" asp-action="Index" class="btn btn-outline-secondary btn-modern">
+            <i class="bi bi-arrow-left"></i> Back to Vendors
+        </a>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-modern alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Error:</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-modern alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Success:</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Payment Type Selector -->
+    <div class="payment-type-selector">
+        <div class="payment-type-card active" data-type="cash-bank" onclick="selectPaymentType('cash-bank')">
+            <span class="payment-type-icon">💵</span>
+            <div class="payment-type-title">Cash / Bank Payment</div>
+            <div class="payment-type-desc">Pay vendor directly via cash, check, or bank transfer</div>
+        </div>
+        
+        <div class="payment-type-card" data-type="credit-apply" onclick="selectPaymentType('credit-apply')">
+            <span class="payment-type-icon">🎟️</span>
+            <div class="payment-type-title">Apply Existing Credit</div>
+            <div class="payment-type-desc">Use advance payment or credit to settle bills</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="row">
+        
+        <!-- Left Column: Cash/Bank Payment Form -->
+        <div class="col-lg-8" id="cash-bank-section">
+            <div class="card payment-card">
+                <div class="card-header card-header-modern">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Cash / Bank Payment Details</h5>
+                </div>
+                
+                <form asp-action="SavePayment" method="post" id="paymentForm">
+                    <div class="card-body p-4">
+                        
+                        <!-- Vendor Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label-modern">Select Vendor <span class="text-danger">*</span></label>
+                                <select asp-for="VendorId" id="VendorId" class="form-select form-control-modern" required onchange="onVendorChange()">
+                                    <option value="">-- Choose Vendor --</option>
+                                    @if (vendorList != null)
+                                    {
+                                        foreach (var v in vendorList)
+                                        {
+                                            <option value="@v.Id">@v.VendorName</option>
+                                        }
+                                    }
+                                </select>
+                                <small class="text-muted">Select the vendor you're making a payment to</small>
+                            </div>
+                        </div>
+
+                        <!-- Payment Target Selection -->
+                        <div id="billSelectionArea" style="display: none;">
+                            <div class="alert alert-info alert-modern mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentTarget" id="paymentTargetAdvance" value="advance" checked onchange="updatePaymentTarget()">
+                                    <label class="form-check-label fw-bold" for="paymentTargetAdvance">
+                                        💰 General Payment / Advance
+                                    </label>
+                                    <div class="small text-muted mt-1">Record payment without linking to specific bill (creates credit balance)</div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-light alert-modern mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentTarget" id="paymentTargetBill" value="bill" onchange="updatePaymentTarget()">
+                                    <label class="form-check-label fw-bold" for="paymentTargetBill">
+                                        🧾 Pay Against Specific Bill
+                                    </label>
+                                    <div class="small text-muted mt-1">Select an outstanding invoice to pay</div>
+                                </div>
+                                
+                                <!-- Bill Selector (Hidden by default) -->
+                                <div id="billSelectorContainer" style="display: none; margin-top: 1rem;">
+                                    <select asp-for="PoReceivedId" id="PoReceivedId" class="form-select form-control-modern">
+                                        <option value="">-- Loading Bills --</option>
+                                    </select>
+                                    <div id="selectedBillInfo" style="display: none;" class="bill-selector mt-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>Invoice:</strong> <span id="billInvoiceNo">-</span><br>
+                                                <small class="text-muted">Date: <span id="billDate">-</span></small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="bill-amount">Tk. <span id="billBalance">0.00</span></div>
+                                                <small class="text-muted">Balance Due</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Amount & Date -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-modern">Payment Amount (Tk.) <span class="text-danger">*</span></label>
+                                <input asp-for="Amount" type="number" step="0.01" class="form-control form-control-modern" id="PaymentAmount" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-modern">Payment Date <span class="text-danger">*</span></label>
+                                <input asp-for="PaymentDate" type="date" class="form-control form-control-modern" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" required>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method & Reference -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-modern">Payment Method <span class="text-danger">*</span></label>
+                                <select asp-for="PaymentMethodId" class="form-select form-control-modern" required>
+                                    <option value="">-- Select Method --</option>
+                                    @if (paymentMethods != null)
+                                    {
+                                        foreach (var pm in paymentMethods)
+                                        {
+                                            <option value="@pm.Id">@pm.Name</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-modern">Reference / Cheque No.</label>
+                                <input asp-for="ReferenceNumber" class="form-control form-control-modern" placeholder="e.g. CHQ-123456">
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label class="form-label-modern">Notes</label>
+                            <textarea asp-for="Notes" class="form-control form-control-modern" rows="3" placeholder="Add any additional notes..."></textarea>
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer bg-light p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">All payments are recorded immediately</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-modern btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Record Payment
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Credit Application -->
+        <div class="col-lg-8" id="credit-apply-section" style="display: none;">
+            <div class="card payment-card">
+                <div class="card-header card-header-info">
+                    <h5 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>Apply Existing Credit / Advance</h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    
+                    <!-- Vendor Selection for Credit -->
+                    <div class="mb-4">
+                        <label class="form-label-modern">Select Vendor <span class="text-danger">*</span></label>
+                        <select id="CreditVendorId" class="form-select form-control-modern" onchange="onCreditVendorChange()">
+                            <option value="">-- Choose Vendor --</option>
+                            @if (vendorList != null)
+                            {
+                                foreach (var v in vendorList)
+                                {
+                                    <option value="@v.Id">@v.VendorName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Available Credits -->
+                    <div id="creditListArea" style="display: none;">
+                        <label class="form-label-modern">Available Credits</label>
+                        <div class="credit-list" id="creditListContainer">
+                            <!-- Credits will be loaded here via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Target Bill Selection -->
+                    <div id="creditBillArea" style="display: none;">
+                        <label class="form-label-modern">Apply To Bill <span class="text-danger">*</span></label>
+                        <select id="CreditTargetBillId" class="form-select form-control-modern">
+                            <option value="">-- Select Bill --</option>
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div id="creditAmountArea" style="display: none;" class="mt-4">
+                        <label class="form-label-modern">Amount to Apply <span class="text-danger">*</span></label>
+                        <input type="number" id="CreditAmount" step="0.01" class="form-control form-control-modern" placeholder="0.00">
+                        <small class="text-muted">Maximum: Available credit amount</small>
+                    </div>
+
+                </div>
+
+                <div class="card-footer bg-light p-4">
+                    <button type="button" onclick="submitCreditApplication()" class="btn btn-success btn-modern btn-lg w-100">
+                        <i class="bi bi-arrow-repeat me-2"></i>Apply Credit to Bill
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Summary (Only for Cash/Bank) -->
+        <div class="col-lg-4" id="summarySidebar">
+            <div class="card payment-card">
+                <div class="card-header card-header-success">
+                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Payment Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div id="vendorSummary" style="display: none;">
+                        <div class="mb-3">
+                            <small class="text-muted text-uppercase">Vendor</small>
+                            <h6 class="fw-bold mb-0" id="summaryVendorName">-</h6>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted text-uppercase">Total Outstanding</small>
+                            <h4 class="fw-bold text-danger mb-0">Tk. <span id="summaryOutstanding">0.00</span></h4>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted text-uppercase">Unpaid Bills</small>
+                            <h6 class="mb-0"><span id="summaryUnpaidCount">0</span> invoices</h6>
+                        </div>
+
+                        <hr>
+
+                        <div class="alert alert-light">
+                            <small class="text-muted">Payment will be recorded against:</small>
+                            <div class="fw-bold mt-1" id="summaryPaymentTarget">General / Advance</div>
+                        </div>
+                    </div>
+
+                    <div id="noVendorSelected" class="text-center py-5 text-muted">
+                        <i class="bi bi-person-circle" style="font-size: 3rem;"></i>
+                        <p class="mt-2 mb-0">Select a vendor to view summary</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Help -->
+            <div class="card payment-card mt-3">
+                <div class="card-body p-3">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-question-circle me-2"></i>Quick Help</h6>
+                    <small class="text-muted">
+                        <strong>General Payment:</strong> Creates a credit balance for future use.<br><br>
+                        <strong>Bill Payment:</strong> Directly settles a specific invoice.<br><br>
+                        <strong>Apply Credit:</strong> Use advance payments to settle bills.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3 mb-0 fw-bold">Processing Payment...</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let selectedCredit = null;
+        let vendorBills = [];
+        
+        // ==========================================
+        // PAYMENT TYPE SELECTION
+        // ==========================================
+        function selectPaymentType(type) {
+            // Update active state
+            document.querySelectorAll('.payment-type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Show/hide sections
+            if (type === 'cash-bank') {
+                document.getElementById('cash-bank-section').style.display = 'block';
+                document.getElementById('credit-apply-section').style.display = 'none';
+                document.getElementById('summarySidebar').style.display = 'block';
+            } else {
+                document.getElementById('cash-bank-section').style.display = 'none';
+                document.getElementById('credit-apply-section').style.display = 'block';
+                document.getElementById('summarySidebar').style.display = 'none';
+            }
+        }
+        
+        // ==========================================
+        // CASH/BANK PAYMENT LOGIC
+        // ==========================================
+        function onVendorChange() {
+            const vendorId = document.getElementById('VendorId').value;
+            
+            if (!vendorId) {
+                document.getElementById('billSelectionArea').style.display = 'none';
+                document.getElementById('vendorSummary').style.display = 'none';
+                document.getElementById('noVendorSelected').style.display = 'block';
+                return;
+            }
+            
+            // Show bill selection area
+            document.getElementById('billSelectionArea').style.display = 'block';
+            document.getElementById('noVendorSelected').style.display = 'none';
+            document.getElementById('vendorSummary').style.display = 'block';
+            
+            // Load vendor data
+            loadVendorBills(vendorId);
+            loadVendorSummary(vendorId);
+        }
+        
+        function loadVendorBills(vendorId) {
+            const billSelect = document.getElementById('PoReceivedId');
+            billSelect.innerHTML = '<option value="">Loading...</option>';
+            
+            fetch('/Vendor/GetPendingBills?vendorId=' + vendorId)
+                .then(r => r.json())
+                .then(data => {
+                    vendorBills = data;
+                    billSelect.innerHTML = '<option value="">-- Select Bill --</option>';
+                    
+                    data.forEach(bill => {
+                        const option = document.createElement('option');
+                        option.value = bill.id;
+                        option.text = `Invoice: ${bill.invoiceNo} | Due: Tk. ${bill.balanceDue} | ${bill.receivedDate}`;
+                        option.setAttribute('data-invoice', bill.invoiceNo);
+                        option.setAttribute('data-balance', bill.balanceDue);
+                        option.setAttribute('data-date', bill.receivedDate);
+                        billSelect.appendChild(option);
+                    });
+                    
+                    // Update summary
+                    document.getElementById('summaryUnpaidCount').textContent = data.length;
+                    const totalOutstanding = data.reduce((sum, b) => sum + parseFloat(b.balanceDue || 0), 0);
+                    document.getElementById('summaryOutstanding').textContent = totalOutstanding.toFixed(2);
+                })
+                .catch(err => {
+                    billSelect.innerHTML = '<option value="">Error loading bills</option>';
+                    console.error(err);
+                });
+        }
+        
+        function loadVendorSummary(vendorId) {
+            const selectedVendor = document.querySelector(`#VendorId option[value="${vendorId}"]`);
+            if (selectedVendor) {
+                document.getElementById('summaryVendorName').textContent = selectedVendor.text;
+            }
+        }
+        
+        function updatePaymentTarget() {
+            const isAdvance = document.getElementById('paymentTargetAdvance').checked;
+            const billContainer = document.getElementById('billSelectorContainer');
+            const billInfoDiv = document.getElementById('selectedBillInfo');
+            
+            if (isAdvance) {
+                billContainer.style.display = 'none';
+                billInfoDiv.style.display = 'none';
+                document.getElementById('PoReceivedId').value = '';
+                document.getElementById('summaryPaymentTarget').textContent = 'General / Advance';
+            } else {
+                billContainer.style.display = 'block';
+                document.getElementById('summaryPaymentTarget').textContent = 'Specific Bill';
+            }
+        }
+        
+        // Update bill info when bill is selected
+        document.addEventListener('DOMContentLoaded', function() {
+            const billSelect = document.getElementById('PoReceivedId');
+            if (billSelect) {
+                billSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const billInfo = document.getElementById('selectedBillInfo');
+                    
+                    if (this.value) {
+                        document.getElementById('billInvoiceNo').textContent = selectedOption.getAttribute('data-invoice');
+                        document.getElementById('billBalance').textContent = parseFloat(selectedOption.getAttribute('data-balance')).toFixed(2);
+                        document.getElementById('billDate').textContent = selectedOption.getAttribute('data-date');
+                        billInfo.style.display = 'block';
+                        
+                        // Auto-fill amount
+                        document.getElementById('PaymentAmount').value = selectedOption.getAttribute('data-balance');
+                    } else {
+                        billInfo.style.display = 'none';
+                    }
+                });
+            }
+        });
+        
+        // ==========================================
+        // CREDIT APPLICATION LOGIC
+        // ==========================================
+        function onCreditVendorChange() {
+            const vendorId = document.getElementById('CreditVendorId').value;
+            
+            if (!vendorId) {
+                document.getElementById('creditListArea').style.display = 'none';
+                document.getElementById('creditBillArea').style.display = 'none';
+                document.getElementById('creditAmountArea').style.display = 'none';
+                return;
+            }
+            
+            loadAvailableCredits(vendorId);
+            loadBillsForCredit(vendorId);
+        }
+        
+        function loadAvailableCredits(vendorId) {
+            const container = document.getElementById('creditListContainer');
+            container.innerHTML = '<div class="text-center p-3"><div class="spinner-border"></div></div>';
+            
+            document.getElementById('creditListArea').style.display = 'block';
+            
+            fetch('/Vendor/GetVendorCredits?vendorId=' + vendorId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="alert alert-warning">No available credits found for this vendor.</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
+                    data.forEach(credit => {
+                        const item = document.createElement('div');
+                        item.className = 'credit-item';
+                        item.innerHTML = `
+                            <div>
+                                <strong>Ref: ${credit.ref || 'N/A'}</strong><br>
+                                <small class="text-muted">${credit.date}</small>
+                            </div>
+                            <div class="credit-badge">Tk. ${credit.amount}</div>
+                        `;
+                        item.onclick = () => selectCredit(credit, item);
+                        container.appendChild(item);
+                    });
+                })
+                .catch(err => {
+                    container.innerHTML = '<div class="alert alert-danger">Error loading credits</div>';
+                    console.error(err);
+                });
+        }
+        
+        function loadBillsForCredit(vendorId) {
+            const billSelect = document.getElementById('CreditTargetBillId');
+            billSelect.innerHTML = '<option value="">Loading...</option>';
+            
+            document.getElementById('creditBillArea').style.display = 'block';
+            
+            fetch('/Vendor/GetPendingBills?vendorId=' + vendorId)
+                .then(r => r.json())
+                .then(data => {
+                    billSelect.innerHTML = '<option value="">-- Select Bill --</option>';
+                    data.forEach(bill => {
+                        const option = document.createElement('option');
+                        option.value = bill.id;
+                        option.text = `Invoice: ${bill.invoiceNo} | Due: Tk. ${bill.balanceDue}`;
+                        billSelect.appendChild(option);
+                    });
+       
+                      })
+                      .catch(err => {
+                          billSelect.innerHTML = '<option value="">Error loading bills</option>';
+                          console.error(err);
+                      });
+              }
+
+              // ==========================================
+              // CREDIT SELECTION & SUBMISSION
+              // ==========================================
+              function selectCredit(credit, element) {
+                  // Reset styles on all items
+                  document.querySelectorAll('.credit-item').forEach(el => {
+                      el.style.borderColor = '#dee2e6';
+                      el.style.backgroundColor = 'white';
+                  });
+
+                  // Highlight selected
+                  element.style.borderColor = '#667eea';
+                  element.style.backgroundColor = '#f0f4ff';
+
+                  selectedCredit = credit;
+
+                  // Show amount input and set max value
+                  document.getElementById('creditAmountArea').style.display = 'block';
+                  const amountInput = document.getElementById('CreditAmount');
+                  amountInput.value = credit.amount; // Default to full amount
+                  amountInput.max = credit.amount;
+              }
+
+              function submitCreditApplication() {
+                  const billId = document.getElementById('CreditTargetBillId').value;
+                  const amount = document.getElementById('CreditAmount').value;
+
+                  // Validation
+                  if (!selectedCredit) {
+                      Swal.fire('Error', 'Please select a credit record to apply.', 'error');
+                      return;
+                  }
+                  if (!billId) {
+                      Swal.fire('Error', 'Please select a bill to apply the credit to.', 'error');
+                      return;
+                  }
+                  if (!amount || parseFloat(amount) <= 0) {
+                      Swal.fire('Error', 'Please enter a valid amount.', 'error');
+                      return;
+                  }
+                  if (parseFloat(amount) > parseFloat(selectedCredit.amount)) {
+                      Swal.fire('Error', `Amount cannot exceed available credit (Tk. ${selectedCredit.amount}).`, 'error');
+                      return;
+                  }
+
+                  // Show loading
+                  document.getElementById('loadingOverlay').style.display = 'flex';
+
+                  // Prepare Data
+                  const formData = new FormData();
+                  formData.append('creditId', selectedCredit.id);
+                  formData.append('billId', billId);
+                  formData.append('amount', amount);
+
+                  // Send Request
+                  fetch('/Vendor/ApplyCredit', {
+                      method: 'POST',
+                      body: formData
+                  })
+                  .then(r => r.json())
+                  .then(res => {
+                      document.getElementById('loadingOverlay').style.display = 'none';
+                      if (res.success) {
+                          Swal.fire({
+                              title: 'Success!',
+                              text: res.message,
+                              icon: 'success',
+                              confirmButtonColor: '#11998e'
+                          }).then(() => {
+                              window.location.reload();
+                          });
+                      } else {
+                          Swal.fire('Error', res.message, 'error');
+                      }
+                  })
+                  .catch(err => {
+                      document.getElementById('loadingOverlay').style.display = 'none';
+                      Swal.fire('Error', 'Server communication failed.', 'error');
+                      console.error(err);
+                  });
+              }
+    </script>
+}

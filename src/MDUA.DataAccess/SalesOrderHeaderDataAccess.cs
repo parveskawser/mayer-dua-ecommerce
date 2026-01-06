@@ -374,28 +374,36 @@ namespace MDUA.DataAccess
                     }
                 }
             }
-        } 
+        }
 
-        public List<Dictionary<string, object>> GetVariantsForDropdown()
+        // MDUA.DataAccess/SalesOrderHeaderDataAccess.cs
+
+        public List<Dictionary<string, object>> GetVariantsForDropdown(int companyId) // ✅ Added Parameter
         {
             var list = new List<Dictionary<string, object>>();
 
+            // ✅ Added "AND p.CompanyId = @CompanyId" to the WHERE clause
             string SQLQuery = @"
-                SELECT 
-                    p.Id as ProductId,
-                    ISNULL(p.ProductName, 'Unknown Product') as ProductName,
-                    v.Id as VariantId, 
-                    ISNULL(v.VariantName, 'Standard') as VariantName,
-                    ISNULL(vps.StockQty, 0) as StockQty,
-                    ISNULL(vps.Price, ISNULL(p.BasePrice, 0.00)) as Price
-                FROM ProductVariant v
-                JOIN Product p ON v.ProductId = p.Id
-                LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
-                WHERE v.IsActive = 1 AND p.IsActive = 1
-                ORDER BY p.ProductName, v.VariantName";
+        SELECT 
+            p.Id as ProductId,
+            ISNULL(p.ProductName, 'Unknown Product') as ProductName,
+            v.Id as VariantId, 
+            ISNULL(v.VariantName, 'Standard') as VariantName,
+            ISNULL(vps.StockQty, 0) as StockQty,
+            ISNULL(vps.Price, ISNULL(p.BasePrice, 0.00)) as Price
+        FROM ProductVariant v
+        JOIN Product p ON v.ProductId = p.Id
+        LEFT JOIN VariantPriceStock vps ON v.Id = vps.Id
+        WHERE v.IsActive = 1 
+          AND p.IsActive = 1 
+          AND p.CompanyId = @CompanyId -- ✅ FILTER BY COMPANY
+        ORDER BY p.ProductName, v.VariantName";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
+                // ✅ Add the Parameter to the Command
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -410,14 +418,14 @@ namespace MDUA.DataAccess
                     while (reader.Read())
                     {
                         var item = new Dictionary<string, object>
-                        {
-                            { "ProductId", reader.GetInt32(ordPid) },
-                            { "ProductName", reader.GetString(ordPName) },
-                            { "VariantId", reader.GetInt32(ordVid) },
-                            { "VariantName", reader.GetString(ordVName) },
-                            { "Stock", reader.GetInt32(ordStock) },
-                            { "Price", Convert.ToDecimal(reader.GetValue(ordPrice)) }
-                        };
+                {
+                    { "ProductId", reader.GetInt32(ordPid) },
+                    { "ProductName", reader.GetString(ordPName) },
+                    { "VariantId", reader.GetInt32(ordVid) },
+                    { "VariantName", reader.GetString(ordVName) },
+                    { "Stock", reader.GetInt32(ordStock) },
+                    { "Price", Convert.ToDecimal(reader.GetValue(ordPrice)) }
+                };
                         list.Add(item);
                     }
                     reader.Close();
@@ -426,7 +434,6 @@ namespace MDUA.DataAccess
             }
             return list;
         }
-
         public (int StockQty, decimal Price)? GetVariantStockAndPrice(int variantId)
         {
             string SQLQuery = @"
@@ -489,18 +496,70 @@ namespace MDUA.DataAccess
             return stats;
         }
 
-        public List<SalesOrderHeader> GetRecentOrders(int count = 5)
+        public DashboardStats GetDashboardMetrics(int companyId)
         {
-            string SQLQuery = $@"
-                SELECT TOP ({count}) 
-                    [Id], [CompanyCustomerId], [AddressId], [SalesChannelId], [OnlineOrderId], [DirectOrderId], 
-                    [OrderDate], [TotalAmount], [DiscountAmount], [NetAmount], [SessionId], [IPAddress], 
-                    [Status], [IsActive], [Confirmed], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [SalesOrderId]
-                FROM [dbo].[SalesOrderHeader]
-                ORDER BY [OrderDate] DESC";
+            var stats = new DashboardStats();
+
+            // ✅ FIX: Calculate metrics only for orders belonging to this company
+            string SQLQuery = @"
+        SELECT 
+            SUM(CASE WHEN Status != 'Cancelled' THEN (TotalAmount - DiscountAmount) ELSE 0 END) as TotalRevenue,
+            COUNT(*) as TotalOrders,
+            SUM(CASE WHEN CAST(OrderDate AS DATE) = CAST(GETUTCDATE() AS DATE) THEN 1 ELSE 0 END) as TodayOrders,
+            SUM(CASE WHEN Status = 'Pending' OR Status = 'Draft' THEN 1 ELSE 0 END) as PendingOrders,
+            (SELECT COUNT(*) FROM CompanyCustomer WHERE CompanyId = @CompanyId) as TotalCustomers
+        FROM SalesOrderHeader h
+        WHERE EXISTS (
+            SELECT 1 
+            FROM SalesOrderDetail d
+            INNER JOIN ProductVariant pv ON d.ProductId = pv.Id
+            INNER JOIN Product p ON pv.ProductId = p.Id
+            WHERE d.SalesOrderId = h.Id AND p.CompanyId = @CompanyId
+        )";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
+                if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        stats.TotalRevenue = reader.IsDBNull(0) ? 0 : reader.GetDecimal(0);
+                        stats.TotalOrders = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+                        stats.TodayOrders = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                        stats.PendingOrders = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+                        stats.TotalCustomers = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+            return stats;
+        }
+
+        public List<SalesOrderHeader> GetRecentOrders(int companyId, int count = 5)
+        {
+            // ✅ FIX: Use EXISTS to filter by Product->CompanyId
+            string SQLQuery = $@"
+        SELECT TOP ({count}) 
+            [Id], [CompanyCustomerId], [AddressId], [SalesChannelId], [OnlineOrderId], [DirectOrderId], 
+            [OrderDate], [TotalAmount], [DiscountAmount], [NetAmount], [SessionId], [IPAddress], 
+            [Status], [IsActive], [Confirmed], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [SalesOrderId]
+        FROM [dbo].[SalesOrderHeader] h
+        WHERE EXISTS (
+            SELECT 1 
+            FROM [dbo].[SalesOrderDetail] d
+            INNER JOIN [dbo].[ProductVariant] pv ON d.ProductId = pv.Id
+            INNER JOIN [dbo].[Product] p ON pv.ProductId = p.Id
+            WHERE d.SalesOrderId = h.Id AND p.CompanyId = @CompanyId
+        )
+        ORDER BY [OrderDate] DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 SqlDataReader reader;
                 SelectRecords(cmd, out reader);
                 SalesOrderHeaderList list = new SalesOrderHeaderList();
@@ -510,6 +569,7 @@ namespace MDUA.DataAccess
                     while (reader.Read())
                     {
                         SalesOrderHeader order = new SalesOrderHeader();
+                        // ... (Your existing mapping logic) ...
                         int i = 0;
                         order.Id = reader.GetInt32(i++);
                         order.CompanyCustomerId = reader.GetInt32(i++);
@@ -532,32 +592,40 @@ namespace MDUA.DataAccess
                         order.UpdatedAt = reader.IsDBNull(i) ? (DateTime?)null : reader.GetDateTime(i); i++;
                         order.SalesOrderId = reader.IsDBNull(i) ? null : reader.GetString(i); i++;
 
-                        order.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
                         list.Add(order);
                     }
-                    reader.Close();
                 }
                 return list;
             }
         }
-
-        public List<ChartDataPoint> GetSalesTrend(int months = 6)
+        public List<ChartDataPoint> GetSalesTrend(int companyId, int months = 6)
         {
             var list = new List<ChartDataPoint>();
+
+            // ✅ FIX: Filter by Product ownership using EXISTS
             string SQLQuery = @"
-                SELECT 
-                    DATENAME(month, OrderDate) + ' ' + CAST(YEAR(OrderDate) AS VARCHAR(4)) as Label,
-                    SUM(TotalAmount - DiscountAmount) as Value,
-                    MIN(OrderDate) as SortDate
-                FROM SalesOrderHeader
-                WHERE OrderDate >= DATEADD(month, -@Months, GETUTCDATE())
-                  AND Status != 'Cancelled'
-                GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(month, OrderDate)
-                ORDER BY MIN(OrderDate)";
+        SELECT 
+            DATENAME(month, OrderDate) + ' ' + CAST(YEAR(OrderDate) AS VARCHAR(4)) as Label,
+            SUM(TotalAmount - DiscountAmount) as Value,
+            MIN(OrderDate) as SortDate
+        FROM SalesOrderHeader h
+        WHERE OrderDate >= DATEADD(month, -@Months, GETUTCDATE())
+          AND Status != 'Cancelled'
+          AND EXISTS (
+              SELECT 1 
+              FROM SalesOrderDetail d
+              INNER JOIN ProductVariant pv ON d.ProductId = pv.Id
+              INNER JOIN Product p ON pv.ProductId = p.Id
+              WHERE d.SalesOrderId = h.Id AND p.CompanyId = @CompanyId
+          )
+        GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(month, OrderDate)
+        ORDER BY MIN(OrderDate)";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
                 AddParameter(cmd, pInt32("Months", months));
+
                 if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -574,14 +642,27 @@ namespace MDUA.DataAccess
             }
             return list;
         }
-
-        public List<ChartDataPoint> GetOrderStatusCounts()
+        public List<ChartDataPoint> GetOrderStatusCounts(int companyId)
         {
             var list = new List<ChartDataPoint>();
-            string SQLQuery = @"SELECT Status, COUNT(*) FROM SalesOrderHeader GROUP BY Status";
+
+            // ✅ FIX: Filter by Product ownership using EXISTS
+            string SQLQuery = @"
+        SELECT Status, COUNT(*) 
+        FROM SalesOrderHeader h
+        WHERE EXISTS (
+            SELECT 1 
+            FROM SalesOrderDetail d
+            INNER JOIN ProductVariant pv ON d.ProductId = pv.Id
+            INNER JOIN Product p ON pv.ProductId = p.Id
+            WHERE d.SalesOrderId = h.Id AND p.CompanyId = @CompanyId
+        )
+        GROUP BY Status";
 
             using (SqlCommand cmd = GetSQLCommand(SQLQuery))
             {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -598,7 +679,6 @@ namespace MDUA.DataAccess
             }
             return list;
         }
-
         public void UpdateNetAmountSafe(int orderId, decimal newNetAmount)
         {
             string SQLQuery = @"UPDATE [dbo].[SalesOrderHeader] SET [NetAmount] = @Net, [UpdatedAt] = GETUTCDATE() WHERE [Id] = @Id";
@@ -798,11 +878,14 @@ SELECT @@ROWCOUNT;";
 
         #region it is used in admin order list with pagination,Advance Payment modal and  order details modal in allorders.cshtml
 
-        public SalesOrderHeaderList GetPagedOrdersExtended(int pageIndex, int pageSize, string whereClause, out int totalRows)
+        // Update signature to accept companyId
+        public SalesOrderHeaderList GetPagedOrdersExtended(int pageIndex, int pageSize, string whereClause, int companyId, out int totalRows)
         {
             SalesOrderHeaderList list = new SalesOrderHeaderList();
             totalRows = 0;
 
+            // ✅ SECURITY FIX: Added 'AND cc.CompanyId = @CompanyId' to the WHERE clause.
+            // This ensures data isolation per tenant.
             string sql = $@"
     SELECT 
         soh.Id, 
@@ -824,7 +907,7 @@ SELECT @@ROWCOUNT;";
         soh.OnlineOrderId,
         soh.DirectOrderId,
         soh.IPAddress,      
-        soh.SessionId,     
+        soh.SessionId,      
         
         c.Id AS RealCustomerId,
         ISNULL(c.CustomerName, 'Guest') AS CustomerName,
@@ -840,7 +923,7 @@ SELECT @@ROWCOUNT;";
         ISNULL(a.PostalCode, '') AS PostalCode,
         ISNULL(a.Country, 'Bangladesh') AS Country,
 
-ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity) 
+        ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity) 
                 FROM SalesOrderDetail sod 
                 WHERE sod.SalesOrderId = soh.Id), 0) AS ProductTotal,
 
@@ -852,12 +935,16 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
     LEFT JOIN CompanyCustomer cc ON soh.CompanyCustomerId = cc.Id
     LEFT JOIN Customer c ON cc.CustomerId = c.Id
     LEFT JOIN Address a ON soh.AddressId = a.Id  -- ✅ Join Address
-    WHERE {whereClause}
+    WHERE cc.CompanyId = @CompanyId              -- ✅ SECURITY FILTER
+      AND ({whereClause})                        -- ✅ User Filters (Status, Date, etc.)
     ORDER BY soh.OrderDate DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
             using (SqlCommand cmd = GetSQLCommand(sql))
             {
+                // ✅ Add the CompanyId Parameter
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
                 AddParameter(cmd, pInt32("Offset", (pageIndex - 1) * pageSize));
                 AddParameter(cmd, pInt32("PageSize", pageSize));
 
@@ -873,14 +960,15 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
                         // --- IDs & Basic Info ---
                         order.Id = (int)reader["Id"];
                         order.SalesOrderId = reader["SalesOrderId"].ToString();
-                        order.CompanyCustomerId = (int)reader["CompanyCustomerId"]; // ✅ Fixes "0" issue (if using CCID)
-                        order.CustomerId = reader["RealCustomerId"] != DBNull.Value ? (int)reader["RealCustomerId"] : 0; // ✅ Fixes "0" issue (Real ID)
-                        order.AddressId = (int)reader["AddressId"]; // ✅ Fixes Address ID N/A
+                        order.CompanyCustomerId = (int)reader["CompanyCustomerId"];
+                        order.CustomerId = reader["RealCustomerId"] != DBNull.Value ? (int)reader["RealCustomerId"] : 0;
+                        order.AddressId = (int)reader["AddressId"];
                         order.SalesChannelId = (int)reader["SalesChannelId"];
 
                         order.OrderDate = (DateTime)reader["OrderDate"];
-                        order.CreatedAt = (DateTime)reader["CreatedAt"]; // ✅ Now Mapped
-                                                                         // Data comes as 'Unspecified' (Local). .ToUniversalTime() converts it to UTC format.
+                        order.CreatedAt = (DateTime)reader["CreatedAt"];
+
+                        // Fix for UpdatedAt timezone
                         order.UpdatedAt = reader["UpdatedAt"] != DBNull.Value
                             ? ((DateTime)reader["UpdatedAt"]).ToUniversalTime()
                             : (DateTime?)null;
@@ -892,7 +980,7 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
                         order.CustomerName = reader["CustomerName"].ToString();
                         order.CustomerPhone = reader["CustomerPhone"] != DBNull.Value ? reader["CustomerPhone"].ToString() : "";
                         order.CustomerEmail = reader["CustomerEmail"] != DBNull.Value ? reader["CustomerEmail"].ToString() : "";
-                        order.IPAddress = reader["IPAddress"] != DBNull.Value ? reader["IPAddress"].ToString() : "N/A"; // ✅ Fixes Technical Data
+                        order.IPAddress = reader["IPAddress"] != DBNull.Value ? reader["IPAddress"].ToString() : "N/A";
                         order.SessionId = reader["SessionId"] != DBNull.Value ? reader["SessionId"].ToString() : "N/A";
 
                         order.Street = reader["Street"].ToString();
@@ -914,7 +1002,6 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
                         if (order.TotalAmount > 0)
                         {
                             order.DeliveryCharge = order.TotalAmount - productTotal - order.DiscountAmount;
-
                             if (order.DeliveryCharge < 0) order.DeliveryCharge = 0;
                         }
                         else
@@ -930,8 +1017,6 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
             }
             return list;
         }
-        #endregion
-
         public List<Dictionary<string, object>> GetExportDataDynamic(string whereClause, List<string> columns)
         {
             var results = new List<Dictionary<string, object>>();
@@ -1009,5 +1094,5 @@ ISNULL((SELECT SUM(sod.UnitPrice * sod.Quantity)
         }
     }
 
-
+    #endregion
 }

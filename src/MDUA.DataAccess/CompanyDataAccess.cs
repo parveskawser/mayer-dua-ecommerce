@@ -30,9 +30,11 @@ namespace MDUA.DataAccess
         }
 
         // ✅ 2. THE MISSING METHOD (Must be inside the class)
+        // MDUA.DataAccess/CompanyDataAccess.partial.cs
+
         private void FillObjectSafe(Company companyObject, SqlDataReader reader)
         {
-            // Safely map columns by Name instead of Index
+            // 1. Existing Mappings
             if (HasColumn(reader, "Id"))
                 companyObject.Id = Convert.ToInt32(reader["Id"]);
 
@@ -42,10 +44,26 @@ namespace MDUA.DataAccess
             if (HasColumn(reader, "LogoImg") && reader["LogoImg"] != DBNull.Value)
                 companyObject.LogoImg = reader["LogoImg"].ToString();
 
-            // You can add other fields here if needed for the UI
-            // e.g. Address, Phone, etc.
-        }
+            // ✅ 2. ADD THESE NEW MAPPINGS
+            if (HasColumn(reader, "Address") && reader["Address"] != DBNull.Value)
+                companyObject.Address = reader["Address"].ToString();
 
+            if (HasColumn(reader, "Email") && reader["Email"] != DBNull.Value)
+                companyObject.Email = reader["Email"].ToString();
+
+            if (HasColumn(reader, "Phone") && reader["Phone"] != DBNull.Value)
+                companyObject.Phone = reader["Phone"].ToString();
+
+            if (HasColumn(reader, "Website") && reader["Website"] != DBNull.Value)
+                companyObject.Website = reader["Website"].ToString();
+
+            if (HasColumn(reader, "CompanyCode") && reader["CompanyCode"] != DBNull.Value)
+                companyObject.CompanyCode = reader["CompanyCode"].ToString();
+
+            // Don't forget IsActive if needed
+            if (HasColumn(reader, "IsActive") && reader["IsActive"] != DBNull.Value)
+                companyObject.IsActive = Convert.ToBoolean(reader["IsActive"]);
+        }
         // ✅ 3. HELPER METHOD
         private bool HasColumn(SqlDataReader reader, string columnName)
         {

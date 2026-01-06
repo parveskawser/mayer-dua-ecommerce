@@ -4,12 +4,10 @@
     // 1. INITIALIZATION & SETUP
     // ============================================================
 
-    // Initialize Modals
     const reqModalEl = document.getElementById('requestModal');
     const infoModalEl = document.getElementById('infoModal');
     const receiveModalEl = document.getElementById('receiveModal');
 
-    // Move modals to body to prevent z-index/backdrop issues
     [reqModalEl, infoModalEl, receiveModalEl].forEach(el => {
         if (el && el.parentNode !== document.body) document.body.appendChild(el);
     });
@@ -19,14 +17,14 @@
     const receiveModal = new bootstrap.Modal(receiveModalEl);
 
     // ============================================================
-    // 2. EVENT DELEGATION (Handles Clicks for Dynamic Rows)
+    // 2. EVENT DELEGATION
     // ============================================================
-    // We attach one listener to the Document. It detects clicks on our buttons.
 
     document.addEventListener('click', function (e) {
 
-        // --- A. REQUEST STOCK BUTTON ---
-        // Checks if the clicked element OR its parent has class .btn-request
+        // =========================================================
+        //  A. REQUEST STOCK BUTTON 
+        // =========================================================
         const reqBtn = e.target.closest('.btn-request');
         if (reqBtn) {
             document.getElementById('reqVariantId').value = reqBtn.dataset.variantId;
@@ -35,6 +33,7 @@
             requestModal.show();
             return; // Stop processing
         }
+
 
         // --- B. RECEIVE STOCK BUTTON ---
         const recBtn = e.target.closest('.btn-receive');
@@ -45,7 +44,6 @@
             document.getElementById('recVariantId').value = variantId;
             document.getElementById('recProductName').textContent = name;
 
-            // Reset Form Fields
             document.getElementById('recQty').value = "";
             document.getElementById('recPrice').value = "";
             document.getElementById('recInvoice').value = "";
@@ -54,15 +52,12 @@
 
             receiveModal.show();
 
-            // Fetch info to autofill requested qty
             fetch(`/purchase/get-pending-info?variantId=${variantId}`)
                 .then(r => r.json())
                 .then(res => {
                     if (res.success && res.data) {
-                        const reqQty = res.data.quantity;
-                        document.getElementById('recReqQty').value = reqQty;
-                        // Convenience: Auto-fill receive qty
-                        document.getElementById('recQty').value = reqQty;
+                        document.getElementById('recReqQty').value = res.data.Quantity;
+                        document.getElementById('recQty').value = res.data.Quantity;
                     } else {
                         document.getElementById('recReqQty').value = "N/A";
                     }
@@ -84,38 +79,37 @@
                 .then(res => {
                     if (res.success && res.data) {
                         const d = res.data;
-                        // Render Details
                         body.innerHTML = `
-                            <div class="list-group list-group-flush">
-                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                    <span class="text-muted">Request ID</span>
-                                    <span class="fw-bold">PO #${d.id}</span>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between p-3">
+                                <span class="text-muted">Request ID</span>
+                                <span class="fw-bold">PO #${d.Id}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between p-3">
+                                <span class="text-muted">Vendor</span>
+                                <span class="fw-bold">${d.VendorName}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between p-3">
+                                <span class="text-muted">Requested Quantity</span>
+                                <span class="badge bg-warning">${d.Quantity}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between p-3">
+                                <span class="text-muted">Request Date</span>
+                                <span>${d.RequestDate}</span>
+                            </div>
+                            <div class="list-group-item p-3">
+                                <span class="text-muted">Remarks</span>
+                                <div class="bg-light p-2 border small">
+                                    ${d.Remarks || 'No remarks provided.'}
                                 </div>
-                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                    <span class="text-muted">Vendor</span>
-                                    <span class="fw-bold text-dark">${d.vendorName}</span>
-                                </div>
-                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                    <span class="text-muted">Requested Quantity</span>
-                                    <span class="badge bg-warning text-dark fs-6">${d.quantity}</span>
-                                </div>
-                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                    <span class="text-muted">Request Date</span>
-                                    <span>${d.requestDate}</span>
-                                </div>
-                                <div class="list-group-item p-3">
-                                    <span class="text-muted d-block mb-2">Remarks</span>
-                                    <div class="bg-light p-2 rounded border text-break text-secondary small">
-                                        ${d.remarks || 'No remarks provided.'}
-                                    </div>
-                                </div>
-                            </div>`;
+                            </div>
+                        </div>`;
                     } else {
-                        body.innerHTML = `<div class="text-center text-danger py-4 p-3">${res.message || 'Data not found'}</div>`;
+                        body.innerHTML = `<div class="text-danger text-center p-3">${res.message || 'Data not found'}</div>`;
                     }
                 })
                 .catch(() => {
-                    body.innerHTML = `<div class="text-center text-danger py-4">Failed to load data.</div>`;
+                    body.innerHTML = `<div class="text-danger text-center p-3">Failed to load data.</div>`;
                 });
             return;
         }
@@ -125,7 +119,6 @@
     // 3. SUBMIT ACTIONS
     // ============================================================
 
-    // Submit REQUEST
     const btnConfirmReq = document.getElementById('btnConfirmRequest');
     if (btnConfirmReq) {
         btnConfirmReq.addEventListener('click', function () {
@@ -137,27 +130,18 @@
         });
     }
 
-    // Submit RECEIVE
     const btnConfirmRec = document.getElementById('btnConfirmReceive');
     if (btnConfirmRec) {
         btnConfirmRec.addEventListener('click', function () {
-            const payload = {
+            submitData('/purchase/receive-stock', {
                 ProductVariantId: parseInt(document.getElementById('recVariantId').value),
                 Quantity: parseInt(document.getElementById('recQty').value),
                 BuyingPrice: parseFloat(document.getElementById('recPrice').value),
                 InvoiceNo: document.getElementById('recInvoice').value,
                 Remarks: document.getElementById('recRemarks').value
-            };
-
-            // Validation
-            if (!payload.ProductVariantId || isNaN(payload.ProductVariantId)) { alert("System Error: Variant ID missing"); return; }
-            if (!payload.Quantity || payload.Quantity < 1) { alert("Please enter a valid quantity."); return; }
-            if (isNaN(payload.BuyingPrice) || payload.BuyingPrice < 0) { alert("Please enter a valid total cost."); return; }
-
-            submitData('/purchase/receive-stock', payload, this, receiveModal);
+            }, this, receiveModal);
         });
     }
-
     // ============================================================
     // 4. HELPER FUNCTIONS
     // ============================================================
@@ -218,9 +202,9 @@
             });
     }
 
- 
 
-    //  REFRESH FUNCTION
+
+    //  REFRESH FUNCTION
     function refreshVariantRow(variantId) {
         const row = document.getElementById(`row-${variantId}`);
         if (!row) return;
@@ -301,3 +285,4 @@
         }
     }
 });
+

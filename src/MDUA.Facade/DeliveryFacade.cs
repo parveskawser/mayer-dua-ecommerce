@@ -28,12 +28,10 @@ namespace MDUA.Facade
 
             return _deliveryDataAccess.Get(id);
         }
-        public IList<Delivery> GetAllDeliveries()
+        public IList<Delivery> GetAllDeliveries(int companyId)
         {
-            
-
-            return _deliveryDataAccess.LoadAllWithDetails();
+            return _deliveryDataAccess.LoadAllWithDetails(companyId);
         }
-    
+
     }
 }

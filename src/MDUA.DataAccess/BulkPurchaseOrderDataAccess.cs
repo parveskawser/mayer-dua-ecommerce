@@ -45,12 +45,13 @@ namespace MDUA.DataAccess
                 AddParameter(cmd, pDateTime(BulkPurchaseOrderBase.Property_CreatedAt, obj.CreatedAt));
                 AddParameter(cmd, pNVarChar(BulkPurchaseOrderBase.Property_UpdatedBy, 100, obj.UpdatedBy));
                 AddParameter(cmd, pDateTime(BulkPurchaseOrderBase.Property_UpdatedAt, obj.UpdatedAt));
+                AddParameter(cmd, pInt32(BulkPurchaseOrderBase.Property_ConsumedQuantity, obj.ConsumedQuantity));
+                AddParameter(cmd, pDecimal(BulkPurchaseOrderBase.Property_ConsumedAmount, 9, obj.ConsumedAmount));
 
                 long result = InsertRecord(cmd);
 
                 if (result > 0)
                 {
-                    // FIX: This now works because we added 'using MDUA.Framework;'
                     obj.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;
                     obj.Id = (Int32)GetOutParameter(cmd, BulkPurchaseOrderBase.Property_Id);
                 }
@@ -59,6 +60,26 @@ namespace MDUA.DataAccess
             catch (SqlException x)
             {
                 throw new ObjectInsertException(obj, x);
+            }
+        }
+
+        public List<BulkPurchaseOrder> GetByCompanyId(int companyId)
+        {
+            // FIX: Join through PoRequested -> ProductVariant -> Product
+            // This ensures we only fetch Bulk Orders that contain products belonging to THIS Company.
+            string SQL = @"
+    SELECT DISTINCT bpo.* FROM BulkPurchaseOrder bpo
+    INNER JOIN PoRequested pr ON bpo.Id = pr.BulkPurchaseOrderId
+    INNER JOIN ProductVariant pv ON pr.ProductVariantId = pv.Id
+    INNER JOIN Product p ON pv.ProductId = p.Id
+    WHERE p.CompanyId = @CompanyId
+    ORDER BY bpo.CreatedAt DESC";
+
+            using (SqlCommand cmd = GetSQLCommand(SQL))
+            {
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+
+                return GetList(cmd, ALL_AVAILABLE_RECORDS);
             }
         }
     }

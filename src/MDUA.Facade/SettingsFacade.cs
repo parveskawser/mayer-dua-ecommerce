@@ -84,6 +84,13 @@ namespace MDUA.Facade
             // Assuming you have implemented GetSetting in GlobalSettingDataAccess as discussed
             return _globalSettingDataAccess.GetSetting(companyId, key);
         }
+        // MDUA.Facade/SettingsFacade.cs
 
+        public string GetFavicon(int companyId)
+        {
+            string url = _globalSettingDataAccess.GetValue(companyId, "FaviconUrl");
+            // Return default if not found
+            return !string.IsNullOrEmpty(url) ? url : "/favicon.ico";
+        }
     }
 }

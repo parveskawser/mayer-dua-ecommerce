@@ -389,3 +389,24 @@ body {
     font-weight: 700;
     font-size: 1rem;
 }
+
+#sidebar-toggle-btn {
+    position: absolute !important;
+    top: 0 !important;
+    left: 25px !important; /* Move to the right from original position */
+    margin-top: 1rem !important;
+    margin-left: 0 !important; /* Override inline style */
+    z-index: 3;
+    background: rgba(255,255,255,0.8) !important;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+    #sidebar-toggle-btn:hover {
+        background: rgba(255,255,255,0.95) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }

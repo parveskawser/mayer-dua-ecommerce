@@ -189,7 +189,7 @@ namespace MDUA.Web.UI.Services
     </div>
     <div class=""footer"">
         <p>This is an automated email. Please do not reply to this message.</p>
-        <p>&copy; {DateTime.Now.Year} MDUA. All rights reserved.</p>
+        <p>&copy; {DateTime.UtcNow.Year} MDUA. All rights reserved.</p>
     </div>
 </body>
 </html>";

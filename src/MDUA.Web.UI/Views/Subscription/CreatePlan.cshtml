@@ -1,0 +1,61 @@
+﻿@model MDUA.Entities.SubscriptionPlan
+@{
+    ViewData["Title"] = "Create Plan";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Create New Plan</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="CreatePlan" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label asp-for="PlanName">Plan Name</label>
+                    <input asp-for="PlanName" class="form-control" placeholder="e.g. Gold Tier" />
+                    <span asp-validation-for="PlanName" class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-6">
+                    <label asp-for="PlanCode">Plan Code (Unique)</label>
+                    <input asp-for="PlanCode" class="form-control" placeholder="e.g. TIER_GOLD" />
+                    <span asp-validation-for="PlanCode" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label asp-for="BasePrice">Base Price</label>
+                    <input asp-for="BasePrice" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="BasePrice" class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-4">
+                    <label asp-for="DiscountPrice">Discount Price (Optional)</label>
+                    <input asp-for="DiscountPrice" class="form-control" type="number" step="0.01" />
+                </div>
+                <div class="form-group col-md-4">
+                    <label asp-for="CurrencyCode">Currency</label>
+                    <input asp-for="CurrencyCode" class="form-control" value="BDT" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DefaultsJSON">Default Limits (JSON)</label>
+                <textarea asp-for="DefaultsJSON" class="form-control" rows="3" placeholder='{"maxProducts": 1000, "maxOrders": 500}'></textarea>
+                <small class="form-text text-muted">Used to auto-fill limits when assigning this plan.</small>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                    <input asp-for="IsActive" class="custom-control-input" checked />
+                    <label class="custom-control-label" asp-for="IsActive">Is Active</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Plan</button>
+            <a asp-action="PlanList" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

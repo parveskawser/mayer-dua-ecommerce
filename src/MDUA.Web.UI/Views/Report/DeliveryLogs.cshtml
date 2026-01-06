@@ -1,16 +1,11 @@
-﻿
-
-@{
+﻿@{
     ViewData["Title"] = "Delivery & Order Audit Logs";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container-fluid px-4">
     <h2 class="mt-4 fw-bold text-dark">Audit Logs</h2>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/Dashboard" class="text-decoration-none">Dashboard</a></li>
-        <li class="breadcrumb-item active">Delivery Logs</li>
-    </ol>
+    
 
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-header bg-white border-bottom fw-bold py-3">
@@ -69,7 +64,9 @@
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light text-uppercase small text-muted">
                     <tr>
-                        <th class="ps-3" style="width: 160px;">Time (UTC)</th>
+                        <th class="ps-3" style="width: 160px;">Time (Local)</th>
+
+
                         <th style="width: 120px;">Order Ref</th>
                         <th style="width: 120px;">Source</th>
                         <th>Status Change</th>
@@ -101,10 +98,13 @@
 
                             <tr class="@rowClass">
                                 <td class="ps-3">
-                                    <div class="fw-bold text-dark">@log.ChangedAt.ToString("MMM dd, yyyy")</div>
-                                    <div class="small text-muted font-monospace">@log.ChangedAt.ToString("HH:mm:ss")</div>
+                                    <div class="fw-bold text-dark local-date" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
+                                        @log.ChangedAt.ToString("MMM dd, yyyy")
+                                    </div>
+                                    <div class="small text-muted font-monospace local-time" data-utc="@log.ChangedAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
+                                        @log.ChangedAt.ToString("HH:mm:ss")
+                                    </div>
                                 </td>
-
                                 <td>
                                     @if (log.SalesOrderId > 0)
                                     {
@@ -199,3 +199,39 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 1. Convert Dates (e.g., Jan 01, 2024)
+            document.querySelectorAll('.local-date').forEach(function (el) {
+                var utcTime = el.getAttribute('data-utc');
+                if (utcTime) {
+                    var date = new Date(utcTime);
+                    // Format: MMM DD, YYYY
+                    el.innerText = date.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit'
+                    });
+                }
+            });
+
+            // 2. Convert Times (e.g., 14:30:05)
+            document.querySelectorAll('.local-time').forEach(function (el) {
+                var utcTime = el.getAttribute('data-utc');
+                if (utcTime) {
+                    var date = new Date(utcTime);
+                    // Format: HH:mm:ss (24-hour format)
+                    el.innerText = date.toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                }
+            });
+        });
+    </script>
+}

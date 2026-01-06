@@ -1234,4 +1234,102 @@ SCROLL TO TOP (Soft Bubble)
 }
 
 /* Ensure the parent header allows absolute positioning relative to itself */
+/* Add this inside your existing mobile media query or at the bottom of the file */
+@media (max-width: 768px) {
+    .product-image {
+        padding-left: 20px; /* Adds space on the left */
+        padding-right: 20px; /* Adds space on the right */
+        margin-bottom: 20px; /* Optional: Adds breathing room below */
+    }
+}
 
+/* Add 'position: relative' to the container so we can position the error message inside it */
+/* 1. Make the container a reference point */
+.qty-row {
+    position: relative;
+}
+
+/* 2. Position the error message absolutely so it doesn't push the buttons */
+#stock-error-message {
+    position: absolute;
+    bottom: -20px; /* Pushes it slightly below the row */
+    right: 0; /* Aligns it to the right side */
+    width: 100%; /* Allows text to span if needed */
+    text-align: right; /* Keeps text aligned with buttons */
+    font-size: 0.8rem;
+    white-space: nowrap; /* Keeps it on one line */
+    pointer-events: none; /* Prevents it from blocking clicks */
+}
+/* ==================================================
+   MOBILE CHAT CLOSE BUTTON FIX
+   ================================================== */
+@media (max-width: 768px) {
+    /* 1. Ensure the chat box sits above the sticky header */
+    #live-chat-box {
+        z-index: 99999 !important;
+    }
+
+    /* 2. Force the Close Button to be visible and positioned correctly */
+    #chat-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #f1f5f9; /* Light contrast background */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Shadow to make it pop */
+        z-index: 100000 !important; /* Highest priority */
+        cursor: pointer;
+    }
+
+        /* 3. Style the Icon inside (Red 'X') */
+        #chat-close-btn i {
+            color: var(--error, #ef4444) !important;
+            font-size: 16px !important;
+            line-height: 1;
+        }
+}
+/* ==================================================
+   MOBILE CHAT CLOSE BUTTON FIX (UPDATED)
+   ================================================== */
+@media (max-width: 768px) {
+    /* 1. Force Chat Box Stack Order */
+    #live-chat-box {
+        z-index: 2147483640 !important; /* Max safe integer range */
+        overflow: visible !important; /* Allow button to protrude if needed */
+    }
+
+    /* 2. Force Close Button Visibility & Position */
+    #chat-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        width: 35px !important;
+        height: 35px !important;
+        border-radius: 50% !important;
+        background-color: #ffffff !important; /* White background to ensure contrast */
+        border: 2px solid #e2e8f0 !important; /* Subtle border */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important; /* Drop shadow */
+
+        z-index: 2147483647 !important; /* Highest possible z-index */
+        cursor: pointer !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+        /* 3. Style the Icon inside */
+        #chat-close-btn i {
+            color: #ef4444 !important; /* Red Color */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            display: block !important;
+            line-height: 1 !important;
+        }
+}

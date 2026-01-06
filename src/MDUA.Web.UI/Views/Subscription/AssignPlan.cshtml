@@ -1,0 +1,100 @@
+﻿@model MDUA.Entities.CompanySubscription
+@{
+    ViewData["Title"] = "Assign Plan";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Serialize plans to JSON for JS access
+    var plansJson = Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Plans);
+}
+
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Assign Subscription to Company #@ViewBag.CompanyId</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="AssignPlan" method="post">
+            <input type="hidden" asp-for="CompanyId" value="@ViewBag.CompanyId" />
+
+            <div class="form-group">
+                <label>Select Plan</label>
+                <select asp-for="SubscriptionPlanId" class="form-control" id="ddlPlans">
+                    <option value="">-- Select a Plan --</option>
+                    @foreach (var p in ViewBag.Plans as List<MDUA.Entities.SubscriptionPlan>)
+                    {
+                        <option value="@p.Id">@p.PlanName (@p.BasePrice @p.CurrencyCode)</option>
+                    }
+                    <option value="0" style="font-weight:bold;">-- CUSTOM PLAN --</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label>Max Products</label>
+                    <input asp-for="MaxProducts" class="form-control" id="txtMaxProducts" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Max Orders (Monthly)</label>
+                    <input asp-for="MaxOrders" class="form-control" id="txtMaxOrders" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Price To Charge</label>
+                    <input asp-for="PriceCharged" class="form-control" id="txtPrice" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Billing Cycle</label>
+                <select asp-for="OrderCycle" class="form-control">
+                    <option value="MONTHLY">Monthly</option>
+                    <option value="YEARLY">Yearly</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Assign Plan</button>
+            <a asp-action="CompanySubscriptionList" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Store Plan Data in JS variable
+        var planData = @Html.Raw(plansJson);
+
+        $(document).ready(function () {
+            $('#ddlPlans').change(function () {
+                var selectedId = $(this).val();
+
+                if (selectedId == "0") {
+                    // Custom Plan: Clear fields, let admin type
+                    $('#txtMaxProducts').val('').focus();
+                    $('#txtMaxOrders').val('');
+                    $('#txtPrice').val('');
+                } else {
+                    // Pre-defined Plan: Find data and populate
+                    var plan = planData.find(x => x.Id == selectedId);
+                    if (plan) {
+                        $('#txtPrice').val(plan.BasePrice);
+
+                        // Parse JSON defaults if available, otherwise use hardcoded fallbacks
+                        // Assuming you added defaults JSON parsing to your Plan entity logic or do it here
+                        // For now, simpler simulation:
+
+                        if (plan.DefaultsJSON) {
+                            try {
+                                var defs = JSON.parse(plan.DefaultsJSON);
+                                $('#txtMaxProducts').val(defs.maxProducts || 0);
+                                $('#txtMaxOrders').val(defs.maxOrders || 0);
+                            } catch (e) { console.log("JSON Parse error", e); }
+                        } else {
+                             // Fallback if JSON is empty (Logic based on name/price)
+                             // This is just UI sugar; backend enforces truth
+                             $('#txtMaxProducts').val(2000);
+                             $('#txtMaxOrders').val(1000);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

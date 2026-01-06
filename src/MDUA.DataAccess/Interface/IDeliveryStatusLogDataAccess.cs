@@ -9,7 +9,7 @@ namespace MDUA.DataAccess.Interface
     public interface IDeliveryStatusLogDataAccess
     {
         
-        List<DeliveryStatusLog> GetLogsForReport(DateTime? from, DateTime? to, string search, string entityType);
+        List<DeliveryStatusLog> GetLogsForReport(int companyId, DateTime? from, DateTime? to, string search, string entityType);
 
      
 

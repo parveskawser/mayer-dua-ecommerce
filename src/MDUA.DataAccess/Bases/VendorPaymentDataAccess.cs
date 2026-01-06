@@ -14,7 +14,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
 	public partial class VendorPaymentDataAccess : BaseDataAccess, IVendorPaymentDataAccess
-	{
+    {
 		#region Constants
 		private const string INSERTVENDORPAYMENT = "InsertVendorPayment";
 		private const string UPDATEVENDORPAYMENT = "UpdateVendorPayment";
@@ -25,6 +25,8 @@ namespace MDUA.DataAccess
 		private const string GETVENDORPAYMENTBYVENDORID = "GetVendorPaymentByVendorId";
 		private const string GETVENDORPAYMENTBYPAYMENTMETHODID = "GetVendorPaymentByPaymentMethodId";
 		private const string GETVENDORPAYMENTBYINVENTORYTRANSACTIONID = "GetVendorPaymentByInventoryTransactionId";
+		private const string GETVENDORPAYMENTBYPORECEIVEDID = "GetVendorPaymentByPoReceivedId";
+		private const string GETVENDORPAYMENTBYPOREQUESTEDID = "GetVendorPaymentByPoRequestedId";
 		private const string GETVENDORPAYMENTMAXIMUMID = "GetVendorPaymentMaximumId";
 		private const string GETVENDORPAYMENTROWCOUNT = "GetVendorPaymentRowCount";	
 		private const string GETVENDORPAYMENTBYQUERY = "GetVendorPaymentByQuery";
@@ -58,6 +60,8 @@ namespace MDUA.DataAccess
 			AddParameter(cmd, pDateTime(VendorPaymentBase.Property_CreatedAt, vendorPaymentObject.CreatedAt));
 			AddParameter(cmd, pNVarChar(VendorPaymentBase.Property_UpdatedBy, 100, vendorPaymentObject.UpdatedBy));
 			AddParameter(cmd, pDateTime(VendorPaymentBase.Property_UpdatedAt, vendorPaymentObject.UpdatedAt));
+			AddParameter(cmd, pInt32(VendorPaymentBase.Property_PoReceivedId, vendorPaymentObject.PoReceivedId));
+			AddParameter(cmd, pInt32(VendorPaymentBase.Property_PoRequestedId, vendorPaymentObject.PoRequestedId));
 		}
 		#endregion
 		
@@ -214,6 +218,34 @@ namespace MDUA.DataAccess
 			}
 		}
 		
+		/// <summary>
+        /// Retrieves all VendorPayment objects by PoReceivedId
+        /// </summary>
+        /// <returns>A list of VendorPayment objects</returns>
+		public VendorPaymentList GetByPoReceivedId(Nullable<Int32> _PoReceivedId)
+		{
+			using( SqlCommand cmd = GetSPCommand(GETVENDORPAYMENTBYPORECEIVEDID))
+			{
+				
+				AddParameter( cmd, pInt32(VendorPaymentBase.Property_PoReceivedId, _PoReceivedId));
+				return GetList(cmd, ALL_AVAILABLE_RECORDS);
+			}
+		}
+		
+		/// <summary>
+        /// Retrieves all VendorPayment objects by PoRequestedId
+        /// </summary>
+        /// <returns>A list of VendorPayment objects</returns>
+		public VendorPaymentList GetByPoRequestedId(Nullable<Int32> _PoRequestedId)
+		{
+			using( SqlCommand cmd = GetSPCommand(GETVENDORPAYMENTBYPOREQUESTEDID))
+			{
+				
+				AddParameter( cmd, pInt32(VendorPaymentBase.Property_PoRequestedId, _PoRequestedId));
+				return GetList(cmd, ALL_AVAILABLE_RECORDS);
+			}
+		}
+		
 		
 		/// <summary>
         /// Retrieves all VendorPayment objects by PageRequest
@@ -316,7 +348,9 @@ namespace MDUA.DataAccess
 				if(!reader.IsDBNull(11)) vendorPaymentObject.CreatedAt = reader.GetDateTime( start + 11 );			
 				if(!reader.IsDBNull(12)) vendorPaymentObject.UpdatedBy = reader.GetString( start + 12 );			
 				if(!reader.IsDBNull(13)) vendorPaymentObject.UpdatedAt = reader.GetDateTime( start + 13 );			
-			FillBaseObject(vendorPaymentObject, reader, (start + 14));
+				if(!reader.IsDBNull(14)) vendorPaymentObject.PoReceivedId = reader.GetInt32( start + 14 );			
+				if(!reader.IsDBNull(15)) vendorPaymentObject.PoRequestedId = reader.GetInt32( start + 15 );			
+			FillBaseObject(vendorPaymentObject, reader, (start + 16));
 
 			
 			vendorPaymentObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

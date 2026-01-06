@@ -1,6 +1,6 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
-using MDUA.Entities;
+using MDUA.Entities; 
 using MDUA.Facade;
 using MDUA.Facade.Interface;
 using Microsoft.AspNetCore.Authentication;
@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-
 namespace MDUA.Web.UI.Controllers
 {
     [Authorize]
@@ -28,14 +27,15 @@ namespace MDUA.Web.UI.Controllers
         private readonly IFido2 _fido2;
         private readonly ICompanyFacade _companyFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly IProductFacade _productFacade;
+        private readonly IProductFacade _productFacade; 
 
         public SettingsController(
             ISettingsFacade settingsFacade,
             IPaymentFacade paymentFacade,
             IUserLoginFacade userLoginFacade,
             IFido2 fido2,
-            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment, IProductFacade productFacade
+            ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment,
+            IProductFacade productFacade 
 
             )
         {
@@ -45,7 +45,7 @@ namespace MDUA.Web.UI.Controllers
             _fido2 = fido2;
             _companyFacade = companyFacade;
             _webHostEnvironment = webHostEnvironment;
-            _productFacade = productFacade;
+            _productFacade = productFacade; 
         }
 
         [HttpGet]
@@ -222,7 +222,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
-        [Route("Settings/MakeCredentialOptions")]
+[Route("Settings/MakeCredentialOptions")]
         [ValidateAntiForgeryToken]
         public IActionResult MakeCredentialOptions()
         {
@@ -336,7 +336,7 @@ namespace MDUA.Web.UI.Controllers
         {
             public AuthenticatorAttestationRawResponse AttestationResponse { get; set; }
             public string FriendlyName { get; set; }
-            public string AuthenticatorAttachment { get; set; }
+            public string AuthenticatorAttachment { get; set; } 
 
         }
         private string ParseDeviceFromUserAgent(string ua)
@@ -348,7 +348,7 @@ namespace MDUA.Web.UI.Controllers
             if (ua.Contains("Linux")) return "Linux Device";
             return "Unknown Device";
         }
-
+       
 
         // ✅ 1. GET: Show Company Profile (Updated to fetch Favicon)
 
@@ -362,7 +362,15 @@ namespace MDUA.Web.UI.Controllers
             // Fetch Favicon from Global Settings
             string faviconUrl = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "FaviconUrl");
             ViewBag.FaviconUrl = faviconUrl;
+            // ✅ Fetch Footer Description
+            string footerDesc = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "Footer_Description");
+            // Set default if empty
+            if (string.IsNullOrEmpty(footerDesc))
+            {
+                footerDesc = "Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.";
+            }
 
+            ViewBag.FooterDescription = footerDesc;
             return View(company);
         }
 
@@ -372,7 +380,14 @@ namespace MDUA.Web.UI.Controllers
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(100 * 1024 * 1024)]
         [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
-        public IActionResult UpdateCompanyProfile(string CompanyName, IFormFile LogoFile, IFormFile FaviconFile)
+        public IActionResult UpdateCompanyProfile(
+     string CompanyName,
+     string Address,
+     string Email,
+     string Phone,
+     string FooterDescription,
+     IFormFile LogoFile,
+     IFormFile FaviconFile)
         {
             try
             {
@@ -380,21 +395,16 @@ namespace MDUA.Web.UI.Controllers
                 var company = _companyFacade.Get(CurrentCompanyId);
                 if (company == null) return Json(new { success = false, message = "Company not found." });
 
-                // 2. Update Name
-                if (!string.IsNullOrEmpty(CompanyName))
-                {
-                    company.CompanyName = CompanyName;
-                }
+                // 2. Update properties
+                // We set these on the object we pass to the Facade
+                company.CompanyName = CompanyName;
+                company.Address = Address; // ✅ Pass Address
+                company.Email = Email;     // ✅ Pass Email
+                company.Phone = Phone;     // ✅ Pass Phone
 
-                // 3. Update Audit Fields
-                company.UpdatedBy = CurrentUserName;
-                company.UpdatedAt = DateTime.UtcNow;
+                // 3. Call Facade
+                _companyFacade.UpdateCompanyProfile(company, LogoFile, FaviconFile, _webHostEnvironment.WebRootPath, FooterDescription);
 
-                // 4. Call Facade to handle Files & Database Updates
-                // This handles saving Logo to [Company] and Favicon to [GlobalSetting]
-                _companyFacade.UpdateCompanyProfile(company, LogoFile, FaviconFile, _webHostEnvironment.WebRootPath);
-
-                // 5. Return Success (Frontend will reload or update visuals)
                 return Json(new
                 {
                     success = true,
@@ -468,24 +478,51 @@ namespace MDUA.Web.UI.Controllers
 
         }
 
-
+        [HttpGet]
         [HttpGet]
         public IActionResult Homepage()
         {
+            // 1. Determine Company ID
             int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
+
+            // 2. Get Homepage Config (Existing)
             var config = _companyFacade.GetHomepageConfig(companyId);
 
-            // ✅ FIX: Use .Select() to create a "Safe" list without circular references
+            // 3. Get Categories (Existing)
             var productData = _productFacade.GetAddProductData(0);
-
-            // Create a simple list of objects containing ONLY Id and Name
             ViewBag.Categories = productData.Categories
                 .Select(c => new { Id = c.Id, Name = c.Name })
                 .ToList();
 
+            // =========================================================
+            // ✅ FIX: Load Company Info with FALLBACK Defaults
+            // =========================================================
+            var company = _companyFacade.Get(companyId);
+
+            // If the database fields are null, show these defaults in the input boxes
+            if (company != null)
+            {
+                if (string.IsNullOrEmpty(company.CompanyName)) company.CompanyName = "MDUA Store";
+                if (string.IsNullOrEmpty(company.Address)) company.Address = "Dhaka, Bangladesh";
+                if (string.IsNullOrEmpty(company.Email)) company.Email = "support@mduastore.com";
+                if (string.IsNullOrEmpty(company.Phone)) company.Phone = "+880 1234 567 890";
+            }
+            ViewBag.CompanyInfo = company;
+
+            // =========================================================
+            // ✅ FIX: Load Footer Description with FALLBACK Default
+            // =========================================================
+            string footerDesc = _settingsFacade.GetGlobalSetting(companyId, "Footer_Description");
+
+            // If setting doesn't exist yet, show the default text
+            if (string.IsNullOrEmpty(footerDesc))
+            {
+                footerDesc = "Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.";
+            }
+            ViewBag.FooterDescription = footerDesc;
+
             return View(config);
         }
-
         [HttpPost]
         public IActionResult SaveHomepage([FromBody] HomepageConfig config)
         {
@@ -571,5 +608,6 @@ namespace MDUA.Web.UI.Controllers
                 return Json(new { success = false, message = "Server Error: " + ex.Message });
             }
         }
+
     }
 }

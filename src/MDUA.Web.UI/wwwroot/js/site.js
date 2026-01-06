@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+﻿﻿document.addEventListener('DOMContentLoaded', function () {
 
     // Global Date Converter
     function convertUtcDates() {

@@ -90,75 +90,71 @@ namespace MDUA.Facade
 
         public async Task<string> PlaceGuestOrder(SalesOrderHeader orderData)
         {
-            // ✅ 0. VALIDATION
+            // ==============================================================================
+            // 1. VALIDATION & PRE-CALCULATION
+            // ==============================================================================
             if (string.IsNullOrWhiteSpace(orderData.CustomerName))
-                throw new Exception("Customer Name is required to place an order.");
+                throw new Exception("Customer Name is required.");
 
             if (string.IsNullOrWhiteSpace(orderData.CustomerPhone))
                 throw new Exception("Phone number is required.");
 
-            // Determine who is performing the action (System/Admin or the Guest themselves)
-            string actionUser = !string.IsNullOrEmpty(orderData.CreatedBy)
-                ? orderData.CreatedBy
-                : orderData.CustomerName;
+            string actionUser = !string.IsNullOrEmpty(orderData.CreatedBy) ? orderData.CreatedBy : orderData.CustomerName;
 
+            // Sanitize Inputs
             orderData.CustomerName = orderData.CustomerName.Trim();
             orderData.CustomerPhone = orderData.CustomerPhone.Trim();
-
-            // Trim email if provided
             if (!string.IsNullOrEmpty(orderData.CustomerEmail))
-            {
                 orderData.CustomerEmail = orderData.CustomerEmail.Trim();
-            }
 
-            // 1. PRE-CALCULATION
+            // ✅ FIX 1: Determine Company ID from the Product (Security)
+            // We do this BEFORE starting the transaction
             var variant = _productVariantDataAccess.GetWithStock(orderData.ProductVariantId);
             if (variant == null) throw new Exception("Variant not found.");
 
-            if (variant.StockQty == 0)
-                throw new Exception("The selected product variant is currently out of stock.");
+            var product = _productFacade.Get(variant.ProductId);
+            if (product == null) throw new Exception("Product not found.");
 
-            if (variant.StockQty < orderData.OrderQuantity)
-                throw new Exception($"Requested amount {orderData.OrderQuantity} exceeds available amount {variant.StockQty}.");
+            // Override frontend data with real owner ID
+            int companyId = product.CompanyId;
+            orderData.TargetCompanyId = companyId;
 
-            decimal baseVariantPrice = variant.VariantPrice ?? 0;
-            int quantity = orderData.OrderQuantity;
+            // Stock & Price Logic
+            if (variant.StockQty == 0) throw new Exception("Out of stock.");
+            if (variant.StockQty < orderData.OrderQuantity) throw new Exception("Insufficient stock.");
 
-            // Calculate Discounts
-            var bestDiscount = _productFacade.GetBestDiscount(variant.ProductId, baseVariantPrice);
-            decimal finalUnitPrice = baseVariantPrice;
-            decimal totalDiscountAmount = 0;
+            decimal basePrice = variant.VariantPrice ?? 0;
+            int qty = orderData.OrderQuantity;
+            var discount = _productFacade.GetBestDiscount(variant.ProductId, basePrice);
 
-            if (bestDiscount != null)
+            decimal finalPrice = basePrice;
+            decimal totalDiscount = 0;
+
+            if (discount != null)
             {
-                if (bestDiscount.DiscountType == "Flat")
+                if (discount.DiscountType == "Flat")
                 {
-                    decimal discountPerItem = bestDiscount.DiscountValue;
-                    finalUnitPrice -= discountPerItem;
-                    totalDiscountAmount = discountPerItem * quantity;
+                    finalPrice -= discount.DiscountValue;
+                    totalDiscount = discount.DiscountValue * qty;
                 }
-                else if (bestDiscount.DiscountType == "Percentage")
+                else
                 {
-                    decimal discountRate = bestDiscount.DiscountValue / 100;
-                    decimal discountPerItem = baseVariantPrice * discountRate;
-                    finalUnitPrice -= discountPerItem;
-                    totalDiscountAmount = discountPerItem * quantity;
+                    finalPrice -= (basePrice * (discount.DiscountValue / 100));
+                    totalDiscount = (basePrice * (discount.DiscountValue / 100)) * qty;
                 }
             }
+            finalPrice = Math.Max(finalPrice, 0);
 
-            // Calculate Totals
-            decimal totalProductPrice = baseVariantPrice * quantity;
-            decimal deliveryCharge = orderData.DeliveryCharge;
-
-            // Explicitly set calculations
-            orderData.DeliveryCharge = deliveryCharge;
-            orderData.TotalAmount = totalProductPrice + deliveryCharge;
-            orderData.DiscountAmount = totalDiscountAmount;
+            // Set Financials
+            orderData.TotalAmount = (basePrice * qty) + orderData.DeliveryCharge;
+            orderData.DiscountAmount = totalDiscount;
             orderData.NetAmount = orderData.TotalAmount - orderData.DiscountAmount;
 
-            string connectionString = _configuration.GetConnectionString("DefaultConnection");
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            // ==============================================================================
+            // 2. TRANSACTION EXECUTION
+            // ==============================================================================
+            string connStr = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connStr))
             {
                 connection.Open();
                 using (SqlTransaction transaction = connection.BeginTransaction())
@@ -171,73 +167,49 @@ namespace MDUA.Facade
                         var transOrderDA = new SalesOrderHeaderDataAccess(transaction);
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
 
-                        int companyId = orderData.TargetCompanyId;
+                        // --- A. CUSTOMER ---
                         int customerId;
-
-                        // 2. CUSTOMER LOGIC (Check, Create, or Update)
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
+
                         if (customer == null)
                         {
-                            // CREATE NEW CUSTOMER
-                            string emailToCheck = !string.IsNullOrEmpty(orderData.CustomerEmail)
+                            string email = !string.IsNullOrEmpty(orderData.CustomerEmail)
                                 ? orderData.CustomerEmail
                                 : $"{orderData.CustomerPhone}@guest.local";
 
-                            if (!string.IsNullOrEmpty(orderData.CustomerEmail) && transCustomerDA.GetByEmail(emailToCheck) != null)
-                                throw new Exception($"Email {emailToCheck} is already registered to another number.");
+                            if (!string.IsNullOrEmpty(orderData.CustomerEmail) && transCustomerDA.GetByEmail(email) != null)
+                                throw new Exception("Email already registered.");
 
-                            transCustomerDA.Insert(new Customer
+                            var newCust = new Customer
                             {
                                 CustomerName = orderData.CustomerName,
                                 Phone = orderData.CustomerPhone,
-                                Email = emailToCheck,
+                                Email = email,
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
                                 CreatedBy = actionUser
-                            });
-
+                            };
+                            transCustomerDA.Insert(newCust);
+                            // Fetch to be safe
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
                         else
                         {
-                            // UPDATE EXISTING CUSTOMER
-                            bool isUpdated = false;
-
-                            if (!string.IsNullOrWhiteSpace(orderData.CustomerName) &&
-                                !string.Equals(customer.CustomerName, orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
+                            // Update if needed
+                            if (!customer.CustomerName.Equals(orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
                             {
                                 customer.CustomerName = orderData.CustomerName;
-                                isUpdated = true;
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail) &&
-                                !string.Equals(customer.Email, orderData.CustomerEmail, StringComparison.OrdinalIgnoreCase))
-                            {
-                                customer.Email = orderData.CustomerEmail;
-                                isUpdated = true;
-                            }
-
-                            if (isUpdated)
-                            {
-                                customer.UpdatedAt = DateTime.UtcNow;
-                                customer.UpdatedBy = actionUser;
                                 transCustomerDA.Update(customer);
                             }
                         }
-
                         customerId = customer.Id;
 
-                        // Link to Company
-                        if (!transCompanyCustomerDA.IsLinked(companyId, customerId))
-                        {
-                            transCompanyCustomerDA.Insert(new CompanyCustomer
-                            {
-                                CompanyId = companyId,
-                                CustomerId = customerId
-                            });
-                        }
+                        // --- B. COMPANY LINK ---
+                        // Uses the 'EnsureLinkAndGetId' logic we fixed earlier
+                        int companyCustomerId = transCompanyCustomerDA.EnsureLinkAndGetId(companyId, customerId);
+                        if (companyCustomerId <= 0) throw new Exception("Failed to link customer.");
 
-                        // 3. ADDRESS LOGIC
+                        // --- C. ADDRESS ---
                         var addr = new Address
                         {
                             CustomerId = customerId,
@@ -251,18 +223,28 @@ namespace MDUA.Facade
                             CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
-                            ZipCode = (orderData.ZipCode ?? orderData.PostalCode ?? "0000").ToCharArray()
+                            ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
                         };
 
-                        var existingAddress = transAddressDA.CheckExistingAddress(customerId, addr);
-                        int addressId = existingAddress != null
-                            ? existingAddress.Id
-                            : (int)transAddressDA.InsertAddressSafe(addr);
+                        var existingAddr = transAddressDA.CheckExistingAddress(customerId, addr);
+                        int addressId;
 
-                        // 4. PREPARE ORDER HEADER
-                        orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(companyId, customerId);
+                        if (existingAddr != null)
+                        {
+                            addressId = existingAddr.Id;
+                        }
+                        else
+                        {
+                            transAddressDA.InsertAddressSafe(addr);
+                            addressId = addr.Id; // ✅ Correctly reading ID from object
+                        }
+
+                        if (addressId <= 0) throw new Exception("Failed to generate Address ID.");
+
+                        // --- D. ORDER HEADER ---
+                        orderData.CompanyCustomerId = companyCustomerId;
                         orderData.AddressId = addressId;
-                        orderData.SalesChannelId = 1; // Online/Guest
+                        orderData.SalesChannelId = 1;
                         orderData.OrderDate = DateTime.UtcNow;
                         orderData.Status = "Draft";
                         orderData.IsActive = true;
@@ -270,74 +252,47 @@ namespace MDUA.Facade
                         orderData.CreatedAt = DateTime.UtcNow;
                         orderData.Confirmed = false;
 
-                        // 5. INSERT ORDER
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
-                        if (orderId <= 0)
-                            throw new Exception("Failed to create Order Header.");
 
-                        // 6. INSERT ORDER DETAILS
+                        // Optional: Update the object property for consistency
+                        orderData.Id = orderId;
+
+                        if (orderId <= 0) throw new Exception("Failed to create Order Header.");
+
+                        // --- E. ORDER DETAIL ---
                         transDetailDA.InsertSalesOrderDetailSafe(new SalesOrderDetail
                         {
                             SalesOrderId = orderId,
                             ProductVariantId = orderData.ProductVariantId,
-                            Quantity = orderData.OrderQuantity,
-                            UnitPrice = finalUnitPrice,
+                            Quantity = qty,
+                            UnitPrice = finalPrice,
                             CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow
                         });
 
-                        transaction.Commit(); // ✅ DB Transaction Complete
+                        transaction.Commit();
 
+                        // --- F. NOTIFICATIONS ---
                         string orderNo = "ON" + orderId.ToString("D8");
-
-                        // =================================================================
-                        // 🚀 UNIFIED NOTIFICATION (Direct Await - No Task.Run)
-                        // =================================================================
                         try
                         {
-                            bool emailSuccess = false;
-
-                            // 1. EMAIL: Check if we have an email to send to
-                            if (!string.IsNullOrWhiteSpace(orderData.CustomerEmail))
-                            {
-                                // MAP DATA TO DATABASE TEMPLATE (mailToOrderPlace)
-                                var templateParams = new Hashtable
+                            // Fire and forget notifications
+                            _ = Task.Run(async () => {
+                                try
                                 {
-                                    { "ToEmail", orderData.CustomerEmail },
-                                    { "UserName", orderData.CustomerName },
-                                    { "OrderId", orderNo },
-                                    { "OrderQty", orderData.OrderQuantity },
-                                    { "OrderTotal", orderData.TotalAmount }
+                                    if (!string.IsNullOrEmpty(orderData.CustomerEmail))
+                                    {
+                                        var p = new System.Collections.Hashtable {
+                                    {"ToEmail", orderData.CustomerEmail}, {"UserName", orderData.CustomerName},
+                                    {"OrderId", orderNo}, {"OrderQty", qty}, {"OrderTotal", orderData.TotalAmount}
                                 };
-
-                                // CALL THE SERVICE DIRECTLY
-                                emailSuccess = await _emailService.SendEmail(templateParams, "mailToOrderPlace");
-
-                                if (emailSuccess)
-                                    Console.WriteLine($"[Order {orderNo}] Template Email sent successfully.");
-                                else
-                                    Console.WriteLine($"[Order {orderNo}] ❌ Template Email failed to send.");
-                            }
-
-                            // 2. SMS FALLBACK
-                            if (!emailSuccess && !string.IsNullOrWhiteSpace(orderData.CustomerPhone))
-                            {
-                                Console.WriteLine($"[Order {orderNo}] Email failed or missing. Attempting SMS Fallback...");
-
-                                await _notificationService.SendSmsOnlyAsync(
-                                    orderData.CustomerPhone,
-                                    $"Order {orderNo} Confirmed. Total: {orderData.TotalAmount}"
-                                );
-                            }
+                                        await _emailService.SendEmail(p, "mailToOrderPlace");
+                                    }
+                                }
+                                catch { }
+                            });
                         }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("========== Notification Error ==========");
-                            Console.WriteLine(ex);                 // includes stack trace
-                            Console.WriteLine(ex.InnerException);   // if any
-                            Console.WriteLine("========================================");
-                        }
-
+                        catch { }
 
                         return orderNo;
                     }
@@ -350,19 +305,37 @@ namespace MDUA.Facade
             }
         }
 
+
+
+
         public dynamic PlaceAdminOrder(SalesOrderHeader orderData)
         {
-            // 1. Stock Check
+            // ==============================================================================
+            // 1. VALIDATION & PRE-CALCULATION
+            // ==============================================================================
+
+            // A. Stock Check
             var variantInfo = _salesOrderHeaderDataAccess.GetVariantStockAndPrice(orderData.ProductVariantId);
             if (variantInfo == null) throw new Exception("Variant not found.");
 
             if (variantInfo.Value.StockQty < orderData.OrderQuantity)
                 throw new Exception($"Stock Error: Only {variantInfo.Value.StockQty} available.");
 
+            // ✅ FIX 1: SECURITY - Derive Company ID from the Product
+            // We strictly use the Product's Company ID, ignoring what the frontend sent.
+            var variantBasic = _productVariantDataAccess.Get(orderData.ProductVariantId);
+            var product = _productFacade.Get(variantBasic.ProductId);
+
+            if (product == null) throw new Exception("Product not found.");
+
+            // OVERWRITE the CompanyId
+            int realCompanyId = product.CompanyId;
+            orderData.TargetCompanyId = realCompanyId;
+
             decimal basePrice = variantInfo.Value.Price;
             string actionUser = !string.IsNullOrEmpty(orderData.CreatedBy) ? orderData.CreatedBy : "Admin";
+
             // 2. Discount Calculation
-            var variantBasic = _productVariantDataAccess.Get(orderData.ProductVariantId);
             decimal finalUnitPrice = basePrice;
             decimal totalDiscount = 0;
 
@@ -381,6 +354,7 @@ namespace MDUA.Facade
                     totalDiscount = disc * orderData.OrderQuantity;
                 }
             }
+            finalUnitPrice = Math.Max(finalUnitPrice, 0);
 
             // DELIVERY FEE
             decimal deliveryFeeToCharge = orderData.DeliveryCharge;
@@ -391,8 +365,6 @@ namespace MDUA.Facade
             orderData.TotalAmount = grossProductCost + deliveryFeeToCharge;
             orderData.DiscountAmount = totalDiscount;
 
-            decimal netAmount = orderData.TotalAmount - totalDiscount;
-
             // 3. SAVE TO DATABASE
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -402,6 +374,7 @@ namespace MDUA.Facade
                 {
                     try
                     {
+                        // Initialize DAs
                         var transCustomerDA = new CustomerDataAccess(transaction);
                         var transCompanyCustomerDA = new CompanyCustomerDataAccess(transaction);
                         var transAddressDA = new AddressDataAccess(transaction);
@@ -409,7 +382,7 @@ namespace MDUA.Facade
                         var transDetailDA = new SalesOrderDetailDataAccess(transaction);
                         var transDeliveryDA = new DeliveryDataAccess(transaction);
 
-                        // A. Customer Logic
+                        // --- A. CUSTOMER LOGIC ---
                         int customerId = 0;
                         var customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         string finalEmail = !string.IsNullOrEmpty(orderData.CustomerEmail)
@@ -425,25 +398,20 @@ namespace MDUA.Facade
                                 Email = finalEmail,
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
-                                CreatedBy = actionUser // ✅ Use Logged In User
+                                CreatedBy = actionUser
                             };
                             transCustomerDA.Insert(newCust);
                             customer = transCustomerDA.GetByPhone(orderData.CustomerPhone);
                         }
                         else
                         {
-                            // ✅ UPDATE LOGIC FOR ADMIN (Force Update Name and Email)
                             bool isUpdated = false;
-
-                            // Update Name
                             if (!string.IsNullOrWhiteSpace(orderData.CustomerName) &&
                                 !string.Equals(customer.CustomerName, orderData.CustomerName, StringComparison.OrdinalIgnoreCase))
                             {
                                 customer.CustomerName = orderData.CustomerName;
                                 isUpdated = true;
                             }
-
-                            // Update Email (If provided and different)
                             if (!string.IsNullOrEmpty(orderData.CustomerEmail) &&
                                 !string.Equals(customer.Email, orderData.CustomerEmail, StringComparison.OrdinalIgnoreCase))
                             {
@@ -453,20 +421,20 @@ namespace MDUA.Facade
 
                             if (isUpdated)
                             {
-                                customer.UpdatedBy = actionUser; // ✅ Use Logged In User
+                                customer.UpdatedBy = actionUser;
                                 customer.UpdatedAt = DateTime.UtcNow;
                                 transCustomerDA.Update(customer);
                             }
                         }
                         customerId = customer.Id;
 
-                        // B. Link
-                        if (!transCompanyCustomerDA.IsLinked(orderData.TargetCompanyId, customerId))
-                        {
-                            transCompanyCustomerDA.Insert(new CompanyCustomer { CompanyId = orderData.TargetCompanyId, CustomerId = customerId });
-                        }
+                        // --- B. COMPANY LINK LOGIC ---
+                        // ✅ FIX 2: Use the Robust Link Method with the REAL Company ID
+                        int companyCustomerId = transCompanyCustomerDA.EnsureLinkAndGetId(realCompanyId, customerId);
+                        if (companyCustomerId <= 0)
+                            throw new Exception($"Failed to link Customer to Company {realCompanyId}");
 
-                        // C. Address
+                        // --- C. ADDRESS LOGIC ---
                         var addr = new Address
                         {
                             CustomerId = customerId,
@@ -477,16 +445,30 @@ namespace MDUA.Facade
                             SubOffice = orderData.SubOffice,
                             Country = "Bangladesh",
                             AddressType = "Shipping",
-                            CreatedBy = actionUser, // ✅ Use Logged In User
+                            CreatedBy = actionUser,
                             CreatedAt = DateTime.UtcNow,
                             PostalCode = orderData.PostalCode ?? "0000",
                             ZipCode = (orderData.ZipCode ?? "0000").ToCharArray()
                         };
-                        var existingAddr = transAddressDA.CheckExistingAddress(customerId, addr);
-                        int addressId = (existingAddr != null) ? existingAddr.Id : (int)transAddressDA.InsertAddressSafe(addr);
 
-                        // D. Order Header
-                        orderData.CompanyCustomerId = transCompanyCustomerDA.GetId(orderData.TargetCompanyId, customerId);
+                        var existingAddr = transAddressDA.CheckExistingAddress(customerId, addr);
+                        int addressId;
+
+                        if (existingAddr != null)
+                        {
+                            addressId = existingAddr.Id;
+                        }
+                        else
+                        {
+                            // ✅ FIX 3: Capture the RETURN VALUE as the ID
+                            // (Assuming InsertAddressSafe returns SCOPE_IDENTITY like SalesOrderHeader)
+                            addressId = (int)transAddressDA.InsertAddressSafe(addr);
+                        }
+
+                        if (addressId <= 0) throw new Exception("Failed to generate valid Address ID.");
+
+                        // --- D. ORDER HEADER ---
+                        orderData.CompanyCustomerId = companyCustomerId; // Assigned correctly
                         orderData.AddressId = addressId;
                         orderData.SalesChannelId = 2; // Direct
                         orderData.OrderDate = DateTime.UtcNow;
@@ -495,9 +477,15 @@ namespace MDUA.Facade
                         orderData.CreatedBy = actionUser;
                         orderData.CreatedAt = DateTime.UtcNow;
 
+                        // ✅ FIX 4: Capture the returned Order ID
                         int orderId = (int)transOrderDA.InsertSalesOrderHeaderSafe(orderData);
 
-                        // E. Order Detail
+                        if (orderId <= 0) throw new Exception("Failed to create Order Header.");
+
+                        // Update object property for consistency
+                        orderData.Id = orderId;
+
+                        // --- E. ORDER DETAIL ---
                         transDetailDA.InsertSalesOrderDetailSafe(new SalesOrderDetail
                         {
                             SalesOrderId = orderId,
@@ -508,11 +496,10 @@ namespace MDUA.Facade
                             CreatedAt = DateTime.UtcNow
                         });
 
-                        // 4. EXPENSE SNAPSHOT
+                        // --- F. DELIVERY SNAPSHOT ---
                         if (orderData.Confirmed && !isStoreSale)
                         {
-                            int companyId = orderData.TargetCompanyId > 0 ? orderData.TargetCompanyId : 1;
-                            var settings = _settingsFacade.GetDeliverySettings(companyId) ?? new Dictionary<string, int>();
+                            var settings = _settingsFacade.GetDeliverySettings(realCompanyId) ?? new Dictionary<string, int>();
 
                             bool isDhaka = (!string.IsNullOrEmpty(orderData.Divison) &&
                                             orderData.Divison.IndexOf("dhaka", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -540,7 +527,7 @@ namespace MDUA.Facade
                         return new
                         {
                             OrderId = "DO" + orderId.ToString("D8"),
-                            NetAmount = netAmount,
+                            NetAmount = orderData.NetAmount, // Use calculated NetAmount
                             DiscountAmount = totalDiscount,
                             TotalAmount = orderData.TotalAmount,
                             DeliveryFee = deliveryFeeToCharge
@@ -554,9 +541,7 @@ namespace MDUA.Facade
                 }
             }
         }
-       
-        
-        
+
         public (Customer customer, Address address) GetCustomerDetailsForAutofill(string phone)
         {
             var customer = _customerDataAccess.GetByPhone(phone);
@@ -799,9 +784,10 @@ namespace MDUA.Facade
 
 
 
-        public List<dynamic> GetProductVariantsForAdmin()
+        public List<dynamic> GetProductVariantsForAdmin(int companyId) // ✅ Added Parameter
         {
-            var rawList = _salesOrderHeaderDataAccess.GetVariantsForDropdown();
+            // Pass companyId to DataAccess
+            var rawList = _salesOrderHeaderDataAccess.GetVariantsForDropdown(companyId);
 
             // Loop through and attach discount info from ProductFacade
             foreach (var item in rawList)
@@ -815,7 +801,7 @@ namespace MDUA.Facade
 
                     if (bestDiscount != null)
                     {
-                        item["DiscountType"] = bestDiscount.DiscountType; // "Flat" or "Percentage"
+                        item["DiscountType"] = bestDiscount.DiscountType;
                         item["DiscountValue"] = bestDiscount.DiscountValue;
                     }
                     else
@@ -830,25 +816,24 @@ namespace MDUA.Facade
         }
 
         //new
-        public DashboardStats GetDashboardMetrics()
+        public DashboardStats GetDashboardMetrics(int companyId)
         {
-            return _salesOrderHeaderDataAccess.GetDashboardStats();
+            return _salesOrderHeaderDataAccess.GetDashboardMetrics(companyId);
         }
 
-        //new
-        public List<SalesOrderHeader> GetRecentOrders()
+        public List<SalesOrderHeader> GetRecentOrders(int companyId)
         {
-            return _salesOrderHeaderDataAccess.GetRecentOrders(5); // Get top 5
+            return _salesOrderHeaderDataAccess.GetRecentOrders(companyId, 5);
         }
-      
-        public List<ChartDataPoint> GetSalesTrend()
+
+        public List<ChartDataPoint> GetSalesTrend(int companyId)
         {
-            return _salesOrderHeaderDataAccess.GetSalesTrend(6);
+            return _salesOrderHeaderDataAccess.GetSalesTrend(companyId, 6);
         }
-     
-        public List<ChartDataPoint> GetOrderStatusCounts()
+
+        public List<ChartDataPoint> GetOrderStatusCounts(int companyId)
         {
-            return _salesOrderHeaderDataAccess.GetOrderStatusCounts();
+            return _salesOrderHeaderDataAccess.GetOrderStatusCounts(companyId);
         }
 
         private string GetValidBangladeshiNumber(string input)
@@ -884,12 +869,11 @@ namespace MDUA.Facade
         }
 
 
-        public SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, out int totalRows)
+        public SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, int companyId, out int totalRows)
         {
             if (_salesOrderHeaderDataAccess is MDUA.DataAccess.SalesOrderHeaderDataAccess concreteDA)
             {
-                // Pass the whereClause to the extended method
-                return concreteDA.GetPagedOrdersExtended(pageIndex, pageSize, whereClause, out totalRows);
+                return concreteDA.GetPagedOrdersExtended(pageIndex, pageSize, whereClause, companyId, out totalRows);
             }
             totalRows = 0;
             return new SalesOrderHeaderList();

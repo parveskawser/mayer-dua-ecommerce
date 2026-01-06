@@ -24,8 +24,12 @@ namespace MDUA.Entities.Bases
 			UpdatedBy = 7,
 			UpdatedAt = 8,
 			Remarks = 9,
-			InvoiceNo = 10
-		}
+			InvoiceNo = 10,
+			TotalPaymentDue = 11,
+			TotalPaid = 12,
+			PaymentStatus = 13,
+			VendorId = 14
+        }
 		#endregion
 	
 		#region Constants
@@ -40,10 +44,14 @@ namespace MDUA.Entities.Bases
 		public const string Property_UpdatedAt = "UpdatedAt";		            
 		public const string Property_Remarks = "Remarks";		            
 		public const string Property_InvoiceNo = "InvoiceNo";		            
-		#endregion
-		
-		#region Private Data Types
-		private Int32 _Id;	            
+		public const string Property_TotalPaymentDue = "TotalPaymentDue";		            
+		public const string Property_TotalPaid = "TotalPaid";		            
+		public const string Property_PaymentStatus = "PaymentStatus";	
+		public const string Property_VendorId = "VendorId";
+        #endregion
+
+        #region Private Data Types
+        private Int32 _Id;	            
 		private Int32 _PoRequestedId;	            
 		private Int32 _ReceivedQuantity;	            
 		private Decimal _BuyingPrice;	            
@@ -54,6 +62,10 @@ namespace MDUA.Entities.Bases
 		private Nullable<DateTime> _UpdatedAt;	            
 		private String _Remarks;	            
 		private String _InvoiceNo;	            
+		private Nullable<Decimal> _TotalPaymentDue;	            
+		private Decimal _TotalPaid;	            
+		private String _PaymentStatus;
+		private Int32 _VendorId;
 		#endregion
 		
 		#region Properties		
@@ -222,10 +234,70 @@ namespace MDUA.Entities.Bases
 			}
         }
 
-		#endregion
-		
-		#region Cloning Base Objects
-		public  PoReceivedBase Clone()
+		[DataMember]
+		public Nullable<Decimal> TotalPaymentDue
+		{	
+			get{ return _TotalPaymentDue; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_TotalPaymentDue, value, _TotalPaymentDue);
+				if (PropertyChanging(args))
+				{
+					_TotalPaymentDue = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Decimal TotalPaid
+		{	
+			get{ return _TotalPaid; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_TotalPaid, value, _TotalPaid);
+				if (PropertyChanging(args))
+				{
+					_TotalPaid = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public String PaymentStatus
+		{	
+			get{ return _PaymentStatus; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_PaymentStatus, value, _PaymentStatus);
+				if (PropertyChanging(args))
+				{
+					_PaymentStatus = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+		[DataMember]
+		public Int32 VendorId
+        {
+			get { return _VendorId; }
+			set
+            { 
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_VendorId, value, _VendorId);
+				if (PropertyChanging(args))
+                {
+					_VendorId = value;
+					PropertyChanged(args);
+                }
+            }
+        }
+
+
+        #endregion
+
+        #region Cloning Base Objects
+        public  PoReceivedBase Clone()
 		{
 			PoReceivedBase newObj = new  PoReceivedBase();
 			base.CloneBase(newObj);
@@ -240,8 +312,12 @@ namespace MDUA.Entities.Bases
 			newObj.UpdatedAt = this.UpdatedAt;						
 			newObj.Remarks = this.Remarks;						
 			newObj.InvoiceNo = this.InvoiceNo;						
-			
-			return newObj;
+			newObj.TotalPaymentDue = this.TotalPaymentDue;						
+			newObj.TotalPaid = this.TotalPaid;						
+			newObj.PaymentStatus = this.PaymentStatus;
+		    newObj.VendorId = this.VendorId;
+
+            return newObj;
 		}
 		#endregion
 		
@@ -260,7 +336,11 @@ namespace MDUA.Entities.Bases
 			info.AddValue(PoReceivedBase.Property_UpdatedAt, UpdatedAt);				
 			info.AddValue(PoReceivedBase.Property_Remarks, Remarks);				
 			info.AddValue(PoReceivedBase.Property_InvoiceNo, InvoiceNo);				
-		}
+			info.AddValue(PoReceivedBase.Property_TotalPaymentDue, TotalPaymentDue);				
+			info.AddValue(PoReceivedBase.Property_TotalPaid, TotalPaid);				
+			info.AddValue(PoReceivedBase.Property_PaymentStatus, PaymentStatus);
+		    info.AddValue(PoReceivedBase.Property_VendorId, VendorId);
+        }
 		#endregion
 
 		

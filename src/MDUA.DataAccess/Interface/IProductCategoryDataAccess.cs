@@ -30,6 +30,8 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IProductCategoryDataAccess : ICommonDataAccess<ProductCategory, ProductCategoryList, ProductCategoryBase>
-	{ 
-	}	
+	{
+		List<ProductCategory> GetByCompany(int companyId);
+
+    }	
 }

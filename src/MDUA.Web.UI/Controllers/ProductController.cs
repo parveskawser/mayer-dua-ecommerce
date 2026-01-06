@@ -1,6 +1,7 @@
 ﻿using MDUA.Entities;
 using MDUA.Entities.Bases;
 using MDUA.Facade.Interface;
+using MDUA.Framework.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,13 +14,16 @@ namespace MDUA.Web.UI.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IPaymentMethodFacade _paymentMethodFacade;
         private readonly ISettingsFacade _settingsFacade;
+        private readonly ISubscriptionSystemFacade _subscriptionFacade;
 
-        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade, ISettingsFacade settingsFacade)
+        public ProductController(IProductFacade productFacade, IWebHostEnvironment webHostEnvironment, IPaymentMethodFacade paymentMethodFacade, ISettingsFacade settingsFacade, ISubscriptionSystemFacade subscriptionFacade)
         {
             _productFacade = productFacade;
             _webHostEnvironment = webHostEnvironment;
             _paymentMethodFacade = paymentMethodFacade;
             _settingsFacade = settingsFacade;
+            _subscriptionFacade = subscriptionFacade;
+
         }
 
         #region Products
@@ -55,7 +59,17 @@ namespace MDUA.Web.UI.Controllers
         {
             // Permission Check
             if (!HasPermission("Product.Add")) return HandleAccessDenied();
-
+            // 🛑 MAKE SURE YOU CALL IsProductLocked HERE (Not IsSubscriptionLocked)
+           /* if (_subscriptionFacade.IsProductLocked(CurrentCompanyId, out int current, out int limit))
+            {
+                // Pass "Product" as the feature
+                return RedirectToAction("LimitReached", "Subscription", new
+                {
+                    current = current,
+                    limit = limit,
+                    feature = "Product" // <--- Important
+                });
+            }*/
             var model = _productFacade.GetAddProductData(CurrentUserId);
 
             return View(model);
@@ -96,24 +110,21 @@ namespace MDUA.Web.UI.Controllers
         [HttpGet]
         public IActionResult AllProducts(string search)
         {
-            // 1. Permission Check (Kept from your existing code)
             if (!HasPermission("Product.View")) return HandleAccessDenied();
 
             IEnumerable<Product> products;
-
-            // 2. Pass the search term back to the View (so the input box remembers it)
             ViewData["CurrentSearch"] = search;
 
+            // ✅ FIX: Pass CurrentCompanyId to the methods
             if (!string.IsNullOrWhiteSpace(search))
             {
-                // 3. If a search term exists, use the Search method
-                // Note: Ensure _productFacade.SearchProducts(search) is implemented in your Facade
-                products = _productFacade.SearchProducts(search);
+                // Pass CompanyId here
+                products = _productFacade.SearchProducts(search, CurrentCompanyId);
             }
             else
             {
-                // 4. Default: Show all products (Your existing method)
-                products = _productFacade.GetAllProductsWithCategory();
+                // Pass CompanyId here
+                products = _productFacade.GetAllProductsWithCategory(CurrentCompanyId);
             }
 
             return View(products);
@@ -133,25 +144,26 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpGet]
-        [Route("product/search-ajax")] // This defines the URL as /product/search-ajax
+        [Route("product/search-ajax")]
         public IActionResult SearchProductsAjax(string query)
         {
             IEnumerable<Product> model;
 
             if (string.IsNullOrWhiteSpace(query))
             {
-                // If search is empty, return default top 5
-                model = _productFacade.GetAllProductsWithCategory();
+                // ✅ FIX: Pass CurrentCompanyId to restrict to logged-in user's data
+                model = _productFacade.GetAllProductsWithCategory(CurrentCompanyId);
             }
             else
             {
-                // Perform Search
-                model = _productFacade.SearchProducts(query);
+                // ✅ FIX: Pass CurrentCompanyId to restrict search results
+                model = _productFacade.SearchProducts(query, CurrentCompanyId);
             }
 
             // This returns ONLY the table rows to the JavaScript
             return PartialView("_ProductTableRows", model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("product/toggle-status")]
@@ -186,7 +198,6 @@ namespace MDUA.Web.UI.Controllers
         [Route("product/delete-confirmed")]
         public IActionResult DeleteConfirmed(int productId)
         {
-            // Permission Check
             if (!HasPermission("Product.Delete")) return HandleAccessDenied();
 
             try
@@ -199,11 +210,22 @@ namespace MDUA.Web.UI.Controllers
                 }
                 return Json(new { success = false, message = "Product not found." });
             }
-            catch (Exception ex)
+            catch (WorkflowException wfEx)
             {
-                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+                // BUSINESS RULE FAILURE (Soft Delete Triggered)
+                return Json(new
+                {
+                    success = false,
+                    message = wfEx.Message,
+                    wasDeactivated = true // <--- ADD THIS FLAG
+                });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Something went wrong..." });
             }
         }
+
 
         #endregion
 

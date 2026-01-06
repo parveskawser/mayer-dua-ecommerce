@@ -20,16 +20,15 @@ namespace MDUA.Facade.Interface
         List<object> GetOrderReceiptByOnlineId(string onlineOrderId);
         List<SalesOrderHeader> GetAllOrdersForAdmin();
         string UpdateOrderConfirmation(int orderId, bool isConfirmed, string username);
-        List<dynamic> GetProductVariantsForAdmin();
+        List<dynamic> GetProductVariantsForAdmin(int companyId);
         dynamic PlaceAdminOrder(SalesOrderHeader orderData);
 
-        DashboardStats GetDashboardMetrics();
-        List<SalesOrderHeader> GetRecentOrders();
-        List<ChartDataPoint> GetSalesTrend();
-        List<ChartDataPoint> GetOrderStatusCounts();
+        DashboardStats GetDashboardMetrics(int companyId);
+        List<SalesOrderHeader> GetRecentOrders(int companyId);
+        List<ChartDataPoint> GetSalesTrend(int companyId);
+        List<ChartDataPoint> GetOrderStatusCounts(int companyId);
         void UpdateDeliveryStatus(int deliveryId, string newStatus);
-        SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, out int totalRows);
-        void UpdateOrderStatus(int orderId, string newStatus);
+        SalesOrderHeaderList GetPagedOrdersForAdmin(int pageIndex, int pageSize, string whereClause, int companyId, out int totalRows); void UpdateOrderStatus(int orderId, string newStatus);
         SalesOrderHeader GetOrderById(int id);
         int GetOrderPageNumber(int orderId, int pageSize);
         List<Dictionary<string, object>> GetExportData(ExportRequest request);
