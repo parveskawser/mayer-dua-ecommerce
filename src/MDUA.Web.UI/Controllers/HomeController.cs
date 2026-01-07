@@ -29,7 +29,7 @@ namespace MDUA.Web.UI.Controllers
 
         public IActionResult Index(bool preview = false)
         {
-            int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
+            int companyId = CurrentCompanyId;
             ViewBag.CurrentCompanyId = companyId;
             ViewBag.FaviconUrl = _settingsFacade.GetFavicon(companyId);
             HomepageConfig config = null;

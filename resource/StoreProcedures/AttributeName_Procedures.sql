@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertAttributeName    Script Date: 1/6/2026 11:13:37 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertAttributeName    Script Date: 1/7/2026 11:54:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertAttributeName]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertAttributeName]
 GO
@@ -62,7 +62,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateAttributeName    Script Date: 1/6/2026 11:13:37 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateAttributeName    Script Date: 1/7/2026 11:54:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateAttributeName]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateAttributeName]
 GO
@@ -102,7 +102,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteAttributeName    Script Date: 1/6/2026 11:13:37 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteAttributeName    Script Date: 1/7/2026 11:54:37 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteAttributeName]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteAttributeName]
 GO
@@ -133,7 +133,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAttributeName    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAttributeName    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllAttributeName]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllAttributeName]
 GO
@@ -150,7 +150,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAttributeNameById    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAttributeNameById    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAttributeNameById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAttributeNameById]
 GO
@@ -171,7 +171,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllAttributeNameByCompanyId    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllAttributeNameByCompanyId    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAttributeNameByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAttributeNameByCompanyId]
 GO
@@ -192,7 +192,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAttributeNameMaximumId    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAttributeNameMaximumId    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAttributeNameMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAttributeNameMaximumId]
 GO
@@ -221,7 +221,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAttributeNameRowCount    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAttributeNameRowCount    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAttributeNameRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAttributeNameRowCount]
 GO
@@ -240,7 +240,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedAttributeName    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedAttributeName    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedAttributeName]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedAttributeName]
 GO
@@ -326,7 +326,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAttributeNameByQuery    Script Date: 1/6/2026 11:13:37 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAttributeNameByQuery    Script Date: 1/7/2026 11:54:37 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAttributeNameByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAttributeNameByQuery]
 GO

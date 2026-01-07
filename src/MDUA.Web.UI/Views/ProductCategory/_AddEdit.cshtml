@@ -1,0 +1,40 @@
+@model MDUA.Entities.ProductCategory
+
+<div class="modal-header">
+    <h5 class="modal-title">
+        @(Model.Id > 0 ? "Edit Category" : "Add New Category")
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="categoryForm">
+    @Html.AntiForgeryToken()
+
+    <div class="modal-body">
+        @Html.HiddenFor(m => m.Id)
+        @Html.HiddenFor(m => m.CompanyId) 
+        @Html.HiddenFor(m => m.IsActive) 
+
+        @if(Model.Id > 0 && (Model.CompanyId == null || Model.CompanyId == 0))
+        {
+            <div class="alert alert-warning">
+                <small>
+                    <i class="fas fa-info-circle"></i> 
+                    You are editing a <strong>Global System Category</strong>. 
+                    Saving changes will create a custom copy for your company.
+                </small>
+            </div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label">Category Name <span class="text-danger">*</span></label>
+            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", required = "required", placeholder = "Enter category name..." })
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveCategory()">Save Changes</button>
+    </div>
+</form>

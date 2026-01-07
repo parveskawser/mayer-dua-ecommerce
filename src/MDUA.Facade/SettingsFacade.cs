@@ -92,5 +92,15 @@ namespace MDUA.Facade
             // Return default if not found
             return !string.IsNullOrEmpty(url) ? url : "/favicon.ico";
         }
+
+
+
+
+        //
+        public void SaveGlobalSetting(int companyId, string key, string value)
+        {
+            _globalSettingDataAccess.SaveSetting(companyId, key, value);
+        }
+
     }
 }

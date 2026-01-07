@@ -5,6 +5,6 @@ namespace MDUA.Facade.Interface
 {
     public interface IAiChatService
     {
-        Task<string> GetResponseAsync(string userMessage, List<string> history, int? contextProductId = null);
+        Task<string> GetResponseAsync(string userMessage, List<string> history,  int companyId, int? contextProductId = null);
     }
 }

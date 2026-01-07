@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertEmailTemplate    Script Date: 1/6/2026 11:13:39 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertEmailTemplate    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertEmailTemplate]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertEmailTemplate]
 GO
@@ -92,7 +92,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateEmailTemplate    Script Date: 1/6/2026 11:13:39 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateEmailTemplate    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateEmailTemplate]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateEmailTemplate]
 GO
@@ -152,7 +152,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteEmailTemplate    Script Date: 1/6/2026 11:13:39 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteEmailTemplate    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteEmailTemplate]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteEmailTemplate]
 GO
@@ -183,7 +183,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllEmailTemplate    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllEmailTemplate    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllEmailTemplate]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllEmailTemplate]
 GO
@@ -200,7 +200,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailTemplateById    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailTemplateById    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailTemplateById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailTemplateById]
 GO
@@ -221,7 +221,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailTemplateMaximumId    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailTemplateMaximumId    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailTemplateMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailTemplateMaximumId]
 GO
@@ -250,7 +250,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailTemplateRowCount    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailTemplateRowCount    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailTemplateRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailTemplateRowCount]
 GO
@@ -269,7 +269,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedEmailTemplate    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedEmailTemplate    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedEmailTemplate]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedEmailTemplate]
 GO
@@ -375,7 +375,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailTemplateByQuery    Script Date: 1/6/2026 11:13:39 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailTemplateByQuery    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailTemplateByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailTemplateByQuery]
 GO

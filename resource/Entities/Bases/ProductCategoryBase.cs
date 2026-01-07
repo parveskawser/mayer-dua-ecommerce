@@ -16,7 +16,8 @@ namespace MDUA.Entities.Bases
 		{
 			Id = 0,
 			Name = 1,
-			CompanyId = 2
+			CompanyId = 2,
+			IsActive = 3
 		}
 		#endregion
 	
@@ -24,12 +25,14 @@ namespace MDUA.Entities.Bases
 		public const string Property_Id = "Id";		            
 		public const string Property_Name = "Name";		            
 		public const string Property_CompanyId = "CompanyId";		            
+		public const string Property_IsActive = "IsActive";		            
 		#endregion
 		
 		#region Private Data Types
 		private Int32 _Id;	            
 		private String _Name;	            
 		private Nullable<Int32> _CompanyId;	            
+		private Boolean _IsActive;	            
 		#endregion
 		
 		#region Properties		
@@ -78,6 +81,21 @@ namespace MDUA.Entities.Bases
 			}
         }
 
+		[DataMember]
+		public Boolean IsActive
+		{	
+			get{ return _IsActive; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_IsActive, value, _IsActive);
+				if (PropertyChanging(args))
+				{
+					_IsActive = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
 		#endregion
 		
 		#region Cloning Base Objects
@@ -88,6 +106,7 @@ namespace MDUA.Entities.Bases
 			newObj.Id = this.Id;						
 			newObj.Name = this.Name;						
 			newObj.CompanyId = this.CompanyId;						
+			newObj.IsActive = this.IsActive;						
 			
 			return newObj;
 		}
@@ -100,6 +119,7 @@ namespace MDUA.Entities.Bases
 			info.AddValue(ProductCategoryBase.Property_Id, Id);				
 			info.AddValue(ProductCategoryBase.Property_Name, Name);				
 			info.AddValue(ProductCategoryBase.Property_CompanyId, CompanyId);				
+			info.AddValue(ProductCategoryBase.Property_IsActive, IsActive);				
 		}
 		#endregion
 

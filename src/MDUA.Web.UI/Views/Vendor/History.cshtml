@@ -7,11 +7,15 @@
     // Columns Definition for Modal
     var historyColumns = new Dictionary<string, string> {
         {"RequestDate", "Date"},
+        {"AgreementNumber", "Agreement #"}, // ✅ Added
         {"ProductName", "Product"},
-        {"IsBulkOrder", "Type"},
+        {"Type", "Type"},                   // ✅ Changed from 'IsBulkOrder'
         {"Status", "Status"},
-        {"RequestedQty", "Requested Qty"},
-        {"ReceivedQty", "Received Qty"}
+        {"RequestedQty", "Req Qty"},
+        {"ReceivedQty", "Rec Qty"},
+        {"TotalAmount", "Total"},
+        {"PaidAmount", "Paid"},
+        {"DueAmount", "Due"}
     };
 }
 
@@ -19,7 +23,7 @@
     <style>
         /* 1. Prevent Horizontal Scroll & Truncate Text */
         .products-table {
-            table-layout: fixed; /* Crucial for text-overflow to work */
+            table-layout: fixed;
             width: 100%;
         }
 
@@ -27,7 +31,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 0; /* Triggers the truncation logic in a flex/table context */
         }
 
         /* 2. Pagination & UI Styles */
@@ -77,6 +80,43 @@
             appearance: auto !important;
             -webkit-appearance: checkbox !important;
         }
+
+        /* 1. Make the wrapper scrollable */
+        .table-wrapper {
+            overflow-y: auto; /* Enables vertical scrolling */
+            overflow-x: auto; /* Enables horizontal scrolling if needed */
+            min-height: 0; /* Crucial for Flexbox to allow shrinking */
+            /* Optional: Custom Scrollbar styling */
+            scrollbar-width: thin;
+        }
+
+        /* 2. Sticky Header (Keeps headers visible while scrolling) */
+        .products-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background-color: #f8f9fa; /* Must match your bg-light color */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+        }
+
+        /* Child Row Styling */
+        .child-row {
+            background-color: #f9fbfd;
+        }
+
+        .child-table-wrapper {
+            padding: 10px 20px 10px 60px;
+            border-left: 4px solid #0d6efd;
+        }
+
+        .toggle-btn {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .toggle-btn.expanded {
+                transform: rotate(90deg);
+            }
     </style>
 }
 
@@ -178,18 +218,19 @@
             <table class="table table-hover mb-0 products-table align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 60px;" class="text-center ps-4">
+                        <th style="width: 60px;"></th>
+                        <th style="width: 60px;" class="text-center">
                             <input type="checkbox" class="form-check-input" id="checkAllRows">
                         </th>
-                        <th style="width: 140px;">Date</th>
-
-                        <th style="width: auto;">Product</th>
-
-                        <th style="width: 120px;" class="text-center">Type</th>
-                        <th style="width: 120px;" class="text-center">Status</th>
-
-                        <th style="width: 100px;" class="text-center">Requested</th>
-                        <th style="width: 100px;" class="text-center pe-4">Received</th>
+                        <th style="width: 110px;">Date</th>
+                        <th style="width: 120px;">Agreement</th>
+                        <th style="width: auto;">Title</th>
+                        <th style="width: 110px;" class="text-center">Status</th>
+                        <th style="width: 80px;" class="text-center">Req.</th>
+                        <th style="width: 80px;" class="text-center">Rec.</th>
+                        <th style="width: 110px;" class="text-end">Total</th>
+                        <th style="width: 110px;" class="text-end text-success">Paid</th>
+                        <th style="width: 110px;" class="text-end text-danger pe-4">Due</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody"></tbody>
@@ -317,40 +358,106 @@
         function renderTable(data) {
             let tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = '';
+
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center py-5 text-muted">No records found.</td></tr>`;
                 return;
             }
+
+            const fmt = (n) => n.toLocaleString(undefined, {minimumFractionDigits: 2});
+
             data.forEach(item => {
-                let statusBadge = item.Status === 'Pending' ? '<span class="badge bg-warning text-dark">Pending</span>' :
-                    item.Status === 'Received' ? '<span class="badge bg-success">Received</span>' :
-                        `<span class="badge bg-secondary">${item.Status}</span>`;
-                let typeBadge = item.IsBulkOrder ? '<span class="badge bg-info text-dark">Bulk</span>'
-                    : '<span class="badge bg-light text-muted border">Standard</span>';
-                let qtyColor = item.ReceivedQty < item.RequestedQty ? 'text-danger' : 'text-success';
+                let isBulk = item.RowType === 'Bulk';
+                let uniqueId = item.RowType + '_' + item.Id; // Create unique ID for collapse
 
+                // Colors & Badges
+                let statusClass = item.Status === 'Active' || item.Status === 'Received' ? 'bg-success' : 'bg-warning text-dark';
+                let statusBadge = `<span class="badge ${statusClass}">${item.Status}</span>`;
+
+                // Agreement Column (Show Badge for Bulk, '-' for Standard)
+                let agreementHtml = isBulk
+                    ? `<span class="badge bg-primary text-white"><i class="fas fa-file-contract me-1"></i> ${item.AgreementNumber}</span>`
+                    : '<span class="text-muted small">-</span>';
+
+                // Expand Button (Only for Bulk)
+                let expandBtn = isBulk
+                    ? `<i class="fas fa-chevron-right text-primary toggle-btn" onclick="toggleChild('${uniqueId}', this)"></i>`
+                    : '';
+
+                // --- 1. Render PARENT Row ---
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td class="text-center ps-4">
-                            <input type="checkbox" class="form-check-input row-checkbox" value="${item.PoId}">
+                    <tr class="${isBulk ? 'fw-bold bg-light' : ''}">
+                        <td class="text-center">${expandBtn}</td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input row-checkbox" value="${item.Id}">
                         </td>
-                        <td>${item.RequestDate}</td>
-
-                        <td class="fw-bold text-dark text-truncate-cell" title="${item.ProductName}">
-                            ${item.ProductName}
+                        <td class="small text-dark">${item.Date}</td>
+                        <td>${agreementHtml}</td>
+                        <td title="${item.Title}">
+                            <span class="text-truncate-cell text-dark">${item.Title}</span>
                         </td>
-
-                        <td class="text-center">${typeBadge}</td>
                         <td class="text-center">${statusBadge}</td>
-                        <td class="text-center fw-bold">${item.RequestedQty}</td>
-                        <td class="text-center pe-4 fw-bold ${qtyColor}">${item.ReceivedQty}</td>
+                        <td class="text-center text-secondary">${item.ReqQty}</td>
+                        <td class="text-center text-dark">${item.RecQty}</td>
+                        <td class="text-end font-monospace small">${fmt(item.TotalAmount)}</td>
+                        <td class="text-end font-monospace text-success">${fmt(item.PaidAmount)}</td>
+                        <td class="text-end font-monospace text-danger pe-4">${item.DueAmount > 0 ? fmt(item.DueAmount) : '-'}</td>
                     </tr>
                 `);
+
+                // --- 2. Render CHILD Row (Hidden by default) ---
+                if (isBulk && item.Children) {
+                    let children = JSON.parse(item.Children); // Parse the JSON string from SQL
+                    let childRows = children.map(c => `
+                        <tr>
+                            <td class="small text-muted">${new Date(c.RequestDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                            <td class="small text-dark">${c.ProductName}</td>
+                            <td class="text-center"><span class="badge bg-secondary" style="font-size:0.7em">${c.Status}</span></td>
+                            <td class="text-center small">${c.ReqQty}</td>
+                            <td class="text-center small fw-bold">${c.RecQty}</td>
+                            <td class="text-end small font-monospace">${fmt(c.TotalAmt)}</td>
+                            <td class="text-end small font-monospace text-success">${fmt(c.PaidAmt)}</td>
+                        </tr>
+                    `).join('');
+
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr id="child_${uniqueId}" class="child-row" style="display:none;">
+                            <td colspan="11" class="p-0 border-0">
+                                <div class="child-table-wrapper">
+                                    <small class="text-uppercase fw-bold text-muted mb-2 d-block" style="font-size:0.7rem;">
+                                        Included Orders (${children.length})
+                                    </small>
+                                    <table class="table table-sm table-borderless mb-2 bg-white rounded shadow-sm">
+                                        <thead class="text-muted border-bottom" style="font-size:0.75rem;">
+                                            <tr>
+                                                <th>Date</th><th>Product</th><th class="text-center">Status</th>
+                                                <th class="text-center">Req</th><th class="text-center">Rec</th>
+                                                <th class="text-end">Total</th><th class="text-end">Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>${childRows}</tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    `);
+                }
             });
         }
 
-        // ... (Keep existing Pagination, Checkbox, Export functions as is) ...
-        function rebindCheckboxes() {
+        // Function to Toggle Visibility
+        function toggleChild(id, btn) {
+            let row = document.getElementById('child_' + id);
+            if (row.style.display === 'none') {
+                row.style.display = 'table-row';
+                btn.classList.add('expanded');
+                btn.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+                row.style.display = 'none';
+                btn.classList.remove('expanded');
+                btn.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
+        }        function rebindCheckboxes() {
             const checkAll = document.getElementById('checkAllRows');
             if (checkAll) {
                 const newCheckAll = checkAll.cloneNode(true);

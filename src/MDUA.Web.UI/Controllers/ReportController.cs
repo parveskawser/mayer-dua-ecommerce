@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace MDUA.Web.UI.Controllers
 {
@@ -263,20 +265,27 @@ namespace MDUA.Web.UI.Controllers
             // 4. Apply "Selected Rows" Scope
 
             if (scope == "selected" && request.selectedIds != null)
-
             {
-
                 var selectedIds = ((JArray)request.selectedIds).ToObject<List<int>>();
 
                 if (selectedIds.Any())
-
                 {
+                    dataList = dataList.Where(x =>
+                    {
+                        var dict = (IDictionary<string, object>)x;
 
-                    dataList = dataList.Where(x => selectedIds.Contains((int)((IDictionary<string, object>)x)["PoId"])).ToList();
+                        // Prefer Id, fallback to PoId
+                        if (dict.ContainsKey("Id") && int.TryParse(dict["Id"]?.ToString(), out int id))
+                            return selectedIds.Contains(id);
 
+                        if (dict.ContainsKey("PoId") && int.TryParse(dict["PoId"]?.ToString(), out int poId))
+                            return selectedIds.Contains(poId);
+
+                        return false;
+                    }).ToList();
                 }
-
             }
+
 
             // ✅ FIX: Convert List<dynamic> to List<Dictionary<string, object>>
 
@@ -284,15 +293,17 @@ namespace MDUA.Web.UI.Controllers
 
             // need explicit casting/conversion to match the signature.
 
-            var exportData = dataList
-
+            // Convert List<dynamic> to List<Dictionary<string, object>>
+            var exportParents = dataList
                 .Select(item => new Dictionary<string, object>((IDictionary<string, object>)item))
-
                 .ToList();
 
-            // 5. Generate File using Export Service
+            // ✅ NEW: flatten children into extra export rows
+            var exportData = FlattenVendorHistoryForExport(exportParents, columns);
 
+            // Generate file
             byte[] fileBytes = _exportService.GenerateFile(exportData, format, columns);
+
 
             // 6. Return File
 
@@ -320,5 +331,98 @@ namespace MDUA.Web.UI.Controllers
 
         }
 
+
+        private List<Dictionary<string, object>> FlattenVendorHistoryForExport(
+      List<Dictionary<string, object>> parents,
+      List<string> columns
+  )
+        {
+            var flattened = new List<Dictionary<string, object>>();
+
+            foreach (var parent in parents)
+            {
+                // 1. Add Parent Row
+                flattened.Add(parent);
+
+                // 2. Check for Children
+                if (!parent.TryGetValue("Children", out var childrenObj) || childrenObj == null)
+                    continue;
+
+                var childrenJson = childrenObj.ToString();
+                if (string.IsNullOrWhiteSpace(childrenJson))
+                    continue;
+
+                try
+                {
+                    // Deserialize Children
+                    var children = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(childrenJson);
+
+                    if (children != null && children.Count > 0)
+                    {
+                        foreach (var child in children)
+                        {
+                            // 3. Create Child Row & MANUALLY MAP KEYS
+                            // This fixes the "Data Incomplete" issue because SQL keys (ReqQty) differ from View keys (RequestedQty)
+                            var childRow = new Dictionary<string, object>();
+
+                            // --- A. DATE & TITLES ---
+                            if (child.TryGetValue("RequestDate", out var rDate))
+                                childRow["RequestDate"] = Convert.ToDateTime(rDate).ToString("dd MMM yyyy");
+                            else
+                                childRow["RequestDate"] = "";
+
+                            // ✅ PDF SAFE INDENTATION
+                            // We use ">>" instead of "↳" to prevent font issues in PDF files
+                            if (child.TryGetValue("ProductName", out var pName))
+                                childRow["ProductName"] = "    >> " + pName;
+                            else
+                                childRow["ProductName"] = "";
+
+                            childRow["AgreementNumber"] = ""; // Empty for child
+                            childRow["Type"] = "Order";       // Hardcode type
+                            childRow["Status"] = child.ContainsKey("Status") ? child["Status"] : "";
+
+                            // --- B. QUANTITIES (Mapping SQL Alias to View Column) ---
+                            childRow["RequestedQty"] = child.ContainsKey("ReqQty") ? child["ReqQty"] : 0;
+                            childRow["ReceivedQty"] = child.ContainsKey("RecQty") ? child["RecQty"] : 0;
+
+                            // --- C. FINANCIALS ---
+                            decimal total = 0;
+                            decimal paid = 0;
+
+                            if (child.ContainsKey("TotalAmt") && child["TotalAmt"] != null)
+                                total = Convert.ToDecimal(child["TotalAmt"]);
+
+                            childRow["TotalAmount"] = total;
+
+                            if (child.ContainsKey("PaidAmt") && child["PaidAmt"] != null)
+                                paid = Convert.ToDecimal(child["PaidAmt"]);
+
+                            childRow["PaidAmount"] = paid;
+
+                            childRow["DueAmount"] = total - paid;
+
+                            // --- D. FILL MISSING COLUMNS ---
+                            // Ensures table alignment in PDF/Excel
+                            foreach (var col in columns)
+                            {
+                                if (!childRow.ContainsKey(col))
+                                {
+                                    childRow[col] = "";
+                                }
+                            }
+
+                            flattened.Add(childRow);
+                        }
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return flattened;
+        }
     }
 }

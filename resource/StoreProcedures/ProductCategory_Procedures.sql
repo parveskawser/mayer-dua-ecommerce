@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductCategory    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductCategory    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductCategory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductCategory]
 GO
@@ -13,18 +13,21 @@ CREATE PROCEDURE InsertProductCategory
 (
 	@Id int OUTPUT,
 	@Name nvarchar(50),
-	@CompanyId int
+	@CompanyId int,
+	@IsActive bit
 )
 AS
     INSERT INTO [dbo].[ProductCategory] 
 	(
 	[Name],
-	[CompanyId]
+	[CompanyId],
+	[IsActive]
     ) 
 	VALUES 
 	(
 	@Name,
-	@CompanyId
+	@CompanyId,
+	@IsActive
     )
 	DECLARE @Err int
 	DECLARE @Result int
@@ -53,7 +56,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductCategory    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductCategory    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductCategory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductCategory]
 GO
@@ -65,13 +68,15 @@ CREATE PROCEDURE UpdateProductCategory
 (
 	@Id int,
 	@Name nvarchar(50),
-	@CompanyId int
+	@CompanyId int,
+	@IsActive bit
 )
 AS
     UPDATE [dbo].[ProductCategory] 
 	SET
 	[Name] = @Name,
-	[CompanyId] = @CompanyId
+	[CompanyId] = @CompanyId,
+	[IsActive] = @IsActive
 	WHERE ( Id = @Id )
 
 	DECLARE @Err int
@@ -87,7 +92,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductCategory    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductCategory    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductCategory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductCategory]
 GO
@@ -118,7 +123,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductCategory    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductCategory    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductCategory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductCategory]
 GO
@@ -135,7 +140,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductCategoryById    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductCategoryById    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductCategoryById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductCategoryById]
 GO
@@ -156,7 +161,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductCategoryByCompanyId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductCategoryByCompanyId    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductCategoryByCompanyId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductCategoryByCompanyId]
 GO
@@ -177,7 +182,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductCategoryMaximumId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductCategoryMaximumId    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductCategoryMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductCategoryMaximumId]
 GO
@@ -206,7 +211,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductCategoryRowCount    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductCategoryRowCount    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductCategoryRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductCategoryRowCount]
 GO
@@ -225,7 +230,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductCategory    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductCategory    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductCategory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductCategory]
 GO
@@ -278,7 +283,8 @@ SET @SQL1 = 'WITH ProductCategoryEntries AS (
 			SELECT ROW_NUMBER() OVER ('+ @SortColumn +')AS Row,
 	[Id],
 	[Name],
-	[CompanyId]
+	[CompanyId],
+	[IsActive]
 				FROM 
 				[dbo].[ProductCategory]
 					'+ @WhereClause +'
@@ -286,7 +292,8 @@ SET @SQL1 = 'WITH ProductCategoryEntries AS (
 				SELECT 
 	[Id],
 	[Name],
-	[CompanyId]
+	[CompanyId],
+	[IsActive]
 				FROM 
 					ProductCategoryEntries
 				WHERE 
@@ -305,7 +312,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductCategoryByQuery    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductCategoryByQuery    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductCategoryByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductCategoryByQuery]
 GO

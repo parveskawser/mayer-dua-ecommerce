@@ -32,6 +32,13 @@ namespace MDUA.DataAccess.Interface
 	public interface IProductCategoryDataAccess : ICommonDataAccess<ProductCategory, ProductCategoryList, ProductCategoryBase>
 	{
 		List<ProductCategory> GetByCompany(int companyId);
+        List<ProductCategory> GetAvailableCategories(int companyId);
 
+        ProductCategory GetPrivateCategoryByName(string name, int companyId);
+
+        int CloneGlobalToPrivate(int globalCategoryId, int targetCompanyId);
+        public void UpdateStatus(int id, bool isActive);
+
+        List<ProductCategory> GetAllCategoriesForManagement(int companyId);
     }	
 }

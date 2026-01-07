@@ -27,6 +27,32 @@ namespace MDUA.Entities
 
             // For the dropdown list in the UI
             public List<SelectListItem> VendorList { get; set; } = new List<SelectListItem>();
-        }
+
+        // --- NEW AGGREGATE PROPERTIES ---
+        // These are not in the database table 'Vendor', but populated via SQL query
+        [DataMember]
+        public int TotalRequestedCount { get; set; }
+
+        [DataMember]
+        public int TotalRequestedQty { get; set; }
+
+        [DataMember]
+        public int TotalReceivedCount { get; set; }
+
+        [DataMember]
+        public int TotalReceivedQty { get; set; }
+
+        [DataMember]
+        public int TotalUnpaidCount { get; set; }
+
+        [DataMember]
+        public decimal TotalAmount { get; set; }
+
+        [DataMember]
+        public decimal TotalPaidAmount { get; set; }
+
+        [DataMember]
+        public decimal TotalDueAmount { get; set; }
+    }
     }
 

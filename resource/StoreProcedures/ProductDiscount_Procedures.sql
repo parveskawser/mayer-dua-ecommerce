@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertProductDiscount    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertProductDiscount    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertProductDiscount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertProductDiscount]
 GO
@@ -80,7 +80,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateProductDiscount    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateProductDiscount    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateProductDiscount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateProductDiscount]
 GO
@@ -132,7 +132,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteProductDiscount    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteProductDiscount    Script Date: 1/7/2026 11:54:41 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteProductDiscount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteProductDiscount]
 GO
@@ -163,7 +163,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductDiscount    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductDiscount    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllProductDiscount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllProductDiscount]
 GO
@@ -180,7 +180,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductDiscountById    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductDiscountById    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductDiscountById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductDiscountById]
 GO
@@ -201,7 +201,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllProductDiscountByProductId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllProductDiscountByProductId    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductDiscountByProductId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductDiscountByProductId]
 GO
@@ -222,7 +222,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductDiscountMaximumId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductDiscountMaximumId    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductDiscountMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductDiscountMaximumId]
 GO
@@ -251,7 +251,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductDiscountRowCount    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductDiscountRowCount    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductDiscountRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductDiscountRowCount]
 GO
@@ -270,7 +270,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedProductDiscount    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedProductDiscount    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedProductDiscount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedProductDiscount]
 GO
@@ -368,7 +368,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetProductDiscountByQuery    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetProductDiscountByQuery    Script Date: 1/7/2026 11:54:41 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetProductDiscountByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetProductDiscountByQuery]
 GO

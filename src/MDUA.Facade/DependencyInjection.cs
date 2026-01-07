@@ -81,6 +81,11 @@ namespace MDUA.Facade
             services.AddScoped<ICompanySubscriptionDataAccess, CompanySubscriptionDataAccess>();
             services.AddScoped<ISubscriptionUsageDataAccess, SubscriptionUsageDataAccess>();
             services.AddScoped<ISubscriptionPlanDataAccess, SubscriptionPlanDataAccess>();
+            services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
+            services.AddScoped<IAttributeValueDataAccess, AttributeValueDataAccess>();
+            
+            
+            
             // Facade Layer
             services.AddServiceFacade();
 
@@ -93,6 +98,7 @@ namespace MDUA.Facade
             services.AddHttpClient();
             services.AddScoped<IUserLoginFacade, UserLoginFacade>();
             services.AddScoped<IProductFacade, ProductFacade>();
+            services.AddScoped<IProductCategoryFacade, ProductCategoryFacade>();
             services.AddScoped<IOrderFacade, OrderFacade>();
             services.AddScoped<ICustomerFacade, CustomerFacade>();
             services.AddScoped<ICompanyFacade, CompanyFacade>();
@@ -110,9 +116,8 @@ namespace MDUA.Facade
             services.AddScoped<IDeliveryStatusLogFacade, DeliveryStatusLogFacade>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISubscriptionSystemFacade, SubscriptionSystemFacade>();
-
-
-
+            services.AddScoped<IAttributeFacade, AttributeFacade>();
+            
         }
     }
 }

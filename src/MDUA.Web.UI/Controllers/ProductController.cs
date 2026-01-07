@@ -60,17 +60,21 @@ namespace MDUA.Web.UI.Controllers
             // Permission Check
             if (!HasPermission("Product.Add")) return HandleAccessDenied();
             // 🛑 MAKE SURE YOU CALL IsProductLocked HERE (Not IsSubscriptionLocked)
-           /* if (_subscriptionFacade.IsProductLocked(CurrentCompanyId, out int current, out int limit))
-            {
-                // Pass "Product" as the feature
-                return RedirectToAction("LimitReached", "Subscription", new
-                {
-                    current = current,
-                    limit = limit,
-                    feature = "Product" // <--- Important
-                });
-            }*/
-            var model = _productFacade.GetAddProductData(CurrentUserId);
+            /* if (_subscriptionFacade.IsProductLocked(CurrentCompanyId, out int current, out int limit))
+             {
+                 // Pass "Product" as the feature
+                 return RedirectToAction("LimitReached", "Subscription", new
+                 {
+                     current = current,
+                     limit = limit,
+                     feature = "Product" // <--- Important
+                 });
+             }*/
+
+            // 2. Get Company Context
+            int companyId = CurrentCompanyId;
+            if (companyId <= 0) return RedirectToAction("Login", "Account");
+            var model = _productFacade.GetAddProductData(companyId);
 
             return View(model);
         }
@@ -607,8 +611,8 @@ namespace MDUA.Web.UI.Controllers
             // Return as JSON. 
             // We project to an anonymous object to ensure the JS receives 'id' and 'value'
             // exactly as the script expects (lowercase).
-            return Json(values.Select(v => new { 
-                id = v.Id, 
+            return Json(values.Select(v => new {
+                id = v.Id,
                 value = v.Value // Or v.Name, depending on your Entity
             }));
         }

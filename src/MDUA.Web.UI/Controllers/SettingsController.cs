@@ -1,8 +1,9 @@
 ﻿using Fido2NetLib;
 using Fido2NetLib.Objects;
-using MDUA.Entities; 
+using MDUA.Entities;
 using MDUA.Facade;
 using MDUA.Facade.Interface;
+using MDUA.Web.UI.Services.Interface;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +17,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration; // ADD THIS
+using System.Net.Http; // ADD THIS
+using System.Text.Json; // ADD THIS
+using System.Threading.Tasks; // ADD THIS
 namespace MDUA.Web.UI.Controllers
 {
     [Authorize]
@@ -27,15 +32,18 @@ namespace MDUA.Web.UI.Controllers
         private readonly IFido2 _fido2;
         private readonly ICompanyFacade _companyFacade;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly IProductFacade _productFacade; 
-
+        private readonly IProductFacade _productFacade;
+        private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
         public SettingsController(
             ISettingsFacade settingsFacade,
             IPaymentFacade paymentFacade,
             IUserLoginFacade userLoginFacade,
             IFido2 fido2,
             ICompanyFacade companyFacade, IWebHostEnvironment webHostEnvironment,
-            IProductFacade productFacade 
+            IProductFacade productFacade,
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory
 
             )
         {
@@ -45,7 +53,10 @@ namespace MDUA.Web.UI.Controllers
             _fido2 = fido2;
             _companyFacade = companyFacade;
             _webHostEnvironment = webHostEnvironment;
-            _productFacade = productFacade; 
+            _productFacade = productFacade;
+            _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
+
         }
 
         [HttpGet]
@@ -222,7 +233,7 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpPost]
-[Route("Settings/MakeCredentialOptions")]
+        [Route("Settings/MakeCredentialOptions")]
         [ValidateAntiForgeryToken]
         public IActionResult MakeCredentialOptions()
         {
@@ -336,7 +347,7 @@ namespace MDUA.Web.UI.Controllers
         {
             public AuthenticatorAttestationRawResponse AttestationResponse { get; set; }
             public string FriendlyName { get; set; }
-            public string AuthenticatorAttachment { get; set; } 
+            public string AuthenticatorAttachment { get; set; }
 
         }
         private string ParseDeviceFromUserAgent(string ua)
@@ -348,7 +359,7 @@ namespace MDUA.Web.UI.Controllers
             if (ua.Contains("Linux")) return "Linux Device";
             return "Unknown Device";
         }
-       
+
 
         // ✅ 1. GET: Show Company Profile (Updated to fetch Favicon)
 
@@ -479,27 +490,22 @@ namespace MDUA.Web.UI.Controllers
         }
 
         [HttpGet]
-        [HttpGet]
         public IActionResult Homepage()
         {
             // 1. Determine Company ID
-            int companyId = (User.Identity.IsAuthenticated && CurrentCompanyId > 0) ? CurrentCompanyId : 1;
-
-            // 2. Get Homepage Config (Existing)
+            int companyId = CurrentCompanyId;
+            // 2. Get Homepage Config
             var config = _companyFacade.GetHomepageConfig(companyId);
 
-            // 3. Get Categories (Existing)
+            // 3. Get Categories
             var productData = _productFacade.GetAddProductData(0);
             ViewBag.Categories = productData.Categories
                 .Select(c => new { Id = c.Id, Name = c.Name })
                 .ToList();
 
-            // =========================================================
-            // ✅ FIX: Load Company Info with FALLBACK Defaults
-            // =========================================================
+            // 4. Load Company Info with FALLBACK Defaults
             var company = _companyFacade.Get(companyId);
 
-            // If the database fields are null, show these defaults in the input boxes
             if (company != null)
             {
                 if (string.IsNullOrEmpty(company.CompanyName)) company.CompanyName = "MDUA Store";
@@ -509,12 +515,9 @@ namespace MDUA.Web.UI.Controllers
             }
             ViewBag.CompanyInfo = company;
 
-            // =========================================================
-            // ✅ FIX: Load Footer Description with FALLBACK Default
-            // =========================================================
+            // 5. Load Footer Description
             string footerDesc = _settingsFacade.GetGlobalSetting(companyId, "Footer_Description");
 
-            // If setting doesn't exist yet, show the default text
             if (string.IsNullOrEmpty(footerDesc))
             {
                 footerDesc = "Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.";
@@ -528,7 +531,6 @@ namespace MDUA.Web.UI.Controllers
         {
             try
             {
-                // ✅ Fix: Use CurrentCompanyId here too
                 int companyId = CurrentCompanyId;
                 _companyFacade.SaveHomepageConfig(companyId, config);
                 return Json(new { success = true });
@@ -607,6 +609,109 @@ namespace MDUA.Web.UI.Controllers
             {
                 return Json(new { success = false, message = "Server Error: " + ex.Message });
             }
+        }
+
+        //
+
+        //
+
+        [HttpGet]
+        [Route("settings/analytics")]
+        public IActionResult Analytics()
+        {
+            // Fetch existing settings
+            ViewBag.GoogleAnalyticsId = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "GoogleAnalyticsId");
+            ViewBag.FacebookPixelId = _settingsFacade.GetGlobalSetting(CurrentCompanyId, "FacebookPixelId");
+
+            return View();
+        }
+
+        [HttpPost]
+        [Route("settings/save-analytics")]
+        [ValidateAntiForgeryToken]
+        public IActionResult SaveAnalytics(string googleAnalyticsId, string facebookPixelId)
+        {
+            try
+            {
+                // Save Google Analytics ID
+                _settingsFacade.SaveGlobalSetting(CurrentCompanyId, "GoogleAnalyticsId", googleAnalyticsId?.Trim());
+
+                // Save Facebook Pixel ID
+                _settingsFacade.SaveGlobalSetting(CurrentCompanyId, "FacebookPixelId", facebookPixelId?.Trim());
+
+                return Json(new { success = true, message = "Analytics settings updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
+        [Route("settings/verify-recaptcha")]
+        [AllowAnonymous] // Important: Allow this even if user is not logged in yet (for Login page)
+        public async Task<IActionResult> VerifyRecaptcha([FromBody] RecaptchaRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Token))
+            {
+                return Json(new { success = false, message = "Token is missing" });
+            }
+
+            try
+            {
+                // 1. Get Secret Key
+                string secretKey = _configuration["RecaptchaSettings:SecretKey"];
+                if (string.IsNullOrEmpty(secretKey))
+                {
+                    // Fallback for debugging if config is missing
+                    return Json(new { success = false, message = "Server config missing" });
+                }
+
+                // 2. Prepare Request to Google
+                var client = _httpClientFactory.CreateClient();
+                var googleUrl = $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={request.Token}";
+
+                // 3. Send Request
+                var response = await client.PostAsync(googleUrl, null);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Json(new { success = false, message = "Google service error" });
+                }
+
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonString);
+
+                // 4. Evaluate Score
+                // Score 0.0 (Bot) -> 1.0 (Human)
+                if (result.Success && result.Score >= 0.5)
+                {
+                    return Json(new { success = true, score = result.Score });
+                }
+                else
+                {
+                    return Json(new { success = false, score = result.Score, message = "Bot detected" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Helper Classes
+        public class RecaptchaRequest
+        {
+            public string Token { get; set; }
+        }
+
+        public class RecaptchaResponse
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("success")]
+            public bool Success { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("score")]
+            public double Score { get; set; }
         }
 
     }

@@ -32,5 +32,6 @@ namespace MDUA.DataAccess.Interface
 	public interface ICompanyDataAccess : ICommonDataAccess<Company, CompanyList, CompanyBase>
 	{
         Company GetCompanySafe(int id);
+        int GetIdByWebsite(string domain);
     }	
 }

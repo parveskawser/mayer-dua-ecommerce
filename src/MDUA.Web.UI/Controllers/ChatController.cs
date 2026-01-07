@@ -2,11 +2,13 @@
 using MDUA.Facade;
 using MDUA.Facade.Interface;
 using MDUA.Web.UI.Hubs; // Ensure this namespace matches your Hub location
+using MDUA.Web.UI.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,17 +21,19 @@ namespace MDUA.Web.UI.Controllers
         private readonly IAiChatService _aiChatService;
         private readonly IHubContext<SupportHub> _hubContext;
         public readonly IProductFacade _productFacade; // Add this line
+        public readonly ITenantResolver _tenantResolver; // Add this line
+
         public ChatController(
             IChatFacade chatFacade,
             IAiChatService aiChatService,
             IHubContext<SupportHub> hubContext,
-            IProductFacade productFacade)
+            IProductFacade productFacade, ITenantResolver tenantResolver)
         {
             _chatFacade = chatFacade;
             _aiChatService = aiChatService;
             _hubContext = hubContext;
             _productFacade = productFacade;
-
+            _tenantResolver = tenantResolver;
         }
 
         // ====================================================================
@@ -107,14 +111,36 @@ namespace MDUA.Web.UI.Controllers
 
             try
             {
-                // 1. Resolve Session
+                // ---------------------------------------------------------
+                // 1. RESOLVE COMPANY ID (The Logic You Asked For)
+                // ---------------------------------------------------------
+                int companyId = 0;
+
+                // A. Priority 1: If chatting about a specific product, use its owner company
+                if (request.ContextProductId.HasValue && request.ContextProductId.Value > 0)
+                {
+                    var product = _productFacade.Get(request.ContextProductId.Value);
+                    if (product != null)
+                    {
+                        companyId = product.CompanyId;
+                    }
+                }
+
+                // B. Priority 2: If no product context, use the Tenant Resolver (Domain/URL)
+                if (companyId <= 0)
+                {
+                    companyId = _tenantResolver.GetCompanyId();
+                }
+                // ---------------------------------------------------------
+
+                // 2. Resolve Session
                 ChatSession session = null;
                 if (!string.IsNullOrEmpty(request.SessionGuid) && Guid.TryParse(request.SessionGuid, out Guid guid))
                     session = _chatFacade.InitGuestSession(guid);
 
                 if (session == null) return BadRequest("Invalid session.");
 
-                // 2. Save User Message
+                // 3. Save User Message
                 var message = new ChatMessage
                 {
                     ChatSessionId = session.Id,
@@ -125,7 +151,7 @@ namespace MDUA.Web.UI.Controllers
                 };
                 _chatFacade.SendMessage(message);
 
-                // 3. Get AI Response
+                // 4. Get AI Response
                 var history = _chatFacade.GetChatHistory(session.Id)
                                          .OrderByDescending(m => m.SentAt)
                                          .Take(10)
@@ -133,14 +159,15 @@ namespace MDUA.Web.UI.Controllers
                                          .Select(m => $"{m.SenderName}: {m.MessageText}")
                                          .ToList();
 
-                // ✅ PASS THE CONTEXT PRODUCT ID HERE
+                // ✅ PASS THE RESOLVED COMPANY ID HERE
                 string aiResponse = await _aiChatService.GetResponseAsync(
                     request.MessageText,
                     history,
+                    companyId,               // <--- The ID we resolved above
                     request.ContextProductId
                 );
 
-                // 4. Save and Send Bot Reply
+                // 5. Save and Send Bot Reply
                 await SendBotReply(session, aiResponse);
 
                 return Ok(new { success = true });
@@ -150,7 +177,7 @@ namespace MDUA.Web.UI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-      
+
         // 🆕 HUMAN HANDOFF LOGIC
         private async Task TransferToHuman(ChatSession session, string reason)
         {

@@ -31,6 +31,7 @@ namespace MDUA.Facade
         private readonly IProductVideoDataAccess _productVideoDataAccess;
         private readonly IGlobalSettingDataAccess _globalSettingDataAccess;
         private readonly IProductCategoryDataAccess _productCategoryDataAccess;
+        private readonly IAttributeValueDataAccess _attributeValueDataAccess;
 
         private static readonly List<string> _sizeSortOrder = new List<string>
 
@@ -52,7 +53,8 @@ namespace MDUA.Facade
             ICompanyDataAccess companyDataAccess,
             IGlobalSettingDataAccess globalSettingDataAccess,
             IProductVideoDataAccess productVideoDataAccess,
-            IProductCategoryDataAccess productCategoryDataAccess)
+            IProductCategoryDataAccess productCategoryDataAccess,
+            IAttributeValueDataAccess attributeValueDataAccess)
         {
             _ProductDataAccess = productDataAccess;
             _ProductImageDataAccess = productImageDataAccess;
@@ -68,6 +70,7 @@ namespace MDUA.Facade
             _globalSettingDataAccess = globalSettingDataAccess;
             _productVideoDataAccess = productVideoDataAccess;
             _productCategoryDataAccess = productCategoryDataAccess;
+            _attributeValueDataAccess = attributeValueDataAccess;
 
         }
 
@@ -470,14 +473,10 @@ namespace MDUA.Facade
         // Change signature to accept companyId
         public List<Product> GetAllProductsWithCategory(int companyId)
         {
-            // ✅ Change: Call the specialized DA method that filters by Company
-            // Do NOT call .GetAll() here, as that fetches everything.
+
             var products = _ProductDataAccess.GetAllProductsWithCategory(companyId);
 
-            // The logic below (mapping Category Name) is actually already handled 
-            // inside the DataAccess SQL query you provided, so you likely don't need 
-            // the manual loop here anymore. 
-            // However, if you want to keep your price calculation logic:
+
 
             foreach (var p in products)
             {
@@ -505,19 +504,19 @@ namespace MDUA.Facade
         {
             var result = new UserLoginResult
             {
-                // Now safe to call because it handles NULLs
-                Categories = _categoryDataAccess.GetByCompany(companyId)?.ToList() ?? new List<ProductCategory>(),
+                // ✅ CHANGED: Use 'GetAvailableCategories' to hide Inactive items
+                // and handle Global vs Private logic (System Category hidden if overridden).
+                Categories = _categoryDataAccess.GetAvailableCategories(companyId)?.ToList() ?? new List<ProductCategory>(),
 
-                // If you haven't updated AttributeDataAccess yet, keep using GetAll() here
-                Attributes = _attributeNameDataAccess.GetAll()?.ToList() ?? new List<AttributeName>()
+                // Attributes logic remains the same (already handles overrides)
+                Attributes = _attributeNameDataAccess.GetAvailableAttributes(companyId)?.ToList() ?? new List<AttributeName>()
             };
 
             return result;
         }
-
         public List<AttributeValue> GetAttributeValues(int attributeId)
         {
-            return _attributeNameDataAccess.GetValuesByAttributeId(attributeId);
+            return _attributeValueDataAccess.GetActiveValues(attributeId);
         }
 
         public ProductVariantList GetVariantsByProductId(int productId)
@@ -1145,39 +1144,39 @@ namespace MDUA.Facade
         }
 
         public LandingPageViewModel GetHomepageData()
-{
-    var model = new LandingPageViewModel();
-
-    // 1. Fetch Categories (Top 10 active)
-    // Assuming you have a DAO method for this, or use GetByQuery
-    // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
-    // Mocking for now if DAO method missing:
-    model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
-
-    // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
-    var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
-
-    // Map to ViewModel
-    foreach (var p in products)
-    {
-        var vm = new ProductViewModel
         {
-            Id = p.Id,
-            Name = p.ProductName,
-            // Logic to get primary image or default
-            ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
-            // Logic to get base price or lowest variant price
-            Price = p.BasePrice ?? 0,
-            Slug = p.Slug // <--- Add this line
-        };
-        model.NewArrivals.Add(vm);
-    }
+            var model = new LandingPageViewModel();
 
-    // Just shuffling for "Featured" for now
-    model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
+            // 1. Fetch Categories (Top 10 active)
+            // Assuming you have a DAO method for this, or use GetByQuery
+            // model.Categories = _productCategoryDataAccess.GetTopCategories(10); 
+            // Mocking for now if DAO method missing:
+            model.Categories = _productCategoryDataAccess.GetAll().Take(10).ToList();
 
-    return model;
-}
+            // 2. Fetch Products (Using a raw SQL query in DA is best, but here is logic)
+            var products = _ProductDataAccess.GetRecentProductsWithImages(20); // You need to implement this in DA
+
+            // Map to ViewModel
+            foreach (var p in products)
+            {
+                var vm = new ProductViewModel
+                {
+                    Id = p.Id,
+                    Name = p.ProductName,
+                    // Logic to get primary image or default
+                    ImageUrl = _ProductImageDataAccess.GetPrimaryImage(p.Id) ?? "/images/default-book.png",
+                    // Logic to get base price or lowest variant price
+                    Price = p.BasePrice ?? 0,
+                    Slug = p.Slug // <--- Add this line
+                };
+                model.NewArrivals.Add(vm);
+            }
+
+            // Just shuffling for "Featured" for now
+            model.FeaturedProducts = model.NewArrivals.OrderBy(x => Guid.NewGuid()).ToList();
+
+            return model;
+        }
 
 
         public List<ProductViewModel> GetShopData(int companyId, int? categoryId = null, string searchTerm = null)

@@ -219,6 +219,21 @@ namespace MDUA.Facade
         }
 
 
+        public int GetCompanyIdByDomain(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+                return 1; 
+
+            // Clean domain name
+            domain = domain.Replace("https://", "")
+                           .Replace("http://", "")
+                           .Replace("www.", "")
+                           .TrimEnd('/');
+
+            return _companyDataAccess.GetIdByWebsite(domain);
+        }
+
+
         #endregion
     }
 }

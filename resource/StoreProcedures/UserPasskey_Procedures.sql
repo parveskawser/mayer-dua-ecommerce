@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertUserPasskey    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertUserPasskey    Script Date: 1/7/2026 11:54:43 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertUserPasskey]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertUserPasskey]
 GO
@@ -74,7 +74,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateUserPasskey    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateUserPasskey    Script Date: 1/7/2026 11:54:43 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateUserPasskey]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateUserPasskey]
 GO
@@ -122,7 +122,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteUserPasskey    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteUserPasskey    Script Date: 1/7/2026 11:54:43 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteUserPasskey]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteUserPasskey]
 GO
@@ -153,7 +153,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserPasskey    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserPasskey    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllUserPasskey]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllUserPasskey]
 GO
@@ -170,7 +170,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserPasskeyById    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserPasskeyById    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserPasskeyById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserPasskeyById]
 GO
@@ -191,7 +191,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllUserPasskeyByUserId    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllUserPasskeyByUserId    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserPasskeyByUserId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserPasskeyByUserId]
 GO
@@ -212,7 +212,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserPasskeyMaximumId    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserPasskeyMaximumId    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserPasskeyMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserPasskeyMaximumId]
 GO
@@ -241,7 +241,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserPasskeyRowCount    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserPasskeyRowCount    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserPasskeyRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserPasskeyRowCount]
 GO
@@ -260,7 +260,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedUserPasskey    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedUserPasskey    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedUserPasskey]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedUserPasskey]
 GO
@@ -354,7 +354,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetUserPasskeyByQuery    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetUserPasskeyByQuery    Script Date: 1/7/2026 11:54:43 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetUserPasskeyByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetUserPasskeyByQuery]
 GO
