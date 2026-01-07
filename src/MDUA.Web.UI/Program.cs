@@ -38,7 +38,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-    options.LoginPath = "/login";
+        options.LoginPath = "/login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
@@ -140,7 +140,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             }
         };
     });
-
+builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache(); // Stores session in memory
 builder.Services.AddSession(options =>
@@ -149,6 +149,9 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
 
 builder.Services.AddSingleton<IFido2>(_ =>
 {

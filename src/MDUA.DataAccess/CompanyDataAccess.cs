@@ -75,5 +75,28 @@ namespace MDUA.DataAccess
             return false;
         }
 
+        public int GetIdByWebsite(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+                return 0;
+
+            string sql = @"
+        SELECT TOP 1 Id 
+        FROM Company 
+        WHERE REPLACE(REPLACE(REPLACE(Website, 'https://', ''), 'http://', ''), 'www.', '') = @Domain
+        AND IsActive = 1";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                AddParameter(cmd, pNVarChar("Domain", 255, domain));
+
+                object result = SelectScaler(cmd);
+
+                return result != null && result != DBNull.Value
+                    ? Convert.ToInt32(result)
+                    : 0;
+            }
+        }
+
     } // End of Class
 } // End of Namespace

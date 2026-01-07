@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertEmailHistory    Script Date: 1/6/2026 11:13:38 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertEmailHistory    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertEmailHistory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertEmailHistory]
 GO
@@ -86,7 +86,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateEmailHistory    Script Date: 1/6/2026 11:13:38 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateEmailHistory    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateEmailHistory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateEmailHistory]
 GO
@@ -142,7 +142,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteEmailHistory    Script Date: 1/6/2026 11:13:38 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteEmailHistory    Script Date: 1/7/2026 11:54:39 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteEmailHistory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteEmailHistory]
 GO
@@ -173,7 +173,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllEmailHistory    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllEmailHistory    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllEmailHistory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllEmailHistory]
 GO
@@ -190,7 +190,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailHistoryById    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailHistoryById    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailHistoryById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailHistoryById]
 GO
@@ -211,7 +211,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailHistoryMaximumId    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailHistoryMaximumId    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailHistoryMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailHistoryMaximumId]
 GO
@@ -240,7 +240,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailHistoryRowCount    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailHistoryRowCount    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailHistoryRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailHistoryRowCount]
 GO
@@ -259,7 +259,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedEmailHistory    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedEmailHistory    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedEmailHistory]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedEmailHistory]
 GO
@@ -361,7 +361,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetEmailHistoryByQuery    Script Date: 1/6/2026 11:13:38 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetEmailHistoryByQuery    Script Date: 1/7/2026 11:54:39 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetEmailHistoryByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetEmailHistoryByQuery]
 GO

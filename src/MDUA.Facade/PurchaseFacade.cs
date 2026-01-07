@@ -302,7 +302,7 @@ namespace MDUA.Facade
         public List<Vendor> GetAllVendors(int companyId) // Added param
         {
             // ✅ Call the new method in DataAccess
-            return ((VendorDataAccess)_vendorDataAccess).GetByCompanyId(companyId);
+            return ((VendorDataAccess)_vendorDataAccess).GetByCompany(companyId);
         }
         public List<dynamic> GetInventorySortedByStockAsc(int companyId) // Added param
         {

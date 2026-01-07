@@ -7,6 +7,8 @@ namespace MDUA.Facade.Interface
 {
     public interface ICompanyFacade
     {
+        int GetCompanyIdByDomain(string domain);
+
         Company Get(int _Id); //new
 
         CompanyList GetAll();

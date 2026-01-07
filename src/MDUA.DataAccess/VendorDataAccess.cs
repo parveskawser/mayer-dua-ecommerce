@@ -143,31 +143,101 @@ namespace MDUA.DataAccess
         }
 
 
-        public List<Vendor> GetByCompanyId(int companyId)
+        public VendorList GetByCompany(int companyId)
         {
+            // Added Created/Updated columns to the SELECT list
             string SQL = @"
-            SELECT v.* FROM Vendor v
-            INNER JOIN CompanyVendor cv ON v.Id = cv.VendorId
-            WHERE cv.CompanyId = @CompanyId
-            ORDER BY v.VendorName";
+    SELECT 
+        v.Id, 
+        v.VendorName, 
+        v.Email, 
+        v.Phone,
+        v.CreatedBy,
+        v.CreatedAt,
+        v.UpdatedBy,
+        v.UpdatedAt,
+        
+        -- Custom Calculated Columns
+        CAST(ISNULL(req.ReqCount, 0) AS INT)     AS TotalRequestedCount,
+        CAST(ISNULL(req.ReqQty, 0) AS INT)       AS TotalRequestedQty,
+
+        CAST(ISNULL(rec.RecCount, 0) AS INT)     AS TotalReceivedCount,
+        CAST(ISNULL(rec.RecQty, 0) AS INT)       AS TotalReceivedQty,
+        CAST(ISNULL(rec.UnpaidCount, 0) AS INT)  AS TotalUnpaidCount,
+
+        CAST(ISNULL(rec.TotalAmt, 0) AS DECIMAL(18,2)) AS TotalAmount,
+        CAST(ISNULL(rec.PaidAmt, 0) AS DECIMAL(18,2))  AS TotalPaidAmount,
+        
+        CAST((ISNULL(rec.TotalAmt, 0) - ISNULL(rec.PaidAmt, 0)) AS DECIMAL(18,2)) AS TotalDueAmount
+
+    FROM Vendor v
+    INNER JOIN CompanyVendor cv ON v.Id = cv.VendorId
+    
+    -- 1. Aggregates for Requested
+    OUTER APPLY (
+        SELECT COUNT(Id) as ReqCount, SUM(Quantity) as ReqQty 
+        FROM PoRequested WHERE VendorId = v.Id
+    ) req
+
+    -- 2. Aggregates for Received
+    OUTER APPLY (
+        SELECT 
+            COUNT(Id) as RecCount,
+            SUM(ReceivedQuantity) as RecQty,
+            SUM(CASE WHEN PaymentStatus IN ('Unpaid', 'Partial') THEN 1 ELSE 0 END) as UnpaidCount,
+            SUM(TotalPaymentDue) as TotalAmt,
+            SUM(TotalPaid) as PaidAmt
+        FROM PoReceived WHERE VendorId = v.Id
+    ) rec
+
+    WHERE cv.CompanyId = @CompanyId
+    ORDER BY v.VendorName";
+
+            var list = new VendorList();
 
             using (SqlCommand cmd = GetSQLCommand(SQL))
             {
                 AddParameter(cmd, pInt32("CompanyId", companyId));
 
-                return GetList(cmd, ALL_AVAILABLE_RECORDS);
-            }
-        }
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
 
-        private const string GETVENDORBYCOMPANYID = "GetVendorByCompanyId";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var entity = new Vendor();
 
-        public VendorList GetByCompany(int companyId)
-        {
-            using (SqlCommand cmd = GetSPCommand(GETVENDORBYCOMPANYID))
-            {
-                AddParameter(cmd, pInt32("CompanyId", companyId));
-                return GetList(cmd, ALL_AVAILABLE_RECORDS);
+                        // --- 1. Map Base Properties ---
+                        entity.Id = reader["Id"] != DBNull.Value ? Convert.ToInt32(reader["Id"]) : 0;
+                        entity.VendorName = reader["VendorName"] != DBNull.Value ? reader["VendorName"].ToString() : "";
+                        entity.Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : "";
+                        entity.Phone = reader["Phone"] != DBNull.Value ? reader["Phone"].ToString() : "";
+
+                        // --- Map Audit Columns ---
+                        entity.CreatedBy = reader["CreatedBy"] != DBNull.Value ? reader["CreatedBy"].ToString() : "";
+                        entity.CreatedAt = reader["CreatedAt"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedAt"]) : (DateTime?)null;
+                        entity.UpdatedBy = reader["UpdatedBy"] != DBNull.Value ? reader["UpdatedBy"].ToString() : "";
+                        entity.UpdatedAt = reader["UpdatedAt"] != DBNull.Value ? Convert.ToDateTime(reader["UpdatedAt"]) : (DateTime?)null;
+
+                        // --- 2. Map Aggregate Properties ---
+                        entity.TotalRequestedCount = (int)reader["TotalRequestedCount"];
+                        entity.TotalRequestedQty = (int)reader["TotalRequestedQty"];
+
+                        entity.TotalReceivedCount = (int)reader["TotalReceivedCount"];
+                        entity.TotalReceivedQty = (int)reader["TotalReceivedQty"];
+                        entity.TotalUnpaidCount = (int)reader["TotalUnpaidCount"];
+
+                        entity.TotalAmount = (decimal)reader["TotalAmount"];
+                        entity.TotalPaidAmount = (decimal)reader["TotalPaidAmount"];
+                        entity.TotalDueAmount = (decimal)reader["TotalDueAmount"];
+
+                        list.Add(entity);
+                    }
+                }
             }
+
+            return list;
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertSubscriptionUsage    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertSubscriptionUsage    Script Date: 1/7/2026 11:54:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertSubscriptionUsage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertSubscriptionUsage]
 GO
@@ -65,7 +65,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdateSubscriptionUsage    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdateSubscriptionUsage    Script Date: 1/7/2026 11:54:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdateSubscriptionUsage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdateSubscriptionUsage]
 GO
@@ -107,7 +107,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeleteSubscriptionUsage    Script Date: 1/6/2026 11:13:42 AM ******/
+/****** Object:  StoredProcedure [dbo].DeleteSubscriptionUsage    Script Date: 1/7/2026 11:54:42 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeleteSubscriptionUsage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeleteSubscriptionUsage]
 GO
@@ -138,7 +138,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSubscriptionUsage    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSubscriptionUsage    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllSubscriptionUsage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllSubscriptionUsage]
 GO
@@ -155,7 +155,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageById    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageById    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSubscriptionUsageById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSubscriptionUsageById]
 GO
@@ -176,7 +176,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllSubscriptionUsageBySubscriptionId    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllSubscriptionUsageBySubscriptionId    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSubscriptionUsageBySubscriptionId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSubscriptionUsageBySubscriptionId]
 GO
@@ -197,7 +197,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageMaximumId    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageMaximumId    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSubscriptionUsageMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSubscriptionUsageMaximumId]
 GO
@@ -226,7 +226,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageRowCount    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageRowCount    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSubscriptionUsageRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSubscriptionUsageRowCount]
 GO
@@ -245,7 +245,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedSubscriptionUsage    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedSubscriptionUsage    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedSubscriptionUsage]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedSubscriptionUsage]
 GO
@@ -333,7 +333,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageByQuery    Script Date: 1/6/2026 11:13:42 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetSubscriptionUsageByQuery    Script Date: 1/7/2026 11:54:42 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetSubscriptionUsageByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetSubscriptionUsageByQuery]
 GO

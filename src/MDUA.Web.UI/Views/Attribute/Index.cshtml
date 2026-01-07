@@ -1,0 +1,128 @@
+@model List<MDUA.Entities.AttributeName>
+@{
+    ViewData["Title"] = "Attribute Manager";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+    .attribute-row { cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
+    .attribute-row:hover { background-color: #f8f9fa; }
+    .attribute-row.selected { background-color: #e8f0fe; border-left-color: #0d6efd; }
+    .action-icon { cursor: pointer; padding: 0 5px; opacity: 0.6; }
+    .action-icon:hover { opacity: 1; }
+    /* Toggle Switch Size */
+    .form-switch .form-check-input { width: 2.5em; height: 1.25em; cursor: pointer; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-tags me-2"></i>Attributes</h5>
+                    <button class="btn btn-sm btn-primary" onclick="openAttributeModal()">+ New</button>
+                </div>
+                <div class="card-body p-0 table-responsive" style="max-height: 75vh;">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Name</th>
+                                <th class="text-center">Active</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model != null && Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    // ✅ FIX: Dynamic cast avoids "Cannot resolve symbol" if DLL is old
+                                    dynamic dynItem = item; 
+                                    bool isGlobal = dynItem.CompanyId == null;
+
+                                    <tr class="attribute-row" onclick="selectAttribute(this, @item.Id, '@item.Name', @isGlobal.ToString().ToLower())" id="row-@item.Id">
+                                        <td class="ps-4 align-middle fw-medium">
+                                            @item.Name
+                                            @if (isGlobal) { <span class="badge bg-secondary ms-1" style="font-size:0.6em">GLOBAL</span> }
+                                        </td>
+                                        <td class="text-center align-middle" onclick="event.stopPropagation()">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" @(item.IsActive ? "checked" : "") onchange="toggleAttrStatus(@item.Id, this)">
+                                            </div>
+                                        </td>
+                                        <td class="text-end pe-4 align-middle" onclick="event.stopPropagation()">
+                                            <i class="fas fa-edit text-warning action-icon" onclick="editAttribute(@item.Id)"></i>
+                                            @if (!isGlobal) { 
+                                                <i class="fas fa-trash text-danger action-icon" onclick="deleteAttribute(@item.Id)"></i> 
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else 
+                            {
+                                <tr><td colspan="3" class="text-center py-3 text-muted">No attributes found.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 text-secondary" id="valHeader"><i class="fas fa-list me-2"></i>Select Attribute</h5>
+                    <button class="btn btn-sm btn-outline-primary" id="btnAddVal" disabled onclick="openValueModal()">+ Add Value</button>
+                </div>
+                <div id="valuesContainer" class="card-body p-0 d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                    <p class="text-muted"><i class="fas fa-arrow-left me-2"></i>Select an attribute to manage values</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="attrModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Attribute</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="attrId" value="0">
+                <div class="mb-3"><label>Name</label><input type="text" id="attrName" class="form-control" required></div>
+                <div class="mb-3"><label>Order</label><input type="number" id="attrOrder" class="form-control" value="0"></div>
+                <div class="form-check form-switch"><input type="checkbox" id="attrActive" class="form-check-input" checked> <label>Active</label></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="saveAttribute()">Save</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="valModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Attribute Value</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cloneAlert" class="alert alert-info py-1" style="display:none; font-size:0.85rem">
+                    <i class="fas fa-info-circle"></i> This Global attribute will be cloned for you.
+                </div>
+                <input type="hidden" id="valId" value="0">
+                <input type="hidden" id="valParentId" value="0">
+                <div class="mb-3"><label>Value</label><input type="text" id="valText" class="form-control" required></div>
+                <div class="mb-3"><label>Order</label><input type="number" id="valOrder" class="form-control" value="0"></div>
+                <div class="form-check form-switch"><input type="checkbox" id="valActive" class="form-check-input" checked> <label>Active</label></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="saveValue()">Save</button></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/js/attribute-manager.js"></script>

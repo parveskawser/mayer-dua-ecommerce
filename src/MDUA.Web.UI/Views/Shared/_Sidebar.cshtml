@@ -19,6 +19,10 @@
 
     // ✅ ADDED: Subscription Page Check
     bool isSubscriptionPage = currentController == "Subscription";
+    bool isAttributePage = currentController == "Attribute";
+
+
+
 
     // --- COMPANY LOGO LOGIC ---
     string companyName = "MDUA Admin";
@@ -84,6 +88,13 @@
             </div>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link nav-link-sm @(currentController == "ProductCategory" ? "active" : "")" href="@Url.Action("Index", "ProductCategory")">
+                <span>📂</span> Categories
+            </a>
+        </li>
+
+        <li class="nav-item"><a class="nav-link @(isAttributePage ? "active" : "")" href="@Url.Action("Index", "Attribute")"><span>🏷️</span> Attributes     </a></li>
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center @(isInventoryPage ? "active-parent" : "collapsed")"
                data-bs-toggle="collapse" href="#inventoryMenu" role="button" aria-expanded="@(isInventoryPage ? "true" : "false")" aria-controls="inventoryMenu">
@@ -240,6 +251,11 @@
                     <li class="nav-item">
                         <a class="nav-link nav-link-sm @(currentAction == "Homepage" ? "active" : "")" href="@Url.Action("Homepage", "Settings")">
                             Homepage Layout
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sm @(currentAction == "Analytics" ? "active" : "")" href="@Url.Action("Analytics", "Settings")">
+                            Analytics
                         </a>
                     </li>
                     <li class="nav-item">

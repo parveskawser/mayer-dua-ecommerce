@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using MDUA.Web.UI.Services;
+using MDUA.Web.UI.Services.Interface;
 
 namespace MDUA.Web.UI.Controllers
 {
     public class BaseController : Controller
     {
-        // Helper to get the logged-in user's ID
         protected int CurrentUserId
         {
             get
@@ -15,7 +16,7 @@ namespace MDUA.Web.UI.Controllers
                 {
                     return userId;
                 }
-                return 0; // Or throw exception based on your preference
+                return 0;
             }
         }
 
@@ -27,26 +28,37 @@ namespace MDUA.Web.UI.Controllers
                 return User.FindFirst(ClaimTypes.Name)?.Value ?? "System";
             }
         }
-        // Helper to get the logged-in user's CompanyId
+
+        // ✅ CORRECTED: Smart Company ID Resolution
         protected int CurrentCompanyId
         {
             get
             {
+                // 1. Priority: Trust the Logged-in User's Claim (Admin/User Context)
                 var companyIdClaim = User.FindFirst("CompanyId");
                 if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
                 {
                     return companyId;
                 }
-                return 0;
+
+                // 2. Fallback: Ask the TenantResolver (Anonymous / Localhost / Landing Page)
+                var tenantResolver = HttpContext.RequestServices.GetService<ITenantResolver>();
+                if (tenantResolver != null)
+                {
+                    return tenantResolver.GetCompanyId();
+                }
+
+                // 3. Ultimate Fallback (Should rarely happen if Resolver works)
+                return 1;
             }
         }
+
         public new IActionResult HandleAccessDenied()
         {
             bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
             if (isAjax)
             {
-                // Returns JSON telling the JS Global Handler to redirect
                 return Json(new
                 {
                     success = false,
@@ -55,17 +67,14 @@ namespace MDUA.Web.UI.Controllers
                 });
             }
 
-            // Normal Redirect
             return RedirectToAction("AccessDenied", "Account");
         }
-       
-
 
         protected bool HasPermission(string permissionName)
         {
             return User.HasClaim(c => c.Type == "Permission" && c.Value.Equals(permissionName, StringComparison.OrdinalIgnoreCase));
         }
-        // Helper to check if user is logged in
+
         protected bool IsLoggedIn => User.Identity != null && User.Identity.IsAuthenticated;
     }
 }

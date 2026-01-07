@@ -5,6 +5,11 @@ using MDUA.Entities.List;
 using MDUA.Framework.Exceptions;
 using MDUA.Web.UI.Controllers;
 using System;
+using Newtonsoft.Json;
+using System.Dynamic;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace MDUA.Web.Controllers
 {
@@ -391,83 +396,7 @@ namespace MDUA.Web.Controllers
             });
         }
 
-        // NOTE: Update ExportHistory similarly to accept dateRange/fromDate/toDate and perform the same logic before calling Facade.//
-
-        [HttpPost]
-        [Route("Vendor/ExportHistory")]
-        public IActionResult ExportHistory(int id, string search, string status, string type, string dateRange, DateTime? fromDate, DateTime? toDate, string scope, string selectedIds, string format)
-        {
-            // 1. Get Current Company ID (✅ Added this)
-            int companyId = Convert.ToInt32(User.FindFirst("CompanyId")?.Value ?? "1");
-
-            // 2. Replicate Date Logic (Same as GetHistoryData)
-            DateTime today = DateTime.UtcNow.Date;
-            DateTime? start = null;
-            DateTime? end = null;
-
-            if (dateRange != "all" && !string.IsNullOrEmpty(dateRange))
-            {
-                switch (dateRange)
-                {
-                    case "today":
-                        start = today;
-                        end = today.AddDays(1).AddTicks(-1);
-                        break;
-                    case "yesterday":
-                        start = today.AddDays(-1);
-                        end = today.AddDays(1).AddTicks(-1);
-                        break;
-                    case "thisWeek":
-                        int diff = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
-                        start = today.AddDays(-1 * diff).Date;
-                        end = today.AddDays(1).AddTicks(-1);
-                        break;
-                    case "lastWeek":
-                        int diffLast = (7 + (today.DayOfWeek - DayOfWeek.Sunday)) % 7;
-                        start = today.AddDays(-1 * diffLast).AddDays(-7).Date;
-                        end = start.Value.AddDays(7).AddTicks(-1);
-                        break;
-                    case "thisMonth":
-                        start = new DateTime(today.Year, today.Month, 1);
-                        end = today.AddDays(1).AddTicks(-1);
-                        break;
-                    case "lastMonth":
-                        var lastMonth = today.AddMonths(-1);
-                        start = new DateTime(lastMonth.Year, lastMonth.Month, 1);
-                        end = new DateTime(today.Year, today.Month, 1).AddTicks(-1);
-                        break;
-                    case "custom":
-                        if (fromDate.HasValue) start = fromDate.Value.Date;
-                        if (toDate.HasValue) end = toDate.Value.Date.AddDays(1).AddTicks(-1);
-                        break;
-                }
-            }
-
-            // 3. Fetch Data
-            // ✅ FIX: Added 'companyId' as the second argument
-            var result = _vendorFacade.GetVendorOrderHistory(id, companyId, 1, 100000, search, status, type, start, end);
-            var dataToExport = result.Items;
-
-            // 4. Apply "Selected Rows" Logic
-            if (scope == "selected" && !string.IsNullOrEmpty(selectedIds))
-            {
-                var idList = selectedIds.Split(',').Select(int.Parse).ToList();
-                dataToExport = dataToExport.Where(x => idList.Contains((int)((IDictionary<string, object>)x)["PoId"])).ToList();
-            }
-
-            // 5. Generate CSV
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("Date,Product,Type,Status,Requested Qty,Received Qty");
-
-            foreach (dynamic item in dataToExport)
-            {
-                var dict = (IDictionary<string, object>)item;
-                sb.AppendLine($"{dict["RequestDate"]},{dict["ProductName"].ToString().Replace(",", " ")},{(Convert.ToBoolean(dict["IsBulkOrder"]) ? "Bulk" : "Standard")},{dict["Status"]},{dict["RequestedQty"]},{dict["ReceivedQty"]}");
-            }
-
-            string fileName = $"VendorHistory_{id}_{DateTime.Now:yyyyMMdd}.csv";
-            return File(System.Text.Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", fileName);
-        }
+   
         [HttpGet]
         public JsonResult CheckUnique(string field, string value, int id)
         {
@@ -516,5 +445,9 @@ namespace MDUA.Web.Controllers
                 return Json(new { isUnique = true });
             }
         }
+
+
+        // Add this helper method to your Controller or Service
+        // Helper to unpack the JSON children into real list items
     }
 }

@@ -338,3 +338,154 @@ namespace MDUA.Facade
         }
     }
 }
+
+
+
+
+﻿ #region SMTP gmail Service using MailKit
+//
+// using MailKit.Net.Smtp;
+// using MailKit.Security;
+// using MDUA.Entities;
+// using MDUA.Facade.Interface;
+// using Microsoft.Extensions.Configuration;
+// using MimeKit;
+// using System;
+// using System.Net;
+// using System.Net.Mail;
+// using System.Threading.Tasks;
+// using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+//
+// namespace MDUA.Web.UI.Services
+// {
+//     /// <summary>
+//     /// Safe Email Service using MailKit
+//     /// - Never throws in constructor
+//     /// - Fails gracefully if config is missing
+//     /// - Designed for background / fire-and-forget usage
+//     /// </summary>
+//     public class EmailService : IEmailService
+//     {
+//         private readonly string _smtpHost;
+//         private readonly int _smtpPort;
+//         private readonly string _smtpUser;
+//         private readonly string _smtpPassword;
+//         private readonly string _fromEmail;
+//         private readonly string _fromName;
+//         private readonly bool _isConfigured;
+//
+//         public EmailService(IConfiguration configuration)
+//         {
+//             if (configuration == null)
+//                 return; // Service stays disabled, app continues
+//
+//             _smtpHost = configuration["Email:SmtpHost"] ?? "smtp.gmail.com";
+//
+//             _smtpPort = int.TryParse(configuration["Email:SmtpPort"], out var port)
+//                 ? port
+//                 : 587;
+//
+//             _smtpUser = configuration["Email:SmtpUser"];
+//             _smtpPassword = configuration["Email:SmtpPassword"];
+//             _fromEmail = configuration["Email:FromEmail"] ?? _smtpUser;
+//             _fromName = configuration["Email:FromName"] ?? "MDUA System";
+//
+//             _isConfigured =
+//                 !string.IsNullOrWhiteSpace(_smtpUser) &&
+//                 !string.IsNullOrWhiteSpace(_smtpPassword);
+//         }
+//
+//         public async Task<bool> SendEmailAsync(
+//             string toEmail,
+//             string subject,
+//             string body,
+//             bool isHtml = true)
+//         {
+//             var result = await SendEmailWithResultAsync(toEmail, subject, body, isHtml);
+//             return result.Success;
+//         }
+//
+//         public async Task<EmailResult> SendEmailWithResultAsync(
+//             string toEmail,
+//             string subject,
+//             string body,
+//             bool isHtml = true)
+//         {
+//             // ✅ Hard stop – no exception
+//             if (!_isConfigured)
+//             {
+//                 return new EmailResult
+//                 {
+//                     Success = false,
+//                     Message = "Email service is not configured"
+//                 };
+//             }
+//
+//             if (string.IsNullOrWhiteSpace(toEmail))
+//             {
+//                 return new EmailResult
+//                 {
+//                     Success = false,
+//                     Message = "Recipient email address is required"
+//                 };
+//             }
+//
+//             try
+//             {
+//                 var message = new MimeMessage();
+//
+//                 message.From.Add(new MailboxAddress(_fromName, _fromEmail));
+//                 message.To.Add(MailboxAddress.Parse(toEmail));
+//                 message.Subject = subject ?? string.Empty;
+//
+//                 var bodyBuilder = new BodyBuilder();
+//
+//                 if (isHtml)
+//                     bodyBuilder.HtmlBody = body;
+//                 else
+//                     bodyBuilder.TextBody = body;
+//
+//                 message.Body = bodyBuilder.ToMessageBody();
+//
+//                 using (var client = new SmtpClient())
+//                 {
+//                     await client.ConnectAsync(
+//                         _smtpHost,
+//                         _smtpPort,
+//                         SecureSocketOptions.StartTls
+//                     );
+//
+//                     await client.AuthenticateAsync(_smtpUser, _smtpPassword);
+//
+//                     var messageId = await client.SendAsync(message);
+//
+//                     await client.DisconnectAsync(true);
+//
+//                     return new EmailResult
+//                     {
+//                         Success = true,
+//                         Message = "Email sent successfully",
+//                         MessageId = messageId
+//                     };
+//                 }
+//             }
+//             catch (Exception ex)
+//             {
+//                 Console.WriteLine($"[EmailService] {ex.Message}");
+//
+//                 return new EmailResult
+//                 {
+//                     Success = false,
+//                     Message = ex.Message
+//                 };
+//             }
+//         }
+//     }
+// }
+ #endregion
+
+
+
+
+
+

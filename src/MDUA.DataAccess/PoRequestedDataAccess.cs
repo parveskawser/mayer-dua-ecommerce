@@ -273,76 +273,139 @@ namespace MDUA.DataAccess
             }
             return list;
         }
+        
+        
+        
         public (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int companyId, int pageIndex, int pageSize, string search, string status, string type, DateTime? fromDate, DateTime? toDate)
         {
             var list = new List<dynamic>();
             int totalRows = 0;
             int offset = (pageIndex - 1) * pageSize;
 
-            // 1. UPDATE WHERE CLAUSE
-            // We added "AND p.CompanyId = @CompanyId" to ensure we only see orders for THIS company
-            var sb = new System.Text.StringBuilder("WHERE pr.VendorId = @VendorId AND p.CompanyId = @CompanyId");
-
-            if (!string.IsNullOrEmpty(search))
+            using (SqlCommand cmd = GetSQLCommand("")) // Initialize command first to add params easily
             {
-                sb.Append(" AND ((p.ProductName + ' (' + ISNULL(pv.VariantName, 'Standard') + ')') LIKE @Search OR pr.Remarks LIKE @Search)");
-            }
+                // --- 1. Filter Logic Construction ---
+                // Filters for PoRequested (Standard)
+                var sbStandard = new System.Text.StringBuilder("WHERE pr.VendorId = @VendorId AND p.CompanyId = @CompanyId AND pr.BulkPurchaseOrderId IS NULL");
 
-            if (!string.IsNullOrEmpty(status) && status != "all")
-            {
-                sb.Append(" AND pr.Status = @Status");
-            }
+                // Filters for BulkPurchaseOrder (Parent)
+                // Note: We ensure the Bulk Order is relevant to this company by checking if it has children in this company
+                var sbBulk = new System.Text.StringBuilder(@"
+            WHERE bpo.VendorId = @VendorId 
+            AND EXISTS (
+                SELECT 1 FROM PoRequested child 
+                JOIN ProductVariant pv ON child.ProductVariantId = pv.Id 
+                JOIN Product p ON pv.ProductId = p.Id 
+                WHERE child.BulkPurchaseOrderId = bpo.Id AND p.CompanyId = @CompanyId
+            )");
 
-            if (!string.IsNullOrEmpty(type) && type != "all")
-            {
-                if (type == "Bulk")
-                    sb.Append(" AND (pr.BulkPurchaseOrderId IS NOT NULL AND pr.BulkPurchaseOrderId > 0)");
-                else
-                    sb.Append(" AND (pr.BulkPurchaseOrderId IS NULL OR pr.BulkPurchaseOrderId = 0)");
-            }
+                // Apply Search/Date/Status filters dynamically to both sets
+                if (!string.IsNullOrEmpty(search))
+                {
+                    sbStandard.Append(" AND ((p.ProductName) LIKE @Search OR pr.Remarks LIKE @Search)");
+                    sbBulk.Append(" AND (bpo.AgreementNumber LIKE @Search OR bpo.Title LIKE @Search)");
+                }
 
-            if (fromDate.HasValue) sb.Append(" AND pr.RequestDate >= @FromDate");
-            if (toDate.HasValue) sb.Append(" AND pr.RequestDate <= @ToDate");
+                if (fromDate.HasValue)
+                {
+                    sbStandard.Append(" AND pr.RequestDate >= @FromDate");
+                    sbBulk.Append(" AND bpo.AgreementDate >= @FromDate");
+                }
+                if (toDate.HasValue)
+                {
+                    sbStandard.Append(" AND pr.RequestDate <= @ToDate");
+                    sbBulk.Append(" AND bpo.AgreementDate <= @ToDate");
+                }
 
-            string whereClause = sb.ToString();
-
-            // 2. SQL QUERY (Structure remains same, whereClause now includes Company filter)
-            string SQL = $@"
-            SELECT COUNT(*) 
-            FROM PoRequested pr
+                // --- 2. The Mighty SQL Query ---
+                string SQL = $@"
+        -- A. Calculate Total Count (Union of Standard + Bulk Parents)
+        SELECT COUNT(*) FROM (
+            SELECT pr.Id FROM PoRequested pr 
             JOIN ProductVariant pv ON pr.ProductVariantId = pv.Id
-            JOIN Product p ON pv.ProductId = p.Id
-            {whereClause};
+            JOIN Product p ON pv.ProductId = p.Id 
+            {sbStandard}
+            UNION ALL
+            SELECT bpo.Id FROM BulkPurchaseOrder bpo
+            {sbBulk}
+        ) AS TotalCount;
 
+        -- B. Fetch Data (Union -> Sort -> Paginate)
+        SELECT * FROM (
+            
+            -- 1. Standard Orders (No Children)
             SELECT 
-                pr.Id,
-                pr.RequestDate,
-                pr.Quantity AS RequestedQty,
+                'Standard' AS RowType,
+                pr.Id AS Id,
+                pr.RequestDate AS Date,
+                '-' AS AgreementNumber,
+                p.ProductName + ' (' + ISNULL(pv.VariantName, 'Standard') + ')' AS Title,
                 pr.Status,
-                CASE WHEN pr.BulkPurchaseOrderId IS NOT NULL AND pr.BulkPurchaseOrderId > 0 THEN 1 ELSE 0 END AS IsBulkOrder,
-                p.ProductName,
-                ISNULL(pv.VariantName, 'Standard') AS VariantName,
-                ISNULL((SELECT SUM(rcv.ReceivedQuantity) FROM PoReceived rcv WHERE rcv.PoRequestedId = pr.Id), 0) AS ReceivedQty
+                pr.Quantity AS ReqQty,
+                ISNULL((SELECT SUM(rcv.ReceivedQuantity) FROM PoReceived rcv WHERE rcv.PoRequestedId = pr.Id), 0) AS RecQty,
+                ISNULL((SELECT SUM(rcv.TotalPaymentDue) FROM PoReceived rcv WHERE rcv.PoRequestedId = pr.Id), 0) AS TotalAmount,
+                ISNULL((SELECT SUM(rcv.TotalPaid) FROM PoReceived rcv WHERE rcv.PoRequestedId = pr.Id), 0) AS PaidAmount,
+                NULL AS ChildrenJson -- No children for standard orders
             FROM PoRequested pr
             JOIN ProductVariant pv ON pr.ProductVariantId = pv.Id
             JOIN Product p ON pv.ProductId = p.Id
-            {whereClause}
-            ORDER BY pr.RequestDate DESC
-            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+            {sbStandard}
 
-            using (SqlCommand cmd = GetSQLCommand(SQL))
-            {
+            UNION ALL
+
+            -- 2. Bulk Orders (Parents)
+            SELECT 
+                'Bulk' AS RowType,
+                bpo.Id AS Id,
+                bpo.AgreementDate AS Date,
+                bpo.AgreementNumber,
+                ISNULL(bpo.Title, 'Bulk Agreement') AS Title,
+                bpo.Status,
+                bpo.TotalTargetQuantity AS ReqQty,
+                bpo.ConsumedQuantity AS RecQty,
+                bpo.ConsumedAmount AS TotalAmount, -- Use Table Column directly
+                -- Calculate Total Paid for all children in this bulk order
+                ISNULL((
+                    SELECT SUM(rcv.TotalPaid) 
+                    FROM PoReceived rcv 
+                    JOIN PoRequested child ON rcv.PoRequestedId = child.Id 
+                    WHERE child.BulkPurchaseOrderId = bpo.Id
+                ), 0) AS PaidAmount,
+                
+                -- FETCH CHILDREN AS JSON
+                (
+                    SELECT 
+                        child.Id AS PoId, 
+                        child.RequestDate, 
+                        p.ProductName,
+                        child.Status,
+                        child.Quantity AS ReqQty,
+                        ISNULL((SELECT SUM(r.ReceivedQuantity) FROM PoReceived r WHERE r.PoRequestedId = child.Id), 0) AS RecQty,
+                        ISNULL((SELECT SUM(r.TotalPaymentDue) FROM PoReceived r WHERE r.PoRequestedId = child.Id), 0) AS TotalAmt,
+                        ISNULL((SELECT SUM(r.TotalPaid) FROM PoReceived r WHERE r.PoRequestedId = child.Id), 0) AS PaidAmt
+                    FROM PoRequested child
+                    JOIN ProductVariant pv ON child.ProductVariantId = pv.Id
+                    JOIN Product p ON pv.ProductId = p.Id 
+                    WHERE child.BulkPurchaseOrderId = bpo.Id
+                    ORDER BY child.RequestDate DESC
+                    FOR JSON PATH
+                ) AS ChildrenJson
+
+            FROM BulkPurchaseOrder bpo
+            {sbBulk}
+
+        ) AS UnifiedHistory
+        ORDER BY Date DESC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                cmd.CommandText = SQL;
+
+                // --- 3. Add Parameters ---
                 AddParameter(cmd, pInt32("VendorId", vendorId));
-
-                // ✅ ADD NEW PARAMETER
                 AddParameter(cmd, pInt32("CompanyId", companyId));
-
                 AddParameter(cmd, pInt32("Offset", offset));
                 AddParameter(cmd, pInt32("PageSize", pageSize));
-
                 if (!string.IsNullOrEmpty(search)) AddParameter(cmd, pNVarChar("Search", 100, $"%{search}%"));
-                if (!string.IsNullOrEmpty(status) && status != "all") AddParameter(cmd, pNVarChar("Status", 50, status));
-
                 if (fromDate.HasValue) AddParameter(cmd, pDateTime("FromDate", fromDate.Value));
                 if (toDate.HasValue) AddParameter(cmd, pDateTime("ToDate", toDate.Value));
 
@@ -357,23 +420,51 @@ namespace MDUA.DataAccess
                         while (reader.Read())
                         {
                             dynamic item = new ExpandoObject();
-                            ((IDictionary<string, object>)item)["PoId"] = reader.GetInt32(0);
-                            ((IDictionary<string, object>)item)["RequestDate"] = reader.GetDateTime(1).ToString("dd MMM yyyy");
-                            ((IDictionary<string, object>)item)["RequestedQty"] = reader.GetInt32(2);
-                            ((IDictionary<string, object>)item)["Status"] = reader.GetString(3);
-                            ((IDictionary<string, object>)item)["IsBulkOrder"] = reader.GetInt32(4) == 1;
-                            ((IDictionary<string, object>)item)["ProductName"] = reader.GetString(5) + " (" + reader.GetString(6) + ")";
-                            ((IDictionary<string, object>)item)["ReceivedQty"] = reader.GetInt32(7);
+                            var dict = (IDictionary<string, object>)item;
+
+                            // --- 1. NEW KEYS (For the Hierarchy UI) ---
+                            string rowType = reader["RowType"].ToString();
+                            dict["RowType"] = rowType;
+                            dict["Id"] = reader["Id"];
+                            dict["Date"] = Convert.ToDateTime(reader["Date"]).ToString("dd MMM yyyy");
+                            dict["AgreementNumber"] = reader["AgreementNumber"].ToString();
+                            dict["Title"] = reader["Title"].ToString();
+                            dict["Status"] = reader["Status"].ToString();
+
+                            // Financials
+                            dict["ReqQty"] = reader["ReqQty"];
+                            dict["RecQty"] = reader["RecQty"];
+                            dict["TotalAmount"] = reader["TotalAmount"] != DBNull.Value ? Convert.ToDecimal(reader["TotalAmount"]) : 0;
+                            dict["PaidAmount"] = reader["PaidAmount"] != DBNull.Value ? Convert.ToDecimal(reader["PaidAmount"]) : 0;
+                            dict["DueAmount"] = (decimal)dict["TotalAmount"] - (decimal)dict["PaidAmount"];
+
+                            // Children JSON
+                            dict["Children"] = reader["ChildrenJson"] != DBNull.Value ? reader["ChildrenJson"].ToString() : null;
+
+                            // --- 2. LEGACY KEYS (CRITICAL FOR EXPORT) ---
+                            // We map the new columns back to the old names your Export expects
+                            dict["PoId"] = reader["Id"]; // ✅ Fixes KeyNotFoundException
+                            dict["RequestDate"] = dict["Date"];
+                            dict["ProductName"] = dict["Title"]; // Maps Title (Bulk or Product) to ProductName
+                            dict["RequestedQty"] = dict["ReqQty"];
+                            dict["ReceivedQty"] = dict["RecQty"];
+                            dict["AgreementNumber"] = dict["AgreementNumber"];
+
+                            // ✅ Fix 2: Create a friendly "Type" string instead of boolean
+                            dict["Type"] = rowType; // Returns "Bulk" or "Standard"
+
+                            // Keep IsBulkOrder just in case other logic needs it, but Export will use "Type"
+                            dict["IsBulkOrder"] = (rowType == "Bulk");
                             list.Add(item);
                         }
                     }
                 }
             }
             return (list, totalRows);
-        }
-        // 1. Fix for: GetVendorHistoryPaged(int, int, int)
-        // 1. Fix for: GetVendorHistoryPaged (Simple)
-        // We ADDED 'int companyId' here
+        }        // We ADDED 'int companyId' here
+       
+        
+        
         public (List<dynamic>, int) GetVendorHistoryPaged(int vendorId, int companyId, int pageIndex, int pageSize)
         {
             // Pass companyId to the main method

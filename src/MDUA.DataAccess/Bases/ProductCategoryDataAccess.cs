@@ -14,7 +14,7 @@ using MDUA.DataAccess.Interface;
 namespace MDUA.DataAccess
 {
 	public partial class ProductCategoryDataAccess : BaseDataAccess, IProductCategoryDataAccess
-    {
+	{
 		#region Constants
 		private const string INSERTPRODUCTCATEGORY = "InsertProductCategory";
 		private const string UPDATEPRODUCTCATEGORY = "UpdateProductCategory";
@@ -45,6 +45,7 @@ namespace MDUA.DataAccess
 		{	
 			AddParameter(cmd, pNVarChar(ProductCategoryBase.Property_Name, 50, productCategoryObject.Name));
 			AddParameter(cmd, pInt32(ProductCategoryBase.Property_CompanyId, productCategoryObject.CompanyId));
+			AddParameter(cmd, pBool(ProductCategoryBase.Property_IsActive, productCategoryObject.IsActive));
 		}
 		#endregion
 		
@@ -264,7 +265,8 @@ namespace MDUA.DataAccess
 				productCategoryObject.Id = reader.GetInt32( start + 0 );			
 				productCategoryObject.Name = reader.GetString( start + 1 );			
 				if(!reader.IsDBNull(2)) productCategoryObject.CompanyId = reader.GetInt32( start + 2 );			
-			FillBaseObject(productCategoryObject, reader, (start + 3));
+				productCategoryObject.IsActive = reader.GetBoolean( start + 3 );			
+			FillBaseObject(productCategoryObject, reader, (start + 4));
 
 			
 			productCategoryObject.RowState = BaseBusinessEntity.RowStateEnum.NormalRow;	

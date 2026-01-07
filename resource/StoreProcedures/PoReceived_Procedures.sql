@@ -1,7 +1,7 @@
 ﻿USE AA4
 GO
 
-/****** Object:  StoredProcedure [dbo]..InsertPoReceived    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo]..InsertPoReceived    Script Date: 1/7/2026 11:54:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[InsertPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[InsertPoReceived]
 GO
@@ -89,7 +89,7 @@ AS
 	RETURN @Id
 GO
 
-/****** Object:  StoredProcedure [dbo].UpdatePoReceived    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].UpdatePoReceived    Script Date: 1/7/2026 11:54:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[UpdatePoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[UpdatePoReceived]
 GO
@@ -147,7 +147,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].DeletePoReceived    Script Date: 1/6/2026 11:13:40 AM ******/
+/****** Object:  StoredProcedure [dbo].DeletePoReceived    Script Date: 1/7/2026 11:54:40 AM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DeletePoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[DeletePoReceived]
 GO
@@ -178,7 +178,7 @@ AS
 	RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoReceived    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceived    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetAllPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetAllPoReceived]
 GO
@@ -195,7 +195,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedById    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedById    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedById]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedById]
 GO
@@ -216,7 +216,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByPoRequestedId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByPoRequestedId    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByPoRequestedId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedByPoRequestedId]
 GO
@@ -237,7 +237,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByVendorId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetAllPoReceivedByVendorId    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByVendorId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedByVendorId]
 GO
@@ -258,7 +258,7 @@ AS
 RETURN @@ROWCOUNT
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedMaximumId    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedMaximumId    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedMaximumId]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedMaximumId]
 GO
@@ -287,7 +287,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedRowCount    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedRowCount    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedRowCount]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedRowCount]
 GO
@@ -306,7 +306,7 @@ AS
 RETURN @Result
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPagedPoReceived    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPagedPoReceived    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPagedPoReceived]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPagedPoReceived]
 GO
@@ -410,7 +410,7 @@ RETURN @@ROWCOUNT
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].GetPoReceivedByQuery    Script Date: 1/6/2026 11:13:40 AM  ******/
+/****** Object:  StoredProcedure [dbo].GetPoReceivedByQuery    Script Date: 1/7/2026 11:54:40 AM  ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GetPoReceivedByQuery]') AND type in (N'P', N'PC'))
 DROP PROCEDURE [dbo].[GetPoReceivedByQuery]
 GO

@@ -30,6 +30,12 @@ namespace MDUA.DataAccess.Interface
 
 
 	public interface IAttributeValueDataAccess : ICommonDataAccess<AttributeValue, AttributeValueList, AttributeValueBase>
-	{ 
+	{
+        List<AttributeValue> GetActiveValues(int attributeId); 
+        void DeleteAllByAttributeId(int attributeId);
+		bool IsAttributeOwnedByCompany(int attributeId, int companyId);
+		void UpdateStatus(int id, bool isActive);
+
+		AttributeValueList GetByAttributeId(int attributeId);
 	}	
 }

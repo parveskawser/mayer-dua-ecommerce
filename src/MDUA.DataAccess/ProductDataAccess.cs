@@ -51,18 +51,18 @@ namespace MDUA.DataAccess
             if (cmd.Connection.State != System.Data.ConnectionState.Open)
                 cmd.Connection.Open();
 
-    // 1. Get the object
-     Product product = GetObject(cmd); 
+            // 1. Get the object
+            Product product = GetObject(cmd);
 
-    // 2. Force the DateTimeKind to UTC
-    if (product != null)
+            // 2. Force the DateTimeKind to UTC
+            if (product != null)
             {
                 if (product.CreatedAt.HasValue)
-                     product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc); 
+                    product.CreatedAt = DateTime.SpecifyKind(product.CreatedAt.Value, DateTimeKind.Utc);
 
-        if (product.UpdatedAt.HasValue)
-                  product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc); 
-    }
+                if (product.UpdatedAt.HasValue)
+                    product.UpdatedAt = DateTime.SpecifyKind(product.UpdatedAt.Value, DateTimeKind.Utc);
+            }
 
             return product;
         }
