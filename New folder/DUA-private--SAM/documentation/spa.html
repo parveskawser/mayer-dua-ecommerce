@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultimate Summer Combo | FashionHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* --- Modern Palette --- */
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #f59e0b;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+            --success: #10b981;
+            --error: #ef4444;
+            /* --- Spacing & Radius --- */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --container-width: 1100px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* --- Global Reset & Typography --- */
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Layout Wrappers --- */
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* --- Modern Glass Header --- */
+        .header {
+            /* Semi-transparent white */
+            background: rgba(255, 255, 255, 0.85);
+            
+            /* The Blur Magic */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* For Safari */
+            
+            /* Remove heavy shadow, add subtle border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            
+            padding: 0.8rem 0; /* Slightly sleeker height */
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        section { margin-bottom: 2rem; }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        /* --- Hero / Combo Info --- */
+        .combo-info {
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+            .combo-info h1 {
+                font-size: 2.25rem;
+                font-weight: 800;
+                margin-bottom: 0.5rem;
+                color: #111827;
+                line-height: 1.2;
+            }
+
+            .combo-info p {
+                color: var(--text-muted);
+                font-size: 1.1rem;
+                max-width: 600px;
+                margin: 0 auto 1.5rem auto;
+            }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .combo-btn {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+            .combo-btn:hover {
+                background-color: var(--primary-hover);
+                transform: translateY(-1px);
+            }
+
+        .status-btn {
+            background-color: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            margin-left: 10px;
+        }
+
+            .status-btn:hover {
+                background-color: #f9fafb;
+                border-color: #d1d5db;
+            }
+
+        /* --- Scarcity Bar --- */
+        .scarcity-section {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .stock-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 99px;
+            margin: 8px auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            border-radius: 99px;
+            transition: width 1s ease-in-out;
+        }
+
+        .hurry-text {
+            font-size: 0.875rem;
+            color: var(--error);
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* --- Price Section --- */
+        .price-section { text-align: center; }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .old-price {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-left: 0.5rem;
+            font-weight: 400;
+        }
+
+        .offer-text {
+            background: #ecfdf5;
+            color: #065f46;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Images & Gallery --- */
+        .product-image img.main-img {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: var(--radius-lg);
+            display: block;
+            margin: 0 auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-gallery {
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .carousel {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .slide { display: none; width: 100%; height: auto; }
+        .slide.active { display: block; }
+
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.8);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prev { left: 10px; }
+        .next { right: 10px; }
+        .prev:hover, .next:hover { background: white; }
+
+        /* --- Description & Testimonials --- */
+        .description, .testimonials {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+            .description h2, .testimonials h2 {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-row:last-child { border-bottom: none; }
+
+        .review {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .review-text {
+            font-style: italic;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .reviewer {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* =========================================
+           ORDER SECTION
+           ========================================= */
+        .order-section {
+            max-width: var(--container-width);
+            margin: 2rem auto 4rem auto;
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+        }
+
+            .order-section h2 {
+                text-align: center;
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+        .order-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            grid-template-areas:
+                "billing summary"
+                "payment summary";
+            align-items: start;
+        }
+
+        .billing {
+            grid-area: billing;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .order-summary {
+            grid-area: summary;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 100px;
+            align-self: flex-start;
+        }
+
+        .payment-section {
+            grid-area: payment;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+            .payment-section h3 {
+                margin-top: 0;
+                margin-bottom: 1.5rem;
+                font-size: 1.5rem;
+                color: var(--text-main);
+                text-align: center;
+            }
+
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-option {
+            position: relative;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            text-align: center;
+            min-height: 100px;
+        }
+
+            .payment-option:hover {
+                border-color: var(--primary);
+                background: #f0f9ff;
+                transform: translateY(-2px);
+            }
+
+            .payment-option input[type="radio"] {
+                width: 20px;
+                height: 20px;
+                margin: 0;
+                cursor: pointer;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+
+            .payment-option label {
+                margin: 0;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0;
+            }
+
+            .payment-option.selected {
+                border-color: var(--primary);
+                background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            }
+
+        .payment-logo {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .payment-section .submit-btn {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+        }
+
+            .payment-section .submit-btn:hover { background-color: var(--primary-hover); }
+
+        .billing .submit-btn { display: none; }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+            margin-top: 1rem;
+        }
+
+        .required-star { color: var(--error); }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            background: #fff;
+        }
+
+            input:focus, select:focus, textarea:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+        
+        /* --- Address Grid System --- */
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* --- Variant Chips --- */
+        .variant-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .variant-chip {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+            .variant-chip:hover {
+                border-color: var(--primary);
+                background: #eff6ff;
+            }
+
+            .variant-chip.selected {
+                background: var(--text-main);
+                color: white;
+                border-color: var(--text-main);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            }
+
+        /* --- Quantity Controls --- */
+        .qty-row {
+            margin-top: 1.5rem;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quantity-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .quantity-wrapper button {
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                border: 1px solid #d1d5db;
+                background: white;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        #quantity {
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0;
+        }
+
+        /* --- Receipt Table --- */
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+            .receipt-table th, .receipt-table td {
+                padding: 0.75rem 0;
+                text-align: right;
+                border-bottom: 1px dashed #e5e7eb;
+            }
+
+                .receipt-table th:first-child, .receipt-table td:first-child { text-align: left; }
+
+            .receipt-table tfoot th {
+                border-top: 2px solid #374151;
+                color: #111827;
+                font-size: 1.1rem;
+                padding-top: 1rem;
+                border-bottom: none;
+            }
+
+        #order-variant-image-holder {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        #mobile-order-variant-image-holder { display: none; }
+
+        /* --- Modal CSS --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 600px;
+            border-radius: var(--radius-lg);
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover { color: #000; }
+
+        #status-lookup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #status-lookup-form input { text-align: center; }
+
+        .status-pending { background-color: #ffeeba; color: #856404; }
+        .status-shipped { background-color: #cce5ff; color: #004085; }
+        .status-returned { background-color: #e2e3e5; color: #383d41; }
+
+        .receipt-container {
+            border: 2px dashed #ddd;
+            background-color: #fffbf0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .receipt-title {
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .receipt-header-details p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .receipt-summary-table {
+            width: 100%;
+            margin-top: 15px;
+            border-top: 2px dashed #ccc;
+            border-collapse: collapse;
+        }
+
+        .receipt-summary-table td, .receipt-summary-table th {
+            padding: 8px 0;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .receipt-summary-table th {
+            text-align: left;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .receipt-container tr td.qty { text-align: center; }
+        .receipt-container tr td.price, .receipt-container tr td.total { text-align: right; }
+
+        .discount-amount { color: #dc3545; }
+
+        .grand-total-row th, .grand-total-row td {
+            border-top: 2px dashed #333;
+            border-bottom: 2px dashed #333;
+            font-weight: 900;
+            font-size: 1.1rem;
+            padding: 10px 0;
+            color: #000;
+        }
+
+        .thank-you-message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #777;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .logo {
+            height: 45px; /* Slightly larger for the new icon */
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .order-container {
+                grid-template-columns: 1fr;
+                grid-template-areas: "billing" "summary" "payment";
+                gap: 1.5rem;
+            }
+            .billing, .order-summary, .payment-section { width: 100%; position: static; }
+            .payment-options { grid-template-columns: 1fr; gap: 0.75rem; }
+            .payment-option { flex-direction: row; justify-content: flex-start; padding: 1rem; min-height: auto; }
+            .payment-option input[type="radio"] { position: static; margin-right: 0.75rem; }
+            .payment-option label { flex-direction: row; width: auto; }
+            .form-row-2 { grid-template-columns: 1fr; }
+            #mobile-order-variant-image-holder { display: block; margin-bottom: 1rem; }
+            #order-variant-image-holder { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <a href="#" style="text-decoration: none;">
+                <div style="display: inline-block; border: 3px solid #1f2937; padding: 8px 20px; text-transform: uppercase;">
+                    <span style="font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.5rem; color: #1f2937; letter-spacing: 2px;">
+                        FASHION
+                    </span>
+                    <span style="font-family: sans-serif; font-weight: 300; font-size: 1.5rem; color: #2563eb;">
+                        HUB
+                    </span>
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="combo-info card">
+            <h1>🎉 Ultimate Summer Combo Pack 🎉</h1>
+            <p>Experience the best of style and comfort with our exclusive summer collection. Limited edition items specifically curated for you.</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="#order" class="btn combo-btn">Order Now</a>
+                <button class="btn status-btn" id="open-status-modal">Track My Order</button>
+            </div>
+        </section>
+
+        <section class="scarcity-section">
+            <p class="stock-text">Only 12 items left in stock!</p>
+            <div class="stock-bar">
+                <div class="stock-fill" style="width: 85%;"></div>
+            </div>
+            <p class="hurry-text">Hurry! Selling fast 🚀</p>
+        </section>
+
+        <section class="price-section">
+            <div class="card" style="display: inline-block; padding: 1.5rem 3rem;">
+                <p class="price">Tk. 1,500 <span class="old-price">Tk. 2,200</span></p>
+                <p class="offer-text">💰 Cash on delivery available</p>
+            </div>
+        </section>
+
+        <section class="product-image">
+            <img src="https://placehold.co/800x600/f3f4f6/333?text=Main+Product+Image" alt="Main Product" class="combo main-img" id="main-product-img" />
+        </section>
+
+        <section class="product-gallery card">
+            <h2>Product Gallery</h2>
+            <div class="carousel">
+                <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+                <div class="slides">
+                    <img src="https://placehold.co/800x400/f3f4f6/333?text=Slide+1" class="slide active" alt="Slide 1" />
+                    <img src="https://placehold.co/800x400/e5e7eb/333?text=Slide+2" class="slide" alt="Slide 2" />
+                    <img src="https://placehold.co/800x400/d1d5db/333?text=Slide+3" class="slide" alt="Slide 3" />
+                </div>
+                <button class="next" onclick="changeSlide(1)">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="description card">
+            <h2>Product Details</h2>
+            <div class="detail-row"><span class="detail-icon">🧵</span><p><strong>Fabric:</strong> 100% Premium Cotton</p></div>
+            <div class="detail-row"><span class="detail-icon">🎨</span><p><strong>Color:</strong> Fade-resistant dyes</p></div>
+            <div class="detail-row"><span class="detail-icon">🛡️</span><p><strong>Warranty:</strong> 6 Months Color Guarantee</p></div>
+        </section>
+
+        <section class="testimonials card">
+            <h2>What Our Customers Say</h2>
+            <div class="reviews">
+                <div class="review"><p class="review-text">"The quality is absolutely amazing for the price. Highly recommended!"</p><p class="reviewer">– Rahim Ahmed</p></div>
+                <div class="review"><p class="review-text">"Fast delivery and the packaging was great. Will order again."</p><p class="reviewer">– Tanvir Hasan</p></div>
+            </div>
+        </section>
+
+        <section id="order" class="order-section">
+            <h2>Place Your Order</h2>
+            <div class="order-container">
+
+                <div class="billing">
+                    <form id="order-form">
+                        
+                        <div class="variant-selection-area">
+                            <label class="section-label">Select Color:</label>
+                            <div class="variant-chips-container" id="container-color">
+                                <div class="variant-chip selected" onclick="selectChip(this)">Black</div>
+                                <div class="variant-chip" onclick="selectChip(this)">Navy Blue</div>
+                                <div class="variant-chip" onclick="selectChip(this)">Charcoal</div>
+                            </div>
+
+                            <label class="section-label">Select Size:</label>
+                            <div class="variant-chips-container" id="container-size">
+                                <div class="variant-chip" onclick="selectChip(this)">M</div>
+                                <div class="variant-chip selected" onclick="selectChip(this)">L</div>
+                                <div class="variant-chip" onclick="selectChip(this)">XL</div>
+                            </div>
+                        </div>
+
+                        <div id="mobile-order-variant-image-holder">
+                            <img id="mobile-order-variant-image" src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant" alt="Selected Variant" style="width: 100%; height: 200px; object-fit: contain;" />
+                        </div>
+
+                        <div class="form-row-2">
+                            <div>
+                                <label>Phone Number <span class="required-star">*</span></label>
+                                <input type="tel" placeholder="017XXXXXXXX" required />
+                            </div>
+                            <div>
+                                <label>Full Name <span class="required-star">*</span></label>
+                                <input type="text" placeholder="Your Name" required />
+                            </div>
+                        </div>
+
+                       <div class="address-section">
+    <div style="background: #f0f9ff; padding: 10px; border-radius: 8px; margin-top: 15px; border: 1px solid #bae6fd;">
+        <label style="margin-top:0;">Postal Code (Auto-Fill) <span class="required-star">*</span></label>
+        <input type="text" id="postal-code" placeholder="e.g. 1212" style="font-weight: bold; color: var(--primary);" />
+        <small style="color: var(--text-muted); font-size: 0.8rem;">Type <strong>1212</strong> to test auto-filling address.</small>
+    </div>
+
+    <div class="form-row-2">
+        <div>
+            <label>Division <span class="required-star">*</span></label>
+            <select id="division" required>
+                <option value="">Select Division...</option>
+                </select>
+        </div>
+        <div>
+            <label>District <span class="required-star">*</span></label>
+            <select id="district" required disabled>
+                <option value="">Select Division First...</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row-2">
+        <div>
+            <label>Thana <span class="required-star">*</span></label>
+            <select id="thana" required disabled>
+                <option value="">Select District First...</option>
+            </select>
+        </div>
+        <div>
+            <label>Sub Office <span class="required-star">*</span></label>
+            <select id="sub-office" required disabled>
+                <option value="">Select Thana First...</option>
+            </select>
+        </div>
+    </div>
+
+    <label>Street Address <span class="required-star">*</span></label>
+    <textarea placeholder="House No, Road No, Area..." rows="2" required></textarea>
+</div>
+                        <div class="qty-row">
+                            <label style="margin:0;">Quantity</label>
+                            <div class="quantity-wrapper">
+                                <button type="button" onclick="updateQty(-1)">-</button>
+                                <input type="number" id="quantity" value="1" min="1" readonly />
+                                <button type="button" onclick="updateQty(1)">+</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="order-summary">
+                    <div id="order-variant-image-holder">
+                        <img id="order-variant-image" src="https://placehold.co/400x300/f3f4f6/333?text=Selected+Variant" alt="Selected Variant" style="width: 100%; height: 200px; object-fit: contain;" />
+                    </div>
+
+                    <h3 style="margin-top:0;">Your Receipt</h3>
+                    <table class="receipt-table">
+                        <thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="receipt-item-name">Combo Pack (L, Black)</div></td>
+                                <td id="summary-qty">1</td>
+                                <td id="summary-subtotal">Tk. 1,500</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><th colspan="2">Delivery</th><th id="receipt-delivery">Tk. 60</th></tr>
+                            <tr class="grand-total"><th colspan="2">Total</th><th id="receipt-grand-total">Tk. 1,560</th></tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="payment-section">
+                    <h3>Choose Payment Method</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod" checked>
+                            <label>
+                                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" alt="Cash on Delivery" class="payment-logo">
+                                <span>Cash on Delivery</span>
+                            </label>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod">
+                            <label>
+                                 <img src=https://upload-wikimedia-org.translate.goog/wikipedia/en/6/68/BKash_logo.svg?_x_tr_sl =en&_x_tr_tl =bn&_x_tr_hl =bn&_x_tr_pto =tc"
+                                    alt="bKash" class="payment-logo">
+                                <span>bKash</span>
+                            </label>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod">
+                            <label>
+                                <div style="display: flex; gap:5px; justify-content:center;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" class="payment-logo" style="width: auto; height: 15px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="payment-logo" style="width: auto; height: 20px;">
+                                </div>
+                                <span style="margin-left: 5px;">Card</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="final-submit-btn" form="order-form">Confirm Order</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="order-status-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Track Your Order 📦</h3>
+            <p>Please enter your <strong>Online Order ID</strong> to check the status of your purchase.</p>
+            <form id="status-lookup-form">
+                <input type="text" id="order-id-input" name="OrderId" placeholder="Enter your Order ID (e.g., ON00012345)" required />
+                <button type="submit" class="btn submit-btn">Check Status</button>
+            </form>
+            <div id="status-result" class="status-result-area"></div>
+            <div id="status-loading" class="text-center" style="display: none; padding: 20px;">
+                <div class="spinner"></div>
+                <p>Loading order details...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container" style="text-align: center; padding: 2rem 0; color: #666;">
+            <p>© 2025 MDUA System. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Gallery Slider
+        let slideIndex = 0;
+        const slides = document.querySelectorAll(".slide");
+        function showSlide(index) {
+            if (index >= slides.length) slideIndex = 0;
+            if (index < 0) slideIndex = slides.length - 1;
+            slides.forEach(slide => slide.classList.remove("active"));
+            slides[slideIndex].classList.add("active");
+        }
+        function changeSlide(n) { showSlide(slideIndex += n); }
+
+        // Chip Selection
+        function selectChip(el) {
+            const container = el.parentElement;
+            container.querySelectorAll('.variant-chip').forEach(sib => sib.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // Quantity Logic
+        function updateQty(n) {
+            const qtyInput = document.getElementById('quantity');
+            let currentVal = parseInt(qtyInput.value);
+            let newVal = currentVal + n;
+            if (newVal < 1) newVal = 1;
+            qtyInput.value = newVal;
+            document.getElementById('summary-qty').innerText = newVal;
+            document.getElementById('summary-subtotal').innerText = 'Tk. ' + (newVal * 1500).toLocaleString();
+            document.getElementById('receipt-grand-total').innerText = 'Tk. ' + ((newVal * 1500) + 60).toLocaleString();
+        }
+
+        // Payment Selection
+        function selectPayment(el) {
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.querySelector('input[type="radio"]').checked = false;
+            });
+            el.classList.add('selected');
+            el.querySelector('input[type="radio"]').checked = true;
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+$(document).ready(function () {
+const locationData = {
+        "Dhaka": {
+            "Dhaka": {
+                "Gulshan": [
+                    { name: "Gulshan Model Town", code: "1212" },
+                    { name: "Banani", code: "1213" },
+                    { name: "Niketan", code: "1212" }
+                ],
+                "Mirpur": [
+                    { name: "Mirpur-1", code: "1216" },
+                    { name: "Mirpur-10", code: "1216" },
+                    { name: "Pallabi", code: "1216" }
+                ],
+                "Dhanmondi": [
+                    { name: "Dhanmondi R/A", code: "1209" },
+                    { name: "Jigatola", code: "1209" }
+                ]
+            },
+            "Gazipur": {
+                "Gazipur Sadar": {
+                    "Joydebpur": [
+                        { name: "Joydebpur Head Office", code: "1700" },
+                        { name: "Baoaid", code: "1702" }
+                    ]
+                }
+            }
+        },
+        "Chittagong": {
+            "Chittagong": {
+                "Pahartali": [
+                    { name: "Pahartali", code: "4202" },
+                    { name: "Wireless", code: "4202" }
+                ],
+                "Panchlaish": [
+                    { name: "Nasirabad", code: "4209" },
+                    { name: "Muradpur", code: "4209" }
+                ]
+            },
+            "Comilla": {
+                "Comilla Sadar": [
+                    { name: "Comilla HO", code: "3500" },
+                    { name: "Kandirpar", code: "3500" }
+                ]
+            }
+        }
+    };
+
+    // --- 2. HELPER TO POPULATE SELECTS ---
+    function populateSelect(selector, options, defaultText = "Select...") {
+        const $el = $(selector);
+        $el.empty().append(`<option value="">${defaultText}</option>`);
+
+        if (options) {
+            $el.prop('disabled', false);
+
+            if (Array.isArray(options)) {
+                // It's the Sub-Office Array (contains Objects {name, code})
+                options.forEach(opt => {
+                    // We add data-code attribute here so we can read it later
+                    $el.append(`<option value="${opt.name}" data-code="${opt.code}">${opt.name}</option>`);
+                });
+            } else {
+                // It's a Division/District/Thana Object (keys are names)
+                Object.keys(options).forEach(key => {
+                    $el.append(`<option value="${key}">${key}</option>`);
+                });
+            }
+        } else {
+            $el.prop('disabled', true);
+        }
+    }
+
+    // --- 3. INITIALIZATION ---
+    populateSelect('#division', locationData, "Select Division...");
+
+
+    // --- 4. CASCADE EVENTS (Dropdown Logic) ---
+    
+    // Division -> District
+    $('#division').on('change', function() {
+        const div = $(this).val();
+        const distData = div ? locationData[div] : null;
+        
+        populateSelect('#district', distData, "Select District...");
+        populateSelect('#thana', null, "Select District First...");
+        populateSelect('#sub-office', null, "Select Thana First...");
+        $('#postal-code').val(''); // Clear code on reset
+    });
+
+    // District -> Thana
+    $('#district').on('change', function() {
+        const div = $('#division').val();
+        const dist = $(this).val();
+        const thanaData = (div && dist) ? locationData[div][dist] : null;
+        
+        populateSelect('#thana', thanaData, "Select Thana...");
+        populateSelect('#sub-office', null, "Select Thana First...");
+        $('#postal-code').val('');
+    });
+
+    // Thana -> Sub Office
+    $('#thana').on('change', function() {
+        const div = $('#division').val();
+        const dist = $('#district').val();
+        const thana = $(this).val();
+        const subData = (div && dist && thana) ? locationData[div][dist][thana] : null;
+        
+        populateSelect('#sub-office', subData, "Select Sub Office...");
+        $('#postal-code').val('');
+    });
+
+    // --- 5. REVERSE AUTOFILL (Sub Office -> Postal Code) ---
+    // This runs when you select the Sub Office from the dropdown
+    $('#sub-office').on('change', function() {
+        // Get the 'data-code' from the selected option
+        const code = $(this).find(':selected').data('code');
+        
+        if (code) {
+            $('#postal-code').val(code).css('border-color', 'var(--success)');
+        } else {
+            $('#postal-code').val('').css('border-color', '#d1d5db');
+        }
+    });
+
+    // --- 6. FORWARD AUTOFILL (Postal Code -> Dropdowns) ---
+    // Only works for the sample "1212" to avoid complex reverse-search logic in this snippet
+    $('#postal-code').on('keyup', function() {
+        const code = $(this).val().trim();
+        
+        if (code === '1212') {
+            // Manually trigger the cascade sequence
+            $('#division').val('Dhaka').trigger('change');
+            $('#district').val('Dhaka').trigger('change');
+            $('#thana').val('Gulshan').trigger('change');
+            $('#sub-office').val('Gulshan Model Town').trigger('change'); // This will re-trigger block #5, which confirms the code
+        }
+    });
+
+    // --- 7. ORDER TRACKING / MODAL LOGIC (Existing) ---
+    const modal = $('#order-status-modal');
+    const openBtn = $('#open-status-modal');
+    const closeBtn = modal.find('.close-btn');
+    const lookupForm = $('#status-lookup-form');
+    const resultArea = $('#status-result');
+    const loading = $('#status-loading');
+
+    openBtn.on('click', function () {
+        modal.css('display', 'block');
+        $('#order-id-input').val('');
+        resultArea.empty();
+        loading.hide();
+    });
+
+    closeBtn.on('click', function () { modal.css('display', 'none'); });
+    $(window).on('click', function (event) { if ($(event.target).is(modal)) modal.css('display', 'none'); });
+
+    lookupForm.on('submit', function (e) {
+        e.preventDefault();
+        const orderIdInput = $('#order-id-input').val().trim();
+        if (orderIdInput === "") {
+            resultArea.html('<p style="color: red;">Please enter a valid Online Order ID.</p>');
+            return;
+        }
+        resultArea.empty();
+        loading.show();
+
+        // MOCK DATA RESPONSE
+        setTimeout(function() {
+            loading.hide();
+            const mockData = {
+                orderFound: true,
+                orderId: orderIdInput || "ON12345678",
+                status: "Shipped",
+                formattedOrderDate: "02 Dec 2025",
+                estimatedDelivery: "05 Dec 2025",
+                customerName: "Inaya",
+                customerAddress: "123 Fashion Street, Dhaka",
+                discountAmount: 100,
+                deliveryCharge: 60,
+                netAmount: 1400,
+                grandTotal: 1460,
+                lineItems: [{ productName: "Summer Combo (Black, L)", qty: 1, price: 1500, lineTotal: 1500 }]
+            };
+
+            if (mockData && mockData.orderFound) {
+                const totalAmount = mockData.lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+                let lineItemHtml = mockData.lineItems.map(item => `
+                    <tr><td>${item.productName}</td><td class="qty">${item.qty}</td><td class="price">Tk. ${parseFloat(item.price).toFixed(2)}</td><td class="total">Tk. ${parseFloat(item.lineTotal).toFixed(2)}</td></tr>
+                `).join('');
+
+                resultArea.html(`
+                    <div class="receipt-container">
+                        <p class="receipt-title">Order Details</p>
+                        <div class="receipt-header-details">
+                            <p><strong>Order ID:</strong> ${mockData.orderId}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${mockData.status.toLowerCase()}">${mockData.status}</span></p>
+                            <p><strong>Order Date:</strong> ${mockData.formattedOrderDate}</p>
+                            <p><strong>Estimated Delivery:</strong> ${mockData.estimatedDelivery}</p>
+                            <p><strong>Customer:</strong> ${mockData.customerName}</p>
+                            <p><strong>Ship To:</strong> ${mockData.customerAddress}</p>
+                        </div>
+                        <table class="receipt-summary-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${lineItemHtml}</tbody></table>
+                        <table class="receipt-summary-table" style="margin-top:10px; border-top:none;">
+                            <tr><th>Sub Total (Items)</th><td>Tk. ${totalAmount.toFixed(2)}</td></tr>
+                            <tr><th>Discount</th><td class="discount-amount">(-) Tk. ${parseFloat(mockData.discountAmount).toFixed(2)}</td></tr>
+                            <tr><th>Net Amount</th><td>Tk. ${parseFloat(mockData.netAmount).toFixed(2)}</td></tr>
+                            <tr><th>Delivery Charge</th><td>(+) Tk. ${parseFloat(mockData.deliveryCharge).toFixed(2)}</td></tr>
+                            <tr class="grand-total-row"><th>Grand Total (COD)</th><td>Tk. ${parseFloat(mockData.grandTotal).toFixed(2)}</td></tr>
+                        </table>
+                        <p class="thank-you-message">Thank you for placing your order!</p>
+                    </div>
+                `);
+            }
+        }, 1000);
+    });
+});
+</script>
+</body>
+</html>

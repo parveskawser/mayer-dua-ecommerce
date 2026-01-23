@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Limit Reached";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Retrieve data from Controller
+    int current = ViewBag.CurrentUsage ?? 0;
+    int limit = ViewBag.Limit ?? 0;
+    // Default to "Order" if not provided
+    string feature = ViewBag.Feature ?? "Order";
+
+    bool isOrder = feature == "Order";
+}
+
+<div class="container text-center mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-body p-5">
+            <div class="mb-4">
+                <span class="fa-stack fa-4x">
+                    <i class="fas fa-circle fa-stack-2x text-danger"></i>
+                    <i class="fas fa-lock fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+
+            <h1 class="h3 mb-3 font-weight-bold text-gray-800">@feature Limit Reached!</h1>
+
+            <p class="lead text-muted">
+                You have used <strong>@current</strong> @(isOrder ? "orders" : "products"),
+                but your plan limit is <strong>@limit</strong>.
+            </p>
+
+            @if (isOrder && ViewBag.PendingOrders > 0)
+            {
+                <div class="alert alert-warning d-inline-block text-left p-4 my-3">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Action Required</h5>
+                    <p class="mb-0">
+                        You have <strong>@ViewBag.PendingOrders new orders</strong> waiting to be processed.
+                        <br />
+                        These orders have been received successfully, but you cannot view or ship them until you upgrade your plan.
+                    </p>
+                </div>
+            }
+            else if (!isOrder)
+            {
+                <div class="alert alert-info d-inline-block text-left p-4 my-3">
+                    <h5><i class="fas fa-box-open"></i> Capacity Full</h5>
+                    <p class="mb-0">
+                        You cannot create any new products until you upgrade your subscription or archive old products.
+                    </p>
+                </div>
+            }
+
+            <div class="mt-4">
+                <a href="@Url.Action("MySubscription", "Subscription")" class="btn btn-success btn-lg px-5 shadow-sm">
+                    <i class="fas fa-rocket"></i> Upgrade Plan Now
+                </a>
+            </div>
+
+            <div class="mt-3">
+                <a href="javascript:history.back()" class="text-muted small">Go Back</a>
+            </div>
+        </div>
+    </div>
+</div>

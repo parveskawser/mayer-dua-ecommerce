@@ -1,0 +1,126 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+using MDUA.DataAccess;
+using MDUA.DataAccess.Interface;
+using MDUA.Facade;
+using MDUA.Facade.Interface;
+
+namespace MDUA.Facade
+{
+    public static class DependencyInjection
+    {
+        public static IServiceCollection AddService(this IServiceCollection services)
+        {
+            // Data Access Layer - User & Permissions
+            services.AddScoped<IUserLoginDataAccess, UserLoginDataAccess>();
+            services.AddScoped<IPermissionGroupMapDataAccess, PermissionGroupMapDataAccess>();
+            services.AddScoped<IPermissionDataAccess, PermissionDataAccess>();
+            services.AddScoped<IPermissionGroupDataAccess, PermissionGroupDataAccess>();
+            services.AddScoped<IUserPermissionDataAccess, UserPermissionDataAccess>();
+            services.AddScoped<IPostalCodesDataAccess, PostalCodesDataAccess>();
+            services.AddScoped<IUserSessionDataAccess, UserSessionDataAccess>();
+            services.AddScoped<IUserPasskeyDataAccess, UserPasskeyDataAccess>();
+
+            // Product-related Data Access
+            services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
+            services.AddScoped<IProductDataAccess, ProductDataAccess>();
+            services.AddScoped<IProductImageDataAccess, ProductImageDataAccess>();
+            services.AddScoped<IProductReviewDataAccess, ProductReviewDataAccess>();
+            services.AddScoped<IProductVariantDataAccess, ProductVariantDataAccess>();
+            services.AddScoped<IProductDiscountDataAccess, ProductDiscountDataAccess>();
+            services.AddScoped<IProductCategoryDataAccess, ProductCategoryDataAccess>();
+            services.AddScoped<IProductAttributeDataAccess, ProductAttributeDataAccess>();
+            services.AddScoped<IProductVideoDataAccess, ProductVideoDataAccess>();
+            services.AddScoped<IBackInStockRequestDataAccess, BackInStockRequestDataAccess>();
+
+            // Variant & Stock
+            services.AddScoped<IVariantImageDataAccess, VariantImageDataAccess>();
+            services.AddScoped<IVariantPriceStockDataAccess, VariantPriceStockDataAccess>();
+
+            // Company
+            services.AddScoped<ICompanyDataAccess, CompanyDataAccess>();
+
+            // Order Facade Requirements
+            services.AddScoped<ISalesOrderHeaderDataAccess, SalesOrderHeaderDataAccess>();
+            services.AddScoped<ISalesOrderDetailDataAccess, SalesOrderDetailDataAccess>();
+            services.AddScoped<ICustomerDataAccess, CustomerDataAccess>();
+            services.AddScoped<ICompanyCustomerDataAccess, CompanyCustomerDataAccess>();
+            services.AddScoped<ICompanyVendorDataAccess, CompanyVendorDataAccess>();
+
+            services.AddScoped<IAddressDataAccess, AddressDataAccess>();
+
+            // ✅ Purchase Facade Requirements (Inventory & POs)
+            services.AddScoped<IPoRequestedDataAccess, PoRequestedDataAccess>();
+            services.AddScoped<IPoReceivedDataAccess, PoReceivedDataAccess>();
+            services.AddScoped<IVendorDataAccess, VendorDataAccess>();
+
+            // ✅ Required for stock transaction logging
+            services.AddScoped<IInventoryTransactionDataAccess, InventoryTransactionDataAccess>();
+
+            // ✅ RESTORED MISSING LINE: Bulk Purchase Order
+            services.AddScoped<IBulkPurchaseOrderDataAccess, BulkPurchaseOrderDataAccess>();
+
+            services.AddScoped<IChatDataAccess, MDUA.DataAccess.ChatDataAccess>();
+
+            // Payment Related
+            services.AddScoped<IPaymentMethodDataAccess, PaymentMethodDataAccess>();
+            services.AddScoped<ICompanyPaymentMethodDataAccess, CompanyPaymentMethodDataAccess>();
+
+            // ✅ ADDED THIS (Required for PaymentFacade)
+            services.AddScoped<ICustomerPaymentDataAccess, CustomerPaymentDataAccess>();
+
+            //Global Settings
+            services.AddScoped<IGlobalSettingDataAccess, GlobalSettingDataAccess>();
+
+            services.AddScoped<IDeliveryDataAccess, DeliveryDataAccess>();
+            services.AddScoped<IDeliveryItemDataAccess, DeliveryItemDataAccess>();
+            services.AddScoped<IDeliveryStatusLogDataAccess, DeliveryStatusLogDataAccess>();
+
+            services.AddScoped<IEmailHistoryDataAccess, EmailHistoryDataAccess>();
+            services.AddScoped<IEmailTemplateDataAccess, EmailTemplateDataAccess>();
+            services.AddScoped<IVendorPaymentDataAccess, VendorPaymentDataAccess>();
+
+            services.AddScoped<ICompanySubscriptionDataAccess, CompanySubscriptionDataAccess>();
+            services.AddScoped<ISubscriptionUsageDataAccess, SubscriptionUsageDataAccess>();
+            services.AddScoped<ISubscriptionPlanDataAccess, SubscriptionPlanDataAccess>();
+            services.AddScoped<IAttributeNameDataAccess, AttributeNameDataAccess>();
+            services.AddScoped<IAttributeValueDataAccess, AttributeValueDataAccess>();
+            services.AddScoped<ICmsPageDataAccess, CmsPageDataAccess>();
+            services.AddScoped<ICmsAssetDataAccess, CmsAssetDataAccess>();
+            services.AddScoped<IProductSEODataAccess, ProductSEODataAccess>();
+
+            // Facade Layer
+            services.AddServiceFacade();
+
+            return services;
+        }
+
+        private static void AddServiceFacade(this IServiceCollection services)
+        {
+            // ✅ FIX: Register HttpClient so SmsService can use it
+            services.AddHttpClient();
+            services.AddScoped<IUserLoginFacade, UserLoginFacade>();
+            services.AddScoped<IProductFacade, ProductFacade>();
+            services.AddScoped<IProductCategoryFacade, ProductCategoryFacade>();
+            services.AddScoped<IOrderFacade, OrderFacade>();
+            services.AddScoped<ICustomerFacade, CustomerFacade>();
+            services.AddScoped<ICompanyFacade, CompanyFacade>();
+            services.AddScoped<IChatFacade, ChatFacade>();
+            services.AddScoped<IPurchaseFacade, PurchaseFacade>();
+            services.AddScoped<IPaymentMethodFacade, PaymentMethodFacade>(); // Admin setup facade
+            services.AddScoped<ISettingsFacade, SettingsFacade>();
+            services.AddScoped<IDeliveryFacade, DeliveryFacade>();
+            services.AddScoped<IVendorFacade, VendorFacade>();
+
+
+            // ✅ ADDED THIS (Required for OrderController)
+            services.AddScoped<IPaymentFacade, PaymentFacade>();
+            services.AddScoped<ISmsService, SmsService>();
+            services.AddScoped<IDeliveryStatusLogFacade, DeliveryStatusLogFacade>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ISubscriptionSystemFacade, SubscriptionSystemFacade>();
+            services.AddScoped<IAttributeFacade, AttributeFacade>();
+            services.AddScoped<ICmsFacade, CmsFacade>();
+
+        }
+    }
+}

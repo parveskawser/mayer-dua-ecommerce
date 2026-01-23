@@ -1,0 +1,83 @@
+﻿@model MDUA.Entities.CmsPage
+@{
+    ViewData["Title"] = Model.MetaTitle ?? Model.Title;
+    Layout = ViewData["CmsLayout"]?.ToString() ?? "_CmsSingleColumn";
+
+    // Fallback: Check ViewBag if passed separately, or use a default
+    string ogImageUrl = "/images/default-og.jpg"; // Default
+
+    // Logic to find the active social image
+    if (ViewBag.ImageAssets != null)
+    {
+        var imgs = (List<MDUA.Entities.CmsAsset>)ViewBag.ImageAssets;
+        var specificImg = imgs.FirstOrDefault();
+        if (specificImg != null)
+        {
+            ogImageUrl = specificImg.FilePath;
+        }
+    }
+}
+
+@section Head {
+    @* 1. Standard SEO Meta Tags *@
+    @if (!string.IsNullOrEmpty(Model.MetaDescription))
+    {
+        <meta name="description" content="@Model.MetaDescription">
+        <meta property="og:description" content="@Model.MetaDescription">
+    }
+
+    <meta property="og:title" content="@(Model.MetaTitle ?? Model.Title)">
+    <meta property="og:type" content="website">
+
+    @* Calculate Absolute URL for OG tags *@
+    <meta property="og:url" content="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path">
+    <meta property="og:image" content="@Context.Request.Scheme://@Context.Request.Host@ogImageUrl">
+
+    @* 2. ✅ CUSTOM HEADER TAGS (Raw HTML Injection) *@
+    @* This allows users to add Verification codes, Twitter Cards, FB App IDs, etc. *@
+    @if (!string.IsNullOrEmpty(Model.CustomHeaderTags))
+    {
+        @Html.Raw(Model.CustomHeaderTags)
+    }
+
+    @* 3. Inject Uploaded CSS Files *@
+    @if (ViewBag.CssAssets != null)
+    {
+        foreach (var asset in (List<MDUA.Entities.CmsAsset>)ViewBag.CssAssets)
+        {
+            <link rel="stylesheet" href="@asset.FilePath?v=@asset.Version">
+        }
+    }
+
+    @* 4. Inject Inline Custom CSS *@
+    @if (!string.IsNullOrEmpty(Model.CustomCss))
+    {
+        <style>
+            @Html.Raw(Model.CustomCss)
+        </style>
+    }
+}
+
+@* Main Content Area *@
+<div class="cms-page-content">
+    @Html.Raw(Model.ContentHtml)
+</div>
+
+@* Inject Custom JS Files *@
+@section Scripts {
+    @if (ViewBag.JsAssets != null)
+    {
+        foreach (var asset in (List<MDUA.Entities.CmsAsset>)ViewBag.JsAssets)
+        {
+            <script src="@asset.FilePath?v=@asset.Version"></script>
+        }
+    }
+
+    @* Inject Inline Custom JS *@
+    @if (!string.IsNullOrEmpty(Model.CustomJs))
+    {
+        <script>
+            @Html.Raw(Model.CustomJs)
+        </script>
+    }
+}

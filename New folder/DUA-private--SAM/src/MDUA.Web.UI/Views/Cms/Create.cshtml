@@ -1,0 +1,694 @@
+﻿@model MDUA.Entities.CmsPage
+@using MDUA.Web.UI.Extensions
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Create New Page" : "Edit Page";
+    Layout = "_AdminLayout";
+    bool isEdit = Model.Id > 0;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --cms-primary: #d32f2f;
+        --cms-accent: #ffc107;
+        --cms-bg: #f8f9fa;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #d32f2f 0%, #ff5252 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--cms-primary);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .section-title {
+        font-weight: 600;
+        color: #2d3748;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .layout-grid {
+        display: flex;
+        gap: 15px;
+    }
+
+    .layout-option {
+        flex: 1;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+        position: relative;
+    }
+
+        .layout-option:hover {
+            border-color: var(--cms-accent);
+            transform: translateY(-2px);
+        }
+
+        .layout-option.active-layout {
+            border-color: var(--cms-primary);
+            background-color: #fff5f5;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2);
+        }
+
+            .layout-option.active-layout::after {
+                content: '\2713';
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                width: 24px;
+                height: 24px;
+                background: var(--cms-primary);
+                color: white;
+                border-radius: 50%;
+                text-align: center;
+                line-height: 24px;
+                font-weight: bold;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+
+    .CodeMirror {
+        height: 200px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+    }
+
+    .slug-preview {
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px dashed #ff9800;
+        padding: 10px;
+        border-radius: 6px;
+        font-family: monospace;
+    }
+
+    /* Tabs for Code/Upload */
+    .nav-tabs .nav-link {
+        color: #555;
+        font-weight: 600;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: #d32f2f;
+            border-top: 2px solid #d32f2f;
+            border-bottom-color: white;
+        }
+
+    .tab-content {
+        padding-top: 15px;
+    }
+
+    .file-list-item {
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+        .file-list-item i {
+            color: #28a745;
+            margin-right: 5px;
+        }
+
+    /* Previews Styles */
+    .preview-stage {
+        width: 100%;
+        height: 80px;
+        background: #eee;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .pv-header {
+        height: 12px;
+        background: #d32f2f;
+        width: 100%;
+    }
+
+    .pv-body-row {
+        flex-grow: 1;
+        display: flex;
+        background: white;
+    }
+
+    .pv-content {
+        flex-grow: 1;
+        background: white;
+        margin: 4px;
+        border: 1px dashed #ccc;
+    }
+
+    .pv-sidebar {
+        width: 30%;
+        background: #fff8e1;
+        border: 1px solid #ffc107;
+        margin: 4px 4px 4px 0;
+    }
+
+    .pv-footer {
+        height: 12px;
+        background: #333;
+        width: 100%;
+    }
+
+    .preview-stage.is-blank .pv-header, .preview-stage.is-blank .pv-footer {
+        display: none;
+    }
+
+    .preview-stage.is-blank .pv-content {
+        margin: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .preview-stage.is-single .pv-sidebar {
+        display: none;
+    }
+
+    /* ✅ FIX: Force Modal above Backdrop */
+    .modal-backdrop {
+        z-index: 10000 !important;
+    }
+
+    .modal {
+        z-index: 10001 !important;
+    }
+
+    /* Fix Cropper Image Sizing */
+    .img-container {
+        max-height: 500px;
+        background-color: #f7f7f7;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+        .img-container img {
+            display: block;
+            max-width: 100%;
+            max-height: 500px;
+        }
+</style>
+
+<form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="pageForm" novalidate>
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.CreatedAt)
+    @Html.HiddenFor(m => m.CompanyId)
+    @Html.HiddenFor(m => m.Version)
+    @Html.HiddenFor(m => m.PublishedAt)
+
+    <div class="container-fluid p-4">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1"><i class="fas fa-layer-group me-2"></i>@(isEdit ? "Edit Page" : "Create New Page")</h2>
+                    <p class="mb-0 opacity-75">@(isEdit ? "Update content & layout" : "Define structure & content")</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="Index" class="btn btn-light text-danger fw-bold"><i class="fas fa-times me-1"></i> Cancel</a>
+                    <button type="button" class="btn btn-light text-success fw-bold" onclick="forceSubmit()">
+                        <i class="fas fa-save me-1"></i> Save Page
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+
+                <div class="section-card">
+                    <h5 class="section-title"><i class="fas fa-sliders-h me-2 text-danger"></i>Page Settings</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Page Title <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" required placeholder="e.g. About Us">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <select asp-for="IsActive" class="form-select">
+                                <option value="true">Published</option>
+                                <option value="false">Draft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">URL Slug</label>
+                        <input asp-for="Slug" class="form-control" id="slugInput">
+                        <div class="slug-preview mt-2" id="slugPreview">/page/</div>
+                    </div>
+
+                    <label class="form-label fw-bold mt-2">Layout Template</label>
+                    <input asp-for="LayoutView" type="hidden" id="layoutInput" value="@(Model.LayoutView ?? "_CmsBlank")">
+                    <div class="layout-grid">
+                        <div class="layout-option @(Model.LayoutView == "_CmsBlank" ? "active-layout" : "")" onclick="selectLayout(this, '_CmsBlank')">
+                            <div class="preview-stage is-blank"><div class="pv-header"></div><div class="pv-body-row"><div class="pv-content"></div></div><div class="pv-footer"></div></div>
+                            <div class="text-center fw-bold mt-2">Blank</div>
+                        </div>
+                        <div class="layout-option @(Model.LayoutView == "_CmsSingleColumn" ? "active-layout" : "")" onclick="selectLayout(this, '_CmsSingleColumn')">
+                            <div class="preview-stage is-single"><div class="pv-header"></div><div class="pv-body-row"><div class="pv-content"></div></div><div class="pv-footer"></div></div>
+                            <div class="text-center fw-bold mt-2">Single</div>
+                        </div>
+                        <div class="layout-option @(Model.LayoutView == "_CmsTwoColumn" ? "active-layout" : "")" onclick="selectLayout(this, '_CmsTwoColumn')">
+                            <div class="preview-stage"><div class="pv-header"></div><div class="pv-body-row"><div class="pv-content"></div><div class="pv-sidebar"></div></div><div class="pv-footer"></div></div>
+                            <div class="text-center fw-bold mt-2">Two Col</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h5 class="section-title"><i class="fas fa-pen-fancy me-2 text-danger"></i>Main Content</h5>
+                    <textarea asp-for="ContentHtml" id="summernote"></textarea>
+                </div>
+
+                <div class="section-card" id="sidebarSection" style="display: none;">
+                    <h5 class="section-title"><i class="fas fa-columns me-2 text-warning"></i>Sidebar Widgets</h5>
+                    <textarea asp-for="SidebarContentHtml" id="sidebarEditor"></textarea>
+                </div>
+
+                <div class="section-card">
+                    <h5 class="section-title"><i class="fas fa-search me-2 text-success"></i>SEO & Social Sharing</h5>
+                    <p class="text-muted small">Manage appearance on Google, Facebook, Twitter, etc.</p>
+
+                    <ul class="nav nav-tabs mb-3" id="seoTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#seoMeta" type="button">Meta Tags</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#seoImage" type="button">Social Image</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="seoMeta">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Meta Title</label>
+                                    <input asp-for="MetaTitle" class="form-control" placeholder="Browser Tab Title">
+                                    <div class="form-text">Defaults to Page Title if empty.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Meta Description</label>
+                                    <textarea asp-for="MetaDescription" class="form-control" rows="3" placeholder="Summary for search results..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">
+                                    <i class="fas fa-code me-1"></i> Custom Header Tags (Raw HTML)
+                                </label>
+                                <textarea asp-for="CustomHeaderTags" class="form-control font-monospace" rows="4" style="font-size: 0.85rem; background-color: #f8f9fa;"
+                                          placeholder='Example:
+<meta name="twitter:card" content="summary_large_image">
+<meta property="fb:app_id" content="123456789">
+<meta name="author" content="My Company">
+'></textarea>
+                                <div class="form-text">
+                                    Paste raw HTML tags here. These will be injected into the <code>&lt;head&gt;</code>.
+                                    Useful for Twitter Cards, Facebook App IDs, or Verification tags.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="seoImage">
+                            <div class="alert alert-info small mb-3">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Image will be cropped to <strong>1200 x 630 px</strong> (Optimal for Facebook/Twitter).
+                            </div>
+
+                            <label class="form-label fw-bold">Upload New Image</label>
+                            <input type="file" id="ogImageInput" class="form-control mb-4" accept="image/*">
+
+                            <div id="activeImageContainer">
+                                @if (Model.ImageAssets != null && Model.ImageAssets.Any())
+                                {
+                                    foreach (var img in Model.ImageAssets)
+                                    {
+                                        <div class="card bg-light border-0 mb-2" id="asset-card-@img.Id">
+                                            <div class="card-body p-3">
+                                                <h6 class="fw-bold mb-3 text-success"><i class="fas fa-check-circle me-1"></i> Active Social Image</h6>
+                                                <div class="d-flex align-items-start gap-3">
+                                                    <div class="border rounded bg-white p-1" style="width: 120px; height: 63px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                                        <img src="@img.FilePath" alt="Social Share Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-bold text-dark small text-truncate" style="max-width: 200px;">@img.FileName</div>
+                                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                                            Uploaded: <span class="utc-date-text">@img.CreatedAt.ToUtcString()</span><br>
+                                                            Version: @img.Version
+                                                        </div>
+                                                        <div class="mt-2 d-flex gap-2">
+                                                            <a href="@img.FilePath" target="_blank" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.75rem;">View</a>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger py-0" style="font-size: 0.75rem;" onclick="deleteAsset(@img.Id)">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div id="pendingImageAlert" class="alert alert-warning small d-none">
+                                <i class="fas fa-clock me-1"></i> A new image has been cropped and is ready to save. Click <strong>"Save Page"</strong> to apply changes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="section-card">
+                    <h5 class="section-title"><i class="fas fa-paint-brush me-2 text-danger"></i>Custom CSS</h5>
+
+                    <ul class="nav nav-tabs" id="cssTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cssCode" type="button">Editor</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cssFile" type="button">Upload File</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="cssCode">
+                            <textarea asp-for="CustomCss" id="cssEditorInput" class="d-none"></textarea>
+                            <div id="cssEditor"></div>
+                        </div>
+                        <div class="tab-pane fade" id="cssFile">
+                            <div class="alert alert-info small mb-2">Upload .css files here. They will be linked after the inline CSS.</div>
+                            <input type="file" id="cssUploadInput" class="form-control mb-3" accept=".css" multiple>
+
+                            @if (Model.CssAssets != null && Model.CssAssets.Any())
+                            {
+                                <h6 class="fw-bold mt-2">Active Files:</h6>
+                                @foreach (var file in Model.CssAssets)
+                                {
+                                    <div class="file-list-item"><i class="fas fa-file-css"></i> @file.FileName <small class="text-muted ms-1">(v.@file.Version)</small></div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h5 class="section-title"><i class="fas fa-code me-2 text-danger"></i>Custom JS</h5>
+
+                    <ul class="nav nav-tabs" id="jsTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#jsCode" type="button">Editor</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#jsFile" type="button">Upload File</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="jsCode">
+                            <textarea asp-for="CustomJs" id="jsEditorInput" class="d-none"></textarea>
+                            <div id="jsEditor"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="jsFile">
+                            <div class="alert alert-warning small mb-2">Upload .js files here.</div>
+                            <input type="file" id="jsUploadInput" class="form-control mb-3" accept=".js" multiple>
+
+                            @if (Model.JsAssets != null && Model.JsAssets.Any())
+                            {
+                                <h6 class="fw-bold mt-2">Active Files:</h6>
+                                @foreach (var file in Model.JsAssets)
+                                {
+                                    <div class="file-list-item"><i class="fas fa-file-code"></i> @file.FileName <small class="text-muted ms-1">(v.@file.Version)</small></div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crop Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 bg-dark">
+                <div class="img-container">
+                    <img id="cropperImage" src="" alt="Picture to crop">
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRatio(1200/630)">OG (1200x630)</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRatio(1)">Square (1:1)</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRatio(NaN)">Free</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="cropAndUploadBtn">Crop & Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        var cssCM, jsCM;
+        var isSlugManuallyEdited = false;
+        var cropper;
+        var pendingImageFile = null;
+        var cropperModal;
+
+        $(document).ready(function() {
+            // ✅ FIX 1: Move Modal to Body immediately to fix "Black Drop"
+            $('#cropperModal').appendTo("body");
+
+            // Initialize Modal Instance
+            var modalEl = document.getElementById('cropperModal');
+            cropperModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+
+            // ✅ FIX 2: Cleanup on Close
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                if (cropper) { cropper.destroy(); cropper = null; }
+                $('#ogImageInput').val(''); // Clear input
+                $('.modal-backdrop').remove(); // Force remove backdrop
+                $('body').removeClass('modal-open').css('overflow', '');
+            });
+
+            $('#summernote').summernote({ height: 400 });
+            $('#sidebarEditor').summernote({ height: 250 });
+
+            // Init Editors
+            if(document.getElementById('cssEditor')) {
+                cssCM = CodeMirror(document.getElementById('cssEditor'), { value: $('#cssEditorInput').val(), mode: 'css', theme: 'monokai', lineNumbers: true });
+                $('button[data-bs-target="#cssCode"]').on('shown.bs.tab', function(){ cssCM.refresh(); });
+            }
+            if(document.getElementById('jsEditor')) {
+                jsCM = CodeMirror(document.getElementById('jsEditor'), { value: $('#jsEditorInput').val(), mode: 'javascript', theme: 'monokai', lineNumbers: true });
+                $('button[data-bs-target="#jsCode"]').on('shown.bs.tab', function(){ jsCM.refresh(); });
+            }
+
+            if ($('#layoutInput').val() === '_CmsTwoColumn') $('#sidebarSection').show();
+
+            // Slug Logic
+            if ($('#Id').val() > 0 || $('#slugInput').val().length > 0) isSlugManuallyEdited = true;
+            function updateSlugPreview() { $('#slugPreview').text('/page/' + ($('#slugInput').val() || '')); }
+            updateSlugPreview();
+            $('#slugInput').on('input', function() { isSlugManuallyEdited = true; updateSlugPreview(); });
+            $('#Title').on('input', function() {
+                if (!isSlugManuallyEdited) {
+                    let slug = $(this).val().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').substring(0, 45);
+                    $('#slugInput').val(slug);
+                    updateSlugPreview();
+                }
+            });
+
+            // ✅ FORMAT DATES TO LOCAL TIME
+            $('.utc-date-text').each(function() {
+                var raw = $(this).text();
+                // Ensure there is a 'Z' to treat as UTC, then convert
+                if(raw && raw.indexOf('Z') > -1) {
+                    var date = new Date(raw);
+                    $(this).text(date.toLocaleString());
+                }
+            });
+        });
+
+        // --- CROPPER LOGIC ---
+        window.setRatio = function(ratio) {
+            if(cropper) cropper.setAspectRatio(ratio);
+        };
+
+        $('#ogImageInput').on('change', function(e) {
+            var files = e.target.files;
+            if (files && files.length > 0) {
+                var file = files[0];
+                var url = URL.createObjectURL(file);
+                $('#cropperImage').attr('src', url);
+                cropperModal.show();
+
+                // Wait for modal to show before init cropper
+                var modalEl = document.getElementById('cropperModal');
+                $(modalEl).one('shown.bs.modal', function () {
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(document.getElementById('cropperImage'), {
+                        aspectRatio: 1200 / 630, // Default OG
+                        viewMode: 1,
+                        autoCropArea: 1
+                    });
+                });
+            }
+        });
+
+        $('#cropAndUploadBtn').on('click', function() {
+            if (!cropper) return;
+            // Get data
+            cropper.getCroppedCanvas({ width: 1200, fillColor: '#fff' }).toBlob(function (blob) {
+                pendingImageFile = blob;
+                cropperModal.hide();
+                $('#pendingImageAlert').removeClass('d-none'); // Show alert
+                Swal.fire({ icon:'success', title:'Image Cropped', text:'Click "Save Page" to apply.', timer:1500, showConfirmButton:false });
+            }, 'image/jpeg', 0.9);
+        });
+
+        // --- SUBMIT LOGIC ---
+        window.forceSubmit = function() {
+            $('#summernote').val($('#summernote').summernote('code'));
+            $('#sidebarEditor').val($('#sidebarEditor').summernote('code'));
+            if (cssCM) $('#cssEditorInput').val(cssCM.getValue());
+            if (jsCM) $('#jsEditorInput').val(jsCM.getValue());
+
+            var title = $('#Title').val();
+            if(!title) { Swal.fire('Required', 'Page Title is required.', 'warning'); return; }
+
+            var form = document.getElementById('pageForm');
+            var formData = new FormData(form);
+
+            Swal.fire({ title: 'Saving Page...', didOpen: () => { Swal.showLoading(); } });
+
+            $.ajax({
+                url: form.action, type: 'POST', data: formData, processData: false, contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        handleFileUploads(response.id);
+                    } else {
+                        var msg = response.message;
+                        if(response.errors) msg += "<br>" + response.errors.join("<br>");
+                        Swal.fire('Error', msg, 'error');
+                    }
+                },
+                error: function(xhr) { Swal.fire('Error', 'Server Error: ' + xhr.responseText, 'error'); }
+            });
+        };
+
+        // --- FILE UPLOAD ---
+        function handleFileUploads(pageId) {
+            var cssFiles = $('#cssUploadInput')[0].files;
+            var jsFiles = $('#jsUploadInput')[0].files;
+
+            if (cssFiles.length === 0 && jsFiles.length === 0 && !pendingImageFile) {
+                finishSave(); return;
+            }
+
+            Swal.update({ title: 'Uploading Assets...' });
+            var uploadPromises = [];
+
+            if (cssFiles.length > 0) {
+                var d = new FormData(); d.append('pageId', pageId); d.append('fileType', 'CSS');
+                for(var i=0; i<cssFiles.length; i++) d.append('files', cssFiles[i]);
+                uploadPromises.push(uploadAjax(d));
+            }
+            if (jsFiles.length > 0) {
+                var d = new FormData(); d.append('pageId', pageId); d.append('fileType', 'JS');
+                for(var i=0; i<jsFiles.length; i++) d.append('files', jsFiles[i]);
+                uploadPromises.push(uploadAjax(d));
+            }
+            if (pendingImageFile) {
+                var d = new FormData();
+                d.append('pageId', pageId);
+                d.append('fileType', 'IMG');
+                d.append('files', pendingImageFile, 'social-share.jpg');
+                uploadPromises.push(uploadAjax(d));
+            }
+
+            Promise.all(uploadPromises).then(() => finishSave()).catch(err => { console.error(err); finishSave(); });
+        }
+
+        function uploadAjax(formData) {
+            return $.ajax({ url: '@Url.Action("UploadAsset", "Cms")', type: 'POST', data: formData, processData: false, contentType: false });
+        }
+
+        // --- DELETE ASSET ---
+        window.deleteAsset = function(id) {
+            Swal.fire({
+                title: 'Delete Image?', icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#d32f2f', confirmButtonText: 'Yes, delete it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('@Url.Action("DeleteAsset", "Cms")', { id: id }, function(res) {
+                        if(res.success) {
+                            $('#asset-card-' + id).fadeOut();
+                            Swal.fire('Deleted', 'Image removed.', 'success');
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        };
+
+        window.selectLayout = function(element, layoutName) {
+            $('.layout-option').removeClass('active-layout');
+            $(element).addClass('active-layout');
+            $('#layoutInput').val(layoutName);
+            if (layoutName === '_CmsTwoColumn') $('#sidebarSection').slideDown(); else $('#sidebarSection').slideUp();
+        };
+
+        function finishSave() {
+            Swal.fire({ icon: 'success', title: 'Saved!', timer: 1000, showConfirmButton: false }).then(() => { window.location.href = '@Url.Action("Index", "Cms")'; });
+        }
+    </script>
+}

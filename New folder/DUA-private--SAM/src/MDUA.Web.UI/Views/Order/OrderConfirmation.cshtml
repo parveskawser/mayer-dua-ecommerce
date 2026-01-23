@@ -1,0 +1,124 @@
+﻿@model MDUA.Entities.SalesOrderHeader
+@{
+    ViewData["Title"] = "Order Confirmed";
+    Layout = null; // Or use your main layout
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Confirmed - #@Model.Id</title>
+    <link rel="stylesheet" href="~/css/combo.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // Example: Facebook Pixel Purchase Event
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', 'YOUR_PIXEL_ID_HERE'); // <--- REPLACE THIS
+        fbq('track', 'PageView');
+
+        // TRACK PURCHASE EVENT
+        fbq('track', 'Purchase', {
+            value: @Model.TotalAmount,
+            currency: 'BDT',
+            content_name: 'Order #@Model.Id',
+            content_ids: ['@Model.Id'],
+            content_type: 'product'
+        });
+    </script>
+    <style>
+        body { background-color: #f3f4f6; padding: 20px 0; }
+        .confirmation-card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .conf-header {
+            background-color: #d1fae5; /* Green Light */
+            color: #065f46; /* Green Dark */
+            padding: 30px;
+            text-align: center;
+        }
+        .conf-icon { font-size: 48px; margin-bottom: 10px; color: #10b981; }
+        .conf-body { padding: 30px; }
+        .order-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .order-row:last-child { border-bottom: none; }
+        .total-row { font-weight: bold; font-size: 1.1em; color: #111; border-top: 2px solid #eee; margin-top: 10px; padding-top: 10px; }
+        .btn-home {
+            display: block; width: 100%; text-align: center; background: #10b981; color: white;
+            padding: 12px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="confirmation-card">
+        <div class="conf-header">
+            <i class="fas fa-check-circle conf-icon"></i>
+            <h1>Order Confirmed!</h1>
+            <p>Thank you, @Model.CustomerName</p>
+        </div>
+
+        <div class="conf-body">
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc;">
+                <p style="margin:0; font-size: 0.9em; color: #666;">Order Tracking ID:</p>
+                <h2 style="margin: 5px 0 0; color: #333;">ON@(Model.Id.ToString("D8"))</h2>
+            </div>
+
+            <h3 style="border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; margin-bottom: 15px;">Order Summary</h3>
+
+            <div class="order-row">
+                <span style="color:#666;">Phone</span>
+                <span>@Model.CustomerPhone</span>
+            </div>
+            <div class="order-row">
+                <span style="color:#666;">Address</span>
+                <span style="text-align:right; max-width: 60%;">@Model.Street, @Model.City</span>
+            </div>
+
+            <div class="order-row">
+                <span style="color:#666;">Subtotal</span>
+                <span>Tk. @((Model.TotalAmount - Model.DeliveryCharge).ToString("N0"))</span>
+            </div>
+            <div class="order-row">
+                <span style="color:#666;">Delivery Charge</span>
+                <span>Tk. @Model.DeliveryCharge.ToString("N0")</span>
+            </div>
+            @if (Model.DiscountAmount > 0)
+            {
+                <div class="order-row">
+                    <span style="color:#ef4444;">Discount</span>
+                    <span style="color:#ef4444;">- Tk. @Model.DiscountAmount.ToString("N0")</span>
+                </div>
+            }
+
+            <div class="order-row total-row">
+                <span>Grand Total</span>
+                <span>Tk. @Model.TotalAmount.ToString("N0")</span>
+            </div>
+
+            <p style="margin-top: 20px; font-size: 0.9em; color: #666; text-align: center;">
+                We will contact you shortly to confirm delivery.
+            </p>
+
+            <a href="/" class="btn-home">Continue Shopping</a>
+        </div>
+    </div>
+
+</body>
+</html>

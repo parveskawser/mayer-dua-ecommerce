@@ -1,0 +1,134 @@
+﻿@model IEnumerable<MDUA.Web.Controllers.SubscriptionController.CompanySubscriptionStatusViewModel>
+@{
+    ViewData["Title"] = "Client Contracts";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Client Subscription Management</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Current Plan</th>
+                        <th>Status</th>
+                        <th>Renewal Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.CompanyName</strong><br />
+                                <small class="text-muted">@item.CompanyCode</small>
+                            </td>
+                            <td>
+                                @if (item.HasPlan)
+                                {
+                                    <span class="text-primary font-weight-bold">@item.PlanName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">Free / Trial</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Status == "ACTIVE")
+                                {
+                                    <span class="badge badge-success">Active</span>
+                                }
+                                else if (item.Status == "None")
+                                {
+                                    <span class="badge badge-secondary">No Plan</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @(item.EndDate?.ToShortDateString() ?? "N/A")
+                            </td>
+                            <td>
+                                <a href="@Url.Action("AssignPlan", new { companyId = item.CompanyId })"
+                                   class="btn btn-sm @(item.HasPlan ? "btn-info" : "btn-success")">
+                                    <i class="fas @(item.HasPlan ? "fa-sync" : "fa-plus")"></i>
+                                    @(item.HasPlan ? "Upgrade / Renew" : "Assign Plan")
+                                </a>
+
+                                @if (item.HasPlan)
+                                {
+                                    <button class="btn btn-secondary btn-sm btn-view-limits ml-1" data-company-id="@item.CompanyId">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                    <form asp-action="RemoveSubscription"
+                                          asp-controller="Subscription"
+                                          asp-route-companyId="@item.CompanyId"
+                                          method="post"
+                                          class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm ml-1"
+                                                onclick="return confirm('Remove the active subscription for this company?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="limitsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Subscription Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="limitsModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p>Loading...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Handle "View Limits" click
+            $('.btn-view-limits').click(function () {
+                var companyId = $(this).data('company-id');
+                var url = '@Url.Action("GetLimitsPartial", "Subscription")' + '/' + companyId;
+
+                // Show Modal
+                $('#limitsModal').modal('show');
+
+                // Load Partial View via AJAX
+                $('#limitsModalBody').load(url, function(response, status, xhr) {
+                    if (status == "error") {
+                        $('#limitsModalBody').html("<p class='text-danger'>Error loading details: " + xhr.status + " " + xhr.statusText + "</p>");
+                    }
+                });
+            });
+        });
+    </script>
+}

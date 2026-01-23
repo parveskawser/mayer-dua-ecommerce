@@ -1,0 +1,52 @@
+﻿@model MDUA.Entities.UserLoginResult
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h1 class="text-center">Login</h1>
+
+        <form method="post" asp-action="Index">
+            @Html.AntiForgeryToken() <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" />
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Log In</button>
+            </div>
+        </form>
+
+        <hr />
+
+        @if (Model != null)
+        {
+            <h3 class="text-center">Login Attempt Result:</h3>
+
+            @if (Model.IsSuccess && Model.UserLogin != null)
+            {
+                <div class="alert alert-success">
+                    <p><strong>Login Successful!</strong></p>
+                    <hr>
+                    <p><strong>ID:</strong> @Model.UserLogin.Id</p>
+                    <p><strong>UserName:</strong> @Model.UserLogin.UserName</p>
+                    <p><strong>Email:</strong> @Model.UserLogin.Email</p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    <p><strong>Login Failed!</strong></p>
+                    <p>@Model.ErrorMessage</p>
+                </div>
+            }
+        }
+    </div>
+</div>

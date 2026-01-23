@@ -1,0 +1,264 @@
+@model MDUA.Entities.Company
+@{
+    ViewData["Title"] = "Company Profile";
+    Layout = "_AdminLayout";
+
+    string currentFavicon = ViewBag.FaviconUrl as string;
+    if (string.IsNullOrEmpty(currentFavicon)) currentFavicon = "https://via.placeholder.com/150?text=No+Icon";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <link rel="stylesheet" href="~/css/company-profile.css" asp-append-version="true" />
+}
+
+<div class="profile-container">
+
+
+    <form id="companyProfileForm" enctype="multipart/form-data" method="post" action="@Url.Action("UpdateCompanyProfile", "Settings")">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <div class="row g-4 mb-4">
+            <!-- Company Identity Card -->
+            <div class="col-md-6">
+                <div class="profile-card">
+                    <div class="card-title">
+                        <div class="card-icon">🏢</div>
+                        Company Identity
+                    </div>
+
+                    <div class="text-center">
+                        <div class="image-upload-area">
+                            <div class="image-preview-wrapper">
+                                <img id="logoPreview"
+                                     class="image-preview"
+                                     src="@(string.IsNullOrEmpty(Model.LogoImg) ? "https://via.placeholder.com/150?text=No+Logo" : Model.LogoImg)"
+                                     alt="Company Logo">
+                            </div>
+                            <input type="file" id="logoInput" name="LogoFile" accept="image/*" class="d-none">
+                            <button type="button" class="upload-btn" onclick="initCrop('logo')" title="Change Logo">
+                                📷
+                            </button>
+                        </div>
+                        <span class="image-label">Brand Logo</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Company Name</label>
+                        <input type="text"
+                               class="form-input"
+                               id="companyName"
+                               name="CompanyName"
+                               value="@Model.CompanyName"
+                               required
+                               placeholder="Enter company name...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Website Settings Card -->
+            <div class="col-md-6">
+                <div class="profile-card">
+                    <div class="card-title">
+                        <div class="card-icon">🌐</div>
+                        Website Settings
+                    </div>
+
+                    <div class="text-center">
+                        <div class="image-upload-area">
+                            <div class="image-preview-wrapper">
+                                <img id="faviconPreview"
+                                     class="image-preview"
+                                     src="@currentFavicon"
+                                     alt="Favicon">
+                            </div>
+                            <input type="file" id="faviconInput" name="FaviconFile" accept="image/*" class="d-none">
+                            <button type="button" class="upload-btn" onclick="initCrop('favicon')" title="Change Favicon">
+                                ✨
+                            </button>
+                        </div>
+                        <span class="image-label">Browser Tab Icon</span>
+                        <span class="image-hint">
+                            <strong>Favicon</strong><br>
+                            Recommended: High-res square PNG (e.g. 300x300)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+            <button type="submit" class="btn-save" id="btnSaveProfile">
+                <span>💾</span>
+                <span>Save All Changes</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span>✂️</span>
+                    Edit Image
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-container">
+                    <img id="imageToCrop" src="" style="max-width: 100%; display: block;">
+                </div>
+
+                <div class="aspect-ratio-group">
+                    <button type="button" class="btn-aspect active" onclick="setRatio(1)">
+                        1:1 Square
+                    </button>
+                    <button type="button" class="btn-aspect" onclick="setRatio(16/9)">
+                        16:9 Wide
+                    </button>
+                    <button type="button" class="btn-aspect" onclick="setRatio(NaN)">
+                        Free Form
+                    </button>
+                </div>
+
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn-apply" id="btnCropApply">
+                        Apply Crop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalEl = document.getElementById('cropModal');
+            if (modalEl) {
+                document.body.appendChild(modalEl);
+            }
+        });
+
+        let cropper;
+        let currentTarget = null;
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+
+        function initCrop(target) {
+            currentTarget = target;
+            document.getElementById(target + 'Input').click();
+        }
+
+        function handleFileSelect(event, target) {
+            const files = event.target.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageToCrop.src = e.target.result;
+                    event.target.value = '';
+                    cropModal.show();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('logoInput').addEventListener('change', (e) => handleFileSelect(e, 'logo'));
+        document.getElementById('faviconInput').addEventListener('change', (e) => handleFileSelect(e, 'favicon'));
+
+        document.getElementById('cropModal').addEventListener('shown.bs.modal', function () {
+            cropper = new Cropper(imageToCrop, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+            });
+        });
+
+        document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
+            if(cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        });
+
+        window.setRatio = function(ratio) {
+            if(cropper) cropper.setAspectRatio(ratio);
+            document.querySelectorAll('.btn-aspect').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+
+        document.getElementById('btnCropApply').addEventListener('click', function() {
+            if (!cropper) return;
+
+            const size = 300;
+            const canvas = cropper.getCroppedCanvas({ width: size, height: size });
+
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const previewImg = document.getElementById(currentTarget + 'Preview');
+                previewImg.src = url;
+
+                const fileInput = document.getElementById(currentTarget + 'Input');
+                const dataTransfer = new DataTransfer();
+                const file = new File([blob], currentTarget + ".png", { type: "image/png" });
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+
+                cropModal.hide();
+            });
+        });
+
+        document.getElementById('companyProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('btnSaveProfile');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> <span>Saving...</span>';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: 'Company profile updated successfully.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Update failed', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Network error occurred', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            });
+        });
+    </script>
+}

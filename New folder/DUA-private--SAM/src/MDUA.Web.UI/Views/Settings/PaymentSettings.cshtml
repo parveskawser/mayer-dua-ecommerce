@@ -1,0 +1,251 @@
+﻿@model List<MDUA.Entities.CompanyPaymentMethodResult>
+@{
+    ViewData["Title"] = "Payment Settings";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4 fw-bold text-dark">Payment Configuration</h3>
+
+    <div class="row">
+        <div class="col-lg-8">
+            @foreach (var item in Model)
+            {
+                <div class="card mb-3 border shadow-sm payment-method-card"
+                     data-id="@item.PaymentMethodId"
+                     data-global-manual="@(item.GlobalSupportsManual ? "true" : "false")"
+                     data-global-gateway="@(item.GlobalSupportsGateway ? "true" : "false")">
+
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(item.LogoUrl))
+                            {
+                                <img src="@item.LogoUrl" style="height: 40px; width: 60px; object-fit: contain; margin-right: 15px;">
+                            }
+                            <div>
+                                <h5 class="mb-0 fw-bold">@item.MethodName</h5>
+                                <div class="mt-1">
+                                    @if (item.GlobalSupportsManual && item.GlobalSupportsGateway)
+                                    {
+                                        <span class="badge bg-light text-dark border">Hybrid</span>
+                                    }
+                                    else if (item.GlobalSupportsGateway)
+                                    {
+                                        <span class="badge bg-light text-dark border">Gateway</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">Manual</span>
+                                    }
+                                    <span class="save-status ms-2 small text-muted fst-italic" style="display:none;">Saving...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input main-toggle auto-save-trigger" type="checkbox"
+                                   style="width: 3em; height: 1.5em; cursor: pointer;"
+                                   @(item.IsEnabled ? "checked" : "")>
+                        </div>
+                    </div>
+
+                    @{
+                        bool isHybrid = item.GlobalSupportsManual && item.GlobalSupportsGateway;
+                        // Determine if drawer should be visible initially
+                        bool showDrawer = item.IsEnabled && (isHybrid || item.GlobalSupportsManual);
+                    }
+
+                    <div class="card-footer bg-light settings-drawer"
+                         id="drawer-@item.PaymentMethodId"
+                         style="display: @(showDrawer ? "block" : "none")">
+
+                        <div class="row g-3">
+                            @if (isHybrid)
+                            {
+                                <div class="col-md-12">
+                                    <label class="small fw-bold text-muted mb-2">Enabled Modes:</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input mode-check auto-save-trigger" type="checkbox"
+                                                   data-type="manual" @(item.IsManualEnabled ? "checked" : "")>
+                                            <label class="form-check-label">Manual (Send Money)</label>
+                                        </div>
+
+                                        <div class="form-check">
+                                            <input class="form-check-input mode-check auto-save-trigger" type="checkbox"
+                                                   data-type="gateway" @(item.IsGatewayEnabled ? "checked" : "")>
+                                            <label class="form-check-label">Direct Gateway</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (item.GlobalSupportsManual)
+                            {
+                               
+                                bool showInstruction = item.IsManualEnabled;
+
+                                <div class="col-md-12 manual-instruction-container" style="display: @(showInstruction ? "block" : "none")">
+                                    <label class="small fw-bold text-muted">Customer Instructions:</label>
+                                    <textarea class="form-control form-control-sm mt-1 instruction-text auto-save-text" rows="2"
+                                      placeholder="e.g. Send money to 017...">@item.CustomInstruction</textarea>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+
+            }
+            <div class="row mt-4">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white fw-bold">
+                            🚚 Delivery Charges
+                        </div>
+                        <div class="card-body">
+                            <form id="deliveryForm">
+                                @Html.AntiForgeryToken()
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Inside Dhaka (Tk)</label>
+                                        <input type="number" class="form-control" name="dhakaCharge" value="@ViewBag.DeliveryDhaka">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Outside Dhaka (Tk)</label>
+                                        <input type="number" class="form-control" name="outsideCharge" value="@ViewBag.DeliveryOutside">
+                                    </div>
+                                </div>
+                                <button type="button" onclick="saveDeliveryCharges()" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+                function saveDeliveryCharges() {
+            var data = $('#deliveryForm').serialize();
+            $.post('/settings/payment-method/save-delivery', data, function(res) {
+                if(res.success) {
+                    alert('Saved Successfully');
+                } else {
+                    alert('Error: ' + res.message);
+                }
+            });
+        }
+        $(document).ready(function() {
+
+            // 1. Main Toggle (Show/Hide Drawer)
+            $('.main-toggle').change(function() {
+                var $card = $(this).closest('.payment-method-card');
+                var id = $card.data('id');
+                var $drawer = $('#drawer-' + id);
+                var isChecked = $(this).is(':checked');
+
+                // Logic: Does this card have contents worth showing?
+                var isHybrid = $card.data('global-manual') === true && $card.data('global-gateway') === true;
+                var hasInstruction = $card.data('global-manual') === true;
+
+                if(isChecked && (isHybrid || hasInstruction)) {
+                    $drawer.slideDown();
+
+                    // Edge Case: If Single Mode Manual (not hybrid), show instruction box immediately when toggled ON
+                    if (!isHybrid && hasInstruction) {
+                        $drawer.find('.manual-instruction-container').slideDown();
+                    }
+                } else {
+                    $drawer.slideUp();
+                }
+            });
+
+            // 2. Manual Checkbox Toggle (Show/Hide Instructions)
+            // This is the specific fix for your request
+            $(document).on('change', 'input[data-type="manual"]', function() {
+                var isChecked = $(this).is(':checked');
+                var $card = $(this).closest('.payment-method-card');
+                var $instructionBox = $card.find('.manual-instruction-container');
+
+                if (isChecked) {
+                    $instructionBox.slideDown();
+                } else {
+                    $instructionBox.slideUp();
+                }
+            });
+
+            // 3. Auto-Save Logic
+            $('.auto-save-trigger').change(function() {
+                saveSettings($(this).closest('.payment-method-card'));
+            });
+
+            $('.auto-save-text').blur(function() {
+                saveSettings($(this).closest('.payment-method-card'));
+            });
+
+            function saveSettings($card) {
+                var methodId = $card.data('id');
+                var $status = $card.find('.save-status');
+
+                var globalManual = $card.data('global-manual') === true;
+                var globalGateway = $card.data('global-gateway') === true;
+
+                $status.text("Saving...").fadeIn(200);
+
+                var isEnabled = $card.find('.main-toggle').is(':checked');
+
+                var isManual = false;
+                var isGateway = false;
+
+                if (isEnabled) {
+                    // Logic for Manual
+                    var $manualCheck = $card.find('input[data-type="manual"]');
+                    if ($manualCheck.length > 0) {
+                        isManual = $manualCheck.is(':checked'); // Hybrid
+                    } else {
+                        isManual = globalManual; // Single Mode
+                    }
+
+                    // Logic for Gateway
+                    var $gatewayCheck = $card.find('input[data-type="gateway"]');
+                    if ($gatewayCheck.length > 0) {
+                        isGateway = $gatewayCheck.is(':checked'); // Hybrid
+                    } else {
+                        isGateway = globalGateway; // Single Mode
+                    }
+                }
+
+                var instruction = $card.find('.instruction-text').val() || "";
+
+                $.ajax({
+                    url: '@Url.Action("SavePaymentConfig", "Settings")',
+                    type: 'POST',
+                    data: {
+                        methodId: methodId,
+                        isEnabled: isEnabled,
+                        isManual: isManual,
+                        isGateway: isGateway,
+                        instruction: instruction,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(res) {
+                        if(res.success) {
+                            $status.text("Saved ✓").css('color', 'green');
+                            setTimeout(() => $status.fadeOut(1000), 2000);
+                        } else {
+                            $status.text("Error!").css('color', 'red');
+                            Swal.fire('Save Failed', res.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        $status.text("Network Error").css('color', 'red');
+                    }
+                });
+            }
+        });
+    </script>
+}

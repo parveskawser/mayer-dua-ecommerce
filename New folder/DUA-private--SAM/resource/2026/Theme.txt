@@ -1,0 +1,111 @@
+/********************************************************************************
+ * FINAL PRODUCTION DB CHANGES FOR MDUA THEME & DOMAIN MANAGEMENT
+ * Includes: Theme Master, CompanyDomain (Routing), and Company Table Updates
+ * Safety: No Cascading Deletes on critical data, Strict Constraints on Primary Domains.
+ ********************************************************************************/
+
+USE [amaderprangondb]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+/* -------------------------------------------------------------------------
+   1) Theme Master Table
+   Logic: Platform-owned themes. 'ThemeKey' maps to /Themes/{Folder}
+   ------------------------------------------------------------------------- */
+CREATE TABLE [dbo].[Theme](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ThemeKey] [nvarchar](50) NOT NULL,       -- Matches folder name e.g., 'ModernDark'
+	[DisplayName] [nvarchar](100) NOT NULL,   -- Friendly UI name e.g., 'Modern Dark'
+	[PreviewImageUrl] [nvarchar](255) NULL,   -- Path to preview image for Admin UI
+	[IsActive] [bit] NOT NULL,
+	[CreatedBy] [nvarchar](100) NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedBy] [nvarchar](100) NULL,
+	[UpdatedAt] [datetime] NULL,
+ CONSTRAINT [PK_Theme] PRIMARY KEY CLUSTERED ([Id] ASC),
+ CONSTRAINT [UQ_Theme_ThemeKey] UNIQUE NONCLUSTERED ([ThemeKey] ASC)
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [DF_Theme_IsActive] DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [DF_Theme_CreatedBy] DEFAULT (suser_sname()) FOR [CreatedBy]
+GO
+ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [DF_Theme_CreatedAt] DEFAULT (getdate()) FOR [CreatedAt]
+GO
+
+/* -------------------------------------------------------------------------
+   2) CompanyDomain Table (Tenant Routing)
+   Logic: Explicit Host -> Company mapping. Global uniqueness required.
+   ------------------------------------------------------------------------- */
+CREATE TABLE [dbo].[CompanyDomain](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CompanyId] [int] NOT NULL,
+	[Domain] [nvarchar](255) NOT NULL,        -- Host only: 'shop.client.com' (No http/https)
+	[IsPrimary] [bit] NOT NULL,               -- Marks the canonical domain
+	[IsActive] [bit] NOT NULL,
+	[VerifiedAt] [datetime] NULL,             -- Null = Not Verified yet
+	[CreatedBy] [nvarchar](100) NOT NULL,
+	[CreatedAt] [datetime] NOT NULL,
+	[UpdatedBy] [nvarchar](100) NULL,
+	[UpdatedAt] [datetime] NULL,
+ CONSTRAINT [PK_CompanyDomain] PRIMARY KEY CLUSTERED ([Id] ASC),
+ CONSTRAINT [UQ_CompanyDomain_Domain] UNIQUE NONCLUSTERED ([Domain] ASC) -- Global Uniqueness
+) ON [PRIMARY]
+GO
+
+-- Defaults
+ALTER TABLE [dbo].[CompanyDomain] ADD CONSTRAINT [DF_CompanyDomain_IsPrimary] DEFAULT ((0)) FOR [IsPrimary]
+GO
+ALTER TABLE [dbo].[CompanyDomain] ADD CONSTRAINT [DF_CompanyDomain_IsActive] DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[CompanyDomain] ADD CONSTRAINT [DF_CompanyDomain_CreatedBy] DEFAULT (suser_sname()) FOR [CreatedBy]
+GO
+ALTER TABLE [dbo].[CompanyDomain] ADD CONSTRAINT [DF_CompanyDomain_CreatedAt] DEFAULT (getdate()) FOR [CreatedAt]
+GO
+
+-- Guardrail: A Primary domain MUST be Active. (Prevents "phantom" primary domains)
+ALTER TABLE [dbo].[CompanyDomain] ADD CONSTRAINT [CK_CompanyDomain_PrimaryMustBeActive]
+CHECK (NOT ([IsPrimary] = 1 AND [IsActive] = 0))
+GO
+
+-- Foreign Key to Company (NO CASCADE DELETE - Safety First)
+ALTER TABLE [dbo].[CompanyDomain] WITH CHECK ADD CONSTRAINT [FK_CompanyDomain_Company] FOREIGN KEY([CompanyId])
+REFERENCES [dbo].[Company] ([Id])
+GO
+ALTER TABLE [dbo].[CompanyDomain] CHECK CONSTRAINT [FK_CompanyDomain_Company]
+GO
+
+-- Filtered Unique Index: Enforce only ONE Active Primary Domain per Company
+CREATE UNIQUE NONCLUSTERED INDEX [UX_CompanyDomain_Company_Primary]
+ON [dbo].[CompanyDomain]([CompanyId])
+WHERE [IsPrimary] = 1 AND [IsActive] = 1;
+GO
+
+-- Index for fast Routing Lookup (Critical for Middleware performance)
+CREATE NONCLUSTERED INDEX [IX_CompanyDomain_Domain]
+ON [dbo].[CompanyDomain]([Domain]);
+GO
+
+/* -------------------------------------------------------------------------
+   3) Update Company Table
+   Logic: Link tenant to Theme and allow JSON settings overrides.
+   ------------------------------------------------------------------------- */
+ALTER TABLE [dbo].[Company]
+ADD [ThemeId] [int] NULL,                    -- Nullable. NULL = Use Default System Views.
+    [ThemeSettings] [nvarchar](max) NULL;    -- JSON store for logo, colors, etc.
+GO
+
+-- Foreign Key for Theme (No Cascade Delete)
+ALTER TABLE [dbo].[Company] WITH CHECK ADD CONSTRAINT [FK_Company_Theme] FOREIGN KEY([ThemeId])
+REFERENCES [dbo].[Theme] ([Id])
+GO
+ALTER TABLE [dbo].[Company] CHECK CONSTRAINT [FK_Company_Theme]
+GO
+
+-- Index for reporting/filtering
+CREATE NONCLUSTERED INDEX [IX_Company_ThemeId] ON [dbo].[Company]([ThemeId]);
+GO

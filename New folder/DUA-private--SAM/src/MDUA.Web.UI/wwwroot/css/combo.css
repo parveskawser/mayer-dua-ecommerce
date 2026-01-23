@@ -1,0 +1,2185 @@
+﻿:root {
+    /* --- Modern Palette --- */
+    --primary: #2563eb; /* Modern Blue */
+    --primary-hover: #1d4ed8;
+    --accent: #f59e0b; /* Amber/Orange for urgency */
+    --text-main: #1f2937; /* Dark Gray */
+    --text-muted: #6b7280;
+    /* --- Fluffy 3D Variables --- */
+    --bg-body: #f0f4f8; /* Slightly cooler/softer gray for contrast */
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --success: #10b981;
+    --error: #ef4444;
+    /* --- Spacing & Radius (Increased for Fluffy look) --- */
+    --radius-md: 16px; /* Softer corners */
+    --radius-lg: 24px; /* Very round corners for cards */
+    --container-width: 1100px;
+    /* --- Fluffy 3D Shadows --- */
+    --shadow-sm: 4px 4px 8px rgba(174, 174, 192, 0.2), -4px -4px 8px #ffffff;
+    --shadow-md: 8px 8px 16px rgba(174, 174, 192, 0.2), -8px -8px 16px #ffffff;
+    --shadow-lg: 14px 14px 28px rgba(174, 174, 192, 0.25), -14px -14px 28px #ffffff;
+    --shadow-inset: inset 6px 6px 12px rgba(174, 174, 192, 0.2), inset -6px -6px 12px #ffffff;
+    --shadow-btn: 0 10px 20px rgba(37, 99, 235, 0.3), 0 6px 6px rgba(0,0,0,0.1), inset 0 -4px 2px rgba(0,0,0,0.1);
+}
+
+/* --- Global Reset & Typography --- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6; /* Increased breathability */
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout Wrappers --- */ /* --- Header --- */
+.header {
+    background: rgba(255, 255, 255);
+    backdrop-filter: blur(12px);
+    padding: 0.5rem 0; /* Reduced padding since we enforce min-height */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    position: fixed; /* consolidated 'fixed' */
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    /* CRITICAL FIX: Enforce height so it doesn't collapse when logo is absolute */
+    min-height: 70px;
+    display: flex;
+    align-items: center; /* Vertically centers the content inside */
+}
+
+    /* Ensure the container inside the header fills the height for alignment */
+    .header .container {
+        position: relative; /* Needed for the absolute children to position correctly */
+        height: 100%;
+        display: flex;
+        align-items: center; /* Align items vertically */
+        width: 100%; /* Ensure container spans full width */
+    }
+
+/* --- Header Actions (Buttons) --- */
+.header-actions {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+/* --- Logo Styles --- */
+.logo {
+    height: 50px; /* Fixed height */
+    width: auto; /* Maintain aspect ratio */
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transition: all 0.3s ease; /* Smooth transition when resizing window */
+}
+
+/* 1. Mobile Styles (Default) */
+/* Keeps logo on left, but prevents it from hitting the buttons */
+/* --- Logo Styles --- */
+. /* ==================================================
+   BRANDING (LOGO + NAME) - UPDATED
+   ================================================== */
+/* 1. Wrapper: Handles Positioning (Replaces old .logo logic) */
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between logo and text */
+    /* Base Positioning (Mobile Default) - EXACTLY as you had it */
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    /* Prevent overlapping with buttons on small screens */
+    max-width: calc(100% - 160px);
+    z-index: 20;
+    /* Ensure text truncates if it gets too long */
+    overflow: hidden;
+}
+
+/* 2. Logo Image: Just the visual style */
+/* ==================================================
+   BRANDING (LOGO + NAME) - RESPONSIVE POSITIONING
+   ================================================== */
+
+/* 1. The Wrapper: Holds Logo & Name Together */
+.brand-wrapper {
+    display: flex;
+    align-items: center; /* Vertically align logo and text */
+    gap: 10px; /* Space between logo and text */
+    /* --- MOBILE POSITIONING (Default) --- */
+    position: absolute;
+    top: 50%;
+    left: 10px; /* Stick to the LEFT side on Phone */
+    transform: translateY(-50%); /* Center vertically only */
+    /* Safety: Prevent text from overlapping Order buttons on small phones */
+    max-width: calc(100% - 160px);
+    z-index: 20;
+    overflow: hidden;
+}
+
+/* 2. The Logo Image */
+.logo-img {
+    height: 40px; /* Slightly smaller on mobile */
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0; /* Prevent logo from squishing */
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+/* 3. The Company Name Text */
+.company-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text-main, #1f2937);
+    white-space: nowrap; /* Keep text on one line */
+    text-overflow: ellipsis; /* Add "..." if text is too long */
+    overflow: hidden;
+    line-height: 1;
+}
+
+/* --- PC / DESKTOP POSITIONING (Screen wider than 768px) --- */
+@media (min-width: 768px) {
+    .brand-wrapper {
+        left: 50%; /* Move to CENTER horizontally */
+        transform: translate(-50%, -50%); /* Center BOTH Horizontally & Vertically */
+        max-width: none; /* Remove width restriction */
+    }
+
+    .logo-img {
+        height: 50px; /* Larger logo on PC */
+    }
+
+    .company-name {
+        font-size: 1.4rem; /* Larger text on PC */
+    }
+}
+
+/* --- Header Button Sizing --- */
+/* =========================================
+   1. DEFINE ANIMATIONS (Blue & Green)
+   ========================================= */
+
+/* Blue Glow for Order Now */
+@keyframes glow-blue {
+    0% {
+        box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.8), 0 0 10px rgba(37, 99, 235, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+    }
+}
+
+/* Green Glow for Track Order */
+@keyframes glow-green {
+    0% {
+        box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 10px rgba(16, 185, 129, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+    }
+}
+
+/* =========================================
+   2. SHARED BUTTON STYLES (Shape & Layout)
+   ========================================= */
+/* =========================================
+   1. SHARED BUTTON STYLES (Shape & 3D Structure)
+   ========================================= */
+.header-actions .btn {
+    /* Layout */
+    padding: 8px 24px; /* Slightly wider for the pill shape */
+    font-size: 14px;
+    font-weight: 700; /* Thicker text stands out better on 3D */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    /* Rounded Pill Shape */
+    border-radius: 50px;
+    border: none;
+    color: white;
+    /* 3D Transitions */
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative; /* Necessary for click effects */
+    top: 0;
+}
+
+/* =========================================
+   2. COLOR VARIANTS (Order Now & Track Order)
+   ========================================= */
+
+/* --- A. Order Now (Blue Fluffy) --- */
+.combo-btn {
+    /* Gradient: Light Top to Dark Bottom for Volume */
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    /* The "Fluffy 3D" Stack: 
+       1. Top inner white highlight (Puffiness)
+       2. Bottom inner dark shadow (Depth)
+       3. Outer soft blue shadow (Glow) 
+    */
+    box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.5), /* Top Highlight */
+    inset 0 -4px 6px rgba(0, 0, 0, 0.1), /* Bottom Shade */
+    0 8px 15px rgba(37, 99, 235, 0.4); /* Soft Drop Shadow */
+}
+
+/* --- B. Track My Order (Green Fluffy) --- */
+.status-btn {
+    /* Gradient: Light Top to Dark Bottom */
+    background: linear-gradient(180deg, #6ee7b7 0%, #10b981 100%);
+    /* The "Fluffy 3D" Stack */
+    box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.1), 0 8px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* =========================================
+   3. INTERACTIONS (Hover & Click)
+   ========================================= */
+
+/* Hover: Float Up slightly + Intensity Shadow */
+.header-actions .btn:hover {
+    transform: translateY(-2px); /* Moves up */
+    filter: brightness(1.1); /* Gets slightly brighter */
+}
+
+/* Active (Click): Press Down + Squish Shadow */
+.header-actions .btn:active {
+    transform: translateY(1px); /* Moves down (pressed look) */
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2), /* Inner shadow gets darker */
+    0 2px 5px rgba(0, 0, 0, 0.1); /* Outer shadow shrinks */
+}
+
+/* =========================================
+   4. MOBILE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 8px 16px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 8px !important;
+    }
+}
+
+/* =========================================
+   3. SPECIFIC COLORS
+   ========================================= */
+
+/* Order Now - BLUE */
+.combo-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb); /* Bright Blue */
+    animation: glow-blue 2s infinite alternate;
+}
+
+/* Track My Order - LIGHT GREEN */
+.status-btn {
+    background: linear-gradient(135deg, #34d399, #10b981); /* Light/Emerald Green */
+    animation: glow-green 2s infinite alternate;
+}
+
+/* =========================================
+   4. MOBILE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 6px 14px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 5px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 5px !important;
+    }
+}
+/* --- Sections Common --- */
+section {
+    margin-bottom: 2.5rem;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); /* Fluffy floating effect */
+    padding: 2.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.6); /* Subtle highlight border */
+}
+
+/* --- Hero / Combo Info --- */
+.combo-info {
+    text-align: center;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid #fff;
+    margin-top: 2rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+    .combo-info h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        color: #111827;
+        line-height: 1.2;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .combo-info p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 1.5rem auto;
+    }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 2rem;
+    border-radius: 50px; /* Pill shape for fluffy feel */
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+    cursor: pointer;
+    border: none;
+    letter-spacing: 0.5px;
+}
+
+.combo-btn {
+    background: linear-gradient(145deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: var(--shadow-btn);
+}
+
+    .combo-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4), inset 0 -4px 2px rgba(0,0,0,0.1);
+    }
+
+    .combo-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 5px 10px rgba(37, 99, 235, 0.3);
+    }
+
+.status-btn {
+    background-color: white;
+    color: var(--text-main);
+    box-shadow: var(--shadow-md);
+    margin-left: 10px;
+}
+
+    .status-btn:hover {
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+/* --- Scarcity Bar (3D Tube Look) --- */
+.scarcity-section {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.stock-bar {
+    height: 14px; /* Thicker */
+    background: #e2e8f0;
+    border-radius: 99px;
+    margin: 12px auto;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px #ffffff; /* Inner shadow for tube effect */
+}
+
+.stock-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    border-radius: 99px;
+    transition: width 1s ease-in-out;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); /* Glow */
+}
+
+.hurry-text {
+    font-size: 0.9rem;
+    color: var(--error);
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+}
+
+/* --- Price Section --- */
+.price-section {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.price {
+    font-size: 2.75rem;
+    font-weight: 900;
+    color: var(--primary);
+    margin: 0;
+    text-shadow: 2px 4px 6px rgba(37, 99, 235, 0.15); /* 3D Text */
+}
+
+.old-price {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-left: 0.5rem;
+    font-weight: 500;
+}
+
+.offer-text {
+    background: #ecfdf5;
+    color: #065f46;
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-top: 0.75rem;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.15);
+}
+
+/* --- Images & Gallery --- */
+.product-image img.main-img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    display: block;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg); /* Floating image */
+    transition: transform 0.3s ease;
+}
+
+    .product-image img.main-img:hover {
+        transform: scale(1.01);
+    }
+
+.product-gallery {
+    max-width: 800px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.carousel {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    background: #fff;
+    padding: 10px; /* White frame */
+}
+
+.slide {
+    display: none;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+    .slide.active {
+        display: block;
+    }
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.9);
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.prev {
+    left: 20px;
+}
+
+.next {
+    right: 20px;
+}
+
+    .prev:hover, .next:hover {
+        background: white;
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+
+/* --- Description & Testimonials --- */
+.description, .testimonials {
+    max-width: 800px;
+    margin: 3rem auto;
+}
+
+    .description h2, .testimonials h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        color: #374151;
+    }
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm); /* Individual floating rows */
+    transition: transform 0.2s;
+}
+
+    .detail-row:hover {
+        transform: translateX(5px);
+    }
+
+.review {
+    background: #fff;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    border: 1px solid #f3f4f6;
+}
+    /* Quote decoration */
+    .review::before {
+        content: '"';
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-size: 4rem;
+        color: #e5e7eb;
+        font-family: serif;
+        line-height: 1;
+    }
+
+.review-text {
+    font-style: italic;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.reviewer {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* =========================================
+   ORDER SECTION - FIXED LAYOUT
+   ========================================= */
+.order-section {
+    max-width: var(--container-width);
+    margin: 2rem auto 4rem auto;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+    .order-section h2 {
+        text-align: center;
+        font-size: 2.25rem;
+        margin-bottom: 2.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+/* The Grid Container */
+.order-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+    grid-template-areas:
+        "billing summary"
+        "payment summary";
+    align-items: start;
+}
+
+/* Left Side: Form */
+.billing {
+    grid-area: billing;
+    background: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+/* Right Side: Summary (Sticky) */
+.order-summary {
+    grid-area: summary;
+    background: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.8);
+    position: sticky;
+    top: 110px;
+    align-self: flex-start;
+}
+
+/* Payment Method Section */
+.payment-section {
+    grid-area: payment;
+    background: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.8);
+    margin-top: 0; /* Override generic margin */
+}
+
+    .payment-section h3 {
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        color: var(--text-main);
+        text-align: center;
+    }
+
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.payment-option {
+    position: relative;
+    cursor: pointer;
+    border: none; /* Removed border for shadow style */
+    border-radius: var(--radius-md);
+    padding: 1.5rem 1rem;
+    background: #f8fafc; /* Slightly darker than white for contrast */
+    box-shadow: 5px 5px 10px #e2e8f0, -5px -5px 10px #ffffff; /* Neumorphic float */
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    min-height: 110px;
+}
+
+    .payment-option:hover {
+        transform: translateY(-4px);
+        box-shadow: 8px 8px 16px #e2e8f0, -8px -8px 16px #ffffff;
+    }
+
+    /* Radio Button Positioning */
+    .payment-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        box-shadow: none; /* Reset shadow for radio */
+    }
+
+    .payment-option label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0;
+    }
+
+    .payment-option.selected {
+        background: #fff;
+        /* Inset shadow creates the "pressed" 3D look */
+        box-shadow: inset 4px 4px 8px #dce3f0, inset -4px -4px 8px #ffffff;
+        border: 2px solid var(--primary);
+    }
+
+/* --- Payment Logos --- */
+.payment-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+    display: block;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+}
+
+/* Submit Button Logic */
+.payment-section .submit-btn {
+    width: 100%;
+    background: linear-gradient(145deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 1.1rem;
+    font-size: 1.15rem;
+    margin-top: 1.5rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 800;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-btn);
+}
+
+    .payment-section .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4), inset 0 -4px 2px rgba(0,0,0,0.1);
+    }
+
+    .payment-section .submit-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+.billing .submit-btn {
+    display: none;
+}
+
+/* 3. Payment Details Area (The Toggle Section) */
+#payment-details-area {
+    background-color: #f8fafc;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: inset 4px 4px 8px #e2e8f0, inset -4px -4px 8px #ffffff; /* Pressed in look */
+    border: 1px solid #f1f5f9;
+}
+
+/* 4. Mode Selection (Radio List) */
+#payment-mode-selector label.small {
+    margin-bottom: 15px;
+    color: #64748b;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    box-shadow: 3px 3px 6px #e2e8f0, -3px -3px 6px #ffffff; /* Floating pill */
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+    .form-check:hover {
+        transform: scale(1.01);
+    }
+
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    margin-right: 15px;
+    box-shadow: none; /* Default radio override */
+}
+
+/* 5. Manual Input Fields */
+#manual-payment-fields {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #cbd5e1;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-left: 5px solid #2563eb;
+    color: #1e40af;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.05);
+}
+
+#trx-id-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #f1f5f9;
+    /* Deep input field look */
+    box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+    transition: all 0.2s;
+}
+
+    #trx-id-input:focus {
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+/* --- Form Elements --- */
+label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #374151;
+    margin-top: 1.2rem;
+}
+
+.required-star {
+    color: var(--error);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #f1f5f9;
+    /* Fluffy Inset Shadow for Inputs */
+    box-shadow: inset 3px 3px 6px #cbd5e1, inset -3px -3px 6px #ffffff;
+    transition: all 0.2s;
+}
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); /* Soft focus ring */
+    }
+
+    input.input-error, select.input-error, textarea.input-error {
+        box-shadow: inset 3px 3px 6px #fecaca, inset -3px -3px 6px #ffffff;
+        background-color: #fef2f2;
+    }
+
+/* --- Variant Chips --- */
+.variant-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.variant-chip {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: var(--text-main);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    /* Floating chip */
+    box-shadow: 4px 4px 8px #cbd5e1, -4px -4px 8px #ffffff;
+}
+
+    .variant-chip:hover {
+        transform: translateY(-2px);
+    }
+
+    .variant-chip.selected {
+        background: var(--primary);
+        color: white;
+        /* Pressed state */
+        box-shadow: inset 3px 3px 6px rgba(0,0,0,0.2), inset -3px -3px 6px rgba(255,255,255,0.2);
+    }
+
+    .variant-chip.disabled {
+        opacity: 0.5;
+        box-shadow: none;
+        background: #e2e8f0;
+        pointer-events: none;
+    }
+
+/* --- Quantity Controls --- */
+.qty-row {
+    margin-top: 2rem;
+    background: #f1f5f9;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: inset 4px 4px 8px #e2e8f0, inset -4px -4px 8px #ffffff;
+}
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+    .quantity-wrapper button {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%; /* Round buttons */
+        border: none;
+        background: white;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 3px 3px 6px #cbd5e1, -3px -3px 6px #ffffff;
+        color: var(--primary);
+        transition: all 0.2s;
+    }
+
+        .quantity-wrapper button:hover {
+            transform: scale(1.1);
+        }
+
+        .quantity-wrapper button:active {
+            box-shadow: inset 2px 2px 4px #cbd5e1, inset -2px -2px 4px #ffffff;
+        }
+
+#quantity {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 800;
+    font-size: 1.25rem;
+    padding: 0;
+    box-shadow: none !important; /* Remove input shadow for this display only */
+}
+
+/* --- Receipt Table --- */
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+    .receipt-table th, .receipt-table td {
+        padding: 1rem;
+        text-align: right;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .receipt-table th:first-child, .receipt-table td:first-child {
+            text-align: left;
+        }
+
+    .receipt-table tfoot th {
+        border-top: 2px dashed #cbd5e1;
+        color: #111827;
+        font-size: 1.25rem;
+        padding-top: 1.5rem;
+        border-bottom: none;
+        background: #f8fafc;
+    }
+
+#order-variant-image-holder {
+    background: #fff;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+    #order-variant-image-holder img {
+        border-radius: 8px;
+    }
+
+/* Hide mobile image holder on Desktop */
+#mobile-order-variant-image-holder {
+    display: none;
+}
+
+/* --- Status Modal --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px); /* stronger blur */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 3rem;
+    border-radius: 30px; /* Very round */
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid white;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.status-confirmed {
+    background: var(--primary);
+}
+
+.status-delivered {
+    background: var(--success);
+}
+
+.status-cancelled {
+    background: var(--error);
+}
+
+/* Force autofill background to match fluffy design */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #f1f5f9 inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    border-radius: 12px;
+}
+
+/* --- Responsive Design (Mobile) --- */
+@media (max-width: 768px) {
+    .order-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "billing"
+            "summary"
+            "payment";
+        gap: 1.5rem;
+    }
+
+    /* All sections full width */
+    .billing,
+    .order-summary,
+    .payment-section {
+        position: static;
+        width: 100%;
+    }
+
+    /* Mobile Payment Options (Horizontal Row) */
+    .payment-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .payment-option {
+        flex-direction: row; /* Icon Left, Text Right */
+        justify-content: flex-start;
+        padding: 1rem;
+        min-height: auto;
+    }
+
+        .payment-option input[type="radio"] {
+            position: static; /* Radio visible inline */
+            margin-right: 0.75rem;
+        }
+
+        .payment-option label {
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            width: auto;
+        }
+
+    /* Mobile Payment Logo Sizing */
+    .payment-logo {
+        height: 25px; /* Smaller for mobile row */
+        margin-bottom: 0;
+        margin-right: 12px;
+    }
+
+    .combo-info h1 {
+        font-size: 1.75rem;
+    }
+
+    .price {
+        font-size: 2rem;
+    }
+
+    .billing, .order-summary, .payment-section {
+        padding: 1.5rem;
+    }
+
+    /* Mobile Variant Image Logic */
+    #mobile-order-variant-image-holder {
+        display: block;
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    #order-variant-image-holder {
+        display: none;
+    }
+}
+
+/* Video Section */
+.video-section h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    color: #374151;
+}
+
+.video-container {
+    display: flex;
+    position: center;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+
+
+    .video-container iframe {
+        width: 60%;
+        height: 350px;
+        border-radius: 20px; /* Rounder video */
+        box-shadow: var(--shadow-lg); /* Floating video */
+        border: 4px solid white;
+    }
+
+@media (max-width: 480px) {
+    .video-container iframe {
+        width: 95%;
+        height: 250px;
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 3rem 0;
+    width: 100%;
+    color: var(--text-muted);
+}
+
+    footer p {
+        margin: 0;
+    }
+
+/* ==================================================
+SCROLL TO TOP (Soft Bubble)
+================================================== */
+.progress-wrap {
+    position: fixed;
+    right: 130px;
+    bottom: 30px;
+    height: 54px;
+    width: 54px;
+    cursor: pointer;
+    display: block;
+    border-radius: 50%;
+    box-shadow: 6px 6px 12px rgba(174, 174, 192, 0.4), -6px -6px 12px #ffffff; /* 3D float */
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: #f0f4f8;
+}
+
+    .progress-wrap.active-progress {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .progress-wrap svg path {
+        fill: none;
+    }
+
+    .progress-wrap svg.progress-circle path {
+        stroke: var(--primary);
+        stroke-width: 4;
+        box-sizing: border-box;
+        transition: all 200ms linear;
+    }
+
+    .progress-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 22px;
+        color: var(--primary);
+    }
+
+    .progress-wrap:hover {
+        transform: translateY(-5px);
+    }
+/* --- Hide Scroll to Top on Mobile --- */
+@media (max-width: 768px) {
+    .progress-wrap {
+        display: none !important;
+        pointer-events: none;
+    }
+}
+
+/* Ensure the parent header allows absolute positioning relative to itself */
+/* Add this inside your existing mobile media query or at the bottom of the file */
+@media (max-width: 768px) {
+    .product-image {
+        padding-left: 20px; /* Adds space on the left */
+        padding-right: 20px; /* Adds space on the right */
+        margin-bottom: 20px; /* Optional: Adds breathing room below */
+    }
+}
+
+/* Add 'position: relative' to the container so we can position the error message inside it */
+/* 1. Make the container a reference point */
+.qty-row {
+    position: relative;
+}
+
+/* 2. Position the error message absolutely so it doesn't push the buttons */
+#stock-error-message {
+    position: absolute;
+    bottom: -20px; /* Pushes it slightly below the row */
+    right: 0; /* Aligns it to the right side */
+    width: 100%; /* Allows text to span if needed */
+    text-align: right; /* Keeps text aligned with buttons */
+    font-size: 0.8rem;
+    white-space: nowrap; /* Keeps it on one line */
+    pointer-events: none; /* Prevents it from blocking clicks */
+}
+/* ==================================================
+   MOBILE CHAT CLOSE BUTTON FIX
+   ================================================== */
+@media (max-width: 768px) {
+    /* 1. Ensure the chat box sits above the sticky header */
+    #live-chat-box {
+        z-index: 99999 !important;
+    }
+
+    /* 2. Force the Close Button to be visible and positioned correctly */
+    #chat-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #f1f5f9; /* Light contrast background */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Shadow to make it pop */
+        z-index: 100000 !important; /* Highest priority */
+        cursor: pointer;
+    }
+
+        /* 3. Style the Icon inside (Red 'X') */
+        #chat-close-btn i {
+            color: var(--error, #ef4444) !important;
+            font-size: 16px !important;
+            line-height: 1;
+        }
+}
+/* ==================================================
+   MOBILE CHAT CLOSE BUTTON FIX (UPDATED)
+   ================================================== */
+/* ==================================================
+   MOBILE CHAT CLOSE BUTTON FIX (UPDATED)
+   ================================================== */
+@media (max-width: 768px) {
+    /* 1. Force Chat Box Stack Order */
+    #live-chat-box {
+        z-index: 2147483640 !important; /* Max safe integer range */
+        overflow: visible !important; /* Allow button to protrude if needed */
+        /* ⬇️ ADD THIS LINE: Ensures it stays hidden until JS opens it */
+        display: none;
+    }
+
+    /* 2. Force Close Button Visibility & Position */
+    #chat-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        width: 35px !important;
+        height: 35px !important;
+        border-radius: 50% !important;
+        background-color: #ffffff !important;
+        border: 2px solid #e2e8f0 !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+        z-index: 2147483647 !important; /* Highest possible z-index */
+        cursor: pointer !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+        /* 3. Style the Icon inside */
+        #chat-close-btn i {
+            color: #ef4444 !important; /* Red Color */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            display: block !important;
+            line-height: 1 !important;
+        }
+}
+/* ==================================================
+   MOBILE SWIPEABLE GALLERY (CSS ONLY)
+   ================================================== */
+/* ==================================================
+   MOBILE SWIPEABLE GALLERY (CSS ONLY - WITH PEEKING EFFECT)
+   ================================================== */
+@media (max-width: 768px) {
+
+    /* 1. Turn the container into a scrollable row */
+    .slides {
+        display: flex !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        /* Gap between images */
+        gap: 15px;
+        /* ⬇️ NEW: Add padding so the first/last images aren't stuck to edge */
+        padding: 0 20px !important;
+        /* Hide Scrollbars */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+        .slides::-webkit-scrollbar {
+            display: none;
+        }
+
+    /* 2. Force images to be visible, but slightly smaller than screen width */
+    .slide {
+        display: block !important;
+        /* ⬇️ CHANGED: Use 90% instead of 100% to show a "peek" of the next image */
+        min-width: 90%;
+        flex: 0 0 90%;
+        /* ⬇️ CHANGED: Center the active slide */
+        scroll-snap-align: center;
+        object-fit: cover;
+        /* Optional: Add visual separation for the "card" look */
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 3. Hide the arrow buttons on mobile */
+    .prev, .next {
+        display: none !important;
+    }
+}
+/* ==================================================
+   FIX: QUANTITY INPUT VISIBILITY
+   ================================================== */
+/* -----------------------------------------------------------
+   Wrapper: Forces Horizontal Row
+   ----------------------------------------------------------- */
+.row-qty-wrapper {
+    display: flex !important; /* 1. Force Flexbox */
+    flex-direction: row !important; /* 2. Force horizontal direction */
+    flex-wrap: nowrap !important; /* 3. Prevent wrapping */
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    /* Background for the white shadow to pop */
+    background-color: #ecf0f3;
+    padding: 10px 20px;
+    border-radius: 45px;
+    /* Ensure the wrapper itself doesn't stretch too wide */
+    width: 190px;
+    margin: 0 auto; /* Optional: Centers the whole widget */
+}
+
+/* -----------------------------------------------------------
+   Buttons
+   ----------------------------------------------------------- */
+.row-qty-btn {
+    /* Prevent squishing */
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    cursor: pointer;
+    /* Center the +/- text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #1DA1F2; /* Twitter Blue */
+    /* Neumorphic Shadow */
+    box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff;
+    transition: all 0.2s ease;
+}
+
+    .row-qty-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 7px 7px 12px #d1d9e6, -7px -7px 12px #ffffff;
+    }
+
+    .row-qty-btn:active {
+        transform: translateY(0);
+        box-shadow: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
+    }
+
+/* -----------------------------------------------------------
+   Input Field
+   ----------------------------------------------------------- */
+.row-qty-input {
+    /* Override any default block styles (like in Bootstrap) */
+    display: inline-block !important;
+    width: 50px !important;
+    margin: 0 !important;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1F2937;
+    outline: none;
+}
+
+    /* Remove default browser spinners */
+    .row-qty-input::-webkit-outer-spin-button,
+    .row-qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+
+/* =========================================
+   MOBILE ADJUSTMENTS (Max-width: 480px)
+   ========================================= */
+@media screen and (max-width: 780px) {
+
+    /* Shrink the container padding and gap */
+    .row-qty-wrapper {
+        gap: 5px; /* Closer together */
+        padding: 6px 10px; /* Smaller container */
+        border-radius: 40px;
+        width: 140px;
+    }
+
+    /* Make buttons smaller (32px instead of 42px) */
+    .row-qty-btn {
+        flex: 0 0 32px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1.2rem; /* Smaller symbol */
+        /* Tighter shadow for small buttons */
+        box-shadow: 3px 3px 6px #d1d9e6, -3px -3px 6px #ffffff;
+    }
+
+    /* Shrink input text */
+    .row-qty-input {
+        width: 40px !important;
+        font-size: 1.1rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================
+   NEW ORDER LAYOUT (Grid vs Stack)
+   ========================================= */
+
+/* 1. Base Container (Mobile Default) */
+.order-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+/* 2. Desktop Layout (Two Columns) */
+@media (min-width: 769px) {
+    .order-container {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 2.5rem;
+        /* Define where each section goes */
+        grid-template-areas:
+            "products summary"
+            "details summary"
+            "payment summary";
+        align-items: start;
+    }
+
+    /* Assign Sections to Grid Areas */
+    .billing-products {
+        grid-area: products;
+    }
+
+    .billing-details {
+        grid-area: details;
+    }
+
+    .payment-section {
+        grid-area: payment;
+        margin-top: 0 !important;
+    }
+
+    /* Make Receipt Sticky on Desktop */
+    .order-summary {
+        grid-area: summary;
+        position: sticky;
+        top: 110px;
+    }
+}
+
+/* 3. Mobile Specific Adjustments */
+@media (max-width: 768px) {
+    /* Ensure the Receipt is static (not sticky) and full width */
+    .order-summary {
+        position: static;
+        width: 100%;
+        margin-top: 0;
+    }
+
+    /* Optional: Enforce order explicitly if needed, though HTML order handles this */
+    .billing-products {
+        order: 1;
+    }
+
+    .order-summary {
+        order: 2;
+    }
+    /* Receipt in the middle */
+    .billing-details {
+        order: 3;
+    }
+
+    .payment-section {
+        order: 4;
+    }
+    /* Payment at the end */
+}
+
+/* 4. White Card Styling for the split sections */
+.billing-products,
+.billing-details,
+.payment-section,
+.order-summary {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 24px; /* Fluffy corners */
+    box-shadow: 0 14px 28px rgba(174, 174, 192, 0.25), -14px -14px 28px #ffffff;
+}
+
+/* Mobile padding adjustment */
+@media (max-width: 768px) {
+    .billing-products,
+    .billing-details,
+    .payment-section,
+    .order-summary {
+        padding: 1.5rem;
+    }
+}
+
+
+/* =========================================
+modal for image 
+   ========================================= */
+
+
+/* The Modal Background Overlay */
+.image-modal {
+    display: none; /* Hidden by default */
+    /* Position fixed to cover the whole screen */
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    /* Visuals */
+    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+    backdrop-filter: blur(10px);
+    /* --- THE FIX: THIS CENTRES THE CONTENT --- */
+    /* We don't use 'display: flex' here because JS sets it. */
+    /* But we define the ALIGNMENT rules here: */
+    justify-content: center; /* Center horizontally (Left/Right) */
+    align-items: center; /* Center vertically (Up/Down) */
+    /* Remove 'overflow: auto' to prevent scrollbars from messing up centering */
+    overflow: hidden;
+}
+/* NEW: The Container for Image + Button */
+.modal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers the whole wrapper */
+
+    width: 50%; /* Width on Desktop */
+    max-height: 90vh;
+    /* Important: Allows the X button to stick to this box */
+    position: relative;
+}
+
+/* The Image */
+.modal-content {
+    width: 100%; /* Fill the wrapper */
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    background: white;
+}
+
+/* The Close Button (Now attached to the image corner) */
+.close-modal-btn {
+    position: absolute;
+    top: -40px; /* Sits just above the image */
+    right: 0; /* Aligns with the right edge */
+
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    transition: 0.2s;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Makes X visible on any background */
+}
+
+    .close-modal-btn:hover {
+        color: #ccc;
+        transform: scale(1.1);
+    }
+
+/* Mobile Adjustments */
+@media only screen and (max-width: 768px) {
+    .modal-wrapper {
+        width: 90%; /* Wider on mobile */
+    }
+
+    .close-modal-btn {
+        top: -35px; /* Adjust slightly for mobile */
+        right: 0;
+        font-size: 35px;
+    }
+}
+/* -----------------------------------------------------------
+   Wrapper: Centers the image and acts as the container
+   ----------------------------------------------------------- */
+.modal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the wrapper */
+
+    width: 50%; /* Desktop Width */
+    max-height: 90vh;
+    position: relative; /* REQUIRED for the X button to stick here */
+}
+
+/* -----------------------------------------------------------
+   The Image
+   ----------------------------------------------------------- */
+.modal-content {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    background: white;
+}
+
+/* -----------------------------------------------------------
+   The Close Button (Now Inside Top-Right)
+   ----------------------------------------------------------- */
+.close-modal-btn {
+    position: absolute;
+    top: 10px; /* 10px from the top edge INSIDE */
+    right: 10px; /* 10px from the right edge INSIDE */
+    /* Make it a nice clickable circle */
+    width: 32px;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white bg */
+    border-radius: 50%; /* Circle shape */
+    color: #333; /* Dark X for contrast */
+    /* Center the X inside the circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10000;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+    /* Hover Effect */
+    .close-modal-btn:hover {
+        background-color: #fff; /* Pure white on hover */
+        color: #000;
+        transform: scale(1.1); /* Slight zoom */
+    }
+
+/* -----------------------------------------------------------
+   Mobile Adjustments
+   ----------------------------------------------------------- */
+@media only screen and (max-width: 768px) {
+    .modal-wrapper {
+        width: 90%; /* Wider on mobile */
+    }
+}
+/* =========================================
+   MOBILE PRODUCT CARD ADJUSTMENTS
+   ========================================= */
+@media only screen and (max-width: 480px) {
+
+    /* 1. Reduce the container padding and gap to minimize white space */
+    .variant-row-card {
+        padding: 2px !important; /* Reduced from 12px */
+        gap: 2px !important; /* Reduced from 15px to give text more room */
+        align-items: flex-start !important; /* Aligns items to top so long text doesn't look weird */
+    }
+
+    /* 2. Adjust Image Size (Smaller to save width for text) */
+    /* 1. Center the content inside the Image Column */
+    .img-col {
+        display: flex !important;
+        justify-content: center !important; /* Center Horizontally */
+        align-items: center !important; /* Center Vertically */
+        /* Optional: Force a small fixed width so all images line up perfectly */
+        min-width: 45px !important;
+        padding: 0 !important;
+    }
+
+        /* 2. Style the Image itself */
+        .img-col img {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 4px !important;
+            /* Remove any default margins that might push it off-center */
+            margin: 0 !important;
+            display: block !important;
+        }
+
+    /* 3. Reduce container padding/gap (From previous request) */
+    .variant-row-card {
+        padding: 8px !important;
+        gap: 8px !important;
+        align-items: center !important; /* Ensure the whole row stays centered vertically */
+    }
+
+    /* 4. Text adjustments */
+    .info-col h5 {
+        font-size: 0.9rem !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+    }
+
+    /* 3. Product Name Font Size & Spacing */
+    .info-col h5 {
+        font-size: 0.9rem !important; /* Slightly smaller font for better fit */
+        line-height: 1.3 !important; /* Tighter line height */
+        margin-bottom: 2px !important;
+        /* Ensure text wraps nicely and takes available space */
+        white-space: normal !important;
+        word-break: break-word;
+    }
+
+    /* SKU Text Adjustment */
+    .info-col small {
+        font-size: 0.75rem !important;
+        display: block;
+        margin-top: 0;
+    }
+
+    /* 4. Compact the Quantity Buttons (Right Side) */
+    /* Making these smaller frees up horizontal space for the product name */
+    .row-qty-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1.1rem !important;
+    }
+
+    /*.row-qty-input {*/
+    /*    width: 40px !important;*/
+    /*    height: 28px !important;*/
+    /*    font-size: 0.9rem !important;*/
+    /*}*/
+
+    /* 5. Adjust Price Font */
+    .row-price {
+        font-size: 0.9rem !important;
+        margin-top: 2px;
+    }
+
+    /* 6. Checkbox Column - keep tight */
+    .chk-col {
+        padding-top: 10px !important;
+    }
+}
+/* 1. The Background Wrapper (Pill Shape) */
+
+
+/* 2. The Buttons (Small White Circles) */
+
+
+/* 3. The Input (Transparent middle) */
+.row-qty-input {
+    width: 28px !important;
+    height: 24px !important; /* Match button height */
+    background-color: transparent !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* =========================================
+   DESKTOP / DEFAULT STYLES (PC)
+   ========================================= */
+
+/* 1. The Background Wrapper (Pill Shape) */
+.row-qty-wrapper {
+    background-color: #f0f2f5 !important; /* Light grey background */
+    border: 2px solid #e1e4e8 !important; /* Subtle border */
+    border-radius: 50px !important; /* Fully rounded pill shape */
+    padding: 8px !important; /* Space inside the pill */
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important; /* Slight gap between elements */
+
+    width: fit-content !important;
+    height: 60px !important; /* Comfortable height for mouse clicking */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03) !important; /* Inner shadow depth */
+}
+
+/* 2. The Buttons (White Circles) */
+.row-qty-btn {
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50% !important; /* Perfect circle */
+    background-color: #ffffff !important; /* White button */
+
+    color: #1da1f2 !important; /* Blue text */
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    border: 1px solid transparent !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important; /* Soft outer shadow */
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+}
+
+    /* Hover Effect for Desktop */
+    .row-qty-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.12) !important;
+        color: #0d8bd9 !important; /* Darker blue on hover */
+    }
+
+    /* Active Click Effect */
+    .row-qty-btn:active {
+        transform: translateY(0);
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1) !important;
+    }
+
+/* 3. The Input Field (Transparent) */
+.row-qty-input {
+    width: 40px !important;
+    height: 32px !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    text-align: center !important;
+}
+
+    /* Remove Spinner Arrows (Chrome/Safari/Edge) */
+    .row-qty-input::-webkit-outer-spin-button,
+    .row-qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+/* =========================================
+   DESKTOP IMAGE STYLES
+   ========================================= */
+
+/* 1. Image Column: Center the image */
+.img-col {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding-right: 10px !important; /* Space between image and text */
+}
+
+    /* 2. The Product Image */
+    .img-col img {
+        width: 60px !important;
+        width: 60px !important; /* Standard desktop size */
+        /* Standard desktop size */
+        height: 60px !important; /* Square aspect ratio */
+
+        border-radius: 8px !important; /* Soft rounded corners */
+        object-fit: cover !important; /* Prevents stretching */
+
+        border: 1px solid #e0e0e0 !important; /* Light border definition */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; /* Very subtle shadow */
+
+        cursor: zoom-in !important; /* Shows magnifying glass on hover */
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+        /* Hover Effect: Slight lift and zoom */
+        .img-col img:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+            border-color: #d0d0d0 !important;
+        }
+
+@media only screen and (max-width: 480px) {
+    .row-price {
+        align-items: flex-end !important; /* Aligns text to the right */
+    }
+
+        .row-price span:last-child {
+            font-size: 0.7rem !important; /* Make stock text tiny on mobile */
+            margin-top: 0 !important;
+        }
+}
+
+
+
+/*animation*/
+
+
+
+
+
+/* ==================================================
+   SCROLL ANIMATIONS (CLEAN SLIDE - NO BLUR)
+   ================================================== */
+
+/* 1. Base State (Hidden / Exited) */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px); /* Simple slide up from bottom */
+    /* EXIT: Fade out quickly when scrolling away */
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    will-change: opacity, transform;
+}
+
+    /* 2. Active State (Visible / Entered) */
+    .reveal-on-scroll.active {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        /* ENTRY: Smooth, professional slide in */
+        transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+/* 3. Staggered Delays (Optional) */
+.delay-100 {
+    transition-delay: 0.1s;
+}
+
+.delay-200 {
+    transition-delay: 0.2s;
+}
+
+.delay-300 {
+    transition-delay: 0.3s;
+}
+
+
+/* SAFETY: For Razor files (.cshtml), use @@media */
+@@media (scripting: none) {
+    .reveal-on-scroll {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+/* ==================================================
+   1. YOUTUBE-STYLE SKELETON SHIMMER
+   (Clean version)
+   ================================================== */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton-loader {
+    background: #f6f7f8;
+    background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-repeat: no-repeat;
+    background-size: 1000px 100%;
+    animation: shimmer 1.5s infinite linear forwards;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ==================================================
+   2. BLOCK-BY-BLOCK STAGGERED REVEAL
+   (No Blur Version)
+   ================================================== */
+
+/* Use this class on the PARENT container */
+.stagger-load > * {
+    opacity: 0;
+    transform: translateY(20px);
+    /* Quick reset when hidden */
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+/* When the parent becomes visible */
+.stagger-load.active > * {
+    opacity: 1;
+    transform: translateY(0);
+    /* Smooth slide in for items */
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+    /* Automatic delays */
+    .stagger-load.active > *:nth-child(1) {
+        transition-delay: 0.1s;
+    }
+
+    .stagger-load.active > *:nth-child(2) {
+        transition-delay: 0.2s;
+    }
+
+    .stagger-load.active > *:nth-child(3) {
+        transition-delay: 0.3s;
+    }
+
+    .stagger-load.active > *:nth-child(4) {
+        transition-delay: 0.4s;
+    }
+
+    .stagger-load.active > *:nth-child(5) {
+        transition-delay: 0.5s;
+    }
+
+    .stagger-load.active > *:nth-child(6) {
+        transition-delay: 0.6s;
+    }
+
+    .stagger-load.active > *:nth-child(7) {
+        transition-delay: 0.7s;
+    }
+
+    .stagger-load.active > *:nth-child(8) {
+        transition-delay: 0.8s;
+    }
+
+    .stagger-load.active > *:nth-child(9) {
+        transition-delay: 0.9s;
+    }
+
+    .stagger-load.active > *:nth-child(10) {
+        transition-delay: 1.0s;
+    }

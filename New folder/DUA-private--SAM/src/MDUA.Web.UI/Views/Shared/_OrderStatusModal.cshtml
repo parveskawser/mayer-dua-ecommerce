@@ -1,0 +1,40 @@
+﻿<!--
+    This partial view uses 'combo.css' for the main modal structure
+    and 'order-track.css' for the specific Receipt styles.
+-->
+<link rel="stylesheet" href="~/css/order-tracking.css" />
+
+<!-- ✅ FIX: Ensure modal is scrollable on small screens or long receipts -->
+<style>
+    #order-status-modal {
+        overflow-y: auto !important; /* Forces scrollbar on the modal wrapper */
+        -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+    }
+
+        /* ✅ FIX: Add position relative so the close button stays INSIDE the card */
+        #order-status-modal .modal-content {
+            position: relative;
+        }
+</style>
+
+<div id="order-status-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+
+        <h3>Track Your Order 📦</h3>
+        <p>Please enter your <strong>Online Order ID</strong> to check the status of your purchase.</p>
+
+        <form id="status-lookup-form">
+            <input type="text" id="order-id-input" name="OrderId" placeholder="Enter your Order ID (e.g., ON00012345)" required />
+            <button type="submit" class="btn submit-btn">Check Status</button>
+        </form>
+
+        <!-- This is where JS injects the Receipt HTML -->
+        <div id="status-result" class="status-result-area"></div>
+
+        <div id="status-loading" class="text-center" style="display: none; padding: 20px;">
+            <div class="spinner"></div>
+            <p>Loading order details...</p>
+        </div>
+    </div>
+</div>

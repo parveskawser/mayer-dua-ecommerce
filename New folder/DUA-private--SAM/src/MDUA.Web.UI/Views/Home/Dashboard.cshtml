@@ -1,0 +1,443 @@
+﻿@model MDUA.Entities.UserLoginResult
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<div class="dashboard-wrapper">
+
+<div class="dashboard-header d-flex justify-content-between align-items-center mb-0">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
+        <div class="text-muted small">Welcome, @Model.UserLogin.UserName!</div>
+    </div>
+
+    <div class="d-flex align-items-center position-relative gap-3 me-4">
+
+        <a href="@Url.Action("BackInStockRequests", "Purchase")"
+           class="btn btn-light border d-flex align-items-center gap-2 shadow-sm">
+            <span>🔔</span>
+            <span class="small fw-bold">Back in stock</span>
+            <span class="badge bg-danger">@Model.BackInStockRequestCount</span>
+        </a>
+
+        <button id="header-msg-btn" class="btn btn-light border rounded-circle shadow-sm position-relative" style="width: 45px; height: 45px;">
+            <i class="fas fa-comment-dots text-secondary fs-5"></i>
+            
+            <span id="header-msg-badge" 
+                  class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger shadow-sm" 
+                  style="display:none; border: 2px solid #fff; font-size: 0.7rem;">
+                0
+            </span>
+        </button>
+
+        <div id="header-msg-dropdown" class="dropdown-menu dropdown-menu-end p-0 shadow border-0" 
+             style="display: none; position: absolute; right: 0; top: 55px; width: 340px; z-index: 1050;">
+            
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white rounded-top">
+                <h6 class="mb-0 fw-bold">Messages</h6>
+                <small class="text-primary fw-bold cursor-pointer" onclick="loadHeaderChats()">Refresh</small>
+            </div>
+
+            <div id="header-chat-list" style="max-height: 350px; overflow-y: auto; background: #fff;">
+                <div class="text-center p-4 text-muted small">Loading...</div>
+            </div>
+
+            <div class="p-2 border-top text-center bg-light rounded-bottom">
+                <small class="text-secondary fw-bold" style="cursor:pointer;" onclick="$('#admin-chat-panel').fadeIn(); $('#header-msg-dropdown').hide();">View All in Panel</small>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="dashboard-scroll-content">
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-success position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Total Revenue</div>
+                            <div class="fs-4 fw-bold text-success">Tk. @Model.Stats.TotalRevenue.ToString("N0")</div>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-2 rounded-circle text-success">💰</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-primary position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Total Orders</div>
+                            <div class="fs-4 fw-bold text-primary">@Model.Stats.TotalOrders</div>
+                            <div class="small text-muted">@Model.Stats.TodayOrders today</div>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">🛒</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-warning position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Pending</div>
+                            <div class="fs-4 fw-bold text-warning">@Model.Stats.PendingOrders</div>
+                            <div class="small text-muted">Needs action</div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-2 rounded-circle text-warning">⚡</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-info position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Customers</div>
+                            <div class="fs-4 fw-bold text-info">@Model.Stats.TotalCustomers</div>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-2 rounded-circle text-info">👥</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="glass-card kpi-card p-3 border-start border-4 border-danger position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                        <div>
+                            <div class="text-uppercase text-muted small fw-bold mb-1">Back in stock</div>
+                            <div class="fs-4 fw-bold text-danger">@Model.BackInStockRequestCount</div>
+                            <div class="small text-muted">Requests waiting</div>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-2 rounded-circle text-danger">🔔</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold text-dark mb-0">Order Status</h6>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="glass-card card-orders p-0 h-100 overflow-hidden">
+                    <div class="card-header-custom">
+                        <h6 class="fw-bold mb-0">New Orders</h6>
+                        <a href="@Url.Action("Add", "Order")" class="btn btn-sm btn-orders rounded-pill px-3 shadow-sm" title="Add Order">
+                            <span class="me-1">＋</span>
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Order ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+                                {
+                                    foreach (var o in Model.RecentOrders)
+                                    {
+                                        string statusClass = "bg-secondary-subtle text-dark";
+                                        string displayStatus = o.Status == "Draft" ? "Pending" : o.Status;
+
+                                        if (displayStatus == "Confirmed") statusClass = "bg-success text-white";
+                                        else if (displayStatus == "Pending") statusClass = "bg-warning text-dark";
+
+                                        string displayId = o.SalesOrderId ?? o.OnlineOrderId ?? o.Id.ToString();
+                                        string type = o.SalesChannelId == 1 ? "Online" : "Direct";
+
+                                        <tr style="cursor: pointer;" onclick="window.location.href='@Url.Action("AllOrders", "Order")?highlightId=@o.Id'">
+                                            <td class="ps-4 fw-bold text-dark">@displayId</td>
+                                            <td>
+                                                <span class="badge bg-light text-secondary border">@type</span>
+                                            </td>
+                                            <td class="fw-bold text-dark">
+                                                Tk. @((o.TotalAmount - o.DiscountAmount).ToString("N0"))
+                                            </td>
+                                            <td><span class="badge @statusClass rounded-pill">@displayStatus</span></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="4" class="text-center py-5 text-muted">No recent orders found.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                        <a href="@Url.Action("AllOrders", "Order")" class="text-decoration-none fw-bold text-orders small">See All Orders &rarr;</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card card-products p-0 h-100 overflow-hidden">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">New Products</h6>
+                        <a href="@Url.Action("Add", "Product")" class="btn btn-sm btn-success rounded-pill px-3" title="Add Product">
+                            <span class="me-1">＋</span>
+                        </a>
+                    </div>
+                    @if (Model.LastFiveProducts != null && Model.LastFiveProducts.Any())
+                    {
+                        <div class="product-list">
+                            @foreach (var p in Model.LastFiveProducts)
+                            {
+                                <div class="product-list-item d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="product-icon">📦</div>
+                                        <div>
+                                            <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">@p.ProductName</div>
+                                            <div class="text-muted" style="font-size: 0.7rem;">@p.CreatedAt?.ToString("MMM dd")</div>
+                                        </div>
+                                    </div>
+                                    <span class="fw-bold small text-success">Tk. @(p.BasePrice?.ToString("N0") ?? "0")</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted small">No products found.</div>
+                    }
+                    <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                        <a href="@Url.Action("AllProducts", "Product")" class="text-decoration-none fw-bold text-success small">See All Products &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-low-stock">
+                <div class="header-low-stock">
+                    <i class="fas fa-exclamation-triangle"></i> Low Stock Alerts
+                </div>
+
+                <div class="list-group list-group-flush">
+                    @if (Model.LowStockItems != null && Model.LowStockItems.Any())
+                    {
+                        foreach (var item in Model.LowStockItems)
+                        {
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3"
+                                 style="cursor: pointer;"
+                                 onclick="window.location.href='@Url.Action("StockStatus", "Purchase")?highlightId=@item.VariantId'">
+
+                                <div class="d-flex flex-column" style="flex: 1; padding-right: 10px;">
+                                    <span class="fw-bold text-dark">@item.ProductName</span>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-tag me-1" style="font-size: 0.7rem;"></i>
+                                        @(string.IsNullOrEmpty(item.VariantName) ? "Standard" : item.VariantName)
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    @if (item.StockQty == 0)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill mb-1">Out of Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill mb-1">@item.StockQty left</span>
+                                    }
+                                    <div class="fw-bold text-primary small">
+                                        Tk. @item.Price.ToString("N0")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted small">
+                            <i class="fas fa-check-circle text-success mb-2 fs-4"></i><br />
+                            All items stocked!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <!--
+        <div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
+            <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
+            <div class="row g-3 font-monospace small">
+                <div class="col-md-3">
+                    <span class="text-muted d-block">Current User:</span>
+                    <strong>@Model.UserLogin.UserName</strong>
+                </div>
+                <div class="col-md-2">
+                    <span class="text-muted d-block">User ID:</span>
+                    <strong>@Model.UserLogin.Id</strong>
+                </div>
+                <div class="col-md-2">
+                    <span class="text-muted d-block">Company ID:</span>
+                    <strong>@Model.UserLogin.CompanyId</strong>
+                </div>
+                <div class="col-md-5">
+                    <span class="text-muted d-block">Active Permissions (@(Model.AuthorizedActions?.Count ?? 0)):</span>
+                    <div class="text-break mt-1" style="max-height: 60px; overflow-y: auto;">
+                        @if (Model.AuthorizedActions != null && Model.AuthorizedActions.Any())
+                        {
+                            @string.Join(", ", Model.AuthorizedActions)
+                        }
+                        else
+                        {
+                            <em class="text-muted">No permissions found</em>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> 
+        -->
+        <partial name="_AdminChatWidget" />
+</div>
+</div>
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="~/js/admin-chat.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Sales Trend Chart - WARM COLORS
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+            const salesLabels = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Label).ToList() ?? new List<string>()));
+            const salesData = @Html.Raw(Json.Serialize(Model.SalesTrend?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Monthly Sales (Tk)',
+                        data: salesData,
+                        borderColor: '#f97316', // Orange
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)', // Light orange fill
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#ef4444', // Red points
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [2, 4],
+                                color: '#fee2e2' // Light red grid
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Status Distribution Chart - WARM COLORS
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+            let rawLabels = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Label).ToList() ?? new List<string>()));
+            let rawData = @Html.Raw(Json.Serialize(Model.OrderStatusCounts?.Select(x => x.Value).ToList() ?? new List<decimal>()));
+
+            // Map Labels (Draft -> Pending)
+            const statusLabels = rawLabels.map(l => l === "Draft" ? "Pending" : l);
+
+            // Warm Color Palette for Status Chart
+            const getStatusColor = (status) => {
+                switch(status) {
+                    case 'Confirmed': return '#fbbf24'; // Warm Yellow
+                    case 'Shipped':   return '#fb923c'; // Light Orange
+                    case 'Delivered': return '#34d399'; // Soft Green (minimal)
+                    case 'Pending':   return '#fde047'; // Bright Yellow
+                    case 'Draft':     return '#fde047'; // Bright Yellow
+                    case 'Cancelled': return '#ef4444'; // Red
+                    case 'Returned':  return '#f87171'; // Light Red
+                    default: return '#fed7aa'; // Light Orange
+                }
+            };
+
+            const backgroundColors = statusLabels.map(label => getStatusColor(label));
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: rawData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 6,
+                        hoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                padding: 15,
+                                color: '#64748b',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        </script>
+}

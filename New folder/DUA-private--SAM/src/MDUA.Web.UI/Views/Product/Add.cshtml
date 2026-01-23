@@ -1,0 +1,227 @@
+﻿@model dynamic
+@{
+Layout = "_AdminLayout";
+ViewData["Title"] = "Add Product";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-product.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+
+    <style>
+        /* Custom tweak for Summernote to match your glass/white theme */
+        .note-editor {
+            border-radius: 8px !important;
+            border-color: #dee2e6 !important;
+            background: #fff;
+        }
+
+        .note-toolbar {
+            border-radius: 8px 8px 0 0 !important;
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #dee2e6 !important;
+        }
+
+        .note-modal-footer {
+            height: auto !important; /* Fix for Bootstrap 5 modal height conflict */
+        }
+    </style>
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    
+    <div>
+        <div class="fixed-page-title">
+            <h2 class="fw-bold mb-0 text-dark" style="margin-left: 25px;">Add Product</h2>
+            <div class="text-muted small" style="margin-left: 25px;">Create a new item in your catalog</div>
+        </div>
+    </div>
+    <a href="@Url.Action("AllProducts", "Product")" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        &larr; Back to List
+    </a>
+</div>
+
+<!-- CRITICAL: id="addProductModal" wraps the whole form for JS compatibility -->
+<div id="addProductModal">
+    <form method="post" asp-controller="Product" asp-action="AddProduct">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-4">
+            <!-- LEFT COLUMN: Main Information -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 h-100">
+
+                    <!-- Product Name -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Product Name <span class="text-danger">*</span></label>
+                        <input type="text" name="ProductName" class="form-control form-control-modal" placeholder="e.g. Premium T-Shirt" required />
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Description</label>
+                        <textarea id="summernote" name="Description"></textarea>
+                    </div>
+
+                    <!-- Pricing & Inventory Grid -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Base Price <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">Tk</span>
+                                <input type="number" step="0.01" name="BasePrice" class="form-control form-control-modal border-start-0 ps-0" placeholder="0.00" min="0" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Reorder Level</label>
+                            <input type="number" name="ReorderLevel" class="form-control form-control-modal" value="0" min ="0" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Slug (Unique URL) <span class="text-danger">*</span></label>
+
+                            <input type="text"
+                                   id="slugInput"
+                                   name="Slug"
+                                   class="form-control form-control-modal"
+                                   placeholder="product-name-slug"
+                                   required />
+
+                            <div id="slug-error" class="text-danger small mt-1 fw-bold" style="display:none;">
+                                ⚠️ This slug is already taken. Please choose another.
+                            </div>
+
+                            <div class="form-text small">Leave empty to auto-generate from name.</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="targetCompanyId" value="@User.FindFirst("CompanyId")?.Value" />
+            <!-- RIGHT COLUMN: Settings, Attributes & Actions -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4 position-sticky" style="top: 1rem;">
+
+                    <!-- Status & Category -->
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Configuration</h6>
+
+                    <div class="bg-light p-3 rounded border mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="IsActive" value="true" class="form-check-input" id="IsActive" checked />
+                            <input type="hidden" name="IsActive" value="false" />
+                            <label class="form-check-label fw-bold" for="IsActive">Active</label>
+                            <div class="small text-muted" style="font-size: 0.75rem;">Visible on storefront</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Category <span class="text-danger">*</span></label>
+                        <select name="CategoryId" class="form-select form-control-modal" required>
+                            <option value="">-- Select Category --</option>
+                            @if (Model.Categories != null)
+                            {
+                                foreach (var c in Model.Categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <hr class="border-light my-4" />
+
+                    <!-- Attributes Section -->
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Attributes & Variants</h6>
+
+                    <div class="alert alert-info py-2 small">
+                        <i class="fas fa-info-circle"></i> Select the <strong>Primary Visual</strong> attribute (e.g., Color). This determines how images are grouped.
+                    </div>
+
+                    <div id="attributes-container" class="mb-2">
+                        <div class="attribute-row mb-2 p-2 border rounded bg-white" data-attr-index="0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="form-check" title="This attribute controls the product image">
+                                    <input class="form-check-input is-primary-radio" type="radio" name="primaryAttributeGroup" id="primary_0" checked>
+                                    <label class="form-check-label small fw-bold text-primary" for="primary_0">
+                                        Primary Visual
+                                    </label>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-attribute border-0" style="padding: 0 5px;">&times;</button>
+                            </div>
+
+                            <select name="Attributes[0].AttributeId" class="attribute-select form-select form-select-sm form-control-modal">
+                                <option value="">-- Select Attribute --</option>
+                                @if (Model.Attributes != null)
+                                {
+                                    foreach (var a in Model.Attributes)
+                                    {
+                                        <option value="@a.Id">@a.Name</option>
+                                    }
+                                }
+                            </select>
+                            <div class="attribute-values-container mt-2"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="add-attribute" class="btn btn-sm btn-outline-secondary w-100 dashed-border mb-3">
+                        + Add Another Attribute
+                    </button>
+
+                    <!-- Variants Container (Populated by JS) -->
+                    <div id="variants-container" class="mt-3 small"></div>
+
+                    <hr class="border-light my-4" />
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" id="btn-save-product" class="btn btn-danger fw-bold shadow-sm">
+                            Create Product
+                        </button>
+                        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-light text-muted">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+    <script>
+               $(document).ready(function() {
+                // ✅ 4. INITIALIZE EDITOR
+                $('#summernote').summernote({
+                    placeholder: 'Write detailed product description here...',
+                    tabsize: 2,
+                    height: 250,
+
+                    // ✅ CRITICAL FIX: Moves modals to body to prevent "Black Drop" freeze
+                    dialogsInBody: true,
+
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ],
+                    callbacks: {
+                        onPaste: function (e) {
+                            var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+                            e.preventDefault();
+                            document.execCommand('insertText', false, bufferText);
+                        }
+                    }
+                });
+            });
+    window.productConfig = {
+        urls: {
+            getAttributeValues: '@Url.Action("GetAttributeValues", "Product")',
+            getVariantsPartial: '@Url.Action("GetVariantsPartial", "Product")',
+            addSingleVariant: '@Url.Action("AddSingleVariant", "Product")',
+            getMissingAttributes: '@Url.Action("GetMissingAttributes", "Product")',
+            addAttributeToVariant: '@Url.Action("AddAttributeToVariant", "Product")'
+        }
+    };
+</script>
+<script src="~/js/product.js"></script>
+}

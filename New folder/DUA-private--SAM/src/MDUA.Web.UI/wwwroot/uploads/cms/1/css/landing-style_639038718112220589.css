@@ -1,0 +1,34 @@
+/* Hero Styles */
+.hero-section {
+    height: 100vh;
+    width: 100%;
+}
+
+.tracking-wider {
+    letter-spacing: 3px;
+}
+
+/* Feature Box Hover Animation */
+.feature-box {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.feature-box:hover {
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    border-color: transparent !important;
+}
+
+/* Countdown Styles */
+#countdown {
+    font-family: 'Courier New', monospace;
+}
+
+/* Button Hover */
+.btn-light:hover {
+    background-color: #d32f2f;
+    color: white;
+    border-color: #d32f2f;
+}

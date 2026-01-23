@@ -1,0 +1,147 @@
+﻿@using MDUA.Facade.Interface
+@using System.Text.Json
+@inject ISettingsFacade SettingsFacade
+
+@{
+    int companyId = 1;
+    if (User.Identity.IsAuthenticated)
+    {
+        var claim = User.FindFirst("CompanyId");
+        if (claim != null && int.TryParse(claim.Value, out int id)) { companyId = id; }
+    }
+
+    // 1. Fetch Config
+    var footerJson = SettingsFacade.GetGlobalSetting(companyId, "Footer_Config");
+
+    // 2. Define Structure & Safe Parsing
+    JsonDocument doc = null;
+    bool hasConfig = !string.IsNullOrEmpty(footerJson);
+
+    if (hasConfig)
+    {
+        try
+        {
+            doc = JsonDocument.Parse(footerJson);
+        }
+        catch
+        {
+            // If JSON is invalid (syntax error), treat as no config
+            hasConfig = false;
+        }
+    }
+
+    // 3. SAFE ROOT RESOLUTION
+    // This handles both Array Root [...] and Object Root { "Columns": [...] }
+    JsonElement? columnsList = null;
+    if (hasConfig && doc != null)
+    {
+        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            columnsList = doc.RootElement;
+        }
+        else if (doc.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            if (doc.RootElement.TryGetProperty("Columns", out var cols) && cols.ValueKind == JsonValueKind.Array)
+            {
+                columnsList = cols;
+            }
+        }
+    }
+}
+
+<footer class="bg-dark text-white mt-5 pt-5 pb-3">
+    <div class="container">
+        <div class="row g-4">
+
+            @if (columnsList.HasValue)
+            {
+                // DYNAMIC RENDERING - CRASH PROOF LOOP
+                foreach (var col in columnsList.Value.EnumerateArray())
+                {
+                    // 1. Safe Active Check (Default to TRUE if missing)
+                    bool isActive = true;
+                    if (col.TryGetProperty("IsActive", out var activeProp) &&
+                    (activeProp.ValueKind == JsonValueKind.True || activeProp.ValueKind == JsonValueKind.False))
+                    {
+                        isActive = activeProp.GetBoolean();
+                    }
+                    if (!isActive) continue;
+
+                    // 2. Safe Property Extraction with Defaults
+                    int width = 3;
+                    if (col.TryGetProperty("Width", out var widthProp) && widthProp.ValueKind == JsonValueKind.Number)
+                        width = widthProp.GetInt32();
+
+                    string title = "Untitled";
+                    if (col.TryGetProperty("Title", out var titleProp))
+                        title = titleProp.GetString() ?? "";
+
+                    string type = "Text";
+                    if (col.TryGetProperty("Type", out var typeProp))
+                        type = typeProp.GetString() ?? "Text";
+
+                    <div class="col-lg-@width col-md-6">
+                        <h5 class="fw-bold text-warning mb-3">@title</h5>
+
+                        @if (type == "Text")
+                        {
+                            string content = "";
+                            if (col.TryGetProperty("Content", out var contentProp))
+                                content = contentProp.GetString() ?? "";
+
+                            <p class="small text-secondary">@Html.Raw(content)</p>
+                        }
+                        else if (type == "Links")
+                        {
+                            <ul class="list-unstyled small">
+                                @if (col.TryGetProperty("Links", out var linksProp) && linksProp.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var link in linksProp.EnumerateArray())
+                                    {
+                                        string linkUrl = "#";
+                                        string linkText = "Link";
+
+                                        if (link.TryGetProperty("Url", out var urlProp))
+                                            linkUrl = urlProp.GetString() ?? "#";
+
+                                        if (link.TryGetProperty("Text", out var textProp))
+                                            linkText = textProp.GetString() ?? "Link";
+
+                                        <li class="mb-2">
+                                            <a href="@linkUrl" class="text-decoration-none text-secondary footer-link">
+                                                @linkText
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        }
+                        else if (type == "Newsletter")
+                        {
+                            <p class="small text-secondary">Subscribe for latest updates.</p>
+                            <form onsubmit="event.preventDefault(); alert('Subscribed!');">
+                                <div class="input-group">
+                                    <input type="email" class="form-control form-control-sm border-0" placeholder="Email" required>
+                                    <button class="btn btn-warning btn-sm fw-bold" type="submit">Subscribe</button>
+                                </div>
+                            </form>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-secondary">
+                    Footer configuration not found. Please configure it in the Admin Panel.
+                </div>
+            }
+
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="text-center">
+            <p class="small text-secondary mb-0">&copy; @DateTime.UtcNow.Year. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>

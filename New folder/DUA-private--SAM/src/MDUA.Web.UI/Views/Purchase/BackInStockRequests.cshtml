@@ -1,0 +1,134 @@
+﻿@model List<MDUA.Entities.BackInStockRequestDetail>
+@{
+    ViewData["Title"] = "Back In Stock Requests";
+    Layout = "_AdminLayout";
+    var requests = Model ?? new List<MDUA.Entities.BackInStockRequestDetail>();
+    var totalRequests = requests.Sum(x => x.RequestCount);
+    var uniqueProducts = requests.Select(x => x.ProductId).Distinct().Count();
+    var uniqueVariants = requests.Select(x => x.VariantId).Distinct().Count();
+    var avgRequestsPerVariant = uniqueVariants > 0 ? Math.Round(totalRequests / (decimal)uniqueVariants, 1) : 0;
+    var oldestRequestDate = requests.Where(x => x.FirstRequestDate.HasValue)
+        .Select(x => x.FirstRequestDate.Value)
+        .DefaultIfEmpty()
+        .Min();
+    var newestRequestDate = requests.Where(x => x.LatestRequestDate.HasValue)
+        .Select(x => x.LatestRequestDate.Value)
+        .DefaultIfEmpty()
+        .Max();
+    var maxWaitingDays = oldestRequestDate == default ? 0 : (DateTime.UtcNow.Date - oldestRequestDate.Date).Days;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
+}
+
+<div class="inventory-wrapper">
+
+    <div class="inventory-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">Back In Stock Requests</h2>
+                <div class="text-muted small">Track demand, request volume, and waiting time per variant</div>
+            </div>
+            <span class="badge bg-danger">@totalRequests total requests</span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Unique products</div>
+                    <div class="fs-4 fw-bold text-dark">@uniqueProducts</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Unique variants</div>
+                    <div class="fs-4 fw-bold text-dark">@uniqueVariants</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Avg requests / variant</div>
+                    <div class="fs-4 fw-bold text-dark">@avgRequestsPerVariant</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Longest waiting (days)</div>
+                    <div class="fs-4 fw-bold text-dark">@maxWaitingDays</div>
+                    @if (oldestRequestDate != default)
+                    {
+                        <div class="text-muted small">Since @oldestRequestDate.ToString("MMM dd, yyyy")</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-scroll-container">
+        <div class="table-responsive-lock">
+            <table class="table mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Product</th>
+                        <th>Variant</th>
+                        <th class="text-center">Request Count</th>
+                        <th class="text-center">Demand</th>
+                        <th class="text-center">First Request</th>
+                        <th class="text-center">Latest Request</th>
+                        <th class="text-center">Days Waiting</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (requests.Any())
+                    {
+                        foreach (var item in requests)
+                        {
+                            var waitingDays = item.FirstRequestDate.HasValue
+                            ? (DateTime.UtcNow.Date - item.FirstRequestDate.Value.Date).Days
+                            : 0;
+                            var demandLabel = item.RequestCount >= 10 ? "High" : item.RequestCount >= 5 ? "Medium" : "Low";
+                            var demandClass = item.RequestCount >= 10
+                            ? "bg-danger-subtle text-danger-emphasis"
+                            : item.RequestCount >= 5
+                            ? "bg-warning-subtle text-warning-emphasis"
+                            : "bg-success-subtle text-success-emphasis";
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">@item.ProductName</td>
+                                <td class="text-muted">@(!string.IsNullOrWhiteSpace(item.VariantName) ? item.VariantName : "Standard")</td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border">@item.RequestCount</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @demandClass">@demandLabel</span>
+                                </td>
+                                <td class="text-center text-muted">@item.FirstRequestDate?.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center text-muted">@item.LatestRequestDate?.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center text-muted">@waitingDays</td>
+                                <td class="text-end pe-4">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="@Url.Action("StockStatus", "Purchase", new { highlightId = item.VariantId })#row-@item.VariantId">
+                                        View in stock
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="8" class="text-center py-5 text-muted">No back in stock requests found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,496 @@
+﻿@using MDUA.Entities
+@using MDUA.Web.UI.Extensions
+@{
+    ViewData["Title"] = "Security Settings";
+    Layout = "_AdminLayout";
+    bool isTwoFaEnabled = ViewBag.IsTwoFactorEnabled ?? false;
+    bool hasPasskeys = ViewBag.HasPasskeys ?? false;
+    // Cast to the concrete entity list for strong typing and metadata access
+    var passkeyList = ViewBag.PasskeyList as List<UserPasskey> ?? new List<UserPasskey>();
+}
+
+<div class="container-fluid p-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="mb-4 fw-bold text-dark">Security Settings</h3>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="fas fa-shield-alt text-primary me-2"></i>Two-Factor Authentication</h5>
+                        <p class="text-muted mb-0 small">Secure your account with an additional layer of protection.</p>
+                        <small class="text-danger fw-bold" style="font-size: 0.75rem;">
+                            <i class="fas fa-exclamation-circle me-1"></i> Required to reset a forgotten password.
+                        </small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="twoFaToggle" style="width: 3em; height: 1.5em; cursor: pointer;" @(isTwoFaEnabled ? "checked" : "")>
+                    </div>
+                </div>
+            </div>
+
+            <div id="twoFaConfigSection" class="card border shadow-sm mb-4" style="display: @(isTwoFaEnabled ? "block" : "none");">
+                <div class="card-body p-4">
+                    @if (isTwoFaEnabled)
+                    {
+                        <div class="text-center py-4 fade-in">
+                            <h4 class="text-success fw-bold">2FA is Currently Active</h4>
+                            <p class="text-muted mb-0">Your account is secured. To disable, toggle the switch above.</p>
+                            <form id="disableTokenForm" style="display:none;">@Html.AntiForgeryToken()</form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row align-items-center fade-in">
+                            <div class="col-md-5 text-center border-end">
+                                <p class="text-muted small fw-bold mb-3">STEP 1: SCAN QR CODE</p>
+                                <img src="@ViewBag.QrCodeImage" alt="QR Code" class="img-thumbnail shadow-sm mb-3" style="width: 180px; height: 180px;">
+                                <div class="bg-light p-2 rounded border mx-auto" style="max-width: 220px;">
+                                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Manual Entry Key</small>
+                                    <code class="fw-bold text-dark user-select-all">@ViewBag.ManualEntryKey</code>
+                                </div>
+                            </div>
+                            <div class="col-md-7 ps-md-4 mt-3 mt-md-0">
+                                <h5 class="fw-bold">Finish Setup</h5>
+                                <p class="text-muted small mb-4">Scan the code and enter the 6-digit number.</p>
+                                <form id="enable2faForm">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="entryKey" value="@ViewBag.ManualEntryKey">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-secondary">AUTHENTICATION CODE</label>
+                                        <input type="text" name="code" class="form-control form-control-lg text-center letter-spacing-2" placeholder="000 000" maxlength="6" inputmode="numeric" required autocomplete="off">
+                                    </div>
+                                    <button class="btn btn-primary w-100 py-2 fw-bold" type="submit"><i class="fas fa-lock me-2"></i> Verify & Activate</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="fas fa-fingerprint text-success me-2"></i>Passkeys (Biometrics)</h5>
+                        <p class="text-muted mb-0 small">Login without passwords using Fingerprint, FaceID, or YubiKey.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="passkeyToggle" style="width: 3em; height: 1.5em; cursor: pointer;" @(hasPasskeys ? "checked" : "")>
+                    </div>
+                </div>
+            </div>
+
+            <div id="passkeyConfigSection" class="card border shadow-sm mb-4" style="display: @(hasPasskeys ? "block" : "none");">
+                <div class="card-body p-4">
+                    @if (hasPasskeys)
+                    {
+                        <div class="fade-in">
+                            <h6 class="fw-bold mb-3 text-muted">REGISTERED DEVICES (Max 2)</h6>
+                            <div class="list-group list-group-flush mb-4">
+                                @foreach (var key in passkeyList)
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        <div>
+                                            <i class="fas fa-key text-success me-2"></i>
+                                            <span class="fw-bold">@(string.IsNullOrEmpty(key.FriendlyName) ? key.DeviceType : key.FriendlyName)</span>
+
+                                            @if (!string.IsNullOrEmpty(key.FriendlyName))
+                                            {
+                                                <small class="text-muted ms-2">(@key.DeviceType)</small>
+                                            }
+                                            @* ✅ FIXED: Using your Extension Method ToUtcString() *@
+                                            <small class="text-muted d-block">
+                                                Added:
+                                                @if (key.RegDate.HasValue)
+                                                {
+                                                    <span class="local-datetime" data-utc="@key.RegDate.ToUtcString()">
+                                                        @key.RegDate.Value.ToString("MMM dd, yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>N/A</span>
+                                                }
+                                            </small>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger border-0" onclick="window.deletePasskey(@key.Id)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+
+                            @if (passkeyList.Count < 2)
+                            {
+                                <div class="text-center">
+                                    <button id="btnRegisterPasskey" class="btn btn-sm btn-outline-primary fw-bold px-4">
+                                        <i class="fas fa-plus me-1"></i> Add Another Device
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center p-2 bg-light rounded border">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Device limit reached. Delete a device to add a new one.</small>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 fade-in">
+                            <h5 class="fw-bold text-dark">Setup Passkey</h5>
+                            <p class="text-muted mb-4 small">Click the button below to register this device (Fingerprint, FaceID, or Key).</p>
+                            <button id="btnRegisterPasskey" class="btn btn-success fw-bold px-4 py-2">
+                                <i class="fas fa-fingerprint me-2"></i> Register This Device
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="fas fa-key text-warning me-2"></i>Change Password</h5>
+                        <p class="text-muted mb-0 small">Update your password regularly to keep your account safe.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="changePassToggle" style="width: 3em; height: 1.5em; cursor: pointer;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="passwordConfigSection" class="card border shadow-sm" style="display: none;">
+                <div class="card-body p-4">
+                    <form id="changePasswordForm" class="fade-in">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label small fw-bold text-muted">Current Password</label>
+                                    <a href="javascript:void(0);" onclick="initiateForgotPass()" class="text-decoration-none small fw-bold text-primary">Forgot Password?</a>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                                    <input type="password" name="CurrentPassword" class="form-control border-start-0 ps-0" placeholder="Enter current password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">New Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
+                                    <input type="password" name="NewPassword" id="NewPassword" class="form-control border-start-0 ps-0" placeholder="Enter new password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Confirm New Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-check-double text-muted"></i></span>
+                                    <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control border-start-0 ps-0" placeholder="Repeat new password" required>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="form-check p-3 bg-light rounded border">
+                                    <input class="form-check-input" type="checkbox" name="LogoutAllDevices" id="LogoutAllDevices" value="true" checked>
+                                    <label class="form-check-label" for="LogoutAllDevices">
+                                        <strong>Log out of all devices?</strong><br />
+                                        <span class="text-muted small">Select this to invalidate all active sessions.</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <button type="button" class="btn btn-light me-2" id="cancelPassBtn">Cancel</button>
+                                <button type="submit" class="btn btn-dark fw-bold px-4">Update Password</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-2 {
+        letter-spacing: 4px;
+        font-weight: 600;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            const base64url = {
+                encode: function (buffer) {
+                    const bytes = new Uint8Array(buffer);
+                    let binary = '';
+                    for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+                    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                },
+                decode: function (base64url) {
+                    const padding = '='.repeat((4 - base64url.length % 4) % 4);
+                    const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+                    const rawData = atob(base64);
+                    const outputArray = new Uint8Array(rawData.length);
+                    for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
+                    return outputArray;
+                }
+            };
+
+            // --- Passkey UI Logic ---
+            var hasPasskeys = @(hasPasskeys.ToString().ToLower());
+            $('#passkeyToggle').change(function () {
+                var isChecked = $(this).is(':checked');
+                if (isChecked) {
+                    $('#passkeyConfigSection').slideDown();
+                } else {
+                    if (hasPasskeys) {
+                        $(this).prop('checked', true);
+                        Swal.fire({
+                            title: 'Disable Passkeys?',
+                            text: "This will delete ALL registered passkeys.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Yes, Delete All'
+                        }).then((result) => {
+                            if (result.isConfirmed) performDisablePasskeys($(this));
+                            else $(this).prop('checked', true);
+                        });
+                    } else {
+                        $('#passkeyConfigSection').slideUp();
+                    }
+                }
+            });
+
+            function performDisablePasskeys($toggle) {
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                $.post('@Url.Action("DisablePasskeys", "Settings")', { __RequestVerificationToken: token }, function (res) {
+                    if (res.success) {
+                        Swal.fire('Removed', 'All passkeys deleted.', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                        $toggle.prop('checked', true);
+                    }
+                });
+            }
+
+            window.deletePasskey = function (keyId) {
+                Swal.fire({
+                    title: 'Remove device?',
+                    text: "You will no longer be able to login with this specific device.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Yes, remove it'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const token = $('input[name="__RequestVerificationToken"]').val();
+                        $.post('@Url.Action("DeleteSinglePasskey", "Settings")', { id: keyId, __RequestVerificationToken: token }, function (res) {
+                            if (res.success) location.reload();
+                            else Swal.fire('Error', res.message, 'error');
+                        });
+                    }
+                });
+            };
+
+        // ✅ AUTO-CONVERT UTC TO LOCAL TIME
+              // This runs immediately when page loads
+              $('.local-datetime').each(function () {
+                  var utcStr = $(this).data('utc'); // "2025-12-29T06:10:00Z"
+                  if (utcStr) {
+                      var date = new Date(utcStr);
+                      // Formats to user's local format (e.g., "Dec 29, 2025, 12:10 PM")
+                      var localDate = date.toLocaleString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                      });
+                      $(this).text(localDate);
+                  }
+              });
+            // --- Passkey Registration (Production Logic) ---
+        $(document).on('click', '#btnRegisterPasskey', async function () {
+            // 1. Prompt for Friendly Name (Optional)
+            const { value: friendlyName, isDismissed } = await Swal.fire({
+                title: 'Register Device',
+                input: 'text',
+                inputLabel: 'Give this device a custom name (optional)',
+                inputPlaceholder: 'e.g. My Office PC',
+                showCancelButton: true,
+                confirmButtonText: 'Continue'
+            });
+
+            if (isDismissed) return; // Stop if user closed the modal
+
+            const btn = $(this);
+            const originalText = btn.html();
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+            try {
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                // 2. Fetch Registration Options
+                const optsRes = await fetch('@Url.Action("MakeCredentialOptions", "Settings")', {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }
+                });
+
+                if (!optsRes.ok) {
+                    const err = await optsRes.json();
+                    throw new Error(err.message || "Registration failed");
+                }
+
+                const options = await optsRes.json();
+                options.user.id = base64url.decode(options.user.id);
+                options.challenge = base64url.decode(options.challenge);
+                if (options.excludeCredentials) {
+                    options.excludeCredentials.forEach(cred => cred.id = base64url.decode(cred.id));
+                }
+
+                // 3. Create Credential via WebAuthn API
+                const credential = await navigator.credentials.create({ publicKey: options });
+
+                const attestationResponse = {
+                    id: credential.id,
+                    rawId: base64url.encode(credential.rawId),
+                    type: credential.type,
+                    extensions: credential.getClientExtensionResults(),
+                    response: {
+                        attestationObject: base64url.encode(credential.response.attestationObject),
+                        clientDataJSON: base64url.encode(credential.response.clientDataJSON)
+                    },
+                        authenticatorAttachment: credential.authenticatorAttachment  // ✅ ADD THIS
+
+                };
+
+                // 4. Send to Server (Matches PasskeyRegistrationRequest model)
+                const verifyRes = await fetch('@Url.Action("MakeCredential", "Settings")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        attestationResponse: attestationResponse,
+                        friendlyName: friendlyName
+                    })
+                });
+
+                const result = await verifyRes.json();
+                if (result.success) {
+                    Swal.fire('Success!', 'Passkey registered.', 'success').then(() => location.reload());
+                } else {
+                    throw new Error(result.message || 'Verification failed.');
+                }
+
+            } catch (err) {
+                if (err.name === 'NotAllowedError')
+                    Swal.fire('Cancelled', 'Registration was cancelled.', 'info');
+                else
+                    Swal.fire('Error', err.message, 'error');
+            } finally {
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+            // --- 2FA Logic ---
+            var is2faOriginallyEnabled = @(isTwoFaEnabled.ToString().ToLower());
+            $('#twoFaToggle').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#twoFaConfigSection').slideDown();
+                } else if (is2faOriginallyEnabled) {
+                    $(this).prop('checked', true);
+                    Swal.fire({
+                        title: 'Disable 2FA?',
+                        text: "Removes extra security.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Disable it'
+                    }).then((result) => {
+                        if (result.isConfirmed) performDisable2FA($(this));
+                    });
+                } else {
+                    $('#twoFaConfigSection').slideUp();
+                }
+            });
+
+            function performDisable2FA($toggle) {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                $.post('@Url.Action("DisableTwoFactor", "Account")', { __RequestVerificationToken: token }, function (res) {
+                    if (res.success) location.reload();
+                    else {
+                        Swal.fire('Error', res.message, 'error');
+                        $toggle.prop('checked', true);
+                    }
+                });
+            }
+
+            $('#enable2faForm').submit(function (e) {
+                e.preventDefault();
+                $.post('@Url.Action("EnableTwoFactor", "Settings")', $(this).serialize(), function (res) {
+                    if (res.success) {
+                        Swal.fire('Secured!', '2FA active.', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Failed', res.message, 'error');
+                    }
+                });
+            });
+
+            // --- Password Change Logic ---
+            window.initiateForgotPass = function () {
+                Swal.fire({
+                    title: 'Reset via 2FA?',
+                    text: "You will be logged out to verify your identity via 2FA.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Reset'
+                }).then((result) => {
+                    if (result.isConfirmed)
+                        window.location.href = '@Url.Action("StartResetVia2FA", "Settings")';
+                });
+            };
+
+            $('#changePassToggle').change(function () {
+                if ($(this).is(':checked')) $('#passwordConfigSection').slideDown();
+                else $('#passwordConfigSection').slideUp();
+            });
+
+            $('#changePasswordForm').submit(function (e) {
+                e.preventDefault();
+                if ($('#NewPassword').val() !== $('#ConfirmPassword').val()) {
+                    Swal.fire('Error', 'Passwords mismatch.', 'error');
+                    return;
+                }
+                var $btn = $(this).find('button[type="submit"]');
+                $btn.prop('disabled', true).text('Updating...');
+                $.post('@Url.Action("ChangePassword", "Settings")', $(this).serialize(), function (res) {
+                    if (res.success) location.reload();
+                    else {
+                        Swal.fire('Error', res.message, 'error');
+                        $btn.prop('disabled', false).text('Update Password');
+                    }
+                });
+            });
+        });
+    </script>
+}

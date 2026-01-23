@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MDUA Admin</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Cropper CSS (from Layout) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    
+    <style>
+        /* =========================================
+           1. ADMIN THEME CSS (from admin-theme.css)
+           ========================================= */
+        :root {
+            --red-main: #dc3545;
+            --red-dark: #b41f31;
+            --yellow-main: #ffc107;
+            --bg-body: #faf5f5;
+            --glass-bg: rgba(255, 255, 255, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.14);
+            --radius-xl: 20px;
+            --transition: 0.2s ease-out;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Layout handles scroll */
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top left, #ffe8e8 0, #fff7e0 50%, #f8f9fa 100%);
+            color: var(--text-main);
+        }
+
+        /* FLEX WRAPPER */
+        .admin-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            padding: 15px;
+            gap: 15px;
+            position: relative;
+        }
+
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        /* SIDEBAR TOGGLE LOGIC */
+        @media (min-width: 768px) {
+            .admin-sidebar.toggled {
+                width: 0;
+                margin-left: -15px;
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .admin-sidebar {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                bottom: 15px;
+                z-index: 1050;
+                transform: translateX(calc(-100% - 20px));
+                height: calc(100% - 30px);
+                box-shadow: 5px 0 25px rgba(0,0,0,0.15);
+            }
+            .admin-sidebar.toggled {
+                transform: translateX(0);
+            }
+        }
+
+        .admin-main {
+            flex-grow: 1;
+            height: 100%;
+            min-width: 0;
+        }
+
+        /* GLASS PANEL (Main Container) */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+            transform: none !important;
+        }
+
+        /* CONTENT AREA */
+        .admin-content-area {
+            padding: 1.5rem;
+            padding-top: 4rem; /* Space for toggle button */
+        }
+
+        /* SCROLLBAR */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* SIDEBAR SPECIFICS */
+        .sidebar {
+            padding: 1rem;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 0, #fff5d0 0, var(--yellow-main) 45%, var(--red-main) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #721c24;
+            box-shadow: 0 10px 25px rgba(220, 53, 69, 0.45);
+        }
+
+        /* NAV LINKS */
+        .nav-pills .nav-link {
+            border-radius: 999px;
+            padding: .5rem 1rem;
+            font-size: .9rem;
+            color: var(--text-muted);
+            transition: all var(--transition);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 193, 7, 0.12);
+            color: var(--red-dark);
+        }
+        .nav-pills .nav-link.active {
+            background: rgba(220, 53, 69, 0.08);
+            color: var(--red-main);
+            border-color: rgba(220, 53, 69, 0.15);
+            font-weight: 600;
+        }
+        
+        .nav-link-sm {
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s ease;
+            margin-left: auto;
+        }
+        .nav-link[aria-expanded="true"] .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* =========================================
+           2. DASHBOARD CSS (from dashboard.css)
+           ========================================= */
+        :root {
+            --dash-card-radius: 16px;
+            --dash-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --theme-blue: #60a5fa; 
+            --theme-blue-soft: #eff6ff;
+            --theme-blue-border: #bfdbfe;
+            --theme-green: #34d399; 
+            --theme-green-soft: #ecfdf5;
+            --theme-green-border: #a7f3d0;
+            --theme-red: #dc3545;
+            --theme-red-soft: #fff5f5;
+            --theme-red-border: rgba(220, 53, 69, 0.25);
+        }
+
+        /* Base Glass Card (Dashboard) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border-radius: var(--dash-card-radius);
+            transition: transform var(--dash-transition), box-shadow var(--dash-transition);
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            border: 1px solid var(--theme-red-border) !important;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
+        }
+        .kpi-card:hover {
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.12);
+            border-color: rgba(220, 53, 69, 0.4) !important;
+        }
+
+        /* Orders Card */
+        .card-orders {
+            border: 1px solid var(--theme-blue-border) !important;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.05);
+        }
+        .card-orders:hover {
+            border-color: var(--theme-blue) !important;
+        }
+        .card-orders .card-header-custom {
+            background: linear-gradient(to right, var(--theme-blue-soft), #ffffff);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-orders {
+            background-color: var(--theme-blue);
+            border-color: var(--theme-blue);
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        /* Products Card */
+        .card-products {
+            border: 1px solid var(--theme-green-border) !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+        }
+        .card-products:hover {
+            border-color: var(--theme-green) !important;
+        }
+        .card-products .card-header-custom {
+            background: linear-gradient(to right, var(--theme-green-soft), #ffffff);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-products {
+            background-color: var(--theme-green);
+            border-color: var(--theme-green);
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        /* Table & List */
+        .table-modern { margin-bottom: 0; }
+        .table-modern thead th {
+            background-color: #fff;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #f1f5f9;
+            padding: 1rem;
+        }
+        .table-modern tbody td {
+            padding: 0.9rem 1rem;
+            vertical-align: middle;
+            color: var(--text-dark);
+            border-bottom: 1px solid #f8f9fa;
+            font-size: 0.9rem;
+        }
+        
+        .product-list-item {
+            padding: 0.9rem 1.5rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s;
+        }
+        .product-list-item:hover { background-color: #f8fafc; }
+        .product-icon {
+            width: 38px;
+            height: 38px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Toggle Button positioning helper */
+        #sidebar-toggle-btn {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-wrapper">
+
+        <!-- SIDEBAR (from _Sidebar.cshtml) -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar glass-panel d-flex flex-column h-100">
+                <!-- Brand -->
+                <div class="d-flex align-items-center mb-4 ps-2 pt-2">
+                    <!-- Static Fallback Logo -->
+                    <div class="brand-logo me-2">M</div>
+                    <div class="overflow-hidden">
+                        <div class="fw-bold text-truncate" style="max-width: 150px;">MDUA Admin</div>
+                        <div class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.1em;">MANAGEMENT</div>
+                    </div>
+                </div>
+
+                <!-- Menu -->
+                <div class="mb-2 text-uppercase small text-muted fw-semibold ps-3">Menu</div>
+                <ul class="nav nav-pills flex-column mb-auto">
+
+                    <!-- Dashboard (Active) -->
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <span>📊</span> Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Products Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" href="#productsMenu" role="button" aria-expanded="false" aria-controls="productsMenu">
+                            <span>
+                                <span>📦</span> Products
+                            </span>
+                            <span class="dropdown-arrow">▾</span>
+                        </a>
+                        <div class="collapse" id="productsMenu">
+                            <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm" href="#">Product List</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm" href="#">Add Product</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Customers Link -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span>👥</span> Customers
+                        </a>
+                    </li>
+
+                    <!-- Orders Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" href="#OrdersMenu" role="button" aria-expanded="false" aria-controls="OrdersMenu">
+                            <span>
+                                <span>🛒</span> Orders
+                            </span>
+                            <span class="dropdown-arrow">▾</span>
+                        </a>
+                        <div class="collapse" id="OrdersMenu">
+                            <ul class="nav flex-column ms-3 mt-1 border-start border-2 border-light ps-2">
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm" href="#">Order List</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-sm" href="#">Add Order</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Settings Link -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span>⚙️</span> Settings
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Footer / Logout -->
+                <div class="mt-3 pt-3 border-top border-secondary-subtle">
+                    <button onclick="window.location.href='Login.html'" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <span>🚪</span> Logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT (from _AdminLayout.cshtml) -->
+        <main class="admin-main">
+            <div class="glass-panel h-100 d-flex flex-column overflow-hidden position-relative">
+
+                <!-- TOGGLE BUTTON -->
+                <button id="sidebar-toggle-btn" class="btn btn-sm btn-white border shadow-sm position-absolute top-0 start-0 m-3 z-3">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <!-- DASHBOARD CONTENT (Inserted from your Razor Code) -->
+                <div class="flex-grow-1 overflow-auto custom-scrollbar admin-content-area">
+                    
+                    <!-- 1. WELCOME & KPIS -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="fw-bold mb-0 text-dark">Dashboard</h2>
+                            <div class="text-muted small">Overview for Admin User</div>
+                        </div>
+                        <span class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill">
+                            📅 <span id="currentDate">Oct 25, 2023</span>
+                        </span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="glass-card p-3">
+                                <div class="text-muted small text-uppercase fw-bold">User ID</div>
+                                <div class="fs-4 fw-bold">1001</div>
+                                <div class="small text-muted">System Identifier</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="glass-card p-3">
+                                <div class="text-muted small text-uppercase fw-bold">Role</div>
+                                <div class="fs-4 fw-bold text-danger">Administrator</div>
+                                <div class="small text-muted">Access Level</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="glass-card p-3">
+                                <div class="text-muted small text-uppercase fw-bold">Email</div>
+                                <div class="fs-5 fw-semibold text-truncate">admin@mdua.com</div>
+                                <div class="small text-muted">Verified Contact</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Revenue -->
+                        <div class="col-md-3">
+                            <div class="glass-card kpi-card p-3 border-start border-4 border-success position-relative overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                                    <div>
+                                        <div class="text-uppercase text-muted small fw-bold mb-1">Total Revenue</div>
+                                        <div class="fs-4 fw-bold text-success">Tk. 1,250,000</div>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-2 rounded-circle text-success">💰</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Orders -->
+                        <div class="col-md-3">
+                            <div class="glass-card kpi-card p-3 border-start border-4 border-primary position-relative overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                                    <div>
+                                        <div class="text-uppercase text-muted small fw-bold mb-1">Total Orders</div>
+                                        <div class="fs-4 fw-bold text-primary">1,240</div>
+                                        <div class="small text-muted">12 today</div>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">🛒</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Orders -->
+                        <div class="col-md-3">
+                            <div class="glass-card kpi-card p-3 border-start border-4 border-warning position-relative overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                                    <div>
+                                        <div class="text-uppercase text-muted small fw-bold mb-1">Pending</div>
+                                        <div class="fs-4 fw-bold text-warning">45</div>
+                                        <div class="small text-muted">Needs action</div>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-2 rounded-circle text-warning">⚡</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customers -->
+                        <div class="col-md-3">
+                            <div class="glass-card kpi-card p-3 border-start border-4 border-info position-relative overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                                    <div>
+                                        <div class="text-uppercase text-muted small fw-bold mb-1">Customers</div>
+                                        <div class="fs-4 fw-bold text-info">8,450</div>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-2 rounded-circle text-info">👥</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-8">
+                            <div class="glass-card p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="fw-bold text-dark mb-0">Sales Trend (Last 6 Months)</h6>
+                                </div>
+                                <div style="height: 250px;">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="glass-card p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="fw-bold text-dark mb-0">Order Status</h6>
+                                </div>
+                                <div style="height: 250px; position: relative;">
+                                    <canvas id="statusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. CONTENT GRID -->
+                    <div class="row g-4">
+                        <!-- Left Column: Recent Orders -->
+                        <div class="col-lg-8">
+                            <div class="glass-card card-orders p-0 h-100 overflow-hidden">
+                                <div class="card-header-custom">
+                                    <h6 class="fw-bold mb-0">New Orders</h6>
+                                    <a href="#" class="btn btn-sm btn-orders rounded-pill px-3 shadow-sm" title="Add Order">
+                                        <span class="me-1">＋</span>
+                                    </a>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-modern mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Order ID</th>
+                                                <th>Type</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-dark">#ORD-9012</td>
+                                                <td><span class="badge bg-light text-secondary border">Online</span></td>
+                                                <td class="fw-bold text-dark">Tk. 2,500</td>
+                                                <td><span class="badge bg-success text-white rounded-pill">Confirmed</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-dark">#ORD-9013</td>
+                                                <td><span class="badge bg-light text-secondary border">Direct</span></td>
+                                                <td class="fw-bold text-dark">Tk. 1,200</td>
+                                                <td><span class="badge bg-warning text-dark rounded-pill">Pending</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-dark">#ORD-9014</td>
+                                                <td><span class="badge bg-light text-secondary border">Online</span></td>
+                                                <td class="fw-bold text-dark">Tk. 5,000</td>
+                                                <td><span class="badge bg-secondary-subtle text-dark rounded-pill">Shipped</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                                    <a href="#" class="text-decoration-none fw-bold text-orders small">See All Orders &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Recent Products -->
+                        <div class="col-lg-4">
+                            <div class="glass-card card-products p-0 h-100 overflow-hidden">
+                                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold mb-0">New Products</h6>
+                                    <a href="#" class="btn btn-sm btn-success rounded-pill px-3" title="Add Product">
+                                        <span class="me-1">＋</span>
+                                    </a>
+                                </div>
+                                <div class="product-list">
+                                    <div class="product-list-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="product-icon">📦</div>
+                                            <div>
+                                                <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">Wireless Mouse</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">Oct 24</div>
+                                            </div>
+                                        </div>
+                                        <span class="fw-bold small text-success">Tk. 850</span>
+                                    </div>
+                                    <div class="product-list-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="product-icon">📦</div>
+                                            <div>
+                                                <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">Mechanical Key..</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">Oct 23</div>
+                                            </div>
+                                        </div>
+                                        <span class="fw-bold small text-success">Tk. 4,500</span>
+                                    </div>
+                                    <div class="product-list-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="product-icon">📦</div>
+                                            <div>
+                                                <div class="fw-bold text-dark small text-truncate" style="max-width: 140px;">USB-C Hub</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">Oct 22</div>
+                                            </div>
+                                        </div>
+                                        <span class="fw-bold small text-success">Tk. 1,200</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 text-center border-top bg-light bg-opacity-25">
+                                    <a href="#" class="text-decoration-none fw-bold text-success small">See All Products &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debugger -->
+                    <div class="glass-card p-3 mt-5 border-warning border-opacity-50 bg-warning bg-opacity-10 h-auto">
+                        <h6 class="fw-bold text-warning text-uppercase small mb-3">🛠 Developer Debugger</h6>
+                        <div class="row g-3 font-monospace small">
+                            <div class="col-md-3">
+                                <span class="text-muted d-block">Current User:</span>
+                                <strong>AdminUser</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="text-muted d-block">User ID:</span>
+                                <strong>1001</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="text-muted d-block">Company ID:</span>
+                                <strong>50</strong>
+                            </div>
+                            <div class="col-md-5">
+                                <span class="text-muted d-block">Active Permissions (3):</span>
+                                <div class="text-break mt-1">
+                                    ViewDashboard, ManageProducts, ManageOrders
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Set Current Date
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        // Sidebar Toggle Script
+        document.getElementById('sidebar-toggle-btn').addEventListener('click', function() {
+            document.getElementById('admin-sidebar').classList.toggle('toggled');
+        });
+
+        // Mock Data for Charts
+        const salesLabels = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+        const salesData = [12000, 19000, 15000, 22000, 24000, 30000];
+
+        // 1. Sales Trend Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: salesLabels,
+                datasets: [{
+                    label: 'Monthly Sales (Tk)',
+                    data: salesData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e5e7eb' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusLabels = ['Confirmed', 'Pending', 'Shipped', 'Delivered'];
+        const statusData = [40, 25, 15, 20];
+        const backgroundColors = ['#86efac', '#fcd34d', '#a78bfa', '#38bdf8'];
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: backgroundColors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

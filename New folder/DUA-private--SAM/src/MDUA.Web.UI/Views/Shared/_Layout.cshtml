@@ -1,0 +1,177 @@
+﻿@using MDUA.Facade.Interface
+@using MDUA.Web.UI.Services.Interface
+@inject ICompanyFacade CompanyFacade
+@inject ITenantResolver TenantResolver
+@inject ISettingsFacade SettingsFacade
+
+@{
+    // 1. Resolve Dynamic Company ID
+    int currentCompanyId = TenantResolver.GetCompanyId();
+
+    // 2. Fetch Company Details
+    var companyObj = CompanyFacade.Get(currentCompanyId);
+    string displayCompanyName = companyObj?.CompanyName ?? "MDUA Store";
+
+    // 3. Fetch Favicon
+    string favUrl = ViewBag.FaviconUrl as string;
+    if (string.IsNullOrEmpty(favUrl))
+    {
+        string dbFavicon = SettingsFacade.GetGlobalSetting(currentCompanyId, "FaviconUrl");
+        favUrl = !string.IsNullOrEmpty(dbFavicon) ? dbFavicon : "/favicon.ico";
+    }
+
+   
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @{
+        string seoTitle = ViewData["SeoTitle"] as string;
+        string pageTitle = !string.IsNullOrWhiteSpace(seoTitle)
+            ? seoTitle
+            : $"{ViewData["Title"]} - {displayCompanyName}";
+    }
+    <title>@pageTitle</title>
+    @await RenderSectionAsync("Meta", required: false)
+
+    <link rel="icon" type="image/x-icon" href="@favUrl" />
+    <link rel="shortcut icon" type="image/x-icon" href="@favUrl" />
+
+    <partial name="_Recaptcha" />
+
+
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+    <link rel="preload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2"
+          as="font" type="font/woff2" crossorigin>
+
+
+    @section Styles {
+        <link rel="stylesheet" href="~/css/home-layout.css" asp-append-version="true" />
+    }
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                @if (companyObj != null && !string.IsNullOrEmpty(companyObj.LogoImg))
+                {
+                    <img src="@companyObj.LogoImg"
+                         alt="@displayCompanyName"
+                         width="30"
+                         height="30"
+                         class="me-2"
+                         decoding="async">
+                }
+
+                else
+                {
+                    <i class="fas fa-store me-2 text-warning"></i>
+                }
+                @displayCompanyName
+            </a>
+
+<button class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#publicNav"
+        aria-controls="publicNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation menu">
+    <span class="navbar-toggler-icon" aria-hidden="true"></span>
+</button>
+
+            <div class="collapse navbar-collapse" id="publicNav">
+                <form asp-controller="Home" asp-action="Shop" method="get" class="d-flex mx-auto my-2 my-lg-0 search-container" style="width: 100%; max-width: 500px;">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="query"
+                               placeholder="Search for products..."
+                               aria-label="Search"
+                               value="@Context.Request.Query["query"]">
+
+                        <button class="btn btn-search" type="submit" aria-label="Search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                        </button>
+
+
+                    </div>
+                </form>
+
+                <ul class="navbar-nav ms-auto align-items-center gap-3">
+
+                    @* ✅ FIX STARTS HERE: Conditional Login/Logout Logic *@
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1 fa-lg text-success"></i>
+                                <span class="d-none d-lg-inline">@User.Identity.Name</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="Dashboard">
+                                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="LogIn">
+                                <i class="fas fa-user-circle me-1 fa-lg"></i> Login
+                            </a>
+                        </li>
+                    }
+                    @* ✅ FIX ENDS HERE *@
+
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
+                            <i class="fas fa-shopping-cart fa-lg"></i>
+
+                            <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="font-size: 0.7rem; padding: 0.35em 0.65em;">
+                                @(Context.Session.GetInt32("CartCount") ?? 0)
+                                <span class="visually-hidden">items in cart</span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <partial name="_Footer" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js" defer></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    <partial name="_Analytics" />
+
+</body>
+
+</html>

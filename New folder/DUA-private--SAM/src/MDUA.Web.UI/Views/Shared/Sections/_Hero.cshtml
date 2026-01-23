@@ -1,0 +1,128 @@
+﻿@using System.Text.Json
+@model Dictionary<string, string>
+
+@{
+    // 1. Define a simple structure for our slides
+    var slides = new List<SlideItem>();
+
+    // 2. Check if we have the new "Slides" JSON data
+    if (Model.ContainsKey("Slides") && !string.IsNullOrEmpty(Model["Slides"]))
+    {
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            slides = JsonSerializer.Deserialize<List<SlideItem>>(Model["Slides"], options);
+        }
+        catch
+        {
+            // Fallback if JSON fails
+            slides = new List<SlideItem>();
+        }
+    }
+
+    // 3. BACKWARD COMPATIBILITY: If no slides found, check for old flat data
+    if (slides == null || slides.Count == 0)
+    {
+        slides = new List<SlideItem>();
+        slides.Add(new SlideItem
+        {
+            Title = Model.ContainsKey("Title") ? Model["Title"] : "Big Sale Is On!",
+            Subtitle = Model.ContainsKey("Subtitle") ? Model["Subtitle"] : "Explore our latest arrivals.",
+            BtnText = Model.ContainsKey("BtnText") ? Model["BtnText"] : "Shop Now",
+            BtnLink = Model.ContainsKey("BtnLink") ? Model["BtnLink"] : "/all-products",
+            ImageUrl = "" // Old data has no image
+        });
+    }
+
+    // Generate a unique ID for this carousel in case you have multiple on one page
+    var carouselId = "heroCarousel_" + Guid.NewGuid().ToString("N");
+}
+
+@functions {
+    // Helper class for deserialization
+    public class SlideItem
+    {
+        public string Title { get; set; }
+        public string Subtitle { get; set; }
+        public string BtnText { get; set; }
+        public string BtnLink { get; set; }
+        public string ImageUrl { get; set; }
+    }
+}
+
+<div class="container mb-5">
+    <div id="@carouselId" class="carousel slide shadow-sm rounded-3 overflow-hidden" data-bs-ride="carousel">
+
+        @* 1. Indicators (Dots at the bottom) - Only show if > 1 slide *@
+        @if (slides.Count > 1)
+        {
+            <div class="carousel-indicators">
+                @for (int i = 0; i < slides.Count; i++)
+                {
+                    <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@i"
+                            class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")"
+                            aria-label="Slide @(i + 1)"></button>
+                }
+            </div>
+        }
+
+        @* 2. Slides Wrapper *@
+        <div class="carousel-inner">
+            @for (int i = 0; i < slides.Count; i++)
+            {
+                var slide = slides[i];
+                var isActive = i == 0 ? "active" : "";
+
+                // Logic: Use uploaded image if available, otherwise fallback to gradient
+                var bgStyle = !string.IsNullOrEmpty(slide.ImageUrl)
+                ? $"background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{slide.ImageUrl}'); background-size: cover; background-position: center;"
+                : "background: linear-gradient(45deg, #f3f3f3, #fff);";
+
+                // Text color: White if there is an image (due to overlay), Dark if no image
+                var textColorClass = !string.IsNullOrEmpty(slide.ImageUrl) ? "text-white" : "text-dark";
+                var subTextColorClass = !string.IsNullOrEmpty(slide.ImageUrl) ? "text-white opacity-75" : "text-muted";
+
+                <div class="carousel-item @isActive">
+                    <div class="hero-banner w-100" style="@bgStyle height: 400px; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center position-relative z-1 p-4" style="max-width: 800px;">
+
+                            @if (!string.IsNullOrEmpty(slide.Title))
+                            {
+                                <h2 class="fw-bold mb-3 display-5 @textColorClass" style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                    @slide.Title
+                                </h2>
+                            }
+
+                            @if (!string.IsNullOrEmpty(slide.Subtitle))
+                            {
+                                <p class="lead mb-4 @subTextColorClass" style="font-weight: 500;">
+                                    @slide.Subtitle
+                                </p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(slide.BtnText))
+                            {
+                                <a href="@(slide.BtnLink ?? "#")" class="btn btn-warning rounded-pill px-5 py-2 fw-bold shadow-sm">
+                                    @slide.BtnText <i class="fas fa-arrow-right ms-2 small"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* 3. Controls (Prev/Next Arrows) - Only show if > 1 slide *@
+        @if (slides.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.5));"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.5));"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        }
+    </div>
+</div>

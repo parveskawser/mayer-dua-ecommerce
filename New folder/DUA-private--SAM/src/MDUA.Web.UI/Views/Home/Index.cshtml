@@ -1,0 +1,233 @@
+﻿@model MDUA.Entities.HomepageConfig
+@using System.Text.RegularExpressions
+@{
+    var seo = ViewBag.HomepageSeo as MDUA.Entities.HomepageSeo ?? new MDUA.Entities.HomepageSeo();
+    ViewData["Title"] = "Home";
+    if (!string.IsNullOrWhiteSpace(seo.MetaTitle))
+    {
+        ViewData["SeoTitle"] = seo.MetaTitle;
+    }
+    Layout = "_Layout";
+    @if (ViewBag.IsPreview == true)
+    {
+        <div class="bg-warning text-dark text-center py-2 fw-bold border-bottom border-dark fixed-top" style="z-index: 9999;">
+            <i class="fas fa-eye"></i> PREVIEW MODE - <a href="/Settings/Homepage" class="text-dark text-decoration-underline">Back to Editor</a>
+        </div>
+        <div style="margin-top: 40px;"></div>
+    }
+}
+
+@section Meta {
+    @{
+        string baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+        string canonicalUrl = $"{baseUrl}{Context.Request.Path}";
+        string seoDescription = "";
+        string seoImage = seo.OGImage;
+
+        if (!string.IsNullOrWhiteSpace(seo.MetaDescription))
+        {
+            seoDescription = seo.MetaDescription;
+        }
+
+        if (string.IsNullOrWhiteSpace(seoDescription))
+        {
+            seoDescription = "Explore our latest products, best deals, and featured collections.";
+        }
+
+        string absoluteOgImage = BuildAbsoluteUrl(seoImage, baseUrl);
+        string secureOgImage = ToHttpsUrl(absoluteOgImage);
+        string sanitizedCustomHeaderTags = SanitizeCustomHeaderTags(seo.CustomHeaderTags ?? "");
+        string ogTitle = ViewData["SeoTitle"] as string ?? $"{ViewData["Title"]}";
+    }
+
+    <meta name="description" content="@seoDescription">
+    <link rel="canonical" href="@canonicalUrl">
+    <meta property="og:title" content="@ogTitle">
+    <meta property="og:description" content="@seoDescription">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="@canonicalUrl">
+    @if (!string.IsNullOrEmpty(absoluteOgImage))
+    {
+        <meta property="og:image" content="@absoluteOgImage">
+        <meta property="og:image:secure_url" content="@secureOgImage">
+        <meta property="og:image:alt" content="@ogTitle">
+        @if (seo.OgImageWidth.HasValue)
+        {
+            <meta property="og:image:width" content="@seo.OgImageWidth.Value">
+        }
+        @if (seo.OgImageHeight.HasValue)
+        {
+            <meta property="og:image:height" content="@seo.OgImageHeight.Value">
+        }
+    }
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@ogTitle">
+    <meta name="twitter:description" content="@seoDescription">
+    @if (!string.IsNullOrEmpty(absoluteOgImage))
+    {
+        <meta name="twitter:image" content="@secureOgImage">
+    }
+    @if (!string.IsNullOrEmpty(sanitizedCustomHeaderTags))
+    {
+        @Html.Raw(sanitizedCustomHeaderTags)
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+@* --- 📱 MOBILE: Category Button (Visible only on screens smaller than LG) --- *@
+<div class="container mt-3 d-lg-none">
+    <button class="btn btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-between shadow-sm"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#mobileCategoryMenu"
+            aria-controls="mobileCategoryMenu">
+        <span><i class="fas fa-bars me-2"></i> Browse Categories</span>
+        <i class="fas fa-chevron-right small"></i>
+    </button>
+</div>
+
+@functions {
+    public string BuildAbsoluteUrl(string url, string baseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "";
+
+        // ✅ FIX: Check for Web URLs specifically to avoid Linux file-path confusion
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return url;
+        }
+
+        // Standard cleanup for relative paths
+        string cleaned = url.Replace("\\", "/").Replace("~", "").Trim();
+        if (!cleaned.StartsWith("/")) cleaned = "/" + cleaned;
+
+        if (string.IsNullOrWhiteSpace(baseUrl)) return cleaned;
+
+        return $"{baseUrl.TrimEnd('/')}{cleaned}";
+    }
+    public string ToHttpsUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "";
+        if (Uri.TryCreate(url, UriKind.Absolute, out var absolute))
+        {
+            if (string.IsNullOrWhiteSpace(absolute.Host)) return url;
+            try
+            {
+                var builder = new UriBuilder(absolute)
+                {
+                    Scheme = Uri.UriSchemeHttps,
+                    Port = -1
+                };
+                return builder.Uri.ToString();
+            }
+            catch (UriFormatException)
+            {
+                return url;
+            }
+        }
+        return url;
+    }
+
+    public string SanitizeCustomHeaderTags(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+        string withoutOg = Regex.Replace(
+            input,
+            @"<meta\s+[^>]*(property|name)\s*=\s*(['""])?\s*(og:|twitter:)[^'"">\s]*\s*\2?[^>]*>\s*",
+            "",
+            RegexOptions.IgnoreCase);
+        return withoutOg;
+    }
+}
+
+@* --- 📱 MOBILE: Offcanvas Sidebar Component --- *@
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileCategoryMenu" aria-labelledby="mobileCategoryLabel">
+    <div class="offcanvas-header bg-light border-bottom">
+        <h5 class="offcanvas-title fw-bold text-danger" id="mobileCategoryLabel">
+            <i class="fas fa-store me-2"></i> Categories
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush">
+            @if (Model.Categories != null && Model.Categories.Any())
+            {
+                foreach (var cat in Model.Categories)
+                {
+                    <a href="/all-products?category=@cat.Id" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                        @cat.Name
+                        <i class="fas fa-chevron-right text-muted small"></i>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="p-4 text-center text-muted">
+                    <i class="fas fa-folder-open fa-2x mb-2"></i><br />
+                    No categories found.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* --- 🖥️ MAIN CONTENT LAYOUT --- *@
+<div class="container mt-4 mb-5">
+    <div class="row g-4">
+
+        @* Desktop Sidebar (Hidden on Mobile) *@
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="category-sidebar">
+                <div class="category-header">
+                    <i class="fas fa-bars me-2"></i> Categories
+                </div>
+                @if (Model.Categories != null && Model.Categories.Any())
+                {
+                    foreach (var cat in Model.Categories)
+                    {
+                        <a href="/all-products?category=@cat.Id" class="category-item">
+                            @cat.Name
+                            <i class="fas fa-chevron-right float-end small mt-1 opacity-50"></i>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted small">
+                        <i class="fas fa-folder-open mb-2"></i><br />
+                        No categories found.
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Main Content Area *@
+        <div class="col-lg-9">
+
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white shadow-sm rounded border-start border-4 border-danger">
+                <h5 class="mb-0 fw-bold" style="color: #d32f2f;">Welcome to our Store</h5>
+            </div>
+
+            @foreach (var section in Model.Sections)
+            {
+                if (section.Type == "Hero")
+                {
+                    <partial name="Sections/_Hero" model="section.Settings" />
+                }
+                else if (section.Type == "ProductGrid")
+                {
+                    <partial name="Sections/_ProductGrid" model="section.Settings" />
+                }
+                else if (section.Type == "Banner")
+                {
+                    <partial name="Sections/_Banner" model="section.Settings" />
+                }
+            }
+
+        </div>
+    </div>
+</div>

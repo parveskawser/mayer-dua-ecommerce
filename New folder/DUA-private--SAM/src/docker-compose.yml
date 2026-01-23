@@ -1,0 +1,6 @@
+services:
+  mdua.web.ui:
+    image: ${DOCKER_REGISTRY-}mduawebui
+    build:
+      context: .
+      dockerfile: MDUA.Web.UI/Dockerfile

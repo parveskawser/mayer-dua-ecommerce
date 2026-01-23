@@ -1,0 +1,2016 @@
+@model MDUA.Entities.HomepageConfig
+@{
+    ViewData["Title"] = "Layout Manager";
+    Layout = "_AdminLayout";
+
+    ViewContext.RouteData.Values["Controller"] = "Settings";
+    ViewContext.RouteData.Values["Action"] = "Homepage";
+    var company = ViewBag.CompanyInfo as MDUA.Entities.Company;
+    var footerDesc = ViewBag.FooterDescription as string;
+    var homepageSeo = ViewBag.HomepageSeo as MDUA.Entities.HomepageSeo ?? new MDUA.Entities.HomepageSeo();
+}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<style>
+    /* ===== EXACT SUMMERNOTE STYLES FROM ADD PRODUCT PAGE ===== */
+    .note-editor {
+        border-radius: 8px !important;
+        border-color: #dee2e6 !important;
+        background: #fff;
+        box-shadow: none !important;
+    }
+
+    .note-toolbar {
+        border-radius: 8px 8px 0 0 !important;
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        padding: 5px !important;
+    }
+
+    .note-modal-footer {
+        height: auto !important; /* Fix for Bootstrap 5 modal height conflict */
+    }
+
+    /* Ensure the editor itself has a minimum height */
+    .note-editable {
+        min-height: 300px !important;
+        background: #fff !important;
+    }
+
+    /* Tabs Styling */
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+            font-weight: bold;
+            color: #c54d36;
+            border-top: 3px solid #c54d36;
+        }
+
+    .footer-col-card {
+        border: 1px solid #e0d5cc;
+        padding: 20px;
+        border-radius: 12px;
+        background: #fff;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        cursor: move;
+    }
+
+        .footer-col-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .footer-col-card.dragging {
+            opacity: 0.5;
+        }
+
+    /* Existing Styles */
+    .page-header {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(197, 77, 54, 0.2);
+    }
+
+    .action-buttons .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .info-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .info-card .card-header {
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+        }
+
+    .section-card {
+        border: none;
+        border-radius: 12px;
+        border-left: 4px solid #c54d36;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+        .section-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-left-color: #d97346;
+        }
+
+        .section-card .card-header {
+            background: #faf6f3;
+            border-bottom: 1px solid #f0e8e2;
+            padding: 1rem 1.5rem;
+        }
+
+    .add-section-card {
+        border: none;
+        border-radius: 12px;
+        position: sticky;
+        top: 20px;
+        background: white;
+    }
+
+        .add-section-card .card-header {
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+        }
+
+    .add-section-btn {
+        border: 2px solid #f0e8e2;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .add-section-btn:hover {
+            border-color: #c54d36;
+            background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .add-section-btn i {
+            width: 24px;
+            text-align: center;
+        }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0d5cc;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #d97346;
+            box-shadow: 0 0 0 0.2rem rgba(217, 115, 70, 0.15);
+        }
+
+    .section-controls .btn {
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+        .section-controls .btn:hover {
+            transform: scale(1.05);
+        }
+
+    .badge-section-type {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #faf6f3;
+        border-radius: 12px;
+        border: 2px dashed #e0d5cc;
+    }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #c9b5a3;
+            margin-bottom: 1rem;
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #b04430 0%, #c86540 100%);
+        }
+
+    .btn-warning {
+        background: #d4a140;
+        border: none;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background: #c69135;
+            color: white;
+        }
+
+    .btn-success {
+        background: #c54d36;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background: #b04430;
+        }
+
+    .text-primary {
+        color: #c54d36 !important;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #f0e8e2;
+        border-color: #e0d5cc;
+    }
+
+    .btn-outline-danger {
+        border-color: #c54d36;
+        color: #c54d36;
+    }
+
+        .btn-outline-danger:hover {
+            background: #c54d36;
+            border-color: #c54d36;
+            color: white;
+        }
+
+    /* ===== FOOTER BUILDER ENHANCEMENTS ===== */
+    .link-item {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        border-left: 3px solid #c54d36;
+    }
+
+        .link-item:hover {
+            background: #e9ecef;
+        }
+
+    .dashed-border {
+        border: 2px dashed #dee2e6 !important;
+        transition: all 0.2s ease;
+    }
+
+        .dashed-border:hover {
+            border-color: #c54d36 !important;
+            background: #fef6f4 !important;
+        }
+
+    .column-type-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .page-editor-modal .modal-dialog {
+        max-width: 1200px;
+    }
+
+    .quick-action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .quick-action-buttons .btn {
+            flex: 1;
+            min-width: 120px;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+
+            .quick-action-buttons .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                transition: all 0.2s ease;
+            }
+
+    .empty-footer-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 2px dashed #c54d36;
+    }
+
+        .empty-footer-state i {
+            font-size: 4rem;
+            color: #c54d36;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+    #slugPreview {
+        background: #fff3cd;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        color: #856404;
+    }
+
+    .modal-header.bg-gradient {
+        border: none;
+    }
+
+    .img-container {
+        max-height: 500px;
+        background-color: #f7f7f7;
+        margin-bottom: 15px;
+    }
+
+        .img-container img {
+            max-width: 100%;
+        }
+</style>
+
+<div class="container-fluid p-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-home me-2"></i>Homepage Layout Manager</h2>
+                <p class="mb-0 opacity-75">Customize your website's homepage appearance and content</p>
+            </div>
+
+            <div class="action-buttons d-flex gap-2">
+                <button class="btn btn-light" onclick="resetDefault()">
+                    <i class="fas fa-undo me-1"></i> Reset
+                </button>
+                <button class="btn btn-warning" onclick="previewLayout()">
+
+                    <i class="fas fa-eye me-1"></i> Preview
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="layoutTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-panel" type="button">
+                <i class="fas fa-columns me-2"></i>Homepage Body
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="seo-tab" data-bs-toggle="tab" data-bs-target="#seo-panel" type="button">
+                <i class="fas fa-search me-2"></i>Homepage SEO
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer-panel" type="button">
+                <i class="fas fa-shoe-prints me-2"></i>Footer Layout
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="layoutTabsContent">
+
+
+        <div class="tab-pane fade show active" id="home-panel">
+
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-success" onclick="saveConfig()">
+                    <i class="fas fa-save me-1"></i> Publish Homepage Body
+                </button>
+
+            </div>
+
+            <div class="card info-card shadow-sm mb-4">
+                <div class="card-header">
+                    <i class="fas fa-building me-2"></i>
+                    <strong>Company Information</strong>
+                    <small class="ms-2 opacity-75">(General Settings)</small>
+                </div>
+                <div class="card-body p-4">
+                    <form id="companyInfoForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-building text-muted me-1"></i> Company Name</label>
+
+                                <input type="text" class="form-control" name="CompanyName" value="@(company?.CompanyName)" placeholder="Enter company name">
+                            </div>
+                            <div class="col-md-3">
+
+                                <label class="form-label fw-semibold"><i class="fas fa-phone text-muted me-1"></i> Phone</label>
+                                <input type="text" class="form-control" name="Phone" value="@(company?.Phone)" placeholder="+1 234 567 8900">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-envelope text-muted me-1"></i> Email</label>
+                                <input type="email" class="form-control" name="Email" value="@(company?.Email)" placeholder="contact@company.com">
+
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-map-marker-alt text-muted me-1"></i> Address</label>
+
+                                <input type="text" class="form-control" name="Address" value="@(company?.Address)" placeholder="123 Main Street">
+                            </div>
+                            <div class="col-12">
+
+                                <label class="form-label fw-semibold"><i class="fas fa-align-left text-muted me-1"></i> Default Footer Text</label>
+                                <textarea class="form-control" name="FooterDescription" rows="3" placeholder="Brief description about your company...">@footerDesc</textarea>
+                                <small class="text-muted">* This text is used if no dynamic footer columns are configured.</small>
+
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end">
+
+                                    <button type="button" class="btn btn-primary btn-lg px-4" onclick="saveCompanyInfo()">
+                                        <i class="fas fa-save me-2"></i> Update Company Information
+
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-3">
+                    <div class="card add-section-card shadow">
+                        <div class="card-header">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            <strong>Add New Section</strong>
+
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="d-grid gap-3">
+                                <button class="btn add-section-btn text-start" onclick="addSection('Hero')">
+                                    <i class="fas fa-image me-2"></i>
+                                    <span class="fw-semibold">Hero Banner</span>
+
+                                    <small class="d-block text-muted mt-1">Large promotional banner</small>
+                                </button>
+                                <button class="btn add-section-btn text-start" onclick="addSection('ProductGrid')">
+
+                                    <i class="fas fa-th me-2"></i>
+                                    <span class="fw-semibold">Product Grid</span>
+
+                                    <small class="d-block text-muted mt-1">Display product collection</small>
+                                </button>
+                                <button class="btn add-section-btn text-start" onclick="addSection('Banner')">
+
+                                    <i class="fas fa-ad me-2"></i>
+                                    <span class="fw-semibold">Promo Banner</span>
+                                    <small class="d-block text-muted mt-1">Custom promotional image</small>
+
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-9">
+                    <div id="sections-container">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-pane fade" id="seo-panel">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-success" onclick="saveHomepageSeo()">
+                    <i class="fas fa-save me-1"></i> Save Homepage SEO
+                </button>
+            </div>
+
+            <div class="card info-card shadow-sm mb-4">
+                <div class="card-header">
+                    <i class="fas fa-search me-2"></i>
+                    <strong>Homepage SEO</strong>
+                    <small class="ms-2 opacity-75">(Meta tags & social preview)</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Meta Title</label>
+                            <input type="text" class="form-control" id="homepage-meta-title"
+                                   value="@homepageSeo.MetaTitle"
+                                   placeholder="Homepage title for browser/tab and social share">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Meta Description</label>
+                            <textarea class="form-control" id="homepage-meta-description" rows="3"
+                                      placeholder="Summary shown on search and social previews">@homepageSeo.MetaDescription</textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold text-primary">
+                                <i class="fas fa-code me-1"></i> Custom Header Tags (Raw HTML)
+                            </label>
+                            <textarea class="form-control font-monospace" id="homepage-custom-tags" rows="4"
+                                      style="font-size: 0.85rem; background-color: #f8f9fa;"
+                                      placeholder='<meta name="twitter:card" content="summary_large_image">'>@homepageSeo.CustomHeaderTags</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card info-card shadow-sm">
+                <div class="card-header">
+                    <i class="fas fa-image me-2"></i>
+                    <strong>Social Share Image</strong>
+                    <small class="ms-2 opacity-75">(Recommended 1200 × 630)</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Upload Image</label>
+                        <input type="file" class="form-control" id="homepage-og-upload" accept="image/*">
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-seo-ratio="1.91">
+                            Fixed (1200x630)
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-seo-ratio="free">
+                            Free Crop
+                        </button>
+                    </div>
+                    <div id="homepage-og-preview" class="text-center p-3 border rounded bg-light"
+                         style="@(string.IsNullOrEmpty(homepageSeo.OGImage) ? "display:none;" : "")">
+                        <h6 class="text-muted small mb-2">Current Image</h6>
+                        <div class="d-inline-block position-relative">
+                            <img id="homepage-og-preview-img" src="@homepageSeo.OGImage"
+                                 style="max-width: 100%; max-height: 200px; object-fit: contain; border: 1px solid #ddd;" />
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                    style="transform: translate(40%, -40%);" onclick="removeHomepageOgImage()">
+                                &times;
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="homepage-og-image" value="@homepageSeo.OGImage">
+                    <input type="hidden" id="homepage-og-width" value="@(homepageSeo.OgImageWidth ?? 1200)">
+                    <input type="hidden" id="homepage-og-height" value="@(homepageSeo.OgImageHeight ?? 630)">
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="footer-panel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <div>
+                            <h4 class="mb-1 text-primary"><i class="fas fa-columns me-2"></i>Footer Columns</h4>
+                            <p class="text-muted small mb-0">Design your footer structure using the Bootstrap Grid (Total Width = 12). Drag to reorder.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" onclick="addFooterColumn()">
+
+                                <i class="fas fa-plus me-1"></i> Add Column
+                            </button>
+                            <button class="btn btn-success" onclick="saveFooterConfig()">
+
+                                <i class="fas fa-save me-1"></i> Save Footer Layout
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-body bg-light">
+                    <div id="footer-columns-container" class="row">
+                        <div class="col-12 text-center py-5">
+
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@* ===== ENHANCED PAGE EDITOR MODAL ===== *@
+<div class="modal fade page-editor-modal" id="pageEditorModal" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-lg-down">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #c54d36 0%, #d97346 100%);">
+
+                <div>
+                    <h5 class="modal-title mb-1">
+                        <i class="fas fa-edit me-2"></i>Content Editor
+                    </h5>
+
+                    <small class="opacity-75">Create and edit page content with rich formatting</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body bg-light">
+                <div class="container-fluid">
+
+                    <div class="alert alert-info border-0 shadow-sm mb-4" id="pageEditorAlert">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle fa-lg me-3 mt-1"></i>
+
+                            <div>
+                                <strong>Page URL Information</strong>
+                                <p class="mb-0 small mt-1">
+
+                                    Content will be accessible at <code>/page/<span id="slugPreview">your-slug</span></code>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4" id="slugInputSection">
+                        <div class="card-body">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-link me-2 text-primary"></i>Page URL Slug
+                            </label>
+                            <div class="input-group input-group-lg">
+
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-globe me-2"></i>/page/
+
+                                </span>
+                                <input type="text" id="editorSlug" class="form-control"
+                                       placeholder="e.g., terms-and-conditions, privacy-policy, about-us"
+                                       oninput="updateSlugPreview(this.value)">
+                            </div>
+                            <div class="form-text mt-2">
+
+                                <i class="fas fa-lightbulb me-1"></i>
+                                <strong>Tip:</strong> Use lowercase letters, numbers, and hyphens only (no spaces or special characters)
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+
+                            <label class="form-label fw-bold mb-3">
+                                <i class="fas fa-file-alt me-2 text-primary"></i>Content
+                            </label>
+                            <textarea id="summernote"></textarea>
+
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mt-3">
+                        <div class="card-header bg-white border-bottom">
+
+                            <h6 class="mb-0">
+                                <i class="fas fa-magic me-2 text-warning"></i>Quick Templates
+                            </h6>
+
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-action-buttons">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('heading')">
+                                    <i class="fas fa-heading me-1"></i> Add Heading
+                                </button>
+
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('list')">
+                                    <i class="fas fa-list me-1"></i> Add List
+                                </button>
+
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('table')">
+                                    <i class="fas fa-table me-1"></i> Add Table
+                                </button>
+
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('alert')">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> Add Alert Box
+
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('button')">
+                                    <i class="fas fa-hand-pointer me-1"></i> Add Button
+
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer bg-white border-top">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </button>
+
+                <button type="button" class="btn btn-primary btn-lg px-4" onclick="savePageContent()">
+                    <i class="fas fa-save me-2"></i> Save Content
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="homepageCropperModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white py-2">
+                <h6 class="modal-title">Crop Homepage SEO Image</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="img-container">
+                    <img id="homepage-cropper-image" src="" alt="Crop image">
+                </div>
+                <div class="p-3 bg-light border-top">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Width (px)</label>
+                            <input type="number" class="form-control form-control-sm" id="homepage-crop-width" value="1200">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Height (px)</label>
+                            <input type="number" class="form-control form-control-sm" id="homepage-crop-height" value="630">
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button type="button" class="btn btn-secondary btn-sm me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="homepage-crop-upload">
+                                <i class="fas fa-check me-1"></i> Crop & Upload
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-2">Recommended size is 1200x630 (1.91:1).</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // === ORIGINAL HOMEPAGE LOGIC ===
+
+        let sections = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Sections));
+        let categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Categories));
+
+        window.homepageSeo = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+        {
+            metaTitle = homepageSeo.MetaTitle ?? "",
+            metaDescription = homepageSeo.MetaDescription ?? "",
+            ogImage = homepageSeo.OGImage ?? "",
+            customHeaderTags = homepageSeo.CustomHeaderTags ?? "",
+            ogImageWidth = homepageSeo.OgImageWidth ?? 1200,
+            ogImageHeight = homepageSeo.OgImageHeight ?? 630
+        }));
+
+        function render() {
+            const container = document.getElementById('sections-container');
+            if(sections.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-layer-group"></i>
+                        <h4 class="text-muted">No Sections Added Yet</h4>
+
+                        <p class="text-muted">Start building your homepage by adding sections from the left panel</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            sections.forEach((section, index) => {
+                let settingsHtml = generateSettingsForm(section, index);
+
+                let iconMap = {
+                    'Hero': 'fa-image',
+                    'ProductGrid': 'fa-th',
+
+                    'Banner': 'fa-ad'
+                };
+
+                let html = `
+                    <div class="card section-card mb-3 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas ${iconMap[section.Type] || 'fa-cube'} text-primary"></i>
+                                <span class="badge badge-section-type">${section.Type}</span>
+
+                            </div>
+                            <div class="section-controls">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="moveSection(${index}, -1)" ${index === 0 ? 'disabled' : ''}>
+
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-sm
+                                btn-outline-secondary" onclick="moveSection(${index}, 1)" ${index === sections.length - 1 ? 'disabled' : ''}>
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteSection(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+
+                            </div>
+                        </div>
+                        <div class="card-body p-4">${settingsHtml}</div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+             function generateSettingsForm(section, index) {
+            let html = '<div class="row g-3">';
+
+            // ==========================================
+            // === MODIFIED HERO SECTION (SLIDER) ===
+            // ==========================================
+            if (section.Type === 'Hero') {
+                // 1. Attempt to parse existing slides
+                let slides = [];
+                if (section.Settings['Slides']) {
+                    try {
+                        slides = JSON.parse(section.Settings['Slides']);
+                    } catch (e) { slides = []; }
+                } else {
+                    // 2. Backward Compatibility: Convert old single-text format to first slide
+                    if (section.Settings['Title'] || section.Settings['Subtitle']) {
+                        slides.push({
+                            Title: section.Settings['Title'] || '',
+                            Subtitle: section.Settings['Subtitle'] || '',
+                            BtnText: section.Settings['BtnText'] || 'View Offers',
+                            BtnLink: section.Settings['BtnLink'] || '#',
+                            ImageUrl: '' // Old format didn't have image
+                        });
+                    }
+                }
+
+                // 3. Render the Slider Manager (Accordion Style)
+                html += `<div class="col-12">
+                            <label class="form-label fw-bold mb-2">
+                                <i class="fas fa-images me-1"></i> Slider Images (${slides.length})
+                            </label>
+                            <div class="accordion" id="heroAccordion${index}">`;
+
+                slides.forEach((slide, slideIndex) => {
+                    let imgPreview = slide.ImageUrl
+                        ? `<img src="${slide.ImageUrl}" style="height:30px; width:50px; object-fit:cover; border-radius:4px;" class="me-2">`
+                        : `<i class="fas fa-image fa-lg me-2 text-muted"></i>`;
+
+                    let slideTitle = slide.Title || `Slide ${slideIndex + 1}`;
+
+                    html += `
+                    <div class="accordion-item border mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}_${slideIndex}">
+                                <div class="d-flex align-items-center w-100 justify-content-between pe-2">
+                                    <div class="d-flex align-items-center text-truncate">
+                                        ${imgPreview} <span class="small fw-semibold">${slideTitle}</span>
+                                    </div>
+                                    <span class="btn btn-sm btn-outline-danger z-index-front"
+                                          style="z-index: 5;"
+                                          onclick="deleteHeroSlide(event, ${index}, ${slideIndex})">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse${index}_${slideIndex}" class="accordion-collapse collapse" data-bs-parent="#heroAccordion${index}">
+                            <div class="accordion-body bg-light p-3">
+                                <div class="row g-2">
+                                    <div class="col-12 mb-2">
+                                        <label class="small fw-bold">Background Image</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="file" class="form-control" accept="image/*"
+                                                   onchange="uploadHeroSlideImage(this, ${index}, ${slideIndex})">
+                                            ${slide.ImageUrl ? '<span class="input-group-text bg-success text-white"><i class="fas fa-check"></i></span>' : ''}
+                                        </div>
+                                        ${slide.ImageUrl ? `<div class="mt-1 small text-muted text-truncate">${slide.ImageUrl}</div>` : ''}
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">Title</label>
+                                        <input type="text" class="form-control form-control-sm" value="${slide.Title || ''}"
+                                               placeholder="Main Heading"
+                                               oninput="updateHeroSlide(${index}, ${slideIndex}, 'Title', this.value)">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">Subtitle</label>
+                                        <input type="text" class="form-control form-control-sm" value="${slide.Subtitle || ''}"
+                                               placeholder="Small text above/below"
+                                               oninput="updateHeroSlide(${index}, ${slideIndex}, 'Subtitle', this.value)">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">Button Text</label>
+                                        <input type="text" class="form-control form-control-sm" value="${slide.BtnText || ''}"
+                                               placeholder="e.g. Shop Now"
+                                               oninput="updateHeroSlide(${index}, ${slideIndex}, 'BtnText', this.value)">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">Button Link</label>
+                                        <input type="text" class="form-control form-control-sm" value="${slide.BtnLink || ''}"
+                                               placeholder="/product/..."
+                                               oninput="updateHeroSlide(${index}, ${slideIndex}, 'BtnLink', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                html += `   </div>
+                            <button class="btn btn-sm btn-outline-primary w-100 mt-2 dashed-border" onclick="addHeroSlide(${index})">
+                                <i class="fas fa-plus-circle me-1"></i> Add New Slide
+                            </button>
+                         </div>`;
+            }
+            // ==========================================
+            // === EXISTING SECTIONS (UNCHANGED) ===
+            // ==========================================
+            else if (section.Type === 'ProductGrid') {
+                let s = section.Settings || {};
+                html += createInput(index, 'Title', s['Title'] || 'Featured Products', 'Section Title', 6);
+                html += createInput(index, 'Count', s['Count'] || '4', 'Product Count', 3, 'number');
+
+                let selectedCat = (s['CategoryId'] || '').toString();
+                let options = `<option value="">-- All Products --</option>`;
+                if (categories) {
+                    categories.forEach(c => {
+                        let isSelected = c.Id.toString() === selectedCat ? 'selected' : '';
+                        options += `<option value="${c.Id}" ${isSelected}>${c.Name}</option>`;
+                    });
+                }
+                html += `<div class="col-md-3">
+                            <label class="form-label fw-semibold">Source Category</label>
+                            <select class="form-select" onchange="updateSetting(${index}, 'CategoryId', this.value)">${options}</select>
+                        </div>`;
+            }
+            else if (section.Type === 'Banner') {
+                let currentImg = section.Settings['ImageUrl'] || '';
+                html += `<div class="col-md-8">
+                            <label class="form-label fw-semibold">Banner Image</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" accept="image/*"
+                                       onchange="uploadBanner(this, ${index})">
+                                ${currentImg ? `<span class="input-group-text bg-success text-white"><i class="fas fa-check"></i></span>` : ''}
+                            </div>
+                            ${currentImg ? `<small class="text-success mt-1 d-block"><i class="fas fa-check-circle"></i> Image uploaded</small>` : ''}
+                        </div>`;
+                html += createInput(index, 'LinkUrl', section.Settings['LinkUrl'] || '#', 'Click Destination URL', 4);
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function createInput(index, key, value, label, colSize = 12, type = 'text') {
+            let safeValue = value === undefined ||
+            value === null ? '' : value;
+            safeValue = safeValue.toString().replace(/"/g, '&quot;');
+            return `<div class="col-md-${colSize}">
+                        <label class="form-label fw-semibold">${label}</label>
+                        <input type="${type}" class="form-control" value="${safeValue}" oninput="updateSetting(${index}, '${key}', this.value)">
+
+                    </div>`;
+        }
+
+        function uploadBanner(input, index) {
+            let file = input.files[0];
+            if(!file) return;
+
+            let oldUrl = sections[index].Settings['ImageUrl'] || "";
+            let formData = new FormData();
+            formData.append("file", file);
+
+            formData.append("previousUrl", oldUrl);
+
+            Swal.fire({
+                title: 'Uploading Image...',
+                text: 'Please wait while we process your banner image.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+
+            });
+
+            fetch('/Settings/UploadBanner', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if(data.success) {
+                    updateSetting(index, 'ImageUrl', data.url);
+                    render();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Upload Successful!',
+                        text: 'Banner image has been uploaded.',
+
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Upload Failed', data.message || 'An error occurred during upload.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
+
+        // === NEW HERO SLIDER HELPER FUNCTIONS ===
+
+        function addHeroSlide(sectionIndex) {
+            let slides = [];
+            try {
+                slides = JSON.parse(sections[sectionIndex].Settings['Slides'] || "[]");
+            } catch(e) { slides = []; }
+
+            slides.push({
+                Title: "New Offer",
+                Subtitle: "Limited Time",
+                BtnText: "Shop Now",
+                BtnLink: "/all-products",
+                ImageUrl: ""
+            });
+
+            // Save back as JSON string
+            sections[sectionIndex].Settings['Slides'] = JSON.stringify(slides);
+            render();
+        }
+
+        function deleteHeroSlide(event, sectionIndex, slideIndex) {
+            event.stopPropagation(); // Prevent accordion toggle
+
+            Swal.fire({
+                title: 'Delete Slide?',
+                text: "Are you sure you want to remove this slide?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // === FIX START: Handle missing 'Slides' key ===
+                    let slides;
+                    let rawSlides = sections[sectionIndex].Settings['Slides'];
+
+                    if (rawSlides) {
+                        try {
+                            slides = JSON.parse(rawSlides);
+                        } catch (e) {
+                            slides = [];
+                        }
+                    } else {
+                        // If it's legacy data, we are deleting the ONE existing slide.
+                        // So we just return an empty array.
+                        slides = [];
+                    }
+                    // === FIX END ===
+
+                    // Only splice if the index actually exists
+                    if (slides.length > slideIndex) {
+                        slides.splice(slideIndex, 1);
+                    }
+
+                    sections[sectionIndex].Settings['Slides'] = JSON.stringify(slides);
+                    render();
+                }
+            });
+        }
+        function updateHeroSlide(sectionIndex, slideIndex, key, value) {
+            // === FIX START: Handle missing 'Slides' key (Legacy Migration) ===
+            let slides;
+            let rawSlides = sections[sectionIndex].Settings['Slides'];
+
+            if (rawSlides) {
+                try {
+                    slides = JSON.parse(rawSlides);
+                } catch (e) {
+                    slides = [];
+                }
+            } else {
+                // Fallback: Migrate old data on the fly
+                slides = [{
+                    Title: sections[sectionIndex].Settings['Title'] || '',
+                    Subtitle: sections[sectionIndex].Settings['Subtitle'] || '',
+                    BtnText: sections[sectionIndex].Settings['BtnText'] || 'View Offers',
+                    BtnLink: sections[sectionIndex].Settings['BtnLink'] || '#',
+                    ImageUrl: ''
+                }];
+            }
+            // === FIX END ===
+
+            // Safety: Ensure the array index exists before assigning
+            if (!slides[slideIndex]) {
+                slides[slideIndex] = {};
+            }
+
+            slides[slideIndex][key] = value;
+            sections[sectionIndex].Settings['Slides'] = JSON.stringify(slides);
+            // Render is skipped here to maintain input focus
+        }
+        function uploadHeroSlideImage(input, sectionIndex, slideIndex) {
+            let file = input.files[0];
+            if (!file) return;
+
+            // === FIX START: Handle missing 'Slides' key safely ===
+            let slides;
+            let rawSlides = sections[sectionIndex].Settings['Slides'];
+
+            if (rawSlides) {
+                try {
+                    slides = JSON.parse(rawSlides);
+                } catch (e) {
+                    slides = [];
+                }
+            } else {
+                // Fallback: If 'Slides' doesn't exist, build it from old Title/Subtitle settings
+                // This effectively migrates old data to the new format on the first edit.
+                slides = [{
+                    Title: sections[sectionIndex].Settings['Title'] || '',
+                    Subtitle: sections[sectionIndex].Settings['Subtitle'] || '',
+                    BtnText: sections[sectionIndex].Settings['BtnText'] || 'View Offers',
+                    BtnLink: sections[sectionIndex].Settings['BtnLink'] || '#',
+                    ImageUrl: ''
+                }];
+            }
+            // === FIX END ===
+
+            // Safety check to ensure the specific slide exists
+            if (!slides[slideIndex]) {
+                slides[slideIndex] = { ImageUrl: "" };
+            }
+
+            let oldUrl = slides[slideIndex].ImageUrl || "";
+
+            let formData = new FormData();
+            formData.append("file", file);
+            formData.append("previousUrl", oldUrl);
+
+            Swal.fire({
+                title: 'Uploading...',
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('/Settings/UploadBanner', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        slides[slideIndex].ImageUrl = data.url;
+                        // Save back to the new 'Slides' key
+                        sections[sectionIndex].Settings['Slides'] = JSON.stringify(slides);
+                        render();
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(err => Swal.fire('Error', 'Network error', 'error'));
+        }
+               function addSection(type) {
+            let newSection = {
+                Id: crypto.randomUUID(),
+                Type: type,
+                Settings: {}
+            };
+
+            if (type === 'ProductGrid') {
+                newSection.Settings = { "Title": "New Collection", "Count": "4", "CategoryId": "" };
+            }
+            else if (type === 'Hero') {
+                // Initialize with one default slide in JSON format
+                let defaultSlides = [{
+                    Title: "New Season Sale",
+                    Subtitle: "Up to 50% Off",
+                    BtnText: "Shop Now",
+                    BtnLink: "/all-products",
+                    ImageUrl: ""
+                }];
+                newSection.Settings = { "Slides": JSON.stringify(defaultSlides) };
+            }
+
+            sections.push(newSection);
+            render();
+            setTimeout(() => {
+                const container = document.getElementById('sections-container');
+                if(container.lastElementChild) {
+                    container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+
+        function deleteSection(index) {
+            Swal.fire({
+                title: 'Remove This Section?',
+                text: "This section will be removed from your homepage layout.",
+                icon: 'warning',
+                showCancelButton:
+                true,
+                confirmButtonColor: '#c54d36',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Remove It',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    sections.splice(index, 1);
+                    render();
+                    Swal.fire({
+                        icon: 'success',
+
+                        title: 'Removed!',
+                        text: 'Section has been deleted.',
+                        timer: 1500,
+                        showConfirmButton: false
+
+                    });
+                }
+            });
+        }
+
+        function moveSection(index, dir) {
+            let newIndex = index + dir;
+            if (newIndex >= 0 && newIndex < sections.length) {
+                [sections[index], sections[newIndex]] = [sections[newIndex], sections[index]];
+                render();
+            }
+        }
+
+        function updateSetting(index, key, value) {
+            sections[index].Settings[key] = value;
+        }
+
+        function saveConfig() {
+            Swal.fire({
+                title: 'Publishing Changes...',
+                text: 'Your homepage layout is being updated.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading();
+                }
+            });
+            fetch('/Settings/SaveHomepage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Sections: sections })
+            }).then(r => r.json()).then(d => {
+                if(d.success) {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Published Successfully!',
+                        text: 'Your homepage layout is now live.',
+
+                        confirmButtonText: 'Great!'
+                    });
+                } else {
+                    Swal.fire('Save Failed', 'Could not save the configuration.', 'error');
+                }
+
+            }).catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
+        function previewLayout() {
+            Swal.fire({
+                title: 'Creating Preview...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+            fetch('/Settings/SaveDraft', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Sections: sections })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                Swal.close();
+                if(data.success) {
+                    window.open('/?preview=true', '_blank');
+                } else {
+                    Swal.fire('Preview Error', 'Could not create preview draft.', 'error');
+
+                }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
+        function resetDefault() {
+            Swal.fire({
+                title: 'Reset to Default Layout?',
+                html: "This will <strong>permanently delete</strong> all your custom sections and restore the default homepage layout.<br><br>This action cannot be undone!",
+                icon: 'warning',
+
+                showCancelButton: true,
+                confirmButtonColor: '#c54d36',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-undo me-1"></i> Yes, Reset Everything',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Resetting...',
+                        didOpen: () => { Swal.showLoading(); }
+
+                    });
+
+                    fetch('/Settings/ResetToDefault', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Reset Complete!',
+
+                                text: 'Homepage has been restored to default layout.',
+                                confirmButtonText: 'OK'
+                            }).then(() =>
+                            location.reload());
+                        } else {
+                            Swal.fire('Reset Failed', 'Could not reset to default.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+                    });
+                }
+            });
+        }
+
+        function saveCompanyInfo() {
+            var form = document.getElementById('companyInfoForm');
+            var formData = new FormData(form);
+
+            Swal.fire({
+                title: 'Updating Information...',
+                text: 'Saving company details...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            fetch('/settings/company-profile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Information Updated!',
+                        text: 'Company information has been saved successfully.',
+
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+
+                    Swal.fire('Update Failed', data.message || 'An error occurred.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            });
+        }
+
+        // ==========================================
+        // === ENHANCED FOOTER MANAGEMENT ===========
+        // ==========================================
+
+        let footerConfig = { Columns: [] };
+        let draggedColumnIndex = null;
+
+        // ===== INITIALIZE SUMMERNOTE WITH FULL TOOLBAR (Matched to Add Product Page) =====
+        const summernoteConfig = {
+            placeholder: 'Start writing your content here...',
+            tabsize: 2,
+            height: 400,
+            dialogsInBody: true, // Critical for Modals
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onPaste: function (e) {
+                    var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+                    e.preventDefault();
+                    document.execCommand('insertText', false, bufferText);
+                }
+            }
+        };
+
+        // ===== LOAD FOOTER CONFIG =====
+        function loadFooterConfig() {
+            const container = document.getElementById('footer-columns-container');
+            if(footerConfig.Columns.length > 0) {
+                renderFooter();
+                return;
+            }
+
+            container.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            fetch('/Settings/GetFooterConfig')
+            .then(r => r.json())
+            .then(data => {
+                if(data.Columns) {
+                    footerConfig = data;
+                } else {
+
+                    footerConfig.Columns = [
+                        {
+                            Title: "6th Seasons",
+                            Width: 3,
+
+                            Type: "Text",
+                            IsActive: true,
+                            Content: `<p>Your one-stop shop for the best quality products. We ensure authentic items, fast delivery, and excellent customer support.</p>
+
+                            <p><i class="fas fa-map-marker-alt"></i> Dhaka, Bangladesh</p>
+                            <p><i class="fas fa-envelope"></i> support@sixthseasons.com</p>
+                            <p><i class="fas fa-phone"></i> +880 1234 567 890</p>`
+
+                        },
+                        {
+                            Title: "Quick Links",
+                            Width: 3,
+
+                            Type: "Links",
+                            IsActive: true,
+                            Links: [
+
+                                { Text: "Home", Url: "/" },
+                                { Text: "Shop", Url: "/all-products" },
+                                { Text: "About Us", Url: "/page/about" },
+
+                                { Text: "Contact Us", Url: "/page/contact" }
+                            ]
+                        },
+
+                        {
+                            Title: "Customer Care",
+                            Width: 3,
+                            Type: "Links",
+
+                            IsActive: true,
+                            Links: [
+                                { Text: "My Account", Url: "/account" },
+
+                                { Text: "Shopping Cart", Url: "/cart" },
+                                { Text: "Terms & Conditions", Url: "/page/terms" },
+
+                                { Text: "Privacy Policy", Url: "/page/privacy" }
+                            ]
+                        },
+                        {
+
+                            Title: "Stay Connected",
+                            Width: 3,
+                            Type: "Newsletter",
+
+                            IsActive: true
+                        }
+                    ];
+                }
+                renderFooter();
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = '<div class="col-12 text-center text-danger p-5"><i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>Failed to load footer configuration.</div>';
+            });
+        }
+
+        // ===== RENDER FOOTER WITH DRAG & DROP =====
+        function renderFooter() {
+            const container = document.getElementById('footer-columns-container');
+            container.innerHTML = '';
+
+            if(footerConfig.Columns.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-footer-state">
+                            <i class="fas
+                            fa-columns"></i>
+                            <h4 class="mb-2">No Footer Columns Yet</h4>
+                            <p class="text-muted mb-4">Click "Add Column" to start building your footer</p>
+                            <button class="btn btn-primary
+                            btn-lg" onclick="addFooterColumn()">
+                                <i class="fas fa-plus me-2"></i> Create First Column
+                            </button>
+                        </div>
+
+                    </div>
+                `;
+                return;
+            }
+
+            footerConfig.Columns.forEach((col, index) => {
+                let innerContent = buildColumnContent(col, index);
+                let typeIcon = getTypeIcon(col.Type);
+
+                let html = `
+                    <div class="col-md-6 col-lg-4 mb-3" draggable="true"
+
+                       ondragstart="handleDragStart(event, ${index})"
+                         ondragover="handleDragOver(event)"
+                         ondrop="handleDrop(event, ${index})"
+
+                         ondragend="handleDragEnd(event)">
+                        <div class="footer-col-card position-relative">
+                            <span class="column-type-badge">
+                                <i class="${typeIcon} me-1"></i> ${col.Type}
+
+                            </span>
+
+                            <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                                    onclick="removeFooterCol(${index})"
+
+                                    title="Remove Column">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+
+                            <div class="mt-4 pt-2">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-8">
+
+                                        <label class="small fw-bold text-muted">Column Title</label>
+                                        <input type="text" class="form-control" value="${col.Title}"
+
+                                            onchange="updateFooterCol(${index}, 'Title', this.value)"
+                                            placeholder="e.g., About Us">
+
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="small fw-bold text-muted">Active</label>
+
+                                        <div class="form-check form-switch mt-2">
+                                            <input class="form-check-input" type="checkbox"
+
+                                            ${col.IsActive ?
+                                            'checked' : ''}
+                                                   onchange="updateFooterCol(${index}, 'IsActive', this.checked)">
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-muted">Width</label>
+
+                                        <select class="form-select form-select-sm"
+                                                onchange="updateFooterCol(${index}, 'Width', parseInt(this.value))">
+
+                                            <option value="2" ${col.Width==2?'selected':''}>2 (Narrow)</option>
+                                            <option value="3" ${col.Width==3?'selected':''}>3 (Quarter)</option>
+
+                                            <option value="4" ${col.Width==4?'selected':''}>4 (Third)</option>
+                                            <option value="6" ${col.Width==6?'selected':''}>6 (Half)</option>
+
+                                            <option value="8" ${col.Width==8?'selected':''}>8 (Wide)</option>
+                                            <option value="12" ${col.Width==12?'selected':''}>12 (Full)</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="col-6">
+
+                                        <label class="small fw-bold text-muted">Type</label>
+                                        <select class="form-select form-select-sm"
+                                                onchange="updateFooterCol(${index}, 'Type',
+                                                this.value); renderFooter();">
+                                            <option value="Text" ${col.Type=='Text'?'selected':''}>Text Block</option>
+                                            <option value="Links" ${col.Type=='Links'?'selected':''}>Links List</option>
+
+                                            <option value="Newsletter" ${col.Type=='Newsletter'?'selected':''}>Newsletter</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+
+                                <div class="bg-light p-3 rounded border">
+
+                                    ${innerContent}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // ===== BUILD COLUMN CONTENT BASED ON TYPE =====
+
+        function buildColumnContent(col, index) {
+            if(col.Type === 'Text') {
+                return `
+                    <label class="small text-muted mb-2 d-block">
+                        <i class="fas fa-align-left me-1"></i> Rich Text Content
+
+                    </label>
+                    <textarea class="form-control mb-2" rows="4"
+                        onchange="updateFooterCol(${index}, 'Content', this.value)"
+                        placeholder="Enter text or HTML...">${col.Content ||
+                        ''}</textarea>
+                    <button class="btn btn-sm btn-outline-primary w-100"
+                            onclick="openRichTextEditor(${index})">
+                        <i class="fas fa-edit me-1"></i> Open Rich Text Editor
+
+                    </button>
+                `;
+            }
+            else if(col.Type === 'Links') {
+                let linksHtml = (col.Links || []).map((link, lIndex) => `
+                    <div class="link-item">
+                        <div class="d-flex gap-2 mb-2">
+
+                            <input type="text" class="form-control form-control-sm"
+                                   placeholder="Link Text" value="${link.Text}"
+                                   onchange="updateFooterLink(${index}, ${lIndex}, 'Text', this.value)">
+
+                            <button class="btn btn-sm btn-outline-danger"
+                                    onclick="removeFooterLink(${index}, ${lIndex})"
+                                    title="Remove Link">
+
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="fas fa-link"></i></span>
+                            <input type="text" class="form-control"
+
+                                   placeholder="/page/slug or https://..." value="${link.Url}"
+                                   onchange="updateFooterLink(${index}, ${lIndex}, 'Url', this.value)">
+                            ${link.Url.startsWith('/page/') ?
+                            `
+                                <button class="btn btn-outline-secondary"
+                                        onclick="openPageEditor('${link.Url}')"
+
+                                        title="Edit Page Content">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                return `
+                    <label class="small text-muted mb-2 d-block">
+                        <i class="fas fa-link me-1"></i> Link List
+                    </label>
+                    <div class="mb-2">${linksHtml}</div>
+
+                    <button class="btn btn-sm btn-outline-secondary w-100 dashed-border"
+                            onclick="addFooterLink(${index})">
+                        <i class="fas fa-plus-circle me-1"></i> Add Link
+                    </button>
+
+                `;
+            }
+            else if (col.Type === 'Newsletter') {
+                return `
+                    <div class="alert alert-info border-0 mb-0 text-center">
+                        <i class="fas fa-envelope-open-text fa-2x mb-2"></i>
+
+                        <p class="small mb-0">This will display an email subscription form on your footer.</p>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        // ===== HELPER FUNCTIONS =====
+        function getTypeIcon(type) {
+            const icons = {
+                'Text': 'fas fa-align-left',
+                'Links': 'fas fa-link',
+                'Newsletter': 'fas fa-envelope'
+
+            };
+            return icons[type] || 'fas fa-cube';
+        }
+
+        function updateFooterCol(index, key, value) {
+            footerConfig.Columns[index][key] = value;
+        }
+
+        function addFooterColumn() {
+            footerConfig.Columns.push({
+                Title: "New Column",
+                Width: 3,
+                Type: "Links",
+                IsActive: true,
+
+                Links: []
+            });
+            renderFooter();
+
+            setTimeout(() => {
+                const container = document.getElementById('footer-columns-container');
+                container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function removeFooterCol(index) {
+            Swal.fire({
+                title: 'Remove This Column?',
+                text: "This footer column will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+
+                confirmButtonColor: '#c54d36',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete It'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    footerConfig.Columns.splice(index, 1);
+
+                    renderFooter();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+
+                        text: 'Column has been removed.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+
+            });
+        }
+
+        function addFooterLink(colIndex) {
+            if(!footerConfig.Columns[colIndex].Links)
+                footerConfig.Columns[colIndex].Links = [];
+            footerConfig.Columns[colIndex].Links.push({
+                Text: "New Link",
+                Url: "/page/new-page"
+            });
+            renderFooter();
+        }
+
+        function removeFooterLink(colIndex, linkIndex) {
+            footerConfig.Columns[colIndex].Links.splice(linkIndex, 1);
+            renderFooter();
+        }
+
+        function updateFooterLink(colIndex, linkIndex, key, value) {
+            footerConfig.Columns[colIndex].Links[linkIndex][key] = value;
+        }
+
+        function saveFooterConfig() {
+            Swal.fire({
+                title: 'Saving Footer Layout...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+            fetch('/Settings/SaveFooterConfig', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(footerConfig)
+            })
+            .then(r => r.json())
+            .then(data => {
+
+                if(data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Footer Saved!',
+
+                        text: 'Your footer layout is now live.',
+                        confirmButtonText: 'Great!'
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+
+                }
+            })
+            .catch(err => Swal.fire('Network Error', 'Could not save footer.', 'error'));
+        }
+
+        // ===== DRAG & DROP HANDLERS =====
+        function handleDragStart(e, index) {
+            draggedColumnIndex = index;
+            e.target.closest('.col-md-6').classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e, dropIndex) {
+            e.preventDefault();
+            if (draggedColumnIndex !== null && draggedColumnIndex !== dropIndex) {
+                let temp = footerConfig.Columns[draggedColumnIndex];
+                footerConfig.Columns[draggedColumnIndex] = footerConfig.Columns[dropIndex];
+                footerConfig.Columns[dropIndex] = temp;
+                renderFooter();
+            }
+        }
+
+        function handleDragEnd(e) {
+            e.target.closest('.col-md-6').classList.remove('dragging');
+            draggedColumnIndex = null;
+        }
+
+        // ===== RICH TEXT EDITOR FOR TEXT COLUMNS =====
+        function openRichTextEditor(colIndex) {
+            let currentContent = footerConfig.Columns[colIndex].Content ||
+            '';
+
+            $('#editorSlug').val('');
+            $('#pageEditorModal').data('editingColumn', colIndex);
+            $('#pageEditorModal').data('editingType', 'column');
+
+            var modal = new bootstrap.Modal(document.getElementById('pageEditorModal'));
+            modal.show();
+
+            $('#pageEditorModal').one('shown.bs.modal', function () {
+                 if ($('#summernote').summernote('isEmpty')) {
+                    $('#summernote').summernote(summernoteConfig);
+                 }
+                 $('#summernote').summernote('code',
+                 currentContent);
+            });
+        }
+
+        // ===== PAGE CONTENT EDITOR =====
+        function openPageEditor(currentUrl) {
+            let slug = "";
+            if(currentUrl && currentUrl.includes("/page/")) {
+                slug = currentUrl.split("/page/")[1];
+            } else if (currentUrl && !currentUrl.startsWith("http")) {
+                slug = currentUrl.replace(/^\/+|\/+$/g, '');
+            }
+
+            $('#editorSlug').val(slug);
+            $('#pageEditorModal').data('editingType', 'page');
+
+            var modal = new bootstrap.Modal(document.getElementById('pageEditorModal'));
+            modal.show();
+
+            $('#pageEditorModal').one('shown.bs.modal', function () {
+                 // Ensure initialized
+                 if ($('#summernote').summernote('isEmpty')) {
+                    $('#summernote').summernote(summernoteConfig);
+                 }
+
+                 if(slug) {
+
+                    $.get('/Settings/GetPageContent?slug=' + slug, function(data) {
+                        if(data.content) {
+                            $('#summernote').summernote('code', data.content);
+                        }
+                        else {
+                            $('#summernote').summernote('code', '<h2>New Page</h2><p>Start writing...</p>');
+                        }
+                    });
+                } else {
+
+                    $('#summernote').summernote('code', '<h2>New Page</h2><p>Start writing...</p>');
+                }
+            });
+        }
+        function savePageContent() {
+            let editingType = $('#pageEditorModal').data('editingType');
+            let html = $('#summernote').summernote('code');
+
+            if(editingType === 'column') {
+                let colIndex = $('#pageEditorModal').data('editingColumn');
+                footerConfig.Columns[colIndex].Content = html;
+                renderFooter();
+                bootstrap.Modal.getInstance(document.getElementById('pageEditorModal')).hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Content Updated!',
+                    text: 'Column text has been updated. Remember to save the footer layout.',
+                    timer:
+                    2000
+                });
+            } else {
+                let slug = $('#editorSlug').val();
+                if(!slug) {
+                    Swal.fire('Error', 'Please enter a valid page slug (URL).', 'warning');
+                    return;
+                }
+
+                $.post('/Settings/SavePageContent', { slug: slug, content: html }, function(res) {
+                    if(res.success) {
+                        Swal.fire({
+                            icon: 'success',
+
+                            title: 'Page Saved!',
+                            html: `Content saved successfully!<br><a href="/page/${slug}" target="_blank">View Page <i class="fas fa-external-link-alt ms-1"></i></a>`,
+                            confirmButtonText: 'OK'
+
+                        });
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+
+                });
+            }
+        }
+
+        // Update slug preview in real-time
+        function updateSlugPreview(value) {
+            document.getElementById('slugPreview').textContent = value ||
+            'your-slug';
+        }
+
+        // Insert pre-made templates
+        function insertTemplate(type) {
+            let html = '';
+            switch(type) {
+                case 'heading':
+                    html = '<h2>Section Heading</h2><p>Your content goes here...</p>';
+                    break;
+                case 'list':
+                    html = '<ul><li>First item</li><li>Second item</li><li>Third item</li></ul>';
+                    break;
+                case 'table':
+                    html = '<table class="table table-bordered"><thead><tr><th>Column 1</th><th>Column 2</th></tr></thead><tbody><tr><td>Data 1</td><td>Data 2</td></tr></tbody></table>';
+                    break;
+                case 'alert':
+                    html = '<div class="alert alert-info"><strong>Important:</strong> Your message here.</div>';
+                    break;
+                case 'button':
+                    html = '<a href="#" class="btn btn-primary">Click Here</a>';
+                    break;
+            }
+            // Fix: Focus editor before pasting
+            $('#summernote').summernote('focus');
+            $('#summernote').summernote('pasteHTML', html);
+        }
+
+        // Show/hide slug section based on editing type
+        $('#pageEditorModal').on('show.bs.modal', function() {
+            let editingType = $(this).data('editingType');
+            if(editingType === 'column') {
+                $('#slugInputSection').hide();
+                $('#pageEditorAlert').hide();
+            }
+            else {
+                $('#slugInputSection').show();
+                $('#pageEditorAlert').show();
+            }
+        });
+        // Initialize when footer tab is clicked
+        document.getElementById('footer-tab').addEventListener('click', function() {
+            if(footerConfig.Columns.length === 0) {
+                loadFooterConfig();
+            }
+        });
+        // Initialize on page load
+        render();
+    </script>
+    <script src="~/js/homepage-seo.js" asp-append-version="true"></script>
+}

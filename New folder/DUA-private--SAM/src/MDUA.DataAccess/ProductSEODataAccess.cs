@@ -1,0 +1,26 @@
+﻿using System;
+using System.Data;
+using System.Data.SqlClient;
+
+using MDUA.Framework;
+using MDUA.Framework.Exceptions;
+using MDUA.Entities;
+using MDUA.Entities.Bases;
+using MDUA.Entities.List;
+
+namespace MDUA.DataAccess
+{
+	public partial class ProductSEODataAccess
+	{
+        public ProductSEO GetProductSEO(int productId)
+        {
+            ProductSEOList list = GetByProductId(productId);
+
+            if (list != null && list.Count > 0)
+            {
+                return list[0];
+            }
+            return null;
+        }
+    }	
+}

@@ -1,0 +1,295 @@
+﻿@using MDUA.Entities
+@model List<Vendor>
+
+@{
+    ViewData["Title"] = "Vendors List";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/vendor.css" rel="stylesheet" />
+    <style>
+        /* 1. Increase Data Size & Spacing */
+        .products-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            font-weight: 700;
+            vertical-align: middle;
+        }
+
+        .products-table td {
+            font-size: 0.95rem; /* Increased from 0.85rem */
+            vertical-align: middle;
+            padding-top: 12px;
+            padding-bottom: 12px;
+        }
+
+        /* Compact Stat Labels */
+        .stat-label {
+            font-size: 0.75rem; /* Increased */
+            color: #adb5bd;
+            margin-right: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Bigger Money Values */
+        .money-val {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 1rem; /* Larger financial text */
+            color: #2c3e50;
+        }
+
+        /* Badges */
+        .highlight-red-bg {
+            background-color: #fff5f5;
+            color: #dc3545;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .highlight-red {
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 1.05rem; /* Make Due Amount pop */
+        }
+
+        /* Action Buttons with Text */
+        .btn-action-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 4px;
+            display: inline-block; /* Ensures text sits well with icon */
+        }
+
+        /* Clean up the button group look */
+        .action-group .btn {
+            padding: 4px 8px;
+            display: inline-flex;
+            align-items: center;
+        }
+    </style>
+}
+
+<div class="container-fluid h-100">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 sticky-page-header">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark">Vendor Management</h4>
+            <p class="text-muted small mb-0">Overview of suppliers, orders, and financial audits</p>
+        </div>
+        <a href="/vendor/add" class="btn btn-primary rounded-pill shadow-sm px-4">
+            <i class="fas fa-plus me-2"></i> Add Vendor
+        </a>
+    </div>
+
+    <div class="glass-card p-0">
+        <div class="table-responsive table-wrapper">
+            <table class="table table-hover mb-0 products-table align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4" style="width: 28%;">Vendor Details</th>
+                        <th class="text-center" style="width: 14%;">Order Status</th>
+                        <th class="text-center text-danger" style="width: 12%;">Unpaid</th>
+                        <th class="text-end" style="width: 16%;">Payment History</th>
+                        <th class="text-end text-danger" style="width: 12%;">Due Amount</th>
+                        <th class="text-end pe-4" style="width: 18%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr id="parent-row-@item.Id">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark fs-6">@item.VendorName</div>
+                                    <div class="text-muted" style="font-size: 0.9rem;">
+                                        <i class="fas fa-envelope me-1 opacity-50 small"></i> @item.Email
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(item.Phone))
+                                    {
+                                        <div class="text-muted" style="font-size: 0.9rem;">
+                                            <i class="fas fa-phone me-1 opacity-50 small"></i> @item.Phone
+                                        </div>
+                                    }
+                                </td>
+
+                                <td class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div title="Total Requested">
+                                            <span class="stat-label">Req:</span>
+                                            <span class="fw-bold text-dark">@item.TotalRequestedCount</span>
+                                            <span class="text-muted small">(@item.TotalRequestedQty)</span>
+                                        </div>
+                                        <div class="mt-1" title="Total Received">
+                                            <span class="stat-label">Rec:</span>
+                                            <span class="fw-bold text-success">@item.TotalReceivedCount</span>
+                                            <span class="text-muted small">(@item.TotalReceivedQty)</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="text-center">
+                                    @if (item.TotalUnpaidCount > 0)
+                                    {
+                                        <span class="highlight-red-bg">
+                                            <i class="fas fa-exclamation-circle me-1"></i> @item.TotalUnpaidCount
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted opacity-25">-</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="d-flex flex-column align-items-end">
+                                        <div>
+                                            <span class="stat-label">Total:</span>
+                                            <span class="money-val">@item.TotalAmount.ToString("N0")</span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class="stat-label">Paid:</span>
+                                            <span class="money-val text-success">@item.TotalPaidAmount.ToString("N0")</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    @if (item.TotalDueAmount > 0)
+                                    {
+                                        <span class="highlight-red">
+                                            @item.TotalDueAmount.ToString("N0")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted opacity-25">-</span>
+                                    }
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <div class="btn-group action-group shadow-sm">
+                                        <button type="button"
+                                                class="btn btn-sm btn-light border text-secondary"
+                                                onclick="showDetails(this)"
+                                                data-name="@item.VendorName"
+                                                data-createdby="@item.CreatedBy"
+                                                data-createdat="@(item.CreatedAt.HasValue? item.CreatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") : "-")"
+                                                data-updatedby="@item.UpdatedBy"
+                                                data-updatedat="@(item.UpdatedAt.HasValue? item.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") : "-")"
+                                                title="View Audit">
+                                            <i class="fas fa-eye"></i> <span class="btn-action-text">Audit</span>
+                                        </button>
+
+                                        <form action="/vendor/history" method="post" class="d-inline-flex">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-light border text-info" title="History">
+                                                <i class="fas fa-history"></i> <span class="btn-action-text">History</span>
+                                            </button>
+                                        </form>
+
+                                        <a href="/vendor/add?id=@item.Id" class="btn btn-sm btn-light border text-primary" title="Edit">
+                                            <i class="fas fa-edit"></i> <span class="btn-action-text">Edit</span>
+                                        </a>
+
+                                        <button onclick="deleteVendor(@item.Id)" class="btn btn-sm btn-light border text-danger" title="Delete">
+                                            <i class="fas fa-trash"></i> <span class="btn-action-text">Del</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                <p>No vendors found.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+
+        function deleteVendor(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Vendor/Delete', { id: id }, function(response) {
+                        if (response.success) {
+                            Swal.fire('Deleted!', response.message, 'success')
+                                .then(() => location.reload());
+                        } else {
+                            // ✅ FIX: Show the specific message sent from Controller
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Cannot Delete',
+                                text: response.message
+                            });
+                        }
+                    }).fail(function() {
+                        Swal.fire('Error', 'Server connection failed.', 'error');
+                    });
+                }
+            })
+        }
+
+                function showDetails(btn) {
+            // Read data attributes from the clicked button
+            var name = $(btn).data('name');
+            var createdBy = $(btn).data('createdby');
+            var createdAt = $(btn).data('createdat');
+            var updatedBy = $(btn).data('updatedby');
+            var updatedAt = $(btn).data('updatedat');
+
+            // Build the HTML content for the popup
+            var content = `
+                <div class="text-start p-2">
+                    <div class="mb-3 border-bottom pb-2">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Created Info</small>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span><i class="fas fa-user-circle me-1 text-primary"></i> ${createdBy}</span>
+                            <span class="text-dark fw-bold">${createdAt}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Last Updated</small>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span><i class="fas fa-pen-nib me-1 text-info"></i> ${updatedBy || 'System'}</span>
+                            <span class="text-dark fw-bold">${updatedAt}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: name,
+                html: content,
+                showConfirmButton: false,
+                showCloseButton: true,
+                width: '400px'
+            });
+        }
+
+    </script>
+}

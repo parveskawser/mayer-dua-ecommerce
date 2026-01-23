@@ -1,0 +1,32 @@
+﻿﻿
+@model MDUA.Entities.CompanySubscription
+
+@if (Model != null)
+{
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Max Products
+            <span class="badge bg-primary text-white rounded-pill">@Model.MaxProducts</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Max Orders (Per Cycle)
+            <span class="badge bg-primary text-white rounded-pill">@Model.MaxOrders</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Billing Cycle
+            <span>@Model.OrderCycle</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Next Billing Date
+            <span>@(Model.NextBillingDate?.ToShortDateString() ?? "N/A")</span>
+        </li>
+    </ul>
+
+    <div class="alert alert-info mt-3 mb-0">
+        <small><i class="fas fa-info-circle"></i> This snapshot was created on @Model.CreatedAt.ToShortDateString() by @Model.CreatedBy.</small>
+    </div>
+}
+else
+{
+    <p class="text-danger">No active subscription found.</p>
+}

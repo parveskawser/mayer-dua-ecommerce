@@ -1,0 +1,47 @@
+﻿﻿<style>
+     .urgent-flash {
+         animation: flash 0.5s infinite;
+     }
+
+     @@keyframes flash {
+         0%, 100% {
+             color: #ef4444;
+         }
+
+         50% {
+             color: #fbbf24;
+         }
+     }
+</style>
+<input type="hidden" id="current-admin-name" value="@Model?.UserLogin?.UserName" />
+<div id="admin-chat-panel" style="display:none !important; position: fixed; bottom: 20px; right: 20px; width: 400px; height: 500px; background: white; border: 1px solid #ccc; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 10000; border-radius: 12px; font-family: 'Segoe UI', sans-serif; overflow: hidden;">
+
+    <div style="display: flex; flex-direction: column; height: 100%;">
+
+        <div style="padding: 15px; background: #2563eb; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+            <span id="chat-current-guest">Chat</span>
+            <button onclick="adminChat.togglePanel()" style="background:none; border:none; color:white; cursor:pointer; font-size:1.5rem; line-height: 1;">&times;</button>
+        </div>
+
+        <div id="admin-chat-history" style="flex: 1; padding: 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; gap: 10px;">
+            <div style="text-align:center; color: #999; margin-top: 50px; font-size: 0.9rem;">
+                <i class="fas fa-comments fs-1 mb-2 text-light-gray"></i><br>
+                Select a conversation<br>from the header icon.
+            </div>
+        </div>
+
+        <div style="padding: 15px; border-top: 1px solid #eee; display: flex; background: #f8fafc; gap: 10px;">
+            <input type="hidden" id="current-chat-session-id" />
+            <input type="hidden" id="current-chat-guid" />
+
+            <input type="text" id="admin-chat-input" placeholder="Type a reply..."
+                   style="flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 20px; outline: none; font-size: 0.95rem;">
+
+            <button id="admin-send-btn"
+                    style="width: 40px; height: 40px; border-radius: 50%; background: #2563eb; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+    </div>
+</div>

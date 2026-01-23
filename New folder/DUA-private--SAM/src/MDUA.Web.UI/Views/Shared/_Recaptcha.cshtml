@@ -1,0 +1,36 @@
+﻿@using MDUA.Web.UI.Services.Interface
+@using MDUA.Facade.Interface
+@inject ISettingsFacade SettingsFacade
+@inject ITenantResolver TenantResolver
+
+@{
+    // 1. Resolve Company ID
+    int currentCompanyId = TenantResolver.GetCompanyId();
+
+    // 2. Fetch Site Key
+    string recaptchaSiteKey = SettingsFacade.GetGlobalSetting(currentCompanyId, "RecaptchaSiteKey");
+}
+
+@if (!string.IsNullOrEmpty(recaptchaSiteKey))
+{
+    @* Load Google reCAPTCHA v3 Library *@
+    <script src="https://www.google.com/recaptcha/api.js?render=@recaptchaSiteKey"></script>
+
+    <script>
+        // Global Helper: Returns a Promise that resolves to the token
+        function getRecaptchaToken(actionName) {
+            return new Promise((resolve, reject) => {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('@recaptchaSiteKey', {action: actionName})
+                    .then(function(token) {
+                        resolve(token);
+                    })
+                    .catch(function(err) {
+                        console.error("Recaptcha Error:", err);
+                        reject(err);
+                    });
+                });
+            });
+        }
+    </script>
+}

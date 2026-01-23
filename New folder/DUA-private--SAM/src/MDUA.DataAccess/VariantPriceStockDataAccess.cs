@@ -1,0 +1,191 @@
+﻿using MDUA.Entities;
+using MDUA.Entities.Bases;
+using MDUA.Entities.List;
+using MDUA.Framework;
+using MDUA.Framework.Exceptions;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Reflection.PortableExecutable;
+using System.Text;
+
+namespace MDUA.DataAccess
+{
+    public partial class VariantPriceStockDataAccess
+    {
+        public int Insert(VariantPriceStock vps)
+        {
+            using SqlCommand cmd = GetSPCommand("InsertVariantPriceStock");
+
+            // Add all parameters from the entity
+            // Note: The @Id is an INPUT, not an OUTPUT
+            AddParameter(cmd, pInt32("Id", vps.Id));
+            AddParameter(cmd, pDecimal("Price", vps.Price));
+            AddParameter(cmd, pDecimal("CompareAtPrice", vps.CompareAtPrice));
+            AddParameter(cmd, pDecimal("CostPrice", vps.CostPrice));
+            AddParameter(cmd, pInt32("StockQty", vps.StockQty));
+            AddParameter(cmd, pBool("TrackInventory", vps.TrackInventory));
+            AddParameter(cmd, pBool("AllowBackorder", vps.AllowBackorder));
+            AddParameter(cmd, pInt32("WeightGrams", vps.WeightGrams));
+
+            long result = InsertRecord(cmd);
+
+            return (int)result;
+        }
+
+        public long UpdatePrice(int variantId, decimal price, string sku)
+        {
+            // We update SKU in ProductVariant and Price in BOTH tables
+            string SQLQuery = @"
+        UPDATE ProductVariant 
+        SET VariantPrice = @Price, SKU = @SKU, UpdatedAt = GETUTCDATE() 
+        WHERE Id = @Id;
+
+        UPDATE VariantPriceStock 
+        SET Price = @Price 
+        WHERE Id = @Id;
+        
+        SELECT 1;";
+
+            using (SqlCommand cmd = GetSQLCommand(SQLQuery))
+            {
+                AddParameter(cmd, pInt32("Id", variantId));
+                AddParameter(cmd, pDecimal("Price", price));
+                AddParameter(cmd, pNVarChar("SKU", 50, sku)); // Add SKU Parameter
+
+                SqlDataReader reader;
+                long result = SelectRecords(cmd, out reader);
+
+                if (reader != null)
+                {
+                    reader.Close();
+                    reader.Dispose();
+                }
+
+                return 1;
+            }
+        }
+
+        public void AddStock(int variantId, int qty, SqlTransaction transaction)
+        {
+            // Simply adds to existing stock
+            string SQL = @"UPDATE VariantPriceStock SET StockQty = StockQty + @Qty WHERE Id = @Id";
+            using (SqlCommand cmd = new SqlCommand(SQL, transaction.Connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@Id", variantId);
+                cmd.Parameters.AddWithValue("@Qty", qty);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // Helper to find ProductId from Variant (for InventoryTransaction)
+        public int GetProductIdByVariant(int variantId)
+        {
+            string SQL = "SELECT ProductId FROM ProductVariant WHERE Id = @Id";
+            using (SqlCommand cmd = GetSQLCommand(SQL))
+            {
+                AddParameter(cmd, pInt32("Id", variantId));
+                if (cmd.Connection.State != System.Data.ConnectionState.Open) cmd.Connection.Open();
+                var result = cmd.ExecuteScalar();
+                cmd.Connection.Close();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+        }
+
+        // MDUA.DataAccess/VariantPriceStockDataAccess.cs
+
+        public List<LowStockItem> GetLowStockVariants(int companyId, int topN = 5) // ✅ Added companyId
+        {
+            var list = new List<LowStockItem>();
+
+            // ✅ Added "AND p.CompanyId = @CompanyId" to the WHERE clause
+            string sql = $@"
+        SELECT TOP (@TopN)
+            vps.Id, 
+            p.ProductName,
+            pv.VariantName,
+            vps.StockQty,
+            vps.Price
+        FROM [dbo].[VariantPriceStock] vps
+        INNER JOIN [dbo].[ProductVariant] pv ON vps.Id = pv.Id
+        INNER JOIN [dbo].[Product] p ON pv.ProductId = p.Id
+        WHERE p.IsActive = 1 
+          AND pv.IsActive = 1
+          AND p.CompanyId = @CompanyId  -- ✅ FILTER BY COMPANY
+        ORDER BY vps.StockQty ASC, p.ProductName ASC";
+
+            using (SqlCommand cmd = GetSQLCommand(sql))
+            {
+                // ✅ Add the Parameters
+                AddParameter(cmd, pInt32("CompanyId", companyId));
+                AddParameter(cmd, pInt32("TopN", topN));
+
+                SqlDataReader reader;
+                SelectRecords(cmd, out reader);
+
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new LowStockItem
+                        {
+                            VariantId = Convert.ToInt32(reader["Id"]),
+                            ProductName = reader["ProductName"].ToString(),
+                            VariantName = reader["VariantName"] != DBNull.Value ? reader["VariantName"].ToString() : "",
+                            StockQty = Convert.ToInt32(reader["StockQty"]),
+                            Price = Convert.ToDecimal(reader["Price"])
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+
+        public Dictionary<int, int> GetStocksByVariantIds(List<int> variantIds)
+        {
+            var result = new Dictionary<int, int>();
+            if (variantIds == null || variantIds.Count == 0) return result;
+
+            // de-dupe, remove invalid
+            var ids = variantIds.Where(x => x > 0).Distinct().ToList();
+            if (ids.Count == 0) return result;
+
+            // Build parameterized IN clause safely
+            var sb = new StringBuilder();
+            sb.Append("SELECT Id, ISNULL(StockQty,0) AS StockQty FROM dbo.VariantPriceStock WHERE Id IN (");
+
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (i > 0) sb.Append(",");
+                sb.Append($"@id{i}");
+            }
+            sb.Append(");");
+
+            using (SqlCommand cmd = GetSQLCommand(sb.ToString()))
+            {
+                for (int i = 0; i < ids.Count; i++)
+                {
+                    AddParameter(cmd, pInt32($"id{i}", ids[i]));
+                }
+
+                if (cmd.Connection.State != ConnectionState.Open)
+                    cmd.Connection.Open();
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int id = Convert.ToInt32(reader["Id"]);
+                        int stock = Convert.ToInt32(reader["StockQty"]);
+                        result[id] = stock;
+                    }
+                }
+
+                cmd.Connection.Close();
+            }
+
+            return result;
+        }
+
+    }
+}

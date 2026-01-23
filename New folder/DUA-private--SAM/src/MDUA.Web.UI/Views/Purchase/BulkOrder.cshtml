@@ -1,0 +1,157 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Create Bulk Order";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var vendors = ViewBag.Vendors as List<MDUA.Entities.Vendor>;
+}
+
+@section Styles {
+    <link href="~/css/bulk-order.css" rel="stylesheet" />
+}
+
+<div class="bulk-wrapper">
+
+    <div class="product-pane">
+
+        <div class="product-pane-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="m-0">Select Products <small class="text-muted fs-6">(Sorted by Lowest Stock)</small></h4>
+            </div>
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger mt-2 py-2">@TempData["Error"]</div>
+            }
+        </div>
+
+        <div class="product-scroll-area">
+            @if (Model != null)
+            {
+                foreach (var group in Model)
+                {
+                    <div class="card shadow-sm border-start border-5 @(group.IsCritical ? "border-danger" : "border-success")">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <div class="form-check">
+                                <input class="form-check-input product-checkbox" type="checkbox" id="@group.UiId">
+                                <label class="form-check-label fw-bold fs-5 ms-2" for="@group.UiId">
+                                    @group.ProductName
+                                </label>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@group.UiId">
+                                Show Variants ▼
+                            </button>
+                        </div>
+
+                        <div id="collapse-@group.UiId" class="collapse show">
+                            <div class="card-body p-0">
+                                <table class="table table-hover mb-0 table-v-middle">
+                                    <thead class="bg-light text-muted small">
+                                        <tr>
+                                            <th style="width: 50px;" class="text-center">Select</th>
+                                            <th>Variant</th>
+                                            <th class="text-center">Current Stock</th>
+                                            <th style="width: 150px;">
+                                                Order Qty <span class="text-danger">*</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var variant in group.Variants)
+                                        {
+                                            bool isLow = (bool)variant.IsLowStock;
+                                            <tr class="variant-row @(isLow ? "table-danger" : "")">
+                                                <td class="text-center">
+                                                    <input class="form-check-input variant-checkbox"
+                                                           type="checkbox"
+                                                           name="selectedVariants"
+                                                           value="@variant.VariantId"
+                                                           form="bulkOrderForm"
+                                                           data-parent="@group.UiId">
+                                                </td>
+                                                <td>
+                                                    <div class="variant-flex-wrapper">
+
+                                                        <div class="variant-name-truncate" title="@variant.VariantName">
+                                                            @variant.VariantName
+                                                        </div>
+
+                                                        @if (isLow)
+                                                        {
+                                                            <span class="badge bg-danger badge-stock">Low Stock</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="text-center fw-bold">
+                                                    @variant.CurrentStock
+                                                </td>
+                                                <td>
+                                                    <input type="number"
+                                                           name="quantities[@variant.VariantId]"
+                                                           class="form-control form-control-sm"
+                                                           value="@variant.SuggestedQty"
+                                                           min="1"
+                                                           form="bulkOrderForm">
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="sidebar-pane">
+        <div class="bg-primary text-white p-3">
+            <h5 class="mb-0">📦 Order Details</h5>
+        </div>
+
+        <div class="sidebar-content">
+            <form asp-action="CreateBulkOrder" method="post" id="bulkOrderForm">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select Vendor <span class="text-danger">*</span></label>
+                    <select name="VendorId" class="form-select" required>
+                        <option value="">-- Choose Vendor --</option>
+                        @if (vendors != null)
+                        {
+                            foreach (var v in vendors)
+                            {
+                                <option value="@v.Id">@v.VendorName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Agreement / Ref No. <span class="text-danger">*</span></label>
+                    <input type="text" name="AgreementNumber" class="form-control" placeholder="e.g. BLK-2025-001" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="Title" class="form-control" placeholder="e.g. Winter Restock" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Remarks</label>
+                    <textarea name="Remarks" class="form-control" rows="2"></textarea>
+                </div>
+
+                <hr />
+
+                <div class="d-grid pb-5">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        ✅ Confirm Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/bulk-order.js"></script>
+}

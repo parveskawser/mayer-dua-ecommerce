@@ -1,0 +1,135 @@
+﻿@model MDUA.Web.Controllers.MySubscriptionViewModel
+@{
+    ViewData["Title"] = "My Plan Usage";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // --- 1. Calculate Percentages ---
+    var productPct = 0;
+    var orderPct = 0;
+
+    // A. Order Percentage (Monthly Cycle)
+    if (Model.Subscription != null && Model.Subscription.MaxOrders > 0 && Model.CurrentUsage != null)
+    {
+        orderPct = (int)((double)Model.CurrentUsage.OrdersProcessed / Model.Subscription.MaxOrders * 100);
+    }
+
+    // B. Product Percentage (Total Capacity)
+    // Assuming Model.CurrentProductCount is populated from the Controller
+    if (Model.Subscription != null && Model.Subscription.MaxProducts > 0)
+    {
+        productPct = (int)((double)Model.CurrentProductCount / Model.Subscription.MaxProducts * 100);
+    }
+}
+
+<div class="row">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Current Plan
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @(Model.Subscription?.PlanNameSnapshot ?? "No Active Plan")
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            Renews: @(Model.Subscription?.NextBillingDate?.ToShortDateString() ?? "N/A")
+                        </div>
+                        <div class="mt-3">
+                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("UpdateMyPlan", "Subscription")">
+                                <i class="fas fa-sync-alt"></i> Update Plan
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Monthly Orders Quota
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                    @(Model.CurrentUsage?.OrdersProcessed ?? 0) / @(Model.Subscription?.MaxOrders ?? 0)
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         style="width: @orderPct%" aria-valuenow="@orderPct" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Product Slot Limit
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                    @(Model.CurrentProductCount) / @(Model.Subscription?.MaxProducts ?? 0)
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                         style="width: @productPct%" aria-valuenow="@productPct" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box-open fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (orderPct >= 90)
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> You are approaching your <strong>Order limit</strong> for this month.
+    </div>
+}
+
+@if (productPct >= 100)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-ban"></i> <strong>Limit Reached:</strong> You have used all available <strong>Product slots</strong>. You cannot create new products until you upgrade.
+    </div>
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Usage History</h6>
+    </div>
+    <div class="card-body">
+        <p>List previous months usage here (SubscriptionUsage table history)...</p>
+    </div>
+</div>

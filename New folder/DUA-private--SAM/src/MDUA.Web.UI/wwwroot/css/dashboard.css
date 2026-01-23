@@ -1,0 +1,483 @@
+﻿/* Dashboard Specific Styles - Red/Yellow/Orange Theme */
+
+:root {
+    --dash-card-radius: 16px;
+    --dash-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Warm Theme Colors */
+    --theme-red: #ef4444; /* Bright Red */
+    --theme-red-soft: #fef2f2;
+    --theme-red-border: #fecaca;
+    --theme-orange: #f97316; /* Vibrant Orange */
+    --theme-orange-soft: #fff7ed;
+    --theme-orange-border: #fed7aa;
+    --theme-yellow: #eab308; /* Golden Yellow */
+    --theme-yellow-soft: #fefce8;
+    --theme-yellow-border: #fde047;
+    --theme-accent: #dc2626; /* Deep Red for accents */
+
+    --text-dark: #212529;
+    --text-muted: #64748b;
+}
+
+/* --- Base Glass Card --- */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border-radius: var(--dash-card-radius);
+    transition: transform var(--dash-transition), box-shadow var(--dash-transition);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+/* --- 1. Recent Orders Card (Red/Orange Theme) --- */
+.card-orders {
+    border: 1px solid var(--theme-red-border) !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
+}
+
+    .card-orders:hover {
+        border-color: var(--theme-red) !important;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
+    }
+
+    .card-orders .card-header-custom {
+        background: linear-gradient(135deg, var(--theme-red-soft), #fff);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--theme-red-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .card-orders h6 {
+        color: var(--theme-accent);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+/* Red/Orange Buttons */
+.btn-orders {
+    background: linear-gradient(135deg, var(--theme-red), var(--theme-orange));
+    border: none;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+    .btn-orders:hover {
+        background: linear-gradient(135deg, #dc2626, #ea580c);
+        color: white;
+        transform: scale(1.05);
+    }
+
+.text-orders {
+    color: var(--theme-red) !important;
+}
+
+/* --- 2. New Products Card (Yellow/Orange Theme) --- */
+.card-products {
+    border: 1px solid var(--theme-orange-border) !important;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.08);
+}
+
+    .card-products:hover {
+        border-color: var(--theme-orange) !important;
+        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15);
+    }
+
+    .card-products .card-header-custom {
+        background: linear-gradient(135deg, var(--theme-orange-soft), #fff);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--theme-orange-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .card-products h6 {
+        color: #ea580c;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+/* Yellow/Orange Buttons */
+.btn-products {
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow));
+    border: none;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+    .btn-products:hover {
+        background: linear-gradient(135deg, #ea580c, #ca8a04);
+        color: white;
+        transform: scale(1.05);
+    }
+
+.text-products {
+    color: var(--theme-orange) !important;
+}
+
+/* Override Bootstrap green button with theme */
+.btn-success {
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow)) !important;
+    border: none !important;
+}
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #ea580c, #ca8a04) !important;
+        transform: scale(1.05);
+    }
+
+/* --- Table Styles --- */
+.table-modern {
+    margin-bottom: 0;
+}
+
+    .table-modern thead th {
+        background-color: #fff;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #f1f5f9;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .table-modern tbody td {
+        padding: 0.9rem 1rem;
+        vertical-align: middle;
+        color: var(--text-dark);
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 0.9rem;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-modern tbody tr:hover {
+        background-color: #fef2f2;
+    }
+
+/* --- Product List --- */
+.product-list-item {
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+    .product-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .product-list-item:hover {
+        background-color: #fff7ed;
+    }
+
+.product-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--theme-orange-soft), var(--theme-yellow-soft));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--theme-orange);
+}
+
+/* --- KPI Cards --- */
+.kpi-card {
+    border: 1px solid var(--theme-yellow-border) !important;
+    box-shadow: 0 4px 10px rgba(234, 179, 8, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+}
+
+    .kpi-card:hover {
+        box-shadow: 0 8px 20px rgba(234, 179, 8, 0.15);
+        border-color: var(--theme-yellow) !important;
+    }
+
+.kpi-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.2;
+    margin-top: 0.25rem;
+}
+
+.kpi-label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.kpi-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+/* Specific KPI Colors - Warm Palette */
+.kpi-success,
+.bg-success.bg-opacity-10 {
+    background: linear-gradient(135deg, #fef2f2, #fff7ed) !important;
+    color: var(--theme-red) !important;
+}
+
+.kpi-primary,
+.bg-primary.bg-opacity-10 {
+    background: linear-gradient(135deg, #fff7ed, #fefce8) !important;
+    color: var(--theme-orange) !important;
+}
+
+.kpi-warning,
+.bg-warning.bg-opacity-10 {
+    background: linear-gradient(135deg, #fefce8, #fffbeb) !important;
+    color: #ca8a04 !important;
+}
+
+.kpi-info,
+.bg-info.bg-opacity-10 {
+    background: linear-gradient(135deg, #fff7ed, #fef2f2) !important;
+    color: #ea580c !important;
+}
+
+/* --- Utilities --- */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- PAGE LAYOUT --- */
+html, body {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard-wrapper {
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.dashboard-header {
+    flex: 0 0 auto;
+    z-index: 50;
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: none;
+    margin-bottom: 1rem;
+}
+
+.dashboard-scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 50px;
+    padding-right: 5px;
+}
+
+    /* Custom Scrollbar */
+    .dashboard-scroll-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .dashboard-scroll-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .dashboard-scroll-content::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--theme-orange), var(--theme-red));
+        border-radius: 3px;
+    }
+
+/* Header Chat Dropdown Styles */
+#header-msg-dropdown {
+    animation: fadeIn 0.2s ease-in-out;
+    border-radius: 12px;
+    border: 1px solid var(--theme-orange-border);
+}
+
+.header-chat-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .header-chat-item:hover {
+        background-color: var(--theme-orange-soft);
+    }
+
+    .header-chat-item:last-child {
+        border-bottom: none;
+    }
+
+.chat-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--theme-orange-soft), var(--theme-yellow-soft));
+    color: var(--theme-orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- LOW STOCK CARD --- */
+.card-low-stock {
+    background: #ffffff;
+    border: 2px solid var(--theme-red-border);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.08);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.header-low-stock {
+    background: linear-gradient(135deg, var(--theme-red-soft), var(--theme-orange-soft));
+    padding: 12px 20px;
+    border-bottom: 2px solid var(--theme-red-border);
+    color: var(--theme-accent);
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.low-stock-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: background 0.2s;
+}
+
+    .low-stock-item:last-child {
+        border-bottom: none;
+    }
+
+    .low-stock-item:hover {
+        background-color: var(--theme-orange-soft);
+    }
+
+.item-name {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.item-variant {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-stock {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 99px;
+    color: white;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.badge-stock-zero {
+    background: linear-gradient(135deg, var(--theme-red), #dc2626);
+}
+
+.badge-stock-low {
+    background: linear-gradient(135deg, var(--theme-orange), var(--theme-yellow));
+    color: white;
+}
+
+.item-price {
+    font-size: 0.75rem;
+    color: var(--theme-orange);
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* Override text colors to warm theme */
+.text-success {
+    color: var(--theme-orange) !important;
+}
+
+.text-primary {
+    color: var(--theme-red) !important;
+}
+
+.fw-bold.text-success {
+    color: var(--theme-orange) !important;
+}
+
+.fw-bold.small.text-success {
+    color: var(--theme-orange) !important;
+}

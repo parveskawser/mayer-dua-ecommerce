@@ -1,0 +1,327 @@
+using System;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+
+using MDUA.Framework;
+
+namespace MDUA.Entities.Bases
+{
+	[Serializable]
+    [DataContract(Name = "BackInStockRequestBase", Namespace = "http://www.piistech.com//entities")]
+	public class BackInStockRequestBase : BaseBusinessEntity
+	{
+	
+		#region Enum Collection
+		public enum Columns
+		{
+			Id = 0,
+			ProductVariantId = 1,
+			Email = 2,
+			Phone = 3,
+			IsNotified = 4,
+			NotifiedAt = 5,
+			CreatedBy = 6,
+			CreatedAt = 7,
+			UpdatedBy = 8,
+			UpdatedAt = 9
+		}
+		#endregion
+	
+		#region Constants
+		public const string Property_Id = "Id";		            
+		public const string Property_ProductVariantId = "ProductVariantId";		            
+		public const string Property_Email = "Email";		            
+		public const string Property_Phone = "Phone";		            
+		public const string Property_IsNotified = "IsNotified";		            
+		public const string Property_NotifiedAt = "NotifiedAt";		            
+		public const string Property_CreatedBy = "CreatedBy";		            
+		public const string Property_CreatedAt = "CreatedAt";		            
+		public const string Property_UpdatedBy = "UpdatedBy";		            
+		public const string Property_UpdatedAt = "UpdatedAt";		            
+		#endregion
+		
+		#region Private Data Types
+		private Int32 _Id;	            
+		private Int32 _ProductVariantId;	            
+		private String _Email;	            
+		private String _Phone;	            
+		private Boolean _IsNotified;	            
+		private Nullable<DateTime> _NotifiedAt;	            
+		private String _CreatedBy;	            
+		private DateTime _CreatedAt;	            
+		private String _UpdatedBy;	            
+		private Nullable<DateTime> _UpdatedAt;	            
+		#endregion
+		
+		#region Properties		
+		[DataMember]
+		public Int32 Id
+		{	
+			get{ return _Id; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_Id, value, _Id);
+				if (PropertyChanging(args))
+				{
+					_Id = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Int32 ProductVariantId
+		{	
+			get{ return _ProductVariantId; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_ProductVariantId, value, _ProductVariantId);
+				if (PropertyChanging(args))
+				{
+					_ProductVariantId = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public String Email
+		{	
+			get{ return _Email; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_Email, value, _Email);
+				if (PropertyChanging(args))
+				{
+					_Email = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public String Phone
+		{	
+			get{ return _Phone; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_Phone, value, _Phone);
+				if (PropertyChanging(args))
+				{
+					_Phone = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Boolean IsNotified
+		{	
+			get{ return _IsNotified; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_IsNotified, value, _IsNotified);
+				if (PropertyChanging(args))
+				{
+					_IsNotified = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Nullable<DateTime> NotifiedAt
+		{	
+			get{ return _NotifiedAt; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_NotifiedAt, value, _NotifiedAt);
+				if (PropertyChanging(args))
+				{
+					_NotifiedAt = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public String CreatedBy
+		{	
+			get{ return _CreatedBy; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_CreatedBy, value, _CreatedBy);
+				if (PropertyChanging(args))
+				{
+					_CreatedBy = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public DateTime CreatedAt
+		{	
+			get{ return _CreatedAt; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_CreatedAt, value, _CreatedAt);
+				if (PropertyChanging(args))
+				{
+					_CreatedAt = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public String UpdatedBy
+		{	
+			get{ return _UpdatedBy; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_UpdatedBy, value, _UpdatedBy);
+				if (PropertyChanging(args))
+				{
+					_UpdatedBy = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		[DataMember]
+		public Nullable<DateTime> UpdatedAt
+		{	
+			get{ return _UpdatedAt; }			
+			set
+			{
+				PropertyChangingEventArgs args = new PropertyChangingEventArgs(Property_UpdatedAt, value, _UpdatedAt);
+				if (PropertyChanging(args))
+				{
+					_UpdatedAt = value;
+					PropertyChanged(args);					
+				}	
+			}
+        }
+
+		#endregion
+		
+		#region Cloning Base Objects
+		public  BackInStockRequestBase Clone()
+		{
+			BackInStockRequestBase newObj = new  BackInStockRequestBase();
+			base.CloneBase(newObj);
+			newObj.Id = this.Id;						
+			newObj.ProductVariantId = this.ProductVariantId;						
+			newObj.Email = this.Email;						
+			newObj.Phone = this.Phone;						
+			newObj.IsNotified = this.IsNotified;						
+			newObj.NotifiedAt = this.NotifiedAt;						
+			newObj.CreatedBy = this.CreatedBy;						
+			newObj.CreatedAt = this.CreatedAt;						
+			newObj.UpdatedBy = this.UpdatedBy;						
+			newObj.UpdatedAt = this.UpdatedAt;						
+			
+			return newObj;
+		}
+		#endregion
+		
+		#region Getting object by adding value of that properties 
+		public override void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+			info.AddValue(BackInStockRequestBase.Property_Id, Id);				
+			info.AddValue(BackInStockRequestBase.Property_ProductVariantId, ProductVariantId);				
+			info.AddValue(BackInStockRequestBase.Property_Email, Email);				
+			info.AddValue(BackInStockRequestBase.Property_Phone, Phone);				
+			info.AddValue(BackInStockRequestBase.Property_IsNotified, IsNotified);				
+			info.AddValue(BackInStockRequestBase.Property_NotifiedAt, NotifiedAt);				
+			info.AddValue(BackInStockRequestBase.Property_CreatedBy, CreatedBy);				
+			info.AddValue(BackInStockRequestBase.Property_CreatedAt, CreatedAt);				
+			info.AddValue(BackInStockRequestBase.Property_UpdatedBy, UpdatedBy);				
+			info.AddValue(BackInStockRequestBase.Property_UpdatedAt, UpdatedAt);				
+		}
+		#endregion
+	}	
+}
+﻿using System;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+
+using MDUA.Framework;
+using MDUA.Entities.Bases;
+using MDUA.Entities.List;
+
+namespace MDUA.Entities
+{
+	[Serializable]
+    [DataContract(Name = "BackInStockRequest", Namespace = "http://www.piistech.com//entities")]
+	public partial class BackInStockRequest : BackInStockRequestBase
+	{
+		#region Exernal Properties
+		private ProductVariant _ProductVariantIdObject = null;
+		
+		/// <summary>
+		/// Gets or sets the source <see cref="ProductVariant"/>.
+		/// </summary>
+		/// <value>The source ProductVariant for _ProductVariantIdObject.</value>
+		[DataMember]
+		public ProductVariant ProductVariantIdObject
+      	{
+            get { return this._ProductVariantIdObject; }
+            set { this._ProductVariantIdObject = value; }
+      	}
+		
+		#endregion
+		
+		#region Orverride Equals
+		public override bool Equals(Object obj)		
+		{
+			if (obj.GetType() != typeof(BackInStockRequest))
+            {
+                return false;
+            }			
+			
+			 BackInStockRequest _paramObj = obj as BackInStockRequest;
+            if (_paramObj != null)
+            {			
+                return (_paramObj.Id == this.Id && _paramObj.CustomPropertyMatch(this));
+            }
+            else
+            {
+                return base.Equals(obj);
+            }
+		}
+		#endregion
+		
+		#region Orverride HashCode
+		 public override int GetHashCode()
+        {
+            return base.Id.GetHashCode();
+        }
+		#endregion		
+	}
+}
+﻿using System;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Collections.Generic;
+
+using MDUA.Framework;
+
+namespace MDUA.Entities.List
+{
+	[Serializable]
+	[CollectionDataContract(Name = "BackInStockRequestList", Namespace = "http://www.piistech.com//list")]	
+	public class BackInStockRequestList : BaseCollection<BackInStockRequest>
+	{
+		#region Constructors
+	    public BackInStockRequestList() : base() { }
+        public BackInStockRequestList(BackInStockRequest[] list) : base(list) { }
+        public BackInStockRequestList(List<BackInStockRequest> list) : base(list) { }
+		#endregion
+		
+		#region Custom Methods
+		#endregion
+	}	
+}

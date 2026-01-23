@@ -1,0 +1,104 @@
+/* --- GLOBAL THEME VARIABLES --- */
+:root {
+    --brand-red: #d32f2f; /* Deep Red */
+    --brand-red-dark: #b71c1c;
+    --brand-yellow: #ffca28; /* Amber/Yellow */
+    --brand-yellow-hover: #ffb300;
+    --brand-dark: #212529;
+    --bg-light: #f4f6f9;
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- NAVBAR STYLES --- */
+.navbar {
+    border-top: 4px solid var(--brand-red); /* Theme Stripe */
+}
+
+.navbar-brand {
+    font-weight: 800;
+    color: var(--brand-red) !important;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Search Bar Styling */
+.search-container .form-control {
+    border-color: var(--brand-yellow);
+    border-right: none;
+}
+
+    .search-container .form-control:focus {
+        box-shadow: none;
+        border-color: var(--brand-yellow-hover);
+    }
+
+.btn-search {
+    background-color: var(--brand-yellow);
+    border: 1px solid var(--brand-yellow);
+    color: #333;
+    border-left: none;
+    transition: all 0.2s;
+}
+
+    .btn-search:hover {
+        background-color: var(--brand-yellow-hover);
+        border-color: var(--brand-yellow-hover);
+    }
+
+/* Nav Links */
+.nav-link {
+    font-weight: 500;
+    color: #555 !important;
+    transition: color 0.2s;
+}
+
+    .nav-link:hover {
+        color: var(--brand-red) !important;
+    }
+
+/* --- FOOTER STYLES --- */
+.footer {
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+    margin-top: auto; /* Pushes footer to bottom */
+    padding: 40px 0;
+    position: relative;
+}
+
+    /* Footer decorative top line */
+    .footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--brand-red), var(--brand-yellow));
+    }
+
+    .footer a {
+        color: var(--brand-dark);
+        text-decoration: none;
+    }
+
+        .footer a:hover {
+            color: var(--brand-red);
+            text-decoration: underline;
+        }
+footer.bg-dark .text-secondary,
+footer.bg-dark a.text-secondary {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+    footer.bg-dark a.text-secondary:hover,
+    footer.bg-dark a.footer-link:hover {
+        color: #ffffff !important;
+        text-decoration: underline;
+    }
