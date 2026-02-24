@@ -1,5 +1,5 @@
 # MDUA - Enterprise E-Commerce & Inventory Management System
-
+Updated
 **MDUA** is a robust, multi-tenant, N-Layered ASP.NET Core application designed for enterprise-grade e-commerce and inventory management. It supports complex product variants, real-time inventory tracking, accounting automation, role-based security, SPA-enabled media sharing, and dynamic company-level configurations.
   
 -----
